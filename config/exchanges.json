@@ -1,0 +1,20 @@
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}

@@ -1,0 +1,6 @@
+{
+  "direction_restriction": {
+    "long_only": true,
+    "allowed_quote_assets": ["USDC"]
+  }
+}
