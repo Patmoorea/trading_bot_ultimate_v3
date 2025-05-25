@@ -1,0 +1,8 @@
+/'blofin': {/i\
+            'gateio': {
+                'class': ccxt.gateio,
+                'params': {
+                    'apiKey': os.getenv('GATEIO_API_KEY'),
+                    'secret': os.getenv('GATEIO_API_SECRET')
+                }
+            },

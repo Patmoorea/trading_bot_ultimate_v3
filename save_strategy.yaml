@@ -1,0 +1,8 @@
+auto_save:
+  triggers:
+    on_file_change: true
+    interval_minutes: 30
+  messaging:
+    default_prefix: "[AUTO-SAVE]"
+  backup:
+    keep_local_archives: 5

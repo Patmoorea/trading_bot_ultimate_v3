@@ -1,0 +1,16 @@
+Prochaines étapes (à intégrer via même méthode):
+
+1. Intégration XLA (quand support M4 disponible)
+   - Méthode: Ajout conditionnel dans optimize_for_m4()
+
+2. Optimisation pipeline de données
+   - Méthode: Nouveau module data_processor.py
+
+3. Gestion avancée mémoire GPU
+   - Méthode: Extension de performance.py
+
+4. Documentation des performances
+   - Génération auto via benchmark_to_md.py
+
+5. Système de fallback CPU
+   - Méthode: Ajout dans tf_config.py

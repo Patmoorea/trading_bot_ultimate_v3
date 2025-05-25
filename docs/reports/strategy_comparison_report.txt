@@ -1,0 +1,15 @@
+=== Analyse Comparative ===
+
+1. Fichiers uniques dans /Desktop/strategies:
+$(diff -qr /Users/patricejourdan/Desktop/strategies /Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies | grep "Only in /Users/patricejourdan/Desktop/strategies")
+
+2. Fichiers plus récents:
+$(find /Users/patricejourdan/Desktop/strategies -name "*.py" -newer /Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core.py)
+
+3. Différences majeures:
+$(for file in $(find /Users/patricejourdan/Desktop/strategies/arbitrage -name "*.py"); do
+    basefile=$(basename $file)
+    echo "\n=== $basefile ==="
+    diff -u "$file" "/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/$basefile" | grep -v "Binary files" | tail -n 5
+done)
+
