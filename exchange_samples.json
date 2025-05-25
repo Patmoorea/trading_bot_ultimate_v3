@@ -1,0 +1,686 @@
+{
+  "binance": {
+    "BNB/USDC": {
+      "order_book_bids": [
+        643.12,
+        1.294
+      ],
+      "order_book_asks": [
+        643.13,
+        9.824
+      ],
+      "ticker": {
+        "symbol": "BNB/USDC",
+        "timestamp": 1747109462425,
+        "datetime": "2025-05-13T04:11:02.425Z",
+        "high": 692.99,
+        "low": 640.77,
+        "bid": 643.12,
+        "bidVolume": 1.294,
+        "ask": 643.13,
+        "askVolume": 9.824,
+        "vwap": 668.2052503,
+        "open": 655.83,
+        "close": 643.24,
+        "last": 643.24,
+        "previousClose": 655.83,
+        "change": -12.59,
+        "percentage": -1.92,
+        "average": 649.535,
+        "baseVolume": 155395.149,
+        "quoteVolume": 103835854.43294,
+        "info": {
+          "symbol": "BNBUSDC",
+          "priceChange": "-12.59000000",
+          "priceChangePercent": "-1.920",
+          "weightedAvgPrice": "668.20525030",
+          "prevClosePrice": "655.83000000",
+          "lastPrice": "643.24000000",
+          "lastQty": "1.55400000",
+          "bidPrice": "643.12000000",
+          "bidQty": "1.29400000",
+          "askPrice": "643.13000000",
+          "askQty": "9.82400000",
+          "openPrice": "655.83000000",
+          "highPrice": "692.99000000",
+          "lowPrice": "640.77000000",
+          "volume": "155395.14900000",
+          "quoteVolume": "103835854.43294000",
+          "openTime": "1747023062425",
+          "closeTime": "1747109462425",
+          "firstId": "29208088",
+          "lastId": "29394524",
+          "count": "186437"
+        }
+      }
+    },
+    "BTC/USDC": {
+      "order_book_bids": [
+        101882.83,
+        0.6311
+      ],
+      "order_book_asks": [
+        101882.84,
+        0.62773
+      ],
+      "ticker": {
+        "symbol": "BTC/USDC",
+        "timestamp": 1747109463422,
+        "datetime": "2025-05-13T04:11:03.422Z",
+        "high": 105803.86,
+        "low": 100732.21,
+        "bid": 101882.83,
+        "bidVolume": 1.00057,
+        "ask": 101882.84,
+        "askVolume": 0.40627,
+        "vwap": 103304.67685174,
+        "open": 104018.21,
+        "close": 101882.83,
+        "last": 101882.83,
+        "previousClose": 104018.2,
+        "change": -2135.38,
+        "percentage": -2.053,
+        "average": 102950.52,
+        "baseVolume": 6359.29658,
+        "quoteVolume": 656945078.2012866,
+        "info": {
+          "symbol": "BTCUSDC",
+          "priceChange": "-2135.38000000",
+          "priceChangePercent": "-2.053",
+          "weightedAvgPrice": "103304.67685174",
+          "prevClosePrice": "104018.20000000",
+          "lastPrice": "101882.83000000",
+          "lastQty": "0.00017000",
+          "bidPrice": "101882.83000000",
+          "bidQty": "1.00057000",
+          "askPrice": "101882.84000000",
+          "askQty": "0.40627000",
+          "openPrice": "104018.21000000",
+          "highPrice": "105803.86000000",
+          "lowPrice": "100732.21000000",
+          "volume": "6359.29658000",
+          "quoteVolume": "656945078.20128650",
+          "openTime": "1747023063422",
+          "closeTime": "1747109463422",
+          "firstId": "171540662",
+          "lastId": "173460406",
+          "count": "1919745"
+        }
+      }
+    },
+    "ETH/USDC": {
+      "order_book_bids": [
+        2432.41,
+        2.467
+      ],
+      "order_book_asks": [
+        2432.42,
+        11.6596
+      ],
+      "ticker": {
+        "symbol": "ETH/USDC",
+        "timestamp": 1747109465421,
+        "datetime": "2025-05-13T04:11:05.421Z",
+        "high": 2624.88,
+        "low": 2407.54,
+        "bid": 2432.41,
+        "bidVolume": 2.467,
+        "ask": 2432.42,
+        "askVolume": 11.6596,
+        "vwap": 2510.35554527,
+        "open": 2515.81,
+        "close": 2432.41,
+        "last": 2432.41,
+        "previousClose": 2515.77,
+        "change": -83.4,
+        "percentage": -3.315,
+        "average": 2474.11,
+        "baseVolume": 293715.5838,
+        "quoteVolume": 737330544.524547,
+        "info": {
+          "symbol": "ETHUSDC",
+          "priceChange": "-83.40000000",
+          "priceChangePercent": "-3.315",
+          "weightedAvgPrice": "2510.35554527",
+          "prevClosePrice": "2515.77000000",
+          "lastPrice": "2432.41000000",
+          "lastQty": "0.20560000",
+          "bidPrice": "2432.41000000",
+          "bidQty": "2.46700000",
+          "askPrice": "2432.42000000",
+          "askQty": "11.65960000",
+          "openPrice": "2515.81000000",
+          "highPrice": "2624.88000000",
+          "lowPrice": "2407.54000000",
+          "volume": "293715.58380000",
+          "quoteVolume": "737330544.52454700",
+          "openTime": "1747023065421",
+          "closeTime": "1747109465421",
+          "firstId": "165519650",
+          "lastId": "166086134",
+          "count": "566485"
+        }
+      }
+    }
+  },
+  "kraken": {
+    "ADA/USDC": {
+      "order_book_bids": [
+        0.776166,
+        1030.85,
+        1747109466
+      ],
+      "order_book_asks": [
+        0.779021,
+        641.832,
+        1747109463
+      ],
+      "ticker": {
+        "symbol": "ADA/USDC",
+        "timestamp": null,
+        "datetime": null,
+        "high": 0.86311,
+        "low": 0.772899,
+        "bid": 0.776182,
+        "bidVolume": null,
+        "ask": 0.779024,
+        "askVolume": null,
+        "vwap": 0.83490432,
+        "open": 0.8171,
+        "close": 0.776173,
+        "last": 0.776173,
+        "previousClose": null,
+        "change": -0.040927,
+        "percentage": -5.008811650960714,
+        "average": 0.7966365,
+        "baseVolume": 4758704.62115752,
+        "quoteVolume": 3973063.0458083767,
+        "info": {
+          "a": [
+            "0.77902400",
+            "267",
+            "267.000"
+          ],
+          "b": [
+            "0.77618200",
+            "1352",
+            "1352.000"
+          ],
+          "c": [
+            "0.77617300",
+            "224.03150566"
+          ],
+          "v": [
+            "611320.26032707",
+            "4758704.62115752"
+          ],
+          "p": [
+            "0.77767638",
+            "0.83490432"
+          ],
+          "t": [
+            "255",
+            "1836"
+          ],
+          "l": [
+            "0.77289900",
+            "0.77289900"
+          ],
+          "h": [
+            "0.81710000",
+            "0.86311000"
+          ],
+          "o": "0.81710000"
+        }
+      }
+    },
+    "AI16Z/USDC": {
+      "order_book_bids": [
+        0.3323,
+        1504.437,
+        1747109470
+      ],
+      "order_book_asks": [
+        0.3325,
+        47.134,
+        1747109470
+      ],
+      "ticker": {
+        "symbol": "AI16Z/USDC",
+        "timestamp": null,
+        "datetime": null,
+        "high": 0.4059,
+        "low": 0.3304,
+        "bid": 0.3323,
+        "bidVolume": null,
+        "ask": 0.3325,
+        "askVolume": null,
+        "vwap": 0.37300644,
+        "open": 0.3552,
+        "close": 0.3304,
+        "last": 0.3304,
+        "previousClose": null,
+        "change": -0.0248,
+        "percentage": -6.981981981981982,
+        "average": 0.3428,
+        "baseVolume": 174225.95563,
+        "quoteVolume": 64987.403465144256,
+        "info": {
+          "a": [
+            "0.33250000",
+            "48",
+            "48.000"
+          ],
+          "b": [
+            "0.33230000",
+            "1505",
+            "1505.000"
+          ],
+          "c": [
+            "0.33040000",
+            "47.40299"
+          ],
+          "v": [
+            "8342.24036",
+            "174225.95563"
+          ],
+          "p": [
+            "0.34731809",
+            "0.37300644"
+          ],
+          "t": [
+            "28",
+            "430"
+          ],
+          "l": [
+            "0.33040000",
+            "0.33040000"
+          ],
+          "h": [
+            "0.35520000",
+            "0.40590000"
+          ],
+          "o": "0.35520000"
+        }
+      }
+    },
+    "ALGO/USDC": {
+      "order_book_bids": [
+        0.22687,
+        673.259,
+        1747109470
+      ],
+      "order_book_asks": [
+        0.22788,
+        439.281,
+        1747109469
+      ],
+      "ticker": {
+        "symbol": "ALGO/USDC",
+        "timestamp": null,
+        "datetime": null,
+        "high": 0.25925,
+        "low": 0.22593,
+        "bid": 0.2269,
+        "bidVolume": null,
+        "ask": 0.22788,
+        "askVolume": null,
+        "vwap": 0.24055593,
+        "open": 0.24189,
+        "close": 0.2277,
+        "last": 0.2277,
+        "previousClose": null,
+        "change": -0.01419,
+        "percentage": -5.866302864938608,
+        "average": 0.234795,
+        "baseVolume": 336289.00626984,
+        "quoteVolume": 80896.31465201719,
+        "info": {
+          "a": [
+            "0.227880000",
+            "440",
+            "440.000"
+          ],
+          "b": [
+            "0.226900000",
+            "6170",
+            "6170.000"
+          ],
+          "c": [
+            "0.227700000",
+            "44.02183483"
+          ],
+          "v": [
+            "30633.31509325",
+            "336289.00626984"
+          ],
+          "p": [
+            "0.227214175",
+            "0.240555930"
+          ],
+          "t": [
+            "27",
+            "220"
+          ],
+          "l": [
+            "0.225930000",
+            "0.225930000"
+          ],
+          "h": [
+            "0.242920000",
+            "0.259250000"
+          ],
+          "o": "0.241890000"
+        }
+      }
+    }
+  },
+  "coinbasepro": "Init Error: coinbasepro GET https://api.pro.coinbase.com/currencies 503 Service Unavailable {\"message\":\"Coinbase Pro API is deprecated.\"}",
+  "huobi": {
+    "ETH/USDC": {
+      "order_book_bids": [
+        2432.01,
+        0.0162
+      ],
+      "order_book_asks": [
+        2433.87,
+        0.0162
+      ],
+      "ticker": {
+        "symbol": "ETH/USDC",
+        "timestamp": 1747109484066,
+        "datetime": "2025-05-13T04:11:24.066Z",
+        "high": 2617.82,
+        "low": 2422.0,
+        "bid": 2432.01,
+        "bidVolume": 0.0162,
+        "ask": 2433.87,
+        "askVolume": 0.0162,
+        "vwap": 2504.2034707460175,
+        "open": 2510.56,
+        "close": 2424.7,
+        "last": 2424.7,
+        "previousClose": null,
+        "change": -85.86,
+        "percentage": -3.4199541138232106,
+        "average": 2467.63,
+        "baseVolume": 40.41925704177965,
+        "quoteVolume": 101218.043769,
+        "info": {
+          "id": "7205224375",
+          "version": "7205224375",
+          "open": "2510.56",
+          "close": "2424.7",
+          "low": "2422.0",
+          "high": "2617.82",
+          "amount": "40.41925704177965",
+          "vol": "101218.043769",
+          "count": "506",
+          "bid": [
+            "2432.01",
+            "0.0162"
+          ],
+          "ask": [
+            "2433.87",
+            "0.0162"
+          ]
+        }
+      }
+    },
+    "BTC/USDC": {
+      "order_book_bids": [
+        101839.14,
+        0.0004
+      ],
+      "order_book_asks": [
+        101950.75,
+        0.0004
+      ],
+      "ticker": {
+        "symbol": "BTC/USDC",
+        "timestamp": 1747109485671,
+        "datetime": "2025-05-13T04:11:25.671Z",
+        "high": 105616.21,
+        "low": 100450.0,
+        "bid": 101839.14,
+        "bidVolume": 0.0004,
+        "ask": 101950.75,
+        "askVolume": 0.0004,
+        "vwap": 102170.81115175829,
+        "open": 104066.19,
+        "close": 101797.43,
+        "last": 101797.43,
+        "previousClose": null,
+        "change": -2268.76,
+        "percentage": -2.18011248417954,
+        "average": 102931.81,
+        "baseVolume": 2.0650005249147827,
+        "quoteVolume": 210982.77865935,
+        "info": {
+          "id": "7072517494",
+          "version": "7072517494",
+          "open": "104066.19",
+          "close": "101797.43",
+          "low": "100450.0",
+          "high": "105616.21",
+          "amount": "2.0650005249147827",
+          "vol": "210982.77865935",
+          "count": "846",
+          "bid": [
+            "101839.14",
+            "4.0E-4"
+          ],
+          "ask": [
+            "101950.75",
+            "4.0E-4"
+          ]
+        }
+      }
+    },
+    "BTT/USDC": {
+      "order_book_bids": [
+        7.845e-07,
+        24219247.9286
+      ],
+      "order_book_asks": [
+        7.925e-07,
+        164700000.0
+      ],
+      "ticker": {
+        "symbol": "BTT/USDC",
+        "timestamp": 1747109487334,
+        "datetime": "2025-05-13T04:11:27.334Z",
+        "high": 8.468e-07,
+        "low": 7.962e-07,
+        "bid": 7.845e-07,
+        "bidVolume": 24219247.9286,
+        "ask": 7.925e-07,
+        "askVolume": 164700000.0,
+        "vwap": 8.20687221733e-07,
+        "open": 8.263e-07,
+        "close": 7.962e-07,
+        "last": 7.962e-07,
+        "previousClose": null,
+        "change": -3.01e-08,
+        "percentage": -3.642744765823551,
+        "average": 8.1125e-07,
+        "baseVolume": 388007216.2446,
+        "quoteVolume": 318.4325643122239,
+        "info": {
+          "id": "2236436889",
+          "version": "2236436889",
+          "open": "8.263E-7",
+          "close": "7.962E-7",
+          "low": "7.962E-7",
+          "high": "8.468E-7",
+          "amount": "3.880072162446E8",
+          "vol": "318.4325643122239",
+          "count": "14",
+          "bid": [
+            "7.845E-7",
+            "2.42192479286E7"
+          ],
+          "ask": [
+            "7.925E-7",
+            "1.647E8"
+          ]
+        }
+      }
+    }
+  },
+  "okx": {
+    "BTC/USDC": {
+      "order_book_bids": [
+        101874.0,
+        0.0184,
+        0
+      ],
+      "order_book_asks": [
+        101874.1,
+        0.07729133,
+        0
+      ],
+      "ticker": {
+        "symbol": "BTC/USDC",
+        "timestamp": 1747109491815,
+        "datetime": "2025-05-13T04:11:31.815Z",
+        "high": 105841.4,
+        "low": 100745.2,
+        "bid": 101874.0,
+        "bidVolume": 0.10306032,
+        "ask": 101874.1,
+        "askVolume": 0.0103,
+        "vwap": 103493.7522090742,
+        "open": 103974.1,
+        "close": 101888.0,
+        "last": 101888.0,
+        "previousClose": null,
+        "change": -2086.1,
+        "percentage": -2.0063650466798943,
+        "average": 102931.05,
+        "baseVolume": 1074.47852226,
+        "quoteVolume": 111201813.93674865,
+        "info": {
+          "instType": "SPOT",
+          "instId": "BTC-USDC",
+          "last": "101888",
+          "lastSz": "0.001472",
+          "askPx": "101874.1",
+          "askSz": "0.0103",
+          "bidPx": "101874",
+          "bidSz": "0.10306032",
+          "open24h": "103974.1",
+          "high24h": "105841.4",
+          "low24h": "100745.2",
+          "volCcy24h": "111201813.936748654",
+          "vol24h": "1074.47852226",
+          "ts": "1747109491815",
+          "sodUtc0": "102798.1",
+          "sodUtc8": "102522.1"
+        }
+      }
+    },
+    "ETH/USDC": {
+      "order_book_bids": [
+        2430.79,
+        1.617674,
+        0
+      ],
+      "order_book_asks": [
+        2430.8,
+        0.22,
+        0
+      ],
+      "ticker": {
+        "symbol": "ETH/USDC",
+        "timestamp": 1747109493931,
+        "datetime": "2025-05-13T04:11:33.931Z",
+        "high": 2624.0,
+        "low": 2408.01,
+        "bid": 2430.79,
+        "bidVolume": 1.617674,
+        "ask": 2430.8,
+        "askVolume": 0.565402,
+        "vwap": 2511.6304380986176,
+        "open": 2515.54,
+        "close": 2432.65,
+        "last": 2432.65,
+        "previousClose": null,
+        "change": -82.89,
+        "percentage": -3.2951175493134675,
+        "average": 2474.095,
+        "baseVolume": 43120.458262,
+        "quoteVolume": 108302655.47560021,
+        "info": {
+          "instType": "SPOT",
+          "instId": "ETH-USDC",
+          "last": "2432.65",
+          "lastSz": "0.05",
+          "askPx": "2430.8",
+          "askSz": "0.565402",
+          "bidPx": "2430.79",
+          "bidSz": "1.617674",
+          "open24h": "2515.54",
+          "high24h": "2624",
+          "low24h": "2408.01",
+          "volCcy24h": "108302655.47560021",
+          "vol24h": "43120.458262",
+          "ts": "1747109493931",
+          "sodUtc0": "2495.51",
+          "sodUtc8": "2487.25"
+        }
+      }
+    },
+    "OKB/USDC": {
+      "order_book_bids": [
+        53.48,
+        14.9224,
+        0
+      ],
+      "order_book_asks": [
+        53.78,
+        2.1361,
+        0
+      ],
+      "ticker": {
+        "symbol": "OKB/USDC",
+        "timestamp": 1747109479205,
+        "datetime": "2025-05-13T04:11:19.205Z",
+        "high": 56.12,
+        "low": 53.35,
+        "bid": 53.48,
+        "bidVolume": 14.9224,
+        "ask": 53.78,
+        "askVolume": 2.1361,
+        "vwap": 54.74361839668922,
+        "open": 55.34,
+        "close": 53.6,
+        "last": 53.6,
+        "previousClose": null,
+        "change": -1.74,
+        "percentage": -3.144199494036863,
+        "average": 54.47,
+        "baseVolume": 1999.6011,
+        "quoteVolume": 109465.399564,
+        "info": {
+          "instType": "SPOT",
+          "instId": "OKB-USDC",
+          "last": "53.6",
+          "lastSz": "5.6098",
+          "askPx": "53.78",
+          "askSz": "2.1361",
+          "bidPx": "53.48",
+          "bidSz": "14.9224",
+          "open24h": "55.34",
+          "high24h": "56.12",
+          "low24h": "53.35",
+          "volCcy24h": "109465.399564",
+          "vol24h": "1999.6011",
+          "ts": "1747109479205",
+          "sodUtc0": "54.2",
+          "sodUtc8": "54.93"
+        }
+      }
+    }
+  }
+}

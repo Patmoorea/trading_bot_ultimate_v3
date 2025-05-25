@@ -1,0 +1,10 @@
+sources:
+  - url: "https://news.binance.com/feed"
+    lang: en
+    weight: 0.3
+  # Ajouter 11 autres sources  
+model_params:
+  finbert:
+    repo: "ProsusAI/finbert"
+    batch_size: 8
+    threshold: 0.7

@@ -1,0 +1,15 @@
+pairs:
+  BTC/USDT:
+    exchanges: [binance, ftx, kraken]
+    min_volume: 0.5
+    max_spread: 0.008
+    
+  ETH/USDT:
+    exchanges: [binance, coinbase, kraken]
+    min_volume: 5.0
+    max_spread: 0.01
+    
+  SOL/USDT:
+    exchanges: [ftx, kraken, kucoin]
+    min_volume: 20.0
+    max_spread: 0.015

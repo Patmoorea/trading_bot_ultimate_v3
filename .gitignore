@@ -1,35 +1,25 @@
-# Environnement virtuel
+# Virtual Environment
 .venv/
 venv/
-ENV/
 
-# Git et LFS
-.git/
-.gitattributes
-
-# Cache Python
+# Caches
 __pycache__/
-*.py[cod]
-*$py.class
 .pytest_cache/
-.benchmarks/
+.coverage
+model_cache/
+
+# Fichiers lourds et données
+finBERT*/
+data*/
+.git/lfs/
 htmlcov/
 
-# Dossiers de développement
+# Logs volumineux
+*.log
+
+# IDE
 .idea/
 .vscode/
 
-# Dossiers de données et cache
-model_cache/
-data/
-data 2/
-logs/
+# OS
 .DS_Store
-
-# Fichiers de build
-*.egg-info/
-build/
-dist/
-
-# Fichiers spécifiques
--p/
