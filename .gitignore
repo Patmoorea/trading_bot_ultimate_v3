@@ -56,3 +56,15 @@ htmlcov/
 **/buffer/
 **/archived/
 **/_archived/
+
+# Backup organization
+backup/*
+!backup/README.md
+organized_backups/*
+!organized_backups/README.md
+
+# Garde les fichiers importants
+!backup/src/strategies/arbitrage/multi_exchange/core/
+!backup/src/utils/analytics/
+!backup/src/utils/logger/
+!backup/src/visualization/
