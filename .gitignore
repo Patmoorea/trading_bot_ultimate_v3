@@ -1,25 +1,36 @@
-# Virtual Environment
-.venv/
-venv/
-
-# Caches
+# Python
 __pycache__/
-.pytest_cache/
-.coverage
-model_cache/
-
-# Fichiers lourds et données
-finBERT*/
-data*/
-.git/lfs/
-htmlcov/
-
-# Logs volumineux
-*.log
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+dist/
+build/
+*.egg-info/
 
 # IDE
 .idea/
 .vscode/
+*.swp
+*.swo
 
-# OS
+# Logs et données
+*.log
+logs/
+data/
+*.csv
+*.json
+!config/*.json
+
+# Mac
 .DS_Store
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/

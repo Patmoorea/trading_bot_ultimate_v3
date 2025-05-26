@@ -1,23 +1,27 @@
 # Core dependencies
-pandas==2.0.0
-numpy==1.24.3
-python-telegram-bot==20.3
-ccxt==4.0.0
+streamlit==1.32.0
+plotly==5.18.0
+pandas==2.2.0
+numpy==1.26.0
+ccxt==4.2.0
+websockets==12.0
+ta==0.10.2
+psutil==5.9.0
 
-# AI/ML dependencies
-tensorflow==2.12.0
-scikit-learn==1.2.2
-transformers==4.28.1
-textblob==0.17.1
-talib-binary==0.4.24
+# Testing
+pytest==8.0.0
+pytest-asyncio==0.23.0
+pytest-cov==4.1.0
 
-# Testing dependencies
-pytest==7.3.1
-pytest-asyncio==0.21.0
-pytest-cov==4.0.0
-pytest-timeout==2.1.0
+# Development
+black==24.1.0
+flake8==7.0.0
+mypy==1.8.0
 
-# Utils
-beautifulsoup4==4.12.2
-requests==2.29.0
-python-dotenv==1.0.0
+# Documentation
+mkdocs==1.5.0
+mkdocs-material==9.5.0
+
+# Optional - Apple Silicon optimizations
+tensorflow-macos==2.15.0  # Pour M4
+tensorflow-metal==1.1.0   # Pour GPU M4
