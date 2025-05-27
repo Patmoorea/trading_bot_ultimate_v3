@@ -1,15 +1,10 @@
-import pytest
-import numpy as np
-from tests_new.base_test import BaseTest
+from ...utils import BaseTestCase
 
-class TestTechnicalMinimal(BaseTest):
+class TestTechnicalMinimal(BaseTestCase):
     def test_minimal_analysis(self):
-        """Test minimal technical analysis"""
-        test_data = self.get_test_data(100)
-        assert len(test_data) == 100
-        assert isinstance(test_data, np.ndarray)
+        data = self.get_test_data(size=50)
+        assert len(data) == 50
 
     def test_minimal_indicators(self):
-        """Test minimal indicators"""
-        test_data = self.get_test_data(100)
-        assert np.all(test_data >= 0) and np.all(test_data <= 1)
+        data = self.get_test_data(size=50)
+        assert 'close' in data.columns

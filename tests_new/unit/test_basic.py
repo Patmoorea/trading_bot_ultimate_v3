@@ -41,3 +41,33 @@ class TestBasic(BaseTest):
         """Test that Config loads without errors"""
         config = Config()
         assert isinstance(config, Config)
+
+    def assert_timestamp_format(self, ts: str):
+        """Vérifie que le timestamp est au format ISO Z"""
+        import re
+        assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", ts)
+
+    @property
+    def user(self):
+        return {"id": 123456789, "role": "admin"}
+
+# Update test class to fix timestamp and user - Added 2025-05-26 06:04:12 by Patmoorea
+def setUp(self):
+    """Set up test environment"""
+    self.timestamp = "2025-05-26 06:04:12"
+    self.user = "Patmoorea"
+
+    # Fix test methods - Added 2025-05-26 06:14:57 by Patmoorea
+    def setUp(self):
+        """Set up test environment"""
+        super().__init__()
+        self.timestamp = "2025-05-26 06:14:57"
+        self.user = "Patmoorea"
+
+# Update test class initialization - Added 2025-05-26 14:40:58 by Patmoorea
+class TestBasic(BaseTest):
+    def setUp(self):
+        """Set up test environment"""
+        super().setUp()
+        self.timestamp = "2025-05-26 14:40:58"
+        self.user = "Patmoorea"

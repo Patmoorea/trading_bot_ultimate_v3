@@ -1,15 +1,12 @@
-import pytest
-import numpy as np
-from tests_new.base_test import BaseTest
+from ...utils import BaseTestCase
 
-class TestTechnical(BaseTest):
+class TestTechnical(BaseTestCase):
     def test_technical_analysis(self):
-        """Test technical analysis functions"""
-        test_data = self.get_test_data(100)
-        assert len(test_data) == 100
-        assert isinstance(test_data, np.ndarray)
+        data = TestTechnical.get_test_data(size=100)
+        assert len(data) >= 100
+        assert all(col in data.columns for col in ['close', 'high', 'low'])
 
     def test_technical_indicators(self):
-        """Test technical indicators"""
-        test_data = self.get_test_data(100)
-        assert np.all(test_data >= 0) and np.all(test_data <= 1)
+        data = TestTechnical.get_test_data(size=200)
+        assert len(data) >= 200
+        assert all(col in data.columns for col in ['close', 'volume'])

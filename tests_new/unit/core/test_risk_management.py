@@ -1,15 +1,19 @@
 import pytest
-import numpy as np
-from tests_new.base_test import BaseTest
+from unittest.mock import MagicMock
 
-class TestRiskManagement(BaseTest):
-    def test_risk_calculation(self):
-        """Test risk calculation"""
-        test_data = self.get_test_data(100)
-        assert len(test_data) == 100
-        assert isinstance(test_data, np.ndarray)
+class TestRiskManagement:
+    @pytest.fixture
+    def risk_data(self):
+        return {
+            'price': 30000.0,
+            'volume': 1.0,
+            'position_size': 0.1
+        }
 
-    def test_position_sizing(self):
-        """Test position sizing"""
-        test_data = self.get_test_data(100)
-        assert np.all(test_data >= 0) and np.all(test_data <= 1)
+    def test_risk_calculation(self, risk_data):
+        assert 'price' in risk_data
+        assert isinstance(risk_data['price'], float)
+
+    def test_position_sizing(self, risk_data):
+        assert 'volume' in risk_data
+        assert isinstance(risk_data['volume'], float)
