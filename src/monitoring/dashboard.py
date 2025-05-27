@@ -1,62 +1,36 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import streamlit as st
-from datetime import datetime
+import plotly.graph_objects as go
+from typing import Dict, Any
 
-class TradingDashboard:
+class Dashboard:
     def __init__(self):
-        self.title = "Trading Bot Dashboard"
+        st.set_page_config(page_title="Trading Bot Monitor", layout="wide")
         
-    def display(self, data):
-        # Affichage original (conservé)
-        st.title(self.title)
-        st.write(f"Dernière mise à jour: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        st.json(data)
+    def render(self, data: Dict[str, Any]):
+        """Rendu du dashboard"""
+        # Header
+        st.title("Trading Bot Monitor")
         
-        # Nouvel affichage style terminal
-        st.markdown("""
-        ```bash
-        $ date -u
-        {}
-
-        $ whoami
-        {}
-
-        $ cat /var/log/trading_bot/status
-        ----------------------------------------
-        BOT STATUS: {}
-        LAST UPDATE: {}
-
-        $ cat /var/log/trading_bot/signals
-        ----------------------------------------
-        QSVM SIGNAL: {}
-        NEWS SENTIMENT: {}
-        MARKET REGIME: {}
-
-        $ cat /var/log/trading_bot/positions
-        ----------------------------------------
-        CURRENT POSITIONS:
-        {}
-        ```
-        """.format(
-            datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-            "Patmoorea",
-            data.get('status', 'SCANNING...'),
-            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            data.get('qsvm_signal', 'N/A'),
-            data.get('sentiment', 'N/A'),
-            data.get('regime', 'N/A'),
-            data.get('positions', 'NO ACTIVE POSITIONS')
+        # Métriques principales
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("PnL Total", f"${data['total_pnl']:,.2f}")
+        with col2:
+            st.metric("Win Rate", f"{data['win_rate']*100:.1f}%")
+        with col3:
+            st.metric("Positions Actives", data['active_positions'])
+            
+        # Graphiques
+        self.plot_portfolio_value(data['portfolio_history'])
+        self.plot_trade_distribution(data['trades'])
+        
+    def plot_portfolio_value(self, history: list):
+        """Graphique valeur du portfolio"""
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=[h['timestamp'] for h in history],
+            y=[h['value'] for h in history],
+            mode='lines',
+            name='Portfolio Value'
         ))
-
-if __name__ == "__main__":
-    dashboard = TradingDashboard()
-    # Test avec des données d'exemple
-    dashboard.display({
-        "status": "ACTIVE",
-        "qsvm_signal": "BUY",
-        "sentiment": "POSITIVE",
-        "regime": "TRENDING",
-        "positions": "BTC/USDT: LONG @ 35000"
-    })
+        st.plotly_chart(fig)

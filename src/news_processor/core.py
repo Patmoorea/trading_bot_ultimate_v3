@@ -64,3 +64,34 @@ class CachedNewsSentimentAnalyzer:
             "sentiment": "bullish" if torch.argmax(probs[i]).item() == 1 else "bearish",
             "confidence": torch.max(probs[i]).item()
         } for i in range(len(texts))]
+
+class OptimizedNewsProcessor(NewsProcessor):
+    def __init__(self):
+        super().__init__()
+        self.cache = LRUCache(maxsize=1000)
+        self.preprocessor = TextPreprocessor()
+        
+    async def process_news(self, news_item):
+        """Version optimisée avec cache et traitement parallèle"""
+        if news_item.id in self.cache:
+            return self.cache[news_item.id]
+            
+        async with asyncio.TaskGroup() as tg:
+            clean_text = await tg.create_task(
+                self.preprocessor.clean(news_item.text)
+            )
+            sentiment = await tg.create_task(
+                self.analyzer.analyze(clean_text)
+            )
+            impact = await tg.create_task(
+                self.impact_calculator.calculate(clean_text)
+            )
+            
+        result = {
+            'sentiment': sentiment,
+            'impact': impact,
+            'processed_at': time.time()
+        }
+        self.cache[news_item.id] = result
+        return result
+
