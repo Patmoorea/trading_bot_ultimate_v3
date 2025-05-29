@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ title }} - Bot de Trading</title>
+    
+    <!-- Bootstrap CSS -->
+    {{ bootstrap.load_css() }}
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Extra CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fas fa-robot me-2"></i>TradingBot
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('main.index') %}active{% endif %}" 
+                           href="{{ url_for('main.index') }}">
+                            <i class="fas fa-chart-line me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle 
+                              {% if 'arbitrage' in request.path %}active{% endif %}" 
+                           href="#" id="arbitrageDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-exchange-alt me-1"></i>Arbitrage
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="arbitrageDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.triangular_arbitrage') }}">
+                                    Triangulaire
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.inter_exchange_arbitrage') }}">
+                                    Inter-Exchanges
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('main.notifications') %}active{% endif %}" 
+                           href="{{ url_for('main.notifications') }}">
+                            <i class="fas fa-bell me-1"></i>Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('main.logs') %}active{% endif %}" 
+                           href="{{ url_for('main.logs') }}">
+                            <i class="fas fa-clipboard-list me-1"></i>Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('main.settings') %}active{% endif %}" 
+                           href="{{ url_for('main.settings') }}">
+                            <i class="fas fa-cog me-1"></i>Configuration
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link" id="bot-status">
+                            <i class="fas fa-circle text-success me-1"></i>Bot actif
+                        </span>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="controlDropdown"
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sliders-h me-1"></i>Contrôle
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="controlDropdown">
+                            <li>
+                                <a class="dropdown-item" href="#" id="start-bot">
+                                    <i class="fas fa-play me-1 text-success"></i>Démarrer
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" id="stop-bot">
+                                    <i class="fas fa-stop me-1 text-danger"></i>Arrêter
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" id="restart-bot">
+                                    <i class="fas fa-sync me-1 text-warning"></i>Redémarrer
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main content -->
+    <div class="container-fluid py-3">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-light py-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <small>
+                        &copy; 2025 Patmoorea - Bot de Trading v1.0
+                        <span class="mx-2">|</span>
+                        <span id="server-time"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    {{ bootstrap.load_js() }}
+    
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    
+    <!-- Moment.js -->
+    {{ moment.include_moment() }}
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Extra JS -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

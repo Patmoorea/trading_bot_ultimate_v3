@@ -1,0 +1,125 @@
+/* Main styles for Trading Bot Ultimate Web Interface */
+
+body {
+    min-height: 100vh;
+    background-color: #121212;
+    color: #f8f9fa;
+}
+
+.sidebar {
+    min-height: 100vh;
+    background-color: #1a1a1a;
+    border-right: 1px solid #333;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .nav-link {
+    color: #adb5bd;
+    transition: all 0.2s;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-bottom: 5px;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.sidebar .nav-link.active {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.main-content {
+    min-height: 100vh;
+    background-color: #121212;
+    padding: 30px;
+}
+
+.card {
+    margin-bottom: 20px;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+}
+
+.card-header {
+    background-color: #292929;
+    color: #fff;
+    border-bottom: 1px solid #333;
+}
+
+.table-dark {
+    background-color: #1a1a1a;
+    color: #f8f9fa;
+}
+
+.status-indicator {
+    margin-top: auto;
+    padding: 10px;
+    border-top: 1px solid #333;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+.status-dot.active {
+    background-color: #34a853;
+    box-shadow: 0 0 5px #34a853;
+}
+
+.status-dot.warning {
+    background-color: #fbbc05;
+    box-shadow: 0 0 5px #fbbc05;
+}
+
+.status-dot.error {
+    background-color: #ea4335;
+    box-shadow: 0 0 5px #ea4335;
+}
+
+/* Form styling */
+.form-control, .form-select {
+    background-color: #252525;
+    border: 1px solid #444;
+    color: #f8f9fa;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #252525;
+    border-color: #1a73e8;
+    color: #f8f9fa;
+    box-shadow: 0 0 0 0.25rem rgba(26, 115, 232, 0.25);
+}
+
+/* Chart customization */
+canvas {
+    background-color: #1a1a1a;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
