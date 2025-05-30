@@ -9,8 +9,9 @@ from dotenv import load_dotenv
 
 # Ajout des chemins pour les modules
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(current_dir))
-sys.path.append(current_dir)
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)  # Pour accéder à web_interface
+sys.path.append(current_dir)  # Pour accéder à src
 
 # Imports de vos modules existants
 from src.core.websocket.multi_stream import MultiStreamManager, StreamConfig
@@ -24,14 +25,16 @@ from src.ai_decision.ppo_transformer import PPOTradingAgent as PPOTransformer
 from src.risk_management.circuit_breakers import CircuitBreaker
 from src.risk_management.position_manager import PositionManager
 from src.core.exchange import ExchangeInterface as Exchange
-from src.news_processor.core import CachedNewsSentimentAnalyzer as NewsSentimentAnalyzer
 from src.notifications.telegram_bot import TelegramBot
 from src.regime_detection.hmm_kmeans import MarketRegimeDetector
-# Changement ici : on utilise directement le module le plus évolué
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
-from src.monitoring.dashboard import TradingDashboard
-from src.news_processor.core import CachedNewsSentimentAnalyzer as NewsSentimentAnalyzer
-from src.liquidity_heatmap.generator import HeatmapGenerator
+from src.liquidity_heatmap.visualization import generate_heatmap
+
+# Nouveaux imports du web_interface
+from web_interface.app.routes.main import TradingDashboard
+from web_interface.app.services.technical_analysis import TechnicalAnalysis
+from web_interface.app.services.news_analyzer import NewsAnalyzer
+from web_interface.app.services.portfolio_monitor import PortfolioMonitor
 
 # Configuration
 load_dotenv()
@@ -76,18 +79,18 @@ class TradingBotM4:
             buffer_size=10000
         )
         self.websocket = MultiStreamManager(config=stream_config)
-        self.buffer = CircularBuffer()  # Correction de l'indentation ici
+        self.buffer = CircularBuffer()
         self.circuit_breaker = CircuitBreaker()
         self.position_manager = PositionManager()
-        self.news_analyzer = NewsSentimentAnalyzer()
+        self.news_analyzer = NewsAnalyzer()
         self.telegram = TelegramBot()
         self.regime_detector = MarketRegimeDetector()
         self.arbitrage_engine = ArbitrageEngine()
         self.dashboard = TradingDashboard()
-        self.heatmap = HeatmapGenerator()
+        self.generate_heatmap = generate_heatmap  # Modification ici
         
         # Initialisation des modèles IA
-        self.technical_model = CNNLSTMModel()
+        self.technical_model = CNNLSTM()
         self.decision_model = PPOTransformer()
         
         # Initialisation des indicateurs avancés
@@ -212,8 +215,8 @@ class TradingBotM4:
                 tf_data = market_data[timeframe]
                 indicators_results[timeframe] = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
             
-            # Génération de la heatmap
-            heatmap = self.heatmap.generate_heatmap(
+            # Génération de la heatmap - Modification ici
+            heatmap = self.generate_heatmap(
                 await self.exchange.get_orderbook(config["TRADING"]["pairs"])
             )
             
@@ -424,8 +427,22 @@ class TradingBotM4:
                 await asyncio.sleep(5)
 
 async def main():
-    bot = TradingBotM4()
-    await bot.run()
+    try:
+        # Création du dossier de logs si nécessaire
+        os.makedirs("logs", exist_ok=True)
+        
+        logger.info("🚀 Démarrage du Trading Bot Ultimate v4...")
+        bot = TradingBotM4()
+        
+        # Démarrage du dashboard web en premier
+        await bot.dashboard.start()
+        
+        # Démarrage du bot principal
+        await bot.run()
+        
+    except Exception as e:
+        logger.error(f"🚨 Erreur critique au démarrage: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     asyncio.run(main())
