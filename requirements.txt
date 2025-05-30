@@ -1,27 +1,32 @@
-# Core dependencies
-streamlit==1.32.0
-plotly==5.18.0
-pandas==2.2.0
-numpy==1.26.0
-ccxt==4.2.0
-websockets==12.0
-ta==0.10.2
-psutil==5.9.0
-
-# Testing
-pytest==8.0.0
-pytest-asyncio==0.23.0
-pytest-cov==4.1.0
-
-# Development
-black==24.1.0
-flake8==7.0.0
-mypy==1.8.0
-
-# Documentation
-mkdocs==1.5.0
-mkdocs-material==9.5.0
-
-# Optional - Apple Silicon optimizations
-tensorflow-macos==2.15.0  # Pour M4
-tensorflow-metal==1.1.0   # Pour GPU M4
+ccxt>=4.0.0
+python-dotenv>=1.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+streamlit>=1.24.0
+plotly>=5.14.0
+websockets>=11.0.0
+python-telegram-bot>=20.0.0
+scipy>=1.10.0
+tensorflow>=2.13.0
+torch>=2.0.0
+stable-baselines3>=2.0.0
+polars>=0.18.0
+pyarrow>=12.0.0
+optuna>=3.2.0
+ta-lib>=0.4.0
+redis>=4.5.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+lz4>=4.3.0
+cv2>=4.8.0
+lz4>=4.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+ccxt>=4.0.0
+python-dotenv>=1.0.0
+websockets>=11.0.0
+python-telegram-bot>=20.0.0
+opencv-python>=4.8.0
+scipy>=1.10.0
+tensorflow>=2.13.0
+optuna>=3.2.0
