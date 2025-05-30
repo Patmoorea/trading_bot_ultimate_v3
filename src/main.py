@@ -24,11 +24,13 @@ from src.ai_decision.ppo_transformer import PPOTradingAgent as PPOTransformer
 from src.risk_management.circuit_breakers import CircuitBreaker
 from src.risk_management.position_manager import PositionManager
 from src.core.exchange import ExchangeInterface as Exchange
-from src.news_processor.sentiment import NewsSentimentAnalyzer
+from src.news_processor.core import CachedNewsSentimentAnalyzer as NewsSentimentAnalyzer
 from src.notifications.telegram_bot import TelegramBot
 from src.regime_detection.hmm_kmeans import MarketRegimeDetector
-from src.strategies.arbitrage.service import ArbitrageEngine
+# Changement ici : on utilise directement le module le plus évolué
+from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.monitoring.dashboard import TradingDashboard
+from src.news_processor.core import CachedNewsSentimentAnalyzer as NewsSentimentAnalyzer
 from src.liquidity_heatmap.generator import HeatmapGenerator
 
 # Configuration
