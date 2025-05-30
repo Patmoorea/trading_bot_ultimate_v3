@@ -1,0 +1,9 @@
+# Requirements pour le détecteur de régimes de marché
+# Version: 1.0.0
+# Created: 2025-05-30 04:45:53
+# Author: Patmoorea
+
+hmmlearn==0.3.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0

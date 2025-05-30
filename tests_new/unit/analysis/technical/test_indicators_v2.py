@@ -1,16 +1,10 @@
-import pytest
-from tests_new.base_test import BaseTest
-import numpy as np
+from ....utils import BaseTestCase
 
-class TestIndicatorsV2(BaseTest):
+class TestIndicatorsV2(BaseTestCase):
     def test_indicator_input(self):
-        """Test indicator input validation"""
-        data = self.get_test_data(100)
-        assert len(data) == 100
-        assert isinstance(data, np.ndarray)
+        data = self.get_test_data(size=100)
+        assert 'close' in data.columns
 
     def test_indicator_calculation(self):
-        """Test indicator calculation"""
-        data = self.get_test_data(100)
-        # Add your indicator calculation tests here
-        assert len(data) > 0
+        data = self.get_test_data(size=100)
+        assert len(data) == 100

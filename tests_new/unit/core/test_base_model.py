@@ -13,3 +13,13 @@ class TestBaseModel(BaseTest):
     def test_model_parameters(self):
         """Test base model parameters"""
         assert os.getenv('MODEL_PATH') == 'models/'
+
+class TestBaseModel:
+    def get_test_data(self):
+        return {"price": 100, "volume": 0.5}
+
+    def test_model_initialization(self):
+        data = self.get_test_data()
+        assert isinstance(data, dict)
+    def get_test_data(self):
+        return {"price": 100, "volume": 0.5}

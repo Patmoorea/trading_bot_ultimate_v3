@@ -1,0 +1,31 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8050,
+    "debug": false,
+    "theme": "darkly"
+  },
+  "authentication": {
+    "enabled": true,
+    "session_lifetime": 86400
+  },
+  "features": {
+    "live_trading": true,
+    "backtesting": true,
+    "dashboard": true,
+    "notifications": true,
+    "strategy_editor": true
+  },
+  "layouts": {
+    "dashboard": {
+      "main_components": ["portfolio_summary", "active_strategies", "recent_trades"],
+      "charts": ["equity_curve", "drawdown", "daily_returns"]
+    }
+  },
+  "api_endpoints": {
+    "trading": "/api/trading",
+    "backtest": "/api/backtest",
+    "portfolio": "/api/portfolio",
+    "settings": "/api/settings"
+  }
+}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Ultimate Pro</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/dark-theme.css">
+    <link rel="stylesheet" href="/static/css/charts.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/trading.js"></script>
+</head>
+<body>
+    <div class="trading-dashboard">
+        <!-- En-tête avec informations système -->
+        <header>
+            <div class="header-main">
+                <h1>Trading Bot Ultimate</h1>
+                <div class="system-info">
+                    <span class="time">UTC: 2025-05-29 01:02:44</span>
+                    <span class="user">User: Patmoorea</span>
+                    <span class="mode">Mode: USDC Buy-Only</span>
+                    <span class="status">Status: Active</span>
+                </div>
+            </div>
+            <div class="system-metrics">
+                <div class="metric">
+                    <span class="label">CPU (M4)</span>
+                    <span class="value" id="cpu-usage">12%</span>
+                </div>
+                <div class="metric">
+                    <span class="label">RAM</span>
+                    <span class="value" id="ram-usage">2.3/16 GB</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Latency</span>
+                    <span class="value" id="latency">15ms</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Storage</span>
+                    <span class="value" id="storage">460Gi</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Grille principale -->
+        <div class="main-grid">
+            <!-- 1. Panneau Data Collection -->
+            <section class="panel data-collection">
+                <h2>Real-Time Data Collection</h2>
+                <div class="websocket-grid">
+                    <!-- WebSocket Status pour 12 flux -->
+                    <div class="websocket-status">
+                        <h3>WebSocket Status (12 Streams)</h3>
+                        <div class="stream-grid" id="websocket-streams">
+                            <!-- Rempli dynamiquement -->
+                        </div>
+                    </div>
+                    <!-- Performance Metrics -->
+                    <div class="performance-metrics">
+                        <div class="metric">
+                            <span class="label">Buffer Latency</span>
+                            <span class="value" id="buffer-latency">15ms</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">LZ4 Compression</span>
+                            <span class="value" id="compression">67%</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Heatmap -->
+                <div class="heatmap-container">
+                    <h3>Liquidity Heatmap</h3>
+                    <div id="liquidity-heatmap"></div>
+                </div>
+            </section>
+
+            <!-- 2. Panneau Multi-Timeframe Analysis -->
+            <section class="panel analysis">
+                <h2>Technical Analysis</h2>
+                <div class="timeframe-grid">
+                    <!-- 8 Timeframes -->
+                </div>
+                <div class="indicators-panel">
+                    <h3>42 Indicators Analysis</h3>
+                    <div class="indicator-groups">
+                        <!-- Trend Indicators -->
+                        <div class="indicator-group">
+                            <h4>Trend</h4>
+                            <div class="indicators">
+                                <!-- Rempli dynamiquement -->
+                            </div>
+                        </div>
+                        <!-- Autres groupes... -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Panneau AI Decision -->
+            <section class="panel ai-engine">
+                <h2>AI Decision Engine</h2>
+                <div class="models-grid">
+                    <!-- CNN-LSTM Model -->
+                    <div class="model-card">
+                        <h3>CNN-LSTM Analysis</h3>
+                        <div class="confidence-meter">
+                            <!-- Graphique de confiance -->
+                        </div>
+                    </div>
+                    <!-- PPO+GTrXL Model -->
+                    <div class="model-card">
+                        <h3>PPO+GTrXL Decisions</h3>
+                        <div class="allocation-chart">
+                            <!-- Graphique d'allocation -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Market Regime -->
+                <div class="market-regime">
+                    <h3>Market Regime Detection</h3>
+                    <div id="regime-status"></div>
+                </div>
+            </section>
+
+            <!-- 4. Panneau Risk Management -->
+            <section class="panel risk-management">
+                <h2>Risk Management</h2>
+                <div class="risk-grid">
+                    <!-- Stop Loss -->
+                    <div class="risk-card">
+                        <h3>Stop Loss Status</h3>
+                        <!-- Contennu dynamique -->
+                    </div>
+                    <!-- Circuit Breakers -->
+                    <div class="risk-card">
+                        <h3>Circuit Breakers</h3>
+                        <!-- Contenu dynamique -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Panneau Order Execution -->
+            <section class="panel execution">
+                <h2>Smart Order Execution</h2>
+                <div class="execution-grid">
+                    <!-- Ordres en cours -->
+                </div>
+            </section>
+
+            <!-- 6. Panneau Portfolio Monitoring -->
+            <section class="panel portfolio">
+                <h2>Portfolio & Performance</h2>
+                <div class="portfolio-grid">
+                    <!-- Metrics -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Barre d'état -->
+        <footer>
+            <div class="telegram-status">
+                <span>Telegram Bot: <span id="telegram-status">Connected</span></span>
+                <span>Last Alert: <span id="last-alert">No alerts</span></span>
+            </div>
+            <div class="version">v2025.05.29.0102</div>
+        </footer>
+    </div>
+</body>
+</html>

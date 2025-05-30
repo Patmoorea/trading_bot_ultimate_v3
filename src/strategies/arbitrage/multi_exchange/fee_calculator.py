@@ -1,6 +1,11 @@
+"""
+Calculateur de frais pour les opérations d'arbitrage
+Version 1.0.0 - Created: 2025-05-26 05:40:31 by Patmoorea
+"""
+
 from decimal import Decimal
 from typing import Dict
-from ....exchanges.base_exchange import BaseExchange
+from src.exchanges.base_exchange import BaseExchange
 
 class FeeCalculator:
     """Calculateur de frais pour les opérations d'arbitrage"""

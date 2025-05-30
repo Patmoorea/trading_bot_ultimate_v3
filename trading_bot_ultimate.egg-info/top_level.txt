@@ -1,8 +1,0 @@
-config
-core
-data 2
-logs
-modules
-scripts
-src
-tests_new

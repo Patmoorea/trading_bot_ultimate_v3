@@ -1,23 +1,38 @@
-# Core dependencies
-pandas==2.0.0
-numpy==1.24.3
-python-telegram-bot==20.3
-ccxt==4.0.0
-
-# AI/ML dependencies
-tensorflow==2.12.0
-scikit-learn==1.2.2
-transformers==4.28.1
-textblob==0.17.1
-talib-binary==0.4.24
-
-# Testing dependencies
-pytest==7.3.1
-pytest-asyncio==0.21.0
-pytest-cov==4.0.0
-pytest-timeout==2.1.0
-
-# Utils
-beautifulsoup4==4.12.2
-requests==2.29.0
-python-dotenv==1.0.0
+ccxt>=4.0.0
+python-dotenv>=1.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+streamlit>=1.24.0
+plotly>=5.14.0
+websockets>=11.0.0
+python-telegram-bot>=20.0.0
+scipy>=1.10.0
+tensorflow>=2.13.0
+torch>=2.0.0
+stable-baselines3>=2.0.0
+polars>=0.18.0
+pyarrow>=12.0.0
+optuna>=3.2.0
+ta-lib>=0.4.0
+redis>=4.5.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+lz4>=4.3.0
+cv2>=4.8.0
+lz4>=4.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+ccxt>=4.0.0
+python-dotenv>=1.0.0
+websockets>=11.0.0
+python-telegram-bot>=20.0.0
+opencv-python>=4.8.0
+scipy>=1.10.0
+tensorflow>=2.13.0
+optuna>=3.2.0
+# Ajout des dépendances pour le détecteur de régimes (2025-05-30 04:43:26)
+hmmlearn==0.3.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+torch>=2.0.0

@@ -1,8 +1,18 @@
-"""
-Global test configuration
-Version 1.0.0 - Created: 2025-05-19 06:15:15 by Patmoorea
-"""
-
 import pytest
+from datetime import datetime
 
-pytest.register_assert_rewrite('tests_new')
+@pytest.fixture(scope="session")
+def timestamp():
+    return datetime(2025, 5, 27, 16, 24, 21)
+
+@pytest.fixture(scope="session")
+def user():
+    return "Patmoorea"
+
+@pytest.fixture(scope="session")
+def system_info():
+    return {
+        "cpu": "Apple M4",
+        "os": "macOS 15.3.2",
+        "python": "3.11.9"
+    }

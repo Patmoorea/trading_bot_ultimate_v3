@@ -1,18 +1,11 @@
 import pytest
-import os
-import numpy as np
-from tests_new.base_test import BaseTest
+from ...utils import BaseTestCase, TEST_CONFIG
 
-class TestPerformance(BaseTest):
+class TestPerformance(BaseTestCase):
     def test_performance_calculation(self):
-        """Test performance metrics calculation"""
-        test_data = self.get_test_data(100)
-        assert len(test_data) == 100
-        assert isinstance(test_data, np.ndarray)
+        data = self.get_test_data(size=100)
+        assert len(data) == 100
+        assert 'price' in data.columns
 
     def test_performance_logging(self):
-        """Test performance logging"""
-        assert os.getenv('PERFORMANCE_LOG_PATH') == 'logs/performance/'
-        log_path = os.getenv('PERFORMANCE_LOG_PATH', 'logs/performance/')
-        os.makedirs(log_path, exist_ok=True)
-        assert os.path.exists(log_path)
+        assert TEST_CONFIG.performance_log_dir == 'logs/performance/'
