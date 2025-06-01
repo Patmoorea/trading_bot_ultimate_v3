@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import ccxt
 import logging
+import pandas as pd
 from decimal import Decimal, ROUND_DOWN, InvalidOperation
 
 class ExchangeInterface:
@@ -36,7 +37,73 @@ class ExchangeInterface:
         self.markets = {}
         if not self._test_mode:
             self.load_markets()
+
+    async def get_historical_data(self, symbols: List[str], timeframes: List[str], 
+                                period: str = "7d") -> Dict[str, Dict[str, pd.DataFrame]]:
+        """
+        Récupère les données historiques pour les symboles et timeframes spécifiés
         
+        Args:
+            symbols: Liste des paires de trading
+            timeframes: Liste des timeframes
+            period: Période d'historique (ex: "7d", "1m", "1y")
+            
+        Returns:
+            Dict[timeframe][symbol] = DataFrame des données OHLCV
+        """
+        try:
+            result = {timeframe: {} for timeframe in timeframes}
+            end_time = datetime.utcnow()
+            
+            # Conversion de la période en jours
+            period_value = int(period[:-1])
+            period_unit = period[-1].lower()
+            
+            if period_unit == 'd':
+                lookback_days = period_value
+            elif period_unit == 'm':
+                lookback_days = period_value * 30
+            elif period_unit == 'y':
+                lookback_days = period_value * 365
+            else:
+                lookback_days = 7  # Valeur par défaut
+                
+            start_time = end_time - timedelta(days=lookback_days)
+            
+            for timeframe in timeframes:
+                for symbol in symbols:
+                    try:
+                        # Récupération des données OHLCV
+                        ohlcv = self.exchange.fetch_ohlcv(
+                            symbol,
+                            timeframe,
+                            since=int(start_time.timestamp() * 1000),
+                            limit=1000
+                        )
+                        
+                        # Conversion en DataFrame
+                        df = pd.DataFrame(
+                            ohlcv,
+                            columns=["timestamp", "open", "high", "low", "close", "volume"]
+                        )
+                        
+                        # Conversion du timestamp en datetime
+                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                        df.set_index("timestamp", inplace=True)
+                        
+                        result[timeframe][symbol] = df
+                        logging.info(f"✅ Données historiques récupérées pour {symbol} - {timeframe}")
+                        
+                    except Exception as e:
+                        logging.error(f"❌ Erreur récupération données pour {symbol} - {timeframe}: {e}")
+                        result[timeframe][symbol] = pd.DataFrame()
+                        
+            return result
+            
+        except Exception as e:
+            logging.error(f"❌ Erreur récupération données historiques: {e}")
+            raise
+
     def set_test_mode(self, enabled: bool = True):
         """Active/désactive le mode test"""
         self._test_mode = enabled
