@@ -113,47 +113,44 @@ class TradingBotM4:
         self.websocket = MultiStreamManager(
             timeframes=config["TRADING"]["timeframes"],
             pairs=config["TRADING"]["pairs"],
-        self.websocket = MultiStreamManager(
-            timeframes=config["TRADING"]["timeframes"],
-            pairs=config["TRADING"]["pairs"]
+            config=stream_config
         )
-        self.buffer = CircularBuffer()            try:
-                return self._latest_data
-            except Exception as e:
-                logger.error(f"Erreur get_latest_data: {e}")
-                return None        self.websocket = MultiStreamManager(config=stream_config)
         self.buffer = CircularBuffer()
 
         # Gestionnaires de trading
         self.position_manager = PositionManager(account_balance=10000)
         self.circuit_breaker = CircuitBreaker()
 
+        # Interface et monitoring
         self.dashboard = TradingDashboard()
-        self.current_time = "2025-06-01 06:15:45"
-        self.current_user = "Patmoorea"        self.arbitrage_engine = ArbitrageEngine()
+        self.current_time = "2025-06-01 06:56:16"
+        self.current_user = "Patmoorea"
 
-        # Interface et notifications
+        # Composants principaux
+        self.arbitrage_engine = ArbitrageEngine()
         self.telegram = TelegramBot()
-        self.dashboard = TradingDashboard()
-        self.dashboard.current_time = "2025-06-01 05:44:31"
-        self.dashboard.current_user = "Patmoorea"
 
-        # Outils de visualisation
-        self.generate_heatmap = generate_heatmap        
+        # Modèles et analyses
         self.hybrid_model = HybridAI()
-        
         self.env = TradingEnv(
             trading_pairs=config["TRADING"]["pairs"],
             timeframes=config["TRADING"]["timeframes"]
         )
-        
-        self.decision_model = PPOGTrXL(
-            state_dim=256,
-            action_dim=len(config["TRADING"]["pairs"]),
-            seq_len=64,
-            d_model=512,
-            num_layers=6,
-            num_heads=8
+
+        # Configuration des indicateurs
+        self.timeframe_config = TimeframeConfig(
+            timeframes=config["TRADING"]["timeframes"],
+            weights={
+                "1m": 0.1, "5m": 0.15, "15m": 0.2,
+                "1h": 0.25, "4h": 0.15, "1d": 0.15
+            }
+        )
+
+        # Initialisation des analyseurs
+        self.advanced_indicators = MultiTimeframeAnalyzer(config=self.timeframe_config)
+        self.orderflow_analysis = OrderFlowAnalysis(config=OrderFlowConfig(tick_size=0.1))
+        self.volume_analysis = VolumeAnalysis()
+        self.volatility_indicators = VolatilityIndicators()            num_heads=8
         )
         
         self.timeframe_config = TimeframeConfig(
@@ -1874,35 +1871,6 @@ class TradingBotM4:
             logger.error(f"[{datetime.utcnow()}] Erreur détection gaps: {e}")
             return []
 
-    def _calculate_vp(self, data, price_levels=100):
-        """Calcule le Volume Profile"""
-        try:
-            high = data["high"]
-            low = data["low"]
-            close = data["close"]
-            volume = data["volume"]
-            
-            # Création des niveaux de prix
-            price_range = np.linspace(low.min(), high.max(), price_levels)
-            volume_profile = pd.Series(index=price_range, data=0.0)
-            
-            # Distribution du volume sur les niveaux de prix
-            for i in range(len(data)):
-                level_volume = volume.iloc[i] / price_levels
-                price_levels_in_range = (price_range >= low.iloc[i]) & (price_range <= high.iloc[i])
-                volume_profile[price_levels_in_range] += level_volume
-            
-            # Calcul du Point of Control (POC)
-            poc_price = price_range[volume_profile.argmax()]
-            
-            # Value Area (70% du volume)
-            total_volume = volume_profile.sum()
-            value_area_volume = total_volume * 0.70
-            sorted_profile = volume_profile.sort_values(ascending=False)
-            value_area = sorted_profile[sorted_profile.cumsum() <= value_area_volume]
-            
-            logger.error(f"[2025-05-31 05:57:16] Erreur analyse distribution: {e}")
-            return None
 
 # Fonction principale
 async def main():
@@ -1944,9 +1912,55 @@ async def main():
         # Nettoyage final
         logging.shutdown()
 
+    def _analyze_trend_signals(self, trend_data):
+        """Analyse les signaux de tendance"""
+        if not trend_data:
+            return None
+        signals = []
+        if "supertrend" in trend_data:
+            st = trend_data["supertrend"]
+            if st["signal"] == 1 and st["strength"] > 0.7:
+                signals.append(f"Supertrend Haussier (Force: {st[strength]:.2%})")
+            elif st["signal"] == -1 and st["strength"] > 0.7:
+                signals.append(f"Supertrend Baissier (Force: {st[strength]:.2%})")
+        return " | ".join(signals) if signals else None
+
+    def _analyze_volatility_signals(self, volatility_data):
+        """Analyse les signaux de volatilité"""
+        if not volatility_data:
+            return None
+        signals = []
+        if "bbands" in volatility_data:
+            bb = volatility_data["bbands"]
+            if bb["bandwidth"] > bb.get("bandwidth_high", 0):
+                signals.append(f"Forte Volatilité BB (BW: {bb[bandwidth]:.2f})")
+        return " | ".join(signals) if signals else None
+
+    def _analyze_volume_signals(self, volume_data):
+        """Analyse les signaux de volume"""
+        if not volume_data:
+            return None
+        signals = []
+        if "volume_profile" in volume_data:
+            vp = volume_data["volume_profile"]
+            if vp.get("poc_strength", 0) > 0.8:
+                signals.append(f"POC Fort ({vp[poc_price]:.2f})")
+        return " | ".join(signals) if signals else None
 if __name__ == "__main__":
-    # Exécution du bot
-    asyncio.run(main())
+    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
+    st.title("Trading Bot Ultimate v4")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
+    with col2:
+        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+    if st.button("Start Trading Bot"):
+        try:
+            bot = TradingBotM4()
+            st.session_state["bot"] = bot
+            asyncio.run(bot.run())
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
 
     def _analyze_trend_signals(self, trend_data):
         """Analyse les signaux de tendance"""
@@ -1965,26 +1979,84 @@ if __name__ == "__main__":
 
         # Analyse de l'EMA Ribbon
         if 'ema_ribbon' in trend_data:
+    def _analyze_trend_signals(self, trend_data):
+        """Analyse les signaux de tendance"""
+        if not trend_data:
+            return None
+        signals = []
+        if "supertrend" in trend_data:
+            st = trend_data["supertrend"]
+            if st["signal"] == 1 and st["strength"] > 0.7:
+                signals.append(f"Supertrend Haussier (Force: {st[strength]:.2%})")
+            elif st["signal"] == -1 and st["strength"] > 0.7:
+                signals.append(f"Supertrend Baissier (Force: {st[strength]:.2%})")
+        return " | ".join(signals) if signals else None
+
+    def _analyze_volatility_signals(self, volatility_data):
+        """Analyse les signaux de volatilité"""
+        if not volatility_data:
+            return None
+        signals = []
+        if "bbands" in volatility_data:
+            bb = volatility_data["bbands"]
+            if bb["bandwidth"] > bb.get("bandwidth_high", 0):
+                signals.append(f"Forte Volatilité BB (BW: {bb[bandwidth]:.2f})")
+        return " | ".join(signals) if signals else None
+
+    def _analyze_volume_signals(self, volume_data):
+        """Analyse les signaux de volume"""
+        if not volume_data:
+            return None
+        signals = []
+        if "volume_profile" in volume_data:
+            vp = volume_data["volume_profile"]
+            if vp.get("poc_strength", 0) > 0.8:
+                signals.append(f"POC Fort ({vp[poc_price]:.2f})")
+        return " | ".join(signals) if signals else None
 if __name__ == "__main__":
-if __name__ == "__main__":
-    st.set_page_config(
-if __name__ == "__main__":
-    st.set_page_config(
-        page_title="Trading Bot Ultimate v4",
-        page_icon="📈",
-        layout="wide"
-    )
-    
+    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
     st.title("Trading Bot Ultimate v4")
-    
     col1, col2 = st.columns(2)
     with col1:
         st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
     with col2:
-        st.write(f"Current User: Patmoorea")
-    
-    if st.button("Start Bot"):
+        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+    if st.button("Start Trading Bot"):
         try:
-            asyncio.run(main())
+            bot = TradingBotM4()
+            st.session_state["bot"] = bot
+            asyncio.run(bot.run())
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+if __name__ == "__main__":
+    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
+    st.title("Trading Bot Ultimate v4")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
+    with col2:
+        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+    if st.button("Start Trading Bot"):
+        try:
+            bot = TradingBotM4()
+            st.session_state["bot"] = bot
+            asyncio.run(bot.run())
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+if __name__ == "__main__":
+    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
+    st.title("Trading Bot Ultimate v4")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
+    with col2:
+        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+    if st.button("Start Trading Bot"):
+        try:
+            bot = TradingBotM4()
+            st.session_state["bot"] = bot
+            asyncio.run(bot.run())
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
         except Exception as e:
             st.error(f"Error: {str(e)}")
