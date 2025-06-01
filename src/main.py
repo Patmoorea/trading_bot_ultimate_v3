@@ -107,34 +107,36 @@ class TradingEnv(gym.Env):
 
 class TradingBotM4:
     def __init__(self):
+        """Initialisation du bot"""
+        # Initialisation des composants principaux
         self.exchange = Exchange(exchange_id="binance")
+
+        # Configuration et initialisation du stream de données
         stream_config = StreamConfig(
             max_connections=12,
             reconnect_delay=1.0,
             buffer_size=10000
         )
-        self.websocket = MultiStreamManager(
-            timeframes=config["TRADING"]["timeframes"],
-            pairs=config["TRADING"]["pairs"]
-        )        self.buffer = CircularBuffer()
-        self.circuit_breaker = CircuitBreaker()
+        self.websocket = MultiStreamManager(config=stream_config)
+        self.buffer = CircularBuffer()
+
+        # Gestionnaires de trading
         self.position_manager = PositionManager(account_balance=10000)
+        self.circuit_breaker = CircuitBreaker()
+
+        # Analyseurs et détecteurs
         self.news_analyzer = NewsAnalyzer()
-        self.telegram = TelegramBot()
         self.regime_detector = MarketRegimeDetector()
         self.arbitrage_engine = ArbitrageEngine()
-        
-        self.dashboard = TradingDashboard()
-        self.dashboard.current_time = "2025-06-01 00:12:17"
+
+        # Interface et notifications
+        self.telegram = TelegramBot()
+        self.dashboard = TradingDashboard(port=8501)
+        self.dashboard.current_time = "2025-06-01 05:44:31"
         self.dashboard.current_user = "Patmoorea"
-        
-        self.generate_heatmap = generate_heatmap
-        
-        input_shape = {
-            'market_data': (len(config["TRADING"]["timeframes"]), 100, 5),
-            'indicators': (len(config["TRADING"]["timeframes"]), 42)
-        }
-        
+
+        # Outils de visualisation
+        self.generate_heatmap = generate_heatmap        
         self.hybrid_model = HybridAI()
         
         self.env = TradingEnv(
@@ -165,8 +167,7 @@ class TradingBotM4:
         self.volatility_indicators = VolatilityIndicators()
 
         # Dictionnaire des 42 indicateurs avec leurs méthodes de calcul
-        self.indicators = {
-            "trend": {
+        self.indicators = {            "trend": {
                 "supertrend": self._calculate_supertrend,
                 "ichimoku": self._calculate_ichimoku,
                 "vwma": self._calculate_vwma,
