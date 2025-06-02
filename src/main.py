@@ -105,164 +105,154 @@ class TradingEnv(gym.Env):
 class TradingBotM4:
     def __init__(self):
         self.exchange = Exchange(exchange_id="binance")
-        stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-        self.websocket = MultiStreamManager(
-            timeframes=config["TRADING"]["timeframes"],
-            pairs=config["TRADING"]["pairs"],
-            config=stream_config
-        )
-        self.buffer = CircularBuffer()
-
-        # Gestionnaires de trading
-        self.position_manager = PositionManager(account_balance=10000)
-        self.circuit_breaker = CircuitBreaker()
-
-        # Interface et monitoring
-        self.dashboard = TradingDashboard()
-        self.current_time = "2025-06-01 06:56:16"
-        self.current_user = "Patmoorea"
-
-        # Composants principaux
-        self.arbitrage_engine = ArbitrageEngine()
-        self.telegram = TelegramBot()
-
-        # Modèles et analyses
-        self.hybrid_model = HybridAI()
-        self.env = TradingEnv(
-            trading_pairs=config["TRADING"]["pairs"],
-            timeframes=config["TRADING"]["timeframes"]
-        )
-
-        # Configuration des indicateurs
-        self.timeframe_config = TimeframeConfig(
-            timeframes=config["TRADING"]["timeframes"],
-            weights={
-                "1m": 0.1, "5m": 0.15, "15m": 0.2,
-                "1h": 0.25, "4h": 0.15, "1d": 0.15
-            }
-        )
-
-        # Initialisation des analyseurs
-        self.advanced_indicators = MultiTimeframeAnalyzer(config=self.timeframe_config)
-        self.orderflow_analysis = OrderFlowAnalysis(config=OrderFlowConfig(tick_size=0.1))
-        self.volume_analysis = VolumeAnalysis()
-        self.volatility_indicators = VolatilityIndicators()            num_heads=8
-        )
-        
-        self.timeframe_config = TimeframeConfig(
-            timeframes=config["TRADING"]["timeframes"],
-            weights={
-                "1m": 0.1, "5m": 0.15, "15m": 0.2,
-                "1h": 0.25, "4h": 0.15, "1d": 0.15
-            }
-        )
-        self.advanced_indicators = MultiTimeframeAnalyzer(config=self.timeframe_config)
-        orderflow_config = OrderFlowConfig(tick_size=0.1)
-        self.orderflow_analysis = OrderFlowAnalysis(config=orderflow_config)
-        self.volume_analysis = VolumeAnalysis()
-        self.volatility_indicators = VolatilityIndicators()
 
         # Dictionnaire des 42 indicateurs avec leurs méthodes de calcul
-        self.indicators = {            "trend": {
-                "supertrend": self._calculate_supertrend,
-                "ichimoku": self._calculate_ichimoku,
-                "vwma": self._calculate_vwma,
-                "ema_ribbon": self._calculate_ema_ribbon,
-                "parabolic_sar": self._calculate_psar,
-                "zigzag": self._calculate_zigzag
-            },
-            "momentum": {
-                "rsi": self._calculate_rsi,
-                "stoch_rsi": self._calculate_stoch_rsi,
-                "macd": self._calculate_macd,
-                "awesome": self._calculate_ao,
-                "momentum": self._calculate_momentum,
-                "tsi": self._calculate_tsi
-            },
-            "volatility": {
-                "bbands": self._calculate_bbands,
-                "keltner": self._calculate_keltner,
-                "atr": self._calculate_atr,
-                "vix_fix": self._calculate_vix_fix,
-                "natr": self._calculate_natr,
-                "true_range": self._calculate_tr
-            },
-            "volume": {
-                "obv": self._calculate_obv,
-                "vwap": self._calculate_vwap,
-                "acc_dist": self._calculate_ad,
-                "chaikin_money": self._calculate_cmf,
-                "ease_move": self._calculate_emv,
-                "volume_profile": self._calculate_vp
-            },
-            "orderflow": {
-                "delta": self._calculate_delta,
-                "cvd": self._calculate_cvd,
-        async def get_latest_data(self):
-    def _analyze_trend_signals(self, trend_data):
-        """Analyse les signaux de tendance"""
-        if not trend_data:
-            return None
-        signals = []
-        if "supertrend" in trend_data:
-            st = trend_data["supertrend"]
-            if st["signal"] == 1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Haussier (Force: {st[strength]:.2%})")
-            elif st["signal"] == -1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Baissier (Force: {st[strength]:.2%})")
-        return " | ".join(signals) if signals else None
+self.indicators = {
+    "trend": {
+        "supertrend": self._calculate_supertrend,
+        "ichimoku": self._calculate_ichimoku,
+        "vwma": self._calculate_vwma,
+        "ema_ribbon": self._calculate_ema_ribbon,
+        "parabolic_sar": self._calculate_psar,
+        "zigzag": self._calculate_zigzag
+    },
+    "momentum": {
+        "rsi": self._calculate_rsi,
+        "stoch_rsi": self._calculate_stoch_rsi,
+        "macd": self._calculate_macd,
+        "awesome": self._calculate_ao,
+        "momentum": self._calculate_momentum,
+        "tsi": self._calculate_tsi
+    },
+    "volatility": {
+        "bbands": self._calculate_bbands,
+        "keltner": self._calculate_keltner,
+        "atr": self._calculate_atr,
+        "vix_fix": self._calculate_vix_fix,
+        "natr": self._calculate_natr,
+        "true_range": self._calculate_tr
+    },
+    "volume": {
+        "obv": self._calculate_obv,
+        "vwap": self._calculate_vwap,
+        "acc_dist": self._calculate_ad,
+        "chaikin_money": self._calculate_cmf,
+        "ease_move": self._calculate_emv,
+        "volume_profile": self._calculate_vp
+    },
+    "orderflow": {
+        "delta": self._calculate_delta,
+        "cvd": self._calculate_cvd,
+        "footprint": self._calculate_footprint,
+        "liquidity": self._calculate_liquidity,
+        "imbalance": self._calculate_imbalance,
+        "absorption": self._calculate_absorption
+    }
+}
+stream_config = StreamConfig(
+        max_connections=12,
+        reconnect_delay=1.0,
+        buffer_size=10000
+        )
+self.websocket = MultiStreamManager(
+        timeframes=config["TRADING"]["timeframes"],
+        pairs=config["TRADING"]["pairs"],
+        config=stream_config
+        )
+self.buffer = CircularBuffer()
 
-    def _analyze_volatility_signals(self, volatility_data):
-        """Analyse les signaux de volatilité"""
-        if not volatility_data:
-            return None
-        signals = []
-        if "bbands" in volatility_data:
-            bb = volatility_data["bbands"]
-            if bb["bandwidth"] > bb.get("bandwidth_high", 0):
-                signals.append(f"Forte Volatilité BB (BW: {bb[bandwidth]:.2f})")
-        return " | ".join(signals) if signals else None
+        # Gestionnaires de trading
+self.position_manager = PositionManager(account_balance=10000)
+self.circuit_breaker = CircuitBreaker()
 
-    def _analyze_volume_signals(self, volume_data):
-        """Analyse les signaux de volume"""
-        if not volume_data:
-            return None
-        signals = []
-        if "volume_profile" in volume_data:
-            vp = volume_data["volume_profile"]
-            if vp.get("poc_strength", 0) > 0.8:
-                signals.append(f"POC Fort ({vp[poc_price]:.2f})")
-        return " | ".join(signals) if signals else None
+# Interface et monitoring
+self.dashboard = TradingDashboard()
+self.current_time = "2025-06-01 06:56:16"
+self.current_user = "Patmoorea"
 
-    async def _update_dashboard(self, market_data, indicators, heatmap, current_time):
-        """Met à jour le dashboard avec les dernières données"""
-        try:
-            self.dashboard.update(
-                market_data=market_data,
-                indicators=indicators,
-                heatmap=heatmap,
-                current_time=current_time
-            )
-        except Exception as e:
-            logger.error(f"Erreur mise à jour dashboard: {e}")            try:
-                data = {}
-                for pair in self.pairs:
-                    for timeframe in self.timeframes:
-                        data.setdefault(timeframe, {})[pair] = self.buffer.get_latest()
-                return data
-            except Exception as e:
-                logger.error(f"Erreur get_latest_data: {e}")
-                return None
-                "footprint": self._calculate_footprint,
-                "liquidity": self._calculate_liquidity,
-                "imbalance": self._calculate_imbalance,
-                "absorption": self._calculate_absorption
-            }
-        }
+# Composants principaux
+self.arbitrage_engine = ArbitrageEngine()
+self.telegram = TelegramBot()
+
+# Modèles et analyses
+self.hybrid_model = HybridAI()
+self.env = TradingEnv(
+    trading_pairs=config["TRADING"]["pairs"],
+    timeframes=config["TRADING"]["timeframes"]
+)
+        
+self.timeframe_config = TimeframeConfig(
+    timeframes=config["TRADING"]["timeframes"],
+    weights={
+        "1m": 0.1, "5m": 0.15, "15m": 0.2,
+        "1h": 0.25, "4h": 0.15, "1d": 0.15
+    }
+)
+self.advanced_indicators = MultiTimeframeAnalyzer(config=self.timeframe_config)
+orderflow_config = OrderFlowConfig(tick_size=0.1)
+self.orderflow_analysis = OrderFlowAnalysis(config=orderflow_config)
+self.volume_analysis = VolumeAnalysis()
+self.volatility_indicators = VolatilityIndicators()
+
+async def get_latest_data(self):
+    """Récupère les dernières données pour chaque paire et timeframe"""
+    try:
+        data = {}
+        for pair in self.pairs:
+            for timeframe in self.timeframes:
+                data.setdefault(timeframe, {})[pair] = self.buffer.get_latest()
+        return data
+    except Exception as e:
+        logger.error(f"Erreur get_latest_data: {e}")
+        return None
+
+def _analyze_trend_signals(self, trend_data):
+    """Analyse les signaux de tendance"""
+    if not trend_data:
+        return None
+    signals = []
+    if "supertrend" in trend_data:
+        st = trend_data["supertrend"]
+        if st["signal"] == 1 and st["strength"] > 0.7:
+            signals.append(f"Supertrend Haussier (Force: {st['strength']:.2%})")
+        elif st["signal"] == -1 and st["strength"] > 0.7:
+            signals.append(f"Supertrend Baissier (Force: {st['strength']:.2%})")
+    return " | ".join(signals) if signals else None
+
+
+def _analyze_volatility_signals(self, volatility_data):
+    """Analyse les signaux de volatilité"""
+    if not volatility_data:
+        return None
+    signals = []
+    if "bbands" in volatility_data:
+        bb = volatility_data["bbands"]
+        if bb["bandwidth"] > bb.get("bandwidth_high", 0):
+            signals.append(f"Forte Volatilité BB (BW: {bb['bandwidth']:.2f})")
+    return " | ".join(signals) if signals else None
+
+def _analyze_volume_signals(self, volume_data):
+    """Analyse les signaux de volume"""
+    if not volume_data:
+        return None
+    signals = []
+    if "volume_profile" in volume_data:
+        vp = volume_data["volume_profile"]
+        if vp.get("poc_strength", 0) > 0.8:
+            signals.append(f"POC Fort ({vp['poc_price']:.2f})")
+    return " | ".join(signals) if signals else None
+
+async def _update_dashboard(self, market_data, indicators, heatmap, current_time):
+    """Met à jour le dashboard avec les dernières données"""
+    try:
+        self.dashboard.update(
+            market_data=market_data,
+            indicators=indicators,
+            heatmap=heatmap,
+            current_time=current_time
+        )
+    except Exception as e:
+        logger.error(f"Erreur mise à jour dashboard: {e}")        
     
     def _calculate_zigzag(self, data, deviation=5.0, backstep=3):
         """Calcule l'indicateur ZigZag"""
@@ -445,116 +435,130 @@ class TradingBotM4:
             logger.error(f"[{datetime.utcnow()}] Erreur calcul Parabolic SAR: {e}")
             return None
 
-
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime):
         """Construit la décision finale basée sur tous les inputs"""
-        # Convertir policy en numpy pour le traitement
-        policy_np = policy.detach().numpy()
-        
-        # Ne garder que les actions d'achat (long only)
-        buy_actions = np.maximum(policy_np, 0)
-        
-        # Calculer la confiance basée sur value et les scores
-        confidence = float(np.mean([
-            float(value.detach().numpy()),
-            technical_score,
-            news_sentiment['score']
-        ]))
-        
-        # Trouver le meilleur actif à acheter
-        best_pair_idx = np.argmax(buy_actions)
-        
-        # Construire la décision
-        return {
-    async def study_market(self, period="7d"):
-        """Analyse initiale du marché"""
-        logger.info("📊 Étude du marché en cours...")
         try:
-            historical_data = {}
-            for pair in config["TRADING"]["pairs"]:
-                for timeframe in config["TRADING"]["timeframes"]:
-                    await asyncio.sleep(1)  # Éviter le rate limit
-                    data = await self.exchange.get_historical_data(
-                        pair, timeframe, period
-                    )
-                    historical_data.setdefault(timeframe, {})[pair] = data
+            # Convertir policy en numpy pour le traitement
+            policy_np = policy.detach().numpy()
+            
+            # Ne garder que les actions d'achat (long only)
+            buy_actions = np.maximum(policy_np, 0)
+            
+            # Calculer la confiance basée sur value et les scores
+            confidence = float(np.mean([
+                float(value.detach().numpy()),
+                technical_score,
+                news_sentiment['score']
+            ]))
+            
+            # Trouver le meilleur actif à acheter
+            best_pair_idx = np.argmax(buy_actions)
+            best_pair = self.pairs[best_pair_idx]
+            
+            # Construire la décision
+            return {
+                "action": "BUY" if confidence > self.config["TRADING"]["confidence_threshold"] else "HOLD",
+                "pair": best_pair,
+                "confidence": confidence,
+                "regime": regime,
+                "technical_score": technical_score,
+                "news_impact": news_sentiment['sentiment'],
+                "value_estimate": float(value.detach().numpy()),
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "risk_score": self._calculate_risk_score(
+                    confidence,
+                    technical_score,
+                    news_sentiment['volatility']
+                )
+            }
+        except Exception as e:
+            logger.error(f"Erreur construction décision: {e}")
+            return {
+                "action": "HOLD",
+                "pair": None,
+                "confidence": 0,
+                "regime": regime,
+                "error": str(e)
+            }
 
-    async def study_market(self, period="7d"):
-        """Analyse initiale du marché"""
-        logger.info("📊 Étude du marché en cours...")
-        try:
-            historical_data = {}
-            for pair in config["TRADING"]["pairs"]:
-                for timeframe in config["TRADING"]["timeframes"]:
-                    await asyncio.sleep(1)  # Délai pour éviter le rate limit
-                    data = await self.exchange.get_historical_data(pair, timeframe, period)
-                    if data is not None:
-                        historical_data.setdefault(timeframe, {})[pair] = data        try:
-            historical_data = await self.exchange.get_historical_data(
-                config["TRADING"]["pairs"],
-                config["TRADING"]["timeframes"],
-                period
-            )
-            
-            indicators_analysis = {}
+async def study_market(self, period="7d"):
+    """Analyse initiale du marché"""
+    logger.info("📊 Étude du marché en cours...")
+    try:
+        # Récupération des données historiques
+        historical_data = {}
+        for pair in config["TRADING"]["pairs"]:
             for timeframe in config["TRADING"]["timeframes"]:
-                tf_data = historical_data[timeframe]
-                try:
-                    result = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
-                    indicators_analysis[timeframe] = {
-                        "trend": {"trend_strength": 0},
-                        "volatility": {"current_volatility": 0},
-                        "volume": {"volume_profile": {"strength": "N/A"}},
-                        "dominant_signal": "Neutre"
-                    } if result is None else result
-                except Exception as e:
-                    logger.error(f"Erreur analyse {timeframe}: {e}")
-            regime = "Undefined" if indicators_analysis is None or not isinstance(indicators_analysis, pd.DataFrame) else self.regime_detector.predict(pd.DataFrame(indicators_analysis))
-            logger.info(f"📈 Régime de marché détecté: {regime}")                        "volatility": {"current_volatility": 0},
-                        "volume": {"volume_profile": {"strength": "N/A"}},
-                        "dominant_signal": "Neutre"
-                    }
-            
-            regime = self.regime_detector.predict(indicators_analysis)
-            logger.info(f"📈 Régime de marché détecté: {regime}")
-            
-            analysis_report = self._generate_analysis_report(indicators_analysis, regime)
-            await self.telegram.send_message(analysis_report)
-            
-            return regime, historical_data, indicators_analysis
-            
-        except Exception as e:
-            logger.error(f"Erreur lors de l'étude du marché: {str(e)}")
-            raise
-    async def analyze_signals(self, market_data, indicators):  # 4 espaces ici
-        """Analyse technique et fondamentale avancée"""
-        try:
-            technical_score = self.hybrid_model.predict({
-                'market_data': market_data,
-                'indicators': indicators
-            })
-            
-            news_impact = await self.news_analyzer.analyze_recent_news()
-            timeframe_analysis = self._analyze_multi_timeframe(indicators)
-            current_regime = self.regime_detector.predict(indicators)
-            
-            policy, value = self.decision_model.get_action(market_data)
-            
-            decision = self._build_decision(
-                policy=policy,
-                value=value,
-                technical_score=technical_score,
-                news_sentiment=news_impact,
-                regime=current_regime
-            )
-            
-            decision = self._add_risk_management(decision)
-            return decision
-            
-        except Exception as e:
-            logger.error(f"Erreur analyse signaux: {e}")
-            await self.telegram.send_message(f"⚠️ Erreur analyse: {str(e)}")
-            return None
+                await asyncio.sleep(1)  # Délai pour éviter le rate limit
+                data = await self.exchange.get_historical_data(pair, timeframe, period)
+                if data is not None:
+                    historical_data.setdefault(timeframe, {})[pair] = data
+        
+        # Analyse des indicateurs
+        indicators_analysis = {}
+        for timeframe in config["TRADING"]["timeframes"]:
+            tf_data = historical_data[timeframe]
+            try:
+                result = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
+                indicators_analysis[timeframe] = {
+                    "trend": {"trend_strength": 0},
+                    "volatility": {"current_volatility": 0},
+                    "volume": {"volume_profile": {"strength": "N/A"}},
+                    "dominant_signal": "Neutre"
+                } if result is None else result
+            except Exception as e:
+                logger.error(f"Erreur analyse {timeframe}: {e}")
+        
+        # Détection du régime de marché
+        regime = "Undefined"
+        if indicators_analysis and isinstance(indicators_analysis, dict):
+            regime = self.regime_detector.predict(pd.DataFrame(indicators_analysis))
+        logger.info(f"📈 Régime de marché détecté: {regime}")
+        
+        # Génération et envoi du rapport
+        analysis_report = self._generate_analysis_report(indicators_analysis, regime)
+        await self.telegram.send_message(analysis_report)
+        
+        return regime, historical_data, indicators_analysis
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de l'étude du marché: {str(e)}")
+        raise
+
+async def analyze_signals(self, market_data, indicators):
+    """Analyse technique et fondamentale avancée"""
+    try:
+        # Prédiction du modèle hybride
+        technical_score = self.hybrid_model.predict({
+            'market_data': market_data,
+            'indicators': indicators
+        })
+        
+        # Analyses complémentaires
+        news_impact = await self.news_analyzer.analyze_recent_news()
+        timeframe_analysis = self._analyze_multi_timeframe(indicators)
+        current_regime = self.regime_detector.predict(indicators)
+        
+        # Obtention de la politique et de la valeur
+        policy, value = self.decision_model.get_action(market_data)
+        
+        # Construction de la décision
+        decision = self._build_decision(
+            policy=policy,
+            value=value,
+            technical_score=technical_score,
+            news_sentiment=news_impact,
+            regime=current_regime
+        )
+        
+        # Ajout de la gestion des risques
+        decision = self._add_risk_management(decision)
+        return decision
+        
+    except Exception as e:
+        logger.error(f"Erreur analyse signaux: {e}")
+        await self.telegram.send_message(f"⚠️ Erreur analyse: {str(e)}")
+        return None
 
     def _generate_analysis_report(self, indicators_analysis, regime, news_sentiment=None):
         """Génère un rapport d'analyse détaillé avec news"""
@@ -1912,48 +1916,50 @@ async def main():
         # Nettoyage final
         logging.shutdown()
 
-    def _analyze_trend_signals(self, trend_data):
-        """Analyse les signaux de tendance"""
-        if not trend_data:
-            return None
-        signals = []
-        if "supertrend" in trend_data:
-            st = trend_data["supertrend"]
-            if st["signal"] == 1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Haussier (Force: {st[strength]:.2%})")
-            elif st["signal"] == -1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Baissier (Force: {st[strength]:.2%})")
-        return " | ".join(signals) if signals else None
+def _analyze_trend_signals(self, trend_data):
+    """Analyse les signaux de tendance"""
+    if not trend_data:
+        return None
+    signals = []
+    if "supertrend" in trend_data:
+        st = trend_data["supertrend"]
+        if st["signal"] == 1 and st["strength"] > 0.7:
+            signals.append(f"Supertrend Haussier (Force: {st['strength']:.2%})")
+        elif st["signal"] == -1 and st["strength"] > 0.7:
+            signals.append(f"Supertrend Baissier (Force: {st['strength']:.2%})")
+    return " | ".join(signals) if signals else None
 
-    def _analyze_volatility_signals(self, volatility_data):
-        """Analyse les signaux de volatilité"""
-        if not volatility_data:
-            return None
-        signals = []
-        if "bbands" in volatility_data:
-            bb = volatility_data["bbands"]
-            if bb["bandwidth"] > bb.get("bandwidth_high", 0):
-                signals.append(f"Forte Volatilité BB (BW: {bb[bandwidth]:.2f})")
-        return " | ".join(signals) if signals else None
+def _analyze_volatility_signals(self, volatility_data):
+    """Analyse les signaux de volatilité"""
+    if not volatility_data:
+        return None
+    signals = []
+    if "bbands" in volatility_data:
+        bb = volatility_data["bbands"]
+        if bb["bandwidth"] > bb.get("bandwidth_high", 0):
+            signals.append(f"Forte Volatilité BB (BW: {bb['bandwidth']:.2f})")
+    return " | ".join(signals) if signals else None
 
-    def _analyze_volume_signals(self, volume_data):
-        """Analyse les signaux de volume"""
-        if not volume_data:
-            return None
-        signals = []
-        if "volume_profile" in volume_data:
-            vp = volume_data["volume_profile"]
-            if vp.get("poc_strength", 0) > 0.8:
-                signals.append(f"POC Fort ({vp[poc_price]:.2f})")
-        return " | ".join(signals) if signals else None
+def _analyze_volume_signals(self, volume_data):
+    """Analyse les signaux de volume"""
+    if not volume_data:
+        return None
+    signals = []
+    if "volume_profile" in volume_data:
+        vp = volume_data["volume_profile"]
+        if vp.get("poc_strength", 0) > 0.8:
+            signals.append(f"POC Fort ({vp['poc_price']:.2f})")
+    return " | ".join(signals) if signals else None
 if __name__ == "__main__":
     st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
     st.title("Trading Bot Ultimate v4")
     col1, col2 = st.columns(2)
     with col1:
-        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
+        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        st.write(f"Current Time: {current_time} UTC")
     with col2:
-        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+        username = st.session_state.get('user', 'Patmoorea')
+        st.write(f"Current User: {username}")
     if st.button("Start Trading Bot"):
         try:
             bot = TradingBotM4()
@@ -1970,26 +1976,19 @@ if __name__ == "__main__":
         signals = []
         
         # Analyse du Supertrend
-        if 'supertrend' in trend_data:
-            st = trend_data['supertrend']
-            if st['signal'] == 1 and st['strength'] > 0.7:
-                signals.append(f"Supertrend Haussier (Force: {st['strength']:.2%})")
-            elif st['signal'] == -1 and st['strength'] > 0.7:
-                signals.append(f"Supertrend Baissier (Force: {st['strength']:.2%})")
-
-        # Analyse de l'EMA Ribbon
-        if 'ema_ribbon' in trend_data:
-    def _analyze_trend_signals(self, trend_data):
-        """Analyse les signaux de tendance"""
-        if not trend_data:
-            return None
-        signals = []
         if "supertrend" in trend_data:
             st = trend_data["supertrend"]
             if st["signal"] == 1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Haussier (Force: {st[strength]:.2%})")
+                signals.append(f"Supertrend Haussier (Force: {st['strength']:.2%})")
             elif st["signal"] == -1 and st["strength"] > 0.7:
-                signals.append(f"Supertrend Baissier (Force: {st[strength]:.2%})")
+                signals.append(f"Supertrend Baissier (Force: {st['strength']:.2%})")
+
+        # Analyse de l'EMA Ribbon
+        if "ema_ribbon" in trend_data:
+            ribbon = trend_data["ema_ribbon"]
+            # Ajoutez ici l'analyse de l'EMA Ribbon
+            pass
+            
         return " | ".join(signals) if signals else None
 
     def _analyze_volatility_signals(self, volatility_data):
@@ -2000,63 +1999,44 @@ if __name__ == "__main__":
         if "bbands" in volatility_data:
             bb = volatility_data["bbands"]
             if bb["bandwidth"] > bb.get("bandwidth_high", 0):
-                signals.append(f"Forte Volatilité BB (BW: {bb[bandwidth]:.2f})")
+                signals.append(f"Forte Volatilité BB (BW: {bb['bandwidth']:.2f})")
         return " | ".join(signals) if signals else None
 
     def _analyze_volume_signals(self, volume_data):
         """Analyse les signaux de volume"""
-        if not volume_data:
+        if not volume_data:  # Correction: était volatility_data
             return None
         signals = []
         if "volume_profile" in volume_data:
             vp = volume_data["volume_profile"]
             if vp.get("poc_strength", 0) > 0.8:
-                signals.append(f"POC Fort ({vp[poc_price]:.2f})")
+                signals.append(f"POC Fort ({vp['poc_price']:.2f})")
         return " | ".join(signals) if signals else None
+
+
+# Le code principal de l'application Streamlit
 if __name__ == "__main__":
+    # Configuration de la page Streamlit
     st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
     st.title("Trading Bot Ultimate v4")
+    
+    # Formatage de la date et de l'heure
+    current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # Création des colonnes
     col1, col2 = st.columns(2)
+    
+    # Affichage de l'heure et de l'utilisateur
     with col1:
-        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
+        st.write(f"Current Time: {current_time} UTC")
     with col2:
-        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
+        st.write(f"Current User: {st.session_state.get('user', 'Patmoorea')}")
+    
+    # Bouton de démarrage
     if st.button("Start Trading Bot"):
         try:
             bot = TradingBotM4()
             st.session_state["bot"] = bot
             asyncio.run(bot.run())
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
-if __name__ == "__main__":
-    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
-    st.title("Trading Bot Ultimate v4")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
-    with col2:
-        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
-    if st.button("Start Trading Bot"):
-        try:
-            bot = TradingBotM4()
-            st.session_state["bot"] = bot
-            asyncio.run(bot.run())
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
-if __name__ == "__main__":
-    st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
-    st.title("Trading Bot Ultimate v4")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"Current Time: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC")
-    with col2:
-        st.write(f"Current User: {st.session_state.get("user", "Patmoorea")}")
-    if st.button("Start Trading Bot"):
-        try:
-            bot = TradingBotM4()
-            st.session_state["bot"] = bot
-            asyncio.run(bot.run())
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
         except Exception as e:
             st.error(f"Error: {str(e)}")
