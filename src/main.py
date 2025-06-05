@@ -1,5 +1,9 @@
 import streamlit as st
-st.set_page_config(page_title="Trading Bot Ultimate v4", page_icon="📈", layout="wide")
+st.set_page_config(
+page_title="Trading Bot Ultimate v4", 
+page_icon="📈", 
+layout="wide"
+)
 
 # Imports
 import os
@@ -15,6 +19,8 @@ from gymnasium import spaces
 import torch
 import pandas as pd
 
+# Activation de nest_asyncio pour gérer les boucles imbriquées
+nest_asyncio.apply()
 
 # Ajout des chemins pour les modules
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -56,20 +62,46 @@ config = {
         "base_currency": "USDC",
         "pairs": ["BTC/USDC", "ETH/USDC"],
         "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-        "study_period": "7d",
+        "study_period": "7d"
     },
     "RISK": {
-        "max_drawdown": 0.05,
-        "daily_stop_loss": 0.02,
-        "position_sizing": "volatility_based",
-        "circuit_breaker": {
-            "market_crash": True,
-            "liquidity_shock": True,
-            "black_swan": True,
-        },
+        'max_drawdown': 0.05,
+        'daily_stop_loss': 0.02,
+        'position_sizing': 'volatility_based',
+        'circuit_breaker': {
+            'market_crash': True,
+            'liquidity_shock': True,
+            'black_swan': True
+        }
     },
-    "AI": {"confidence_threshold": 0.75, "min_training_size": 1000},
+    "AI": {
+        "confidence_threshold": 0.75,
+        "min_training_size": 1000
+    },
+    # Ajout des nouvelles configurations ici
+    "NEWS": {
+        "sources": ["Bloomberg", "Reuters", "CoinDesk", "CryptoNews"],
+        "update_interval": 60,  # secondes
+        "importance_threshold": 0.8
+    },
+    "ARBITRAGE": {
+        "min_profit": 0.001,  # 0.1%
+        "max_exposure": 0.1,   # 10% du capital
+        "exchanges": ["binance", "ftx", "kucoin", "huobi", "okex"]
+    },
+    "VOICE_COMMANDS": {
+        "enabled": True,
+        "language": "fr-FR",
+        "commands": ["status", "position", "stop", "resume"]
+    },
+    # Ajout des informations de l'utilisateur
+    "USER": {
+        "login": "Patmoorea",
+        "timezone": "UTC",
+        "start_time": "2025-06-05 16:40:50"
+    }
 }
+
 
 # Initialisation du logging
 logging.basicConfig(
@@ -148,6 +180,17 @@ class TradingEnv(gym.Env):
 
 class TradingBotM4:
     def __init__(self):
+           # Ajout de la partie news analysis
+        self.news_analyzer = NewsAnalyzer(sources=12)
+        
+        # Amélioration de la partie arbitrage
+        self.arbitrage_engine = ArbitrageEngine(
+            exchanges=["binance", "ftx", "kucoin", "huobi", "okex"]
+        )
+        
+        # Ajout du système de reconnaissance vocale
+        self.voice_recognition = VoiceCommandSystem()
+        
         """Initialisation du bot de trading"""
         # Timestamps et user avec format exact
         self.current_time = "2025-06-03 00:50:39"
@@ -617,13 +660,84 @@ async def study_market(self, period="7d"):
         analysis_report = self._generate_analysis_report(indicators_analysis, regime)
         await self.telegram.send_message(analysis_report)
 
+        # Ajout de l'analyse des news historiques
+        news_impact = await self.news_analyzer.analyze_historical(
+            period=period,
+            pairs=config["TRADING"]["pairs"]
+        )
+            
+        # Analyse on-chain si disponible
+        onchain_data = await self.analyze_onchain_metrics()
+            
+        # Génération du plan de trading
+        trading_plan = self._generate_trading_plan(
+            technical_analysis=indicators_analysis,
+            news_sentiment=news_impact,
+            onchain_metrics=onchain_data,
+            regime=regime
+        )
+            
+        # Notification du plan complet
+        await self._send_complete_analysis(
+            technical=indicators_analysis,
+            news=news_impact,
+            onchain=onchain_data,
+            plan=trading_plan
+        )
+            
         return regime, historical_data, indicators_analysis
-
+            
     except Exception as e:
         logger.error(f"Erreur lors de l'étude du marché: {str(e)}")
-        raise
+    raise
 
+async def _send_complete_analysis(self, technical, news, onchain, plan):
+        """Envoie une analyse complète sur Telegram"""
+        message = [
+            "📊 Analyse complète du marché",
+            f"Date: {self.current_time} UTC",
+            f"Trader: {self.current_user}",
+            "\n🔍 Analyse Technique:",
+            self._format_technical_analysis(technical),
+            "\n📰 Analyse des News:",
+            self._format_news_analysis(news),
+            "\n⛓ Métriques On-Chain:",
+            self._format_onchain_analysis(onchain),
+            "\n📈 Plan de Trading:",
+            self._format_trading_plan(plan)
+        ]
+        await self.telegram.send_message("\n".join(message))
 
+async def process_market_data(self):
+        """Traitement amélioré des données"""
+        try:
+            # Votre code existant...
+            
+            # Vérification des news importantes en temps réel
+            news_impact = await self.news_analyzer.check_breaking_news()
+            if news_impact and news_impact["importance"] > 0.8:
+                await self._handle_important_news(news_impact)
+            
+            # Scan des opportunités d'arbitrage
+            arbitrage_ops = await self.arbitrage_engine.scan_opportunities()
+            if arbitrage_ops:
+                await self._handle_arbitrage_opportunity(arbitrage_ops)
+            
+            # Mise à jour du dashboard avec toutes les nouvelles informations
+            await self._update_dashboard(
+                market_data=market_data,
+                indicators=indicators_results,
+                news=news_impact,
+                arbitrage=arbitrage_ops,
+                current_time=self.current_time
+            )
+            
+            return market_data, indicators_results
+            
+        except Exception as e:
+            logger.error(f"Erreur lors du traitement des données: {e}")
+            return None, None
+        
 async def analyze_signals(self, market_data, indicators):
     """Analyse technique et fondamentale avancée"""
     try:
@@ -1967,7 +2081,7 @@ async def analyze_signals(self, market_data, indicators):
                     "buying_pressure"
                     if imbalance_ratio > 0.2
                     else "selling_pressure" if imbalance_ratio < -0.2 else "balanced"
-                ),
+                ), async def run(self):
             }
         except Exception as e:
             logger.error(f"[{datetime.utcnow()}] Erreur calcul Imbalance: {e}")
