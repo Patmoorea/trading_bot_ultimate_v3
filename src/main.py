@@ -1,7 +1,7 @@
 """
 Trading Bot Ultimate v4
 Version: 4.0.0
-Last Updated: 2025-06-06 01:20:02 UTC
+Last Updated: 2025-06-07 03:50:55 UTC
 Author: Patmoorea  
 Status: PRODUCTION
 
@@ -12,17 +12,34 @@ Features:
 - Real-time market regime detection
 """
 
-# 1. Imports initiaux (DOIVENT ÊTRE EN PREMIER)
-import streamlit as st
+# 1. Imports système (DOIVENT ÊTRE EN PREMIER)
 import os
 import sys
 import logging
 import json
-import asyncio
-from asyncio import AbstractEventLoop
-import nest_asyncio
 
-# 2. Configuration Streamlit
+# 2. Configuration environnement
+os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
+os.environ['CURRENT_TIME'] = "2025-06-07 03:50:55"
+os.environ['CURRENT_USER'] = "Patmoorea"
+
+# 3. Configuration asyncio et event loop
+import asyncio
+import nest_asyncio
+from asyncio import AbstractEventLoop
+
+def setup_event_loop() -> AbstractEventLoop:
+    """Configure l'event loop pour Streamlit"""
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    nest_asyncio.apply()
+    return loop
+
+# 4. Configuration Streamlit
+import streamlit as st
 st.set_page_config(
     page_title="Trading Bot Ultimate v4",
     page_icon="📈",
@@ -30,32 +47,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 3. Configuration de l'event loop
-def setup_event_loop() -> AbstractEventLoop:
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    return loop
-
-# 4. Application de nest_asyncio
-nest_asyncio.apply()
-
-# 5. Configuration environnement
-os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
-os.environ['CURRENT_TIME'] = "2025-06-07 03:46:40"
-os.environ['CURRENT_USER'] = "Patmoorea"
-
-# 6. Imports standards
+# 5. Imports standards
 from datetime import datetime
 import numpy as np
 import ccxt
 from dotenv import load_dotenv
+
+# 6. Setup de l'event loop avant les imports PyTorch
+setup_event_loop()
+
+# 7. Imports ML/AI
 import gymnasium as gym
 from gymnasium import spaces
 import torch
 import pandas as pd
+
+# 8. Configuration des chemins
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+sys.path.append(current_dir)
 
 
 # Ajout des chemins pour les modules
@@ -1932,20 +1943,11 @@ def run_trading_bot():
         # Informations de session
         st.sidebar.info(f"""
         **Session Info**
-        - User: {os.getenv('CURRENT_USER', 'Patmoorea')}
-        - Time: {os.getenv('CURRENT_TIME', '2025-06-07 03:46:40')} UTC
+        - User: {os.getenv('CURRENT_USER')}
+        - Time: {os.getenv('CURRENT_TIME')} UTC
         """)
         
-        # Métriques en temps réel
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Portfolio Value", "10,000 USDC", "+5.2%")
-        with col2:
-            st.metric("Active Positions", "2", "Open")
-        with col3:
-            st.metric("24h P&L", "+123 USDC", "+1.23%")
-
-        # Configuration sidebar
+        # Configuration trading
         with st.sidebar:
             st.header("Trading Configuration")
             risk_level = st.select_slider(
@@ -1959,16 +1961,29 @@ def run_trading_bot():
                 default=config["TRADING"]["pairs"]
             )
 
+        # Stats en temps réel
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Portfolio Value", "10,000 USDC", "+5.2%")
+        with col2:
+            st.metric("Active Positions", "2", "Open")
+        with col3:
+            st.metric("24h P&L", "+123 USDC", "+1.23%")
+
         # Bouton de démarrage
         if st.button("Start Trading Bot", type="primary"):
             try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
                 with st.spinner("Initializing trading bot..."):
-                    loop = setup_event_loop()
                     bot = TradingBotM4()
                     loop.run_until_complete(bot.run())
             except Exception as e:
                 st.error(f"Bot error: {str(e)}")
                 logging.error("Bot error", exc_info=True)
+            finally:
+                loop.close()
 
     except Exception as e:
         st.error(f"Critical error: {str(e)}")
@@ -1986,6 +2001,8 @@ if __name__ == "__main__":
     )
     logger = logging.getLogger(__name__)
     
+    # Configuration de l'event loop au démarrage
+    setup_event_loop()
+    
     # Lancement de l'application
-    setup_event_loop()  # Configure l'event loop avant le lancement
     run_trading_bot()
