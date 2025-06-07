@@ -11,21 +11,43 @@ Features:
 - AI-powered decision making
 - Real-time market regime detection
 """
+
+# 1. Imports initiaux (DOIVENT ÊTRE EN PREMIER)
 import streamlit as st
+import os
+import sys
+import logging
+import json
+import asyncio
+from asyncio import AbstractEventLoop
+import nest_asyncio
+
+# 2. Configuration Streamlit
 st.set_page_config(
     page_title="Trading Bot Ultimate v4",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-import os
-os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'  # Supprime les warnings Torch
-import sys
-import logging
-import json  # Ajout de l'import manquant
-import asyncio  # Ajout de l'import manquant
-import nest_asyncio  # Une seule fois
-nest_asyncio.apply()  # Nécessaire pour asyncio dans Streamlit
+
+# 3. Configuration de l'event loop
+def setup_event_loop() -> AbstractEventLoop:
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop
+
+# 4. Application de nest_asyncio
+nest_asyncio.apply()
+
+# 5. Configuration environnement
+os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
+os.environ['CURRENT_TIME'] = "2025-06-07 03:46:40"
+os.environ['CURRENT_USER'] = "Patmoorea"
+
+# 6. Imports standards
 from datetime import datetime
 import numpy as np
 import ccxt
@@ -1901,10 +1923,18 @@ class TradingBotM4:
             logger.error(f"[{current_time}] Erreur détection patterns: {e}")
             return {"detected": False, "pattern": None, "confidence": 0, "timestamp": current_time}
 
-if __name__ == "__main__":
+def run_trading_bot():
+    """Point d'entrée synchrone pour le bot de trading"""
     try:
         # Interface Streamlit
         st.title("Trading Bot Ultimate v4 🤖")
+        
+        # Informations de session
+        st.sidebar.info(f"""
+        **Session Info**
+        - User: {os.getenv('CURRENT_USER', 'Patmoorea')}
+        - Time: {os.getenv('CURRENT_TIME', '2025-06-07 03:46:40')} UTC
+        """)
         
         # Métriques en temps réel
         col1, col2, col3 = st.columns(3)
@@ -1931,28 +1961,31 @@ if __name__ == "__main__":
 
         # Bouton de démarrage
         if st.button("Start Trading Bot", type="primary"):
-            async def main():
-                try:
+            try:
+                with st.spinner("Initializing trading bot..."):
+                    loop = setup_event_loop()
                     bot = TradingBotM4()
-                    with st.spinner("Initializing trading bot..."):
-                        await bot.run()
-                except Exception as e:
-                    st.error(f"Bot error: {str(e)}")
-                    logger.error("Bot error", exc_info=True)
-
-            # Configuration du logging
-            logging.basicConfig(
-                level=logging.INFO,
-                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                handlers=[
-                    logging.FileHandler('trading_bot.log'),
-                    logging.StreamHandler()
-                ]
-            )
-            logger = logging.getLogger(__name__)
-
-            asyncio.run(main())
+                    loop.run_until_complete(bot.run())
+            except Exception as e:
+                st.error(f"Bot error: {str(e)}")
+                logging.error("Bot error", exc_info=True)
 
     except Exception as e:
         st.error(f"Critical error: {str(e)}")
-        logger.error("Fatal error", exc_info=True)
+        logging.error("Fatal error", exc_info=True)
+
+if __name__ == "__main__":
+    # Configuration du logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('trading_bot.log'),
+            logging.StreamHandler()
+        ]
+    )
+    logger = logging.getLogger(__name__)
+    
+    # Lancement de l'application
+    setup_event_loop()  # Configure l'event loop avant le lancement
+    run_trading_bot()
