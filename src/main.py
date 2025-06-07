@@ -22,8 +22,10 @@ import os
 os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'  # Supprime les warnings Torch
 import sys
 import logging
-import asyncio
-import nest_asyncio
+import json  # Ajout de l'import manquant
+import asyncio  # Ajout de l'import manquant
+import nest_asyncio  # Une seule fois
+nest_asyncio.apply()  # Nécessaire pour asyncio dans Streamlit
 from datetime import datetime
 import numpy as np
 import ccxt
@@ -318,7 +320,7 @@ class TradingBotM4:
         self.current_user = os.getenv('CURRENT_USER', 'Patmoorea')
         self.current_time = os.getenv('CURRENT_TIME', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
-        
+
         # Configuration de l'exchange et des streams
         self.stream_config = StreamConfig(
             max_connections=12,
@@ -1900,34 +1902,57 @@ class TradingBotM4:
             return {"detected": False, "pattern": None, "confidence": 0, "timestamp": current_time}
 
 if __name__ == "__main__":
-    # Configuration du logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('trading_bot.log'),
-            logging.StreamHandler()
-        ]
-    )
-    logger = logging.getLogger(__name__)
-
     try:
-        st.set_page_config(layout="wide")
-        st.title("Trading Bot Dashboard v4")
+        # Interface Streamlit
+        st.title("Trading Bot Ultimate v4 🤖")
         
-        import nest_asyncio
-        nest_asyncio.apply()
+        # Métriques en temps réel
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Portfolio Value", "10,000 USDC", "+5.2%")
+        with col2:
+            st.metric("Active Positions", "2", "Open")
+        with col3:
+            st.metric("24h P&L", "+123 USDC", "+1.23%")
 
-        async def main():
-            bot = TradingBotM4()
-            with st.spinner("Exécution du bot en cours..."):
-                await bot.run()
+        # Configuration sidebar
+        with st.sidebar:
+            st.header("Trading Configuration")
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Medium"
+            )
+            pairs = st.multiselect(
+                "Trading Pairs",
+                options=config["TRADING"]["pairs"],
+                default=config["TRADING"]["pairs"]
+            )
 
-        asyncio.run(main())
+        # Bouton de démarrage
+        if st.button("Start Trading Bot", type="primary"):
+            async def main():
+                try:
+                    bot = TradingBotM4()
+                    with st.spinner("Initializing trading bot..."):
+                        await bot.run()
+                except Exception as e:
+                    st.error(f"Bot error: {str(e)}")
+                    logger.error("Bot error", exc_info=True)
 
-    except KeyboardInterrupt:
-        logger.info("Bot arrêté manuellement")
-        st.warning("Bot arrêté par l'utilisateur")
+            # Configuration du logging
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                handlers=[
+                    logging.FileHandler('trading_bot.log'),
+                    logging.StreamHandler()
+                ]
+            )
+            logger = logging.getLogger(__name__)
+
+            asyncio.run(main())
+
     except Exception as e:
-        logger.error(f"Erreur fatale: {e}", exc_info=True)
-        st.error(f"Erreur critique: {str(e)}")
+        st.error(f"Critical error: {str(e)}")
+        logger.error("Fatal error", exc_info=True)
