@@ -1,8 +1,0 @@
-{
-    "glassnode": {
-        "api_key": "${GLASSNODE_KEY}",
-        "endpoints": {
-            "whales": "v1/metrics/distribution/transfers_volume_sum"
-        }
-    }
-}
