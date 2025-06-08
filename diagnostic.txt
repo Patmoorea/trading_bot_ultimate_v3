@@ -1,0 +1,343 @@
+.
+├── Makefile
+├── __init__.py
+├── __pycache__
+│   ├── __init__.cpython-311.pyc
+│   ├── main.cpython-311.pyc
+│   ├── test_ai_final.cpython-311-pytest-8.3.5.pyc
+│   ├── test_ai_final.cpython-311.pyc
+│   ├── test_ai_full.cpython-311-pytest-8.3.5.pyc
+│   ├── test_ai_integration.cpython-311-pytest-8.3.5.pyc
+│   ├── test_ai_modules.cpython-311-pytest-8.3.5.pyc
+│   ├── test_ai_optimization.cpython-311-pytest-8.3.5.pyc
+│   ├── test_final.cpython-311-pytest-8.3.5.pyc
+│   ├── test_gpu.cpython-311-pytest-8.3.5.pyc
+│   ├── test_gpu_perf.cpython-311.pyc
+│   ├── test_model.cpython-311-pytest-8.3.5.pyc
+│   ├── test_perf.cpython-311-pytest-8.3.5.pyc
+│   ├── test_rsi.cpython-311-pytest-8.3.5.pyc
+│   └── test_tf.cpython-311-pytest-8.3.5.pyc
+├── all_functions.txt
+├── analysis_files.zip
+├── arbitrage.log
+├── arbitrage.prof
+├── backtest.py
+├── benchmark.py
+├── benchmark_ai.py
+├── benchmark_gpu.py
+├── bot_processes.txt
+├── check_env.py
+├── check_env.sh
+├── check_gpu.py
+├── check_hardware.py
+├── check_metal.py
+├── config
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   └── quantum_params.cpython-311.pyc
+│   ├── arbitrage.json
+│   ├── constants.py
+│   ├── exchanges.json
+│   ├── exchanges.py
+│   ├── paths.py
+│   ├── providers.json
+│   ├── quantum_params.py
+│   └── trading_rules.json
+├── config.py
+├── core
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── gpu_config.cpython-311.pyc
+│   │   └── risk.cpython-311.pyc
+│   ├── fallback_config.py
+│   ├── gpu_config.py
+│   └── risk.py
+├── current_config.txt
+├── dashboard.py
+├── data
+│   ├── __init__.py
+│   ├── backtest
+│   │   └── __init__.py
+│   ├── historical
+│   │   ├── BTCUSDT_1h.csv
+│   │   ├── btc_usdt_1h.csv
+│   │   ├── btc_usdt_1h_clean.csv
+│   │   ├── btc_usdt_1h_optimized.csv
+│   │   └── btc_usdt_1h_ultraclean.csv
+│   ├── market
+│   │   └── __init__.py
+│   ├── models
+│   │   └── __init__.py
+│   ├── news
+│   │   └── __init__.py
+│   └── signals
+│       └── __init__.py
+├── debug.log
+├── diagnostic.txt
+├── fix_metal.sh
+├── fix_numpy.py
+├── fonctions.txt
+├── full_check.py
+├── gpu_benchmark.py
+├── gpu_diagnostic.py
+├── gpu_test.py
+├── imports_analysis.txt
+├── installed_packages.txt
+├── logs
+│   ├── __init__.py
+│   ├── bot_20250503.log
+│   ├── performance_20250503.log
+│   ├── test_20250503_140247.log
+│   ├── test_20250503_162921.log
+│   ├── test_20250503_163053.log
+│   ├── test_20250503_163158.log
+│   └── trading.log
+├── main.py
+├── models
+│   └── __init__.py
+├── modules
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── _arbitrage_fallback.cpython-311.pyc
+│   │   ├── arbitrage_engine.cpython-311.pyc
+│   │   ├── arbitrage_utils.cpython-311.pyc
+│   │   ├── fee_checker.cpython-311.pyc
+│   │   ├── logger.cpython-311.pyc
+│   │   ├── news_integration.cpython-311.pyc
+│   │   ├── pair_manager.cpython-311.pyc
+│   │   ├── quantum_fallback.cpython-311.pyc
+│   │   ├── quantum_pattern.cpython-311.pyc
+│   │   ├── risk_management.cpython-311.pyc
+│   │   ├── temporal_arbitrage.cpython-311.pyc
+│   │   ├── trading_params.cpython-311.pyc
+│   │   └── whale_config.cpython-311.pyc
+│   ├── _arbitrage_fallback.py
+│   ├── advanced_arbitrage.py
+│   ├── arbitrage_config.py
+│   ├── arbitrage_engine.py
+│   ├── arbitrage_utils.py
+│   ├── chain_analytics.py
+│   ├── data_feeder.py
+│   ├── debug_tools.py
+│   ├── enhanced_news.py
+│   ├── fee_checker.py
+│   ├── hardware.py
+│   ├── healthcheck.py
+│   ├── logger.py
+│   ├── m4_optimizer.py
+│   ├── market_flow.py
+│   ├── monitoring.py
+│   ├── news_integration.py
+│   ├── pair_manager.py
+│   ├── performance.py
+│   ├── quantum_fallback.py
+│   ├── quantum_ml.py
+│   ├── quantum_optim.py
+│   ├── quantum_pattern.py
+│   ├── risk_management.py
+│   ├── simple_arbitrage.py
+│   ├── telegram_bot.py
+│   ├── temporal_arbitrage.py
+│   ├── trading_enhancements.py
+│   ├── trading_params.py
+│   ├── whale_config.py
+│   └── whale_detector.py
+├── monitor.py
+├── monitor_arbitrage.py
+├── open_files.txt
+├── performance_audit.py
+├── profile_stats.prof
+├── project_structure.txt
+├── realtime_bot.log
+├── recent_logs.txt
+├── requirements.txt
+├── requirements_installed.txt
+├── requirements_lock.txt
+├── run_bot.py
+├── scripts
+│   ├── __init__.py
+│   ├── clean_data.py
+│   ├── clean_historical_data.py
+│   ├── deep_clean_data.py
+│   ├── fetch_binance_data.py
+│   ├── fetch_binance_robust.py
+│   ├── fetch_binance_simple.py
+│   ├── fetch_historical.py
+│   ├── install.sh
+│   ├── live_simulator.py
+│   └── optimize_data.py
+├── src
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   └── technical_analyzer.cpython-311.pyc
+│   ├── ai
+│   │   ├── __init__.py
+│   │   ├── cnn_lstm.py
+│   │   ├── hybrid_engine.py
+│   │   └── train.py
+│   ├── analysis
+│   │   ├── __init__.py
+│   │   ├── ml
+│   │   ├── multi_timeframe.py
+│   │   ├── sentiment
+│   │   ├── sentiment.py
+│   │   ├── technical
+│   │   └── technical.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── ai_optimizer.py
+│   │   ├── ai_optimizer_fallback.py
+│   │   ├── ai_optimizer_patched.py
+│   │   ├── ai_optimizer_robust.py
+│   │   ├── base_model.py
+│   │   ├── data_manager.py
+│   │   ├── enable_metal.py
+│   │   ├── engine.py
+│   │   ├── gpu_acceleration.py
+│   │   ├── gpu_check.py
+│   │   ├── gpu_config.py
+│   │   ├── gpu_setup.py
+│   │   ├── requirements.txt
+│   │   ├── rl_allocation.py
+│   │   ├── src
+│   │   └── technical_engine.py
+│   ├── data
+│   │   ├── __init__.py
+│   │   ├── feeds.py
+│   │   ├── historical
+│   │   ├── preprocessor.py
+│   │   ├── stream
+│   │   ├── stream_manager.py
+│   │   ├── stream_optimizer.py
+│   │   ├── websocket_client.py
+│   │   └── websocket_manager.py
+│   ├── execution
+│   │   ├── __init__.py
+│   │   └── smart_router.py
+│   ├── main.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   └── ai_engine.py
+│   ├── monitoring
+│   │   └── __init__.py
+│   ├── notifications
+│   │   ├── __init__.py
+│   │   └── telegram.py
+│   ├── realtime.py
+│   ├── realtime_bot.py
+│   ├── risk
+│   │   ├── __init__.py
+│   │   └── manager.py
+│   └── technical_analyzer.py
+├── strategies
+│   ├── __pycache__
+│   │   └── quantum_strat.cpython-311.pyc
+│   └── quantum_strat.py
+├── structure.txt
+├── technical_analyzer.py
+├── test
+│   ├── __init__.py
+│   ├── test_integration.py
+│   ├── test_performance.py
+│   └── test_technical.py
+├── test_ai_final.py
+├── test_ai_full.py
+├── test_ai_integration.py
+├── test_ai_modules.py
+├── test_ai_optimization.py
+├── test_arbitrage_debug.py
+├── test_connectivity.py
+├── test_final.py
+├── test_gpu.py
+├── test_gpu_perf.py
+├── test_model.py
+├── test_perf.py
+├── test_rsi.py
+├── test_tf.py
+├── tests
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── benchmark_arbitrage.cpython-311-pytest-8.3.5.pyc
+│   │   ├── conftest.cpython-311-pytest-8.3.5.pyc
+│   │   └── test_arbitrage.cpython-311-pytest-8.3.5.pyc
+│   ├── benchmark_arbitrage.py
+│   ├── conftest.py
+│   ├── integration
+│   │   ├── __pycache__
+│   │   └── test_engine.py
+│   ├── test_arbitrage.py
+│   └── unit
+│       ├── __pycache__
+│       ├── test_risk.py
+│       └── test_technical.py
+├── tool
+├── tools
+│   └── gpu_monitor.py
+└── trading_bot.log
+
+47 directories, 235 files
+{
+    "min_spread": 0.0005,
+    "target_pairs": ["BTC/USDC", "ETH/USDC", "SOL/USDC"],
+    "update_interval": 10,
+    "exchanges": {
+        "binance": {"enabled": true},
+        "kucoin": {"enabled": true},
+        "coinbase": {"enabled": true}
+    }
+}
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}
+{
+    "glassnode": {
+        "api_key": "${GLASSNODE_KEY}",
+        "endpoints": {
+            "whales": "v1/metrics/distribution/transfers_volume_sum"
+        }
+    }
+}
+{
+  "direction_restriction": {
+    "long_only": true,
+    "allowed_quote_assets": ["USDC"]
+  }
+}
+import pandas as pd
+import numpy as np
+import logging
+from typing import Dict, Any
+
+class TradingEngine:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        
+    def load_data(self, filepath: str) -> pd.DataFrame:
+        """Charge les données avec vérification des types"""
+        df = pd.read_csv(filepath)
+        num_cols = ['open', 'high', 'low', 'close', 'volume']
+        df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
+        return df.dropna()

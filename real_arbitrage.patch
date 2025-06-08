@@ -1,0 +1,11 @@
+--- src/strategies/arbitrage/real_arbitrage.py.orig
++++ src/strategies/arbitrage/real_arbitrage.py
+@@ -59,7 +59,7 @@
+ 
+     def get_opportunities(self) -> List[Tuple[str, float]]:
+         return [
+-            (pair, spread)
++            (pair, spread)
+             for pair, spread in self.scan_all_pairs().items()
+             if spread > self.min_spread
+         ]

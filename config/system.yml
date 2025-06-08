@@ -1,0 +1,78 @@
+version: "2.0.0"
+
+system:
+  hardware:
+    cpu: "Apple M4"
+    cores: 10
+    ram: 16
+    gpu: "Apple M4"
+    storage: 460
+
+optimization:
+  metal:
+    enabled: true
+    precision: "float16"
+    memory_fraction: 0.9
+    
+  buffer:
+    size: 1000000
+    compression: "lz4"
+    
+trading:
+  base_currency: "USDC"
+  allowed_pairs:
+    - "BTC/USDC"
+    - "ETH/USDC"
+    - "SOL/USDC"
+    
+  risk:
+    max_drawdown: 0.05
+    daily_stop_loss: 0.02
+    position_sizing: "volatility_based"
+    
+  execution:
+    slippage_tolerance: 0.001
+    min_liquidity: 100000
+    iceberg_enabled: true
+    
+monitoring:
+  telegram:
+    enabled: true
+    alert_levels:
+      critical: 0.8
+      important: 0.6
+      info: 0.3
+      
+  dashboard:
+    refresh_rate: 1000
+    widgets: 12
+    voice_enabled: true
+    
+ai:
+  models:
+    cnn_lstm:
+      layers: 18
+      input_shape: [100, 5, 4]
+      residual: true
+      
+    ppo_transformer:
+      layers: 6
+      embedding_size: 512
+      
+  optimization:
+    trials: 200
+    timeout: 3600
+    
+data:
+  websocket:
+    max_connections: 12
+    reconnect_delay: 1.0
+    
+  storage:
+    format: "arrow"
+    compression: true
+    
+news:
+  sources: 12
+  update_interval: 60
+  sentiment_threshold: 0.6

@@ -1,0 +1,213 @@
+************* Module trading_bot_ultimate.modules.simple_arbitrage
+modules/simple_arbitrage.py:28:0: C0301: Line too long (101/100) (line-too-long)
+modules/simple_arbitrage.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/simple_arbitrage.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/simple_arbitrage.py:10:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+modules/simple_arbitrage.py:14:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/simple_arbitrage.py:34:15: W0718: Catching too general exception Exception (broad-exception-caught)
+modules/simple_arbitrage.py:2:0: C0411: standard import "time" should be placed before third party import "ccxt" (wrong-import-order)
+modules/simple_arbitrage.py:3:0: C0411: standard import "json" should be placed before third party import "ccxt" (wrong-import-order)
+modules/simple_arbitrage.py:4:0: C0411: standard import "pathlib.Path" should be placed before third party import "ccxt" (wrong-import-order)
+************* Module trading_bot_ultimate.modules.telegram_bot
+modules/telegram_bot.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/telegram_bot.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/telegram_bot.py:1:0: R0913: Too many arguments (6/5) (too-many-arguments)
+modules/telegram_bot.py:1:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+modules/telegram_bot.py:13:4: E0602: Undefined variable 'bot' (undefined-variable)
+************* Module trading_bot_ultimate.modules._arbitrage_fallback
+modules/_arbitrage_fallback.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/_arbitrage_fallback.py:4:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/_arbitrage_fallback.py:11:11: W0718: Catching too general exception Exception (broad-exception-caught)
+************* Module trading_bot_ultimate.modules.trading_params
+modules/trading_params.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/trading_params.py:7:0: C0115: Missing class docstring (missing-class-docstring)
+modules/trading_params.py:9:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/trading_params.py:10:21: W1508: os.getenv default type is builtins.float. Expected str or None. (invalid-envvar-default)
+modules/trading_params.py:13:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/trading_params.py:14:21: W1508: os.getenv default type is builtins.float. Expected str or None. (invalid-envvar-default)
+modules/trading_params.py:17:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/trading_params.py:18:21: W1508: os.getenv default type is builtins.float. Expected str or None. (invalid-envvar-default)
+modules/trading_params.py:2:0: C0411: standard import "os" should be placed before third party import "dotenv.load_dotenv" (wrong-import-order)
+************* Module trading_bot_ultimate.modules.risk_management
+modules/risk_management.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/risk_management.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module trading_bot_ultimate.modules.trading_enhancements
+modules/trading_enhancements.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/trading_enhancements.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/trading_enhancements.py:18:43: W0613: Unused argument 'pair' (unused-argument)
+modules/trading_enhancements.py:18:49: W0613: Unused argument 'window' (unused-argument)
+modules/trading_enhancements.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+modules/trading_enhancements.py:2:0: C0411: standard import "datetime.datetime" should be placed before third party import "numpy" (wrong-import-order)
+modules/trading_enhancements.py:2:0: W0611: Unused datetime imported from datetime (unused-import)
+************* Module trading_bot_ultimate.modules.quantum_ml
+modules/quantum_ml.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/quantum_ml.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/quantum_ml.py:13:23: E1101: Module 'pennylane.numpy' has no 'pi' member (no-member)
+modules/quantum_ml.py:25:20: E1101: Instance of 'QuantumPatternDetector' has no '_preprocess' member (no-member)
+modules/quantum_ml.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.market_flow
+modules/market_flow.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/market_flow.py:3:15: E0602: Undefined variable 'ccxt' (undefined-variable)
+************* Module trading_bot_ultimate.modules.advanced_arbitrage
+modules/advanced_arbitrage.py:56:0: C0301: Line too long (104/100) (line-too-long)
+modules/advanced_arbitrage.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/advanced_arbitrage.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/advanced_arbitrage.py:13:11: W0718: Catching too general exception BaseException (broad-exception-caught)
+modules/advanced_arbitrage.py:11:13: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+modules/advanced_arbitrage.py:22:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/advanced_arbitrage.py:40:19: W0718: Catching too general exception Exception (broad-exception-caught)
+modules/advanced_arbitrage.py:45:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/advanced_arbitrage.py:62:27: W0718: Catching too general exception BaseException (broad-exception-caught)
+modules/advanced_arbitrage.py:49:4: R1702: Too many nested blocks (6/5) (too-many-nested-blocks)
+modules/advanced_arbitrage.py:2:0: C0411: standard import "time" should be placed before third party import "ccxt" (wrong-import-order)
+modules/advanced_arbitrage.py:3:0: C0411: standard import "json" should be placed before third party import "ccxt" (wrong-import-order)
+modules/advanced_arbitrage.py:4:0: C0411: standard import "pathlib.Path" should be placed before third party import "ccxt" (wrong-import-order)
+************* Module trading_bot_ultimate.modules.chain_analytics
+modules/chain_analytics.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/chain_analytics.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/chain_analytics.py:11:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/chain_analytics.py:12:19: W1309: Using an f-string that does not have any interpolated variables (f-string-without-interpolation)
+modules/chain_analytics.py:18:19: W3101: Missing timeout argument for method 'requests.get' can cause your program to hang indefinitely (missing-timeout)
+modules/chain_analytics.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+modules/chain_analytics.py:2:0: C0411: standard import "datetime.datetime" should be placed before third party import "requests" (wrong-import-order)
+modules/chain_analytics.py:2:0: W0611: Unused datetime imported from datetime (unused-import)
+************* Module trading_bot_ultimate.modules.fee_checker
+modules/fee_checker.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+************* Module trading_bot_ultimate.modules.debug_tools
+modules/debug_tools.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/debug_tools.py:5:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module trading_bot_ultimate.modules.m4_optimizer
+modules/m4_optimizer.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/m4_optimizer.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/m4_optimizer.py:9:30: W1508: os.getenv default type is builtins.int. Expected str or None. (invalid-envvar-default)
+modules/m4_optimizer.py:14:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/m4_optimizer.py:16:12: C0415: Import outside toplevel (torch) (import-outside-toplevel)
+modules/m4_optimizer.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.monitoring
+modules/monitoring.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/monitoring.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/monitoring.py:12:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/monitoring.py:17:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/monitoring.py:20:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/monitoring.py:2:0: W0611: Unused import time (unused-import)
+************* Module trading_bot_ultimate.modules.arbitrage_engine
+modules/arbitrage_engine.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/arbitrage_engine.py:8:0: C0115: Missing class docstring (missing-class-docstring)
+modules/arbitrage_engine.py:49:19: W0718: Catching too general exception Exception (broad-exception-caught)
+modules/arbitrage_engine.py:8:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.data_feeder
+modules/data_feeder.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/data_feeder.py:5:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/data_feeder.py:12:15: W0718: Catching too general exception Exception (broad-exception-caught)
+modules/data_feeder.py:2:0: C0411: standard import "time" should be placed before third party import "ccxt" (wrong-import-order)
+************* Module trading_bot_ultimate.modules.logger
+modules/logger.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/logger.py:5:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module trading_bot_ultimate.modules.news_integration
+modules/news_integration.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/news_integration.py:4:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/news_integration.py:4:22: W0613: Unused argument 'text' (unused-argument)
+modules/news_integration.py:1:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+modules/news_integration.py:10:4: W0107: Unnecessary pass statement (unnecessary-pass)
+modules/news_integration.py:8:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+modules/news_integration.py:14:0: W0127: Assigning the same variable 'AdvancedNewsAnalyzer' to itself (self-assigning-variable)
+modules/news_integration.py:15:0: W0127: Assigning the same variable 'EnhancedNewsProcessor' to itself (self-assigning-variable)
+************* Module trading_bot_ultimate.modules.healthcheck
+modules/healthcheck.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/healthcheck.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module trading_bot_ultimate.modules.news_alternative
+modules/news_alternative.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/news_alternative.py:10:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/news_alternative.py:4:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.arbitrage_triangular
+modules/arbitrage_triangular.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/arbitrage_triangular.py:1:0: C0115: Missing class docstring (missing-class-docstring)
+modules/arbitrage_triangular.py:1:0: R0903: Too few public methods (0/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.technical_engine
+modules/technical_engine.py:36:4: W0404: Reimport 'pandas' (imported line 6) (reimported)
+modules/technical_engine.py:37:4: W0404: Reimport 'numpy' (imported line 5) (reimported)
+modules/technical_engine.py:7:0: C0411: standard import "typing.Union" should be placed before third party imports "numpy", "pandas" (wrong-import-order)
+modules/technical_engine.py:8:0: C0411: standard import "logging" should be placed before third party imports "numpy", "pandas" (wrong-import-order)
+modules/technical_engine.py:37:4: C0412: Imports from package numpy are not grouped (ungrouped-imports)
+modules/technical_engine.py:7:0: W0611: Unused Union imported from typing (unused-import)
+modules/technical_engine.py:7:0: W0611: Unused Optional imported from typing (unused-import)
+modules/technical_engine.py:8:0: W0611: Unused import logging (unused-import)
+modules/technical_engine.py:38:4: W0611: Unused import talib (unused-import)
+************* Module trading_bot_ultimate.modules.hardware
+modules/hardware.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/hardware.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/hardware.py:2:4: C0415: Import outside toplevel (os) (import-outside-toplevel)
+modules/hardware.py:3:4: C0415: Import outside toplevel (torch) (import-outside-toplevel)
+************* Module trading_bot_ultimate.modules.whale_config
+modules/whale_config.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/whale_config.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module trading_bot_ultimate.modules.enhanced_news
+modules/enhanced_news.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/enhanced_news.py:8:0: C0115: Missing class docstring (missing-class-docstring)
+modules/enhanced_news.py:8:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+modules/enhanced_news.py:2:0: C0411: standard import "os" should be placed before third party import "dotenv.load_dotenv" (wrong-import-order)
+modules/enhanced_news.py:3:0: C0411: standard import "datetime.datetime" should be placed before third party import "dotenv.load_dotenv" (wrong-import-order)
+modules/enhanced_news.py:3:0: W0611: Unused datetime imported from datetime (unused-import)
+modules/enhanced_news.py:3:0: W0611: Unused timedelta imported from datetime (unused-import)
+************* Module trading_bot_ultimate.modules.quantum_pattern
+modules/quantum_pattern.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/quantum_pattern.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/quantum_pattern.py:13:23: E1101: Module 'pennylane.numpy' has no 'pi' member (no-member)
+modules/quantum_pattern.py:24:15: W0718: Catching too general exception BaseException (broad-exception-caught)
+modules/quantum_pattern.py:25:19: E1101: Module 'pennylane.numpy' has no 'zeros' member (no-member)
+modules/quantum_pattern.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.performance
+modules/performance.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/performance.py:8:11: E0602: Undefined variable 'EnhancedNewsProcessor' (undefined-variable)
+modules/performance.py:6:26: W0613: Unused argument 'max_age' (unused-argument)
+modules/performance.py:13:4: C0415: Import outside toplevel (os) (import-outside-toplevel)
+modules/performance.py:21:20: E0602: Undefined variable 'avg_time_ms' (undefined-variable)
+modules/performance.py:22:21: E0602: Undefined variable 'exec_time_ms' (undefined-variable)
+modules/performance.py:1:0: W0611: Unused import time (unused-import)
+************* Module trading_bot_ultimate.modules.quantum_optim
+modules/quantum_optim.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/quantum_optim.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/quantum_optim.py:4:11: W0718: Catching too general exception BaseException (broad-exception-caught)
+modules/quantum_optim.py:3:15: E0602: Undefined variable 'qml' (undefined-variable)
+modules/quantum_optim.py:5:15: E0602: Undefined variable 'qml' (undefined-variable)
+************* Module trading_bot_ultimate.modules.arbitrage_config
+modules/arbitrage_config.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/arbitrage_config.py:4:0: E0602: Undefined variable 'EXCHANGES' (undefined-variable)
+modules/arbitrage_config.py:5:0: E0602: Undefined variable 'PAIRS' (undefined-variable)
+************* Module trading_bot_ultimate.modules.quantum_fallback
+modules/quantum_fallback.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/quantum_fallback.py:1:0: C0115: Missing class docstring (missing-class-docstring)
+modules/quantum_fallback.py:5:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/quantum_fallback.py:5:22: W0613: Unused argument 'data' (unused-argument)
+modules/quantum_fallback.py:1:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.whale_detector
+modules/whale_detector.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/whale_detector.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+modules/whale_detector.py:2:15: E0602: Undefined variable 'ccxt' (undefined-variable)
+************* Module trading_bot_ultimate.modules.temporal_arbitrage
+modules/temporal_arbitrage.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/temporal_arbitrage.py:20:19: W0718: Catching too general exception BaseException (broad-exception-caught)
+modules/temporal_arbitrage.py:2:0: W0611: Unused numpy imported as np (unused-import)
+************* Module trading_bot_ultimate.modules.pair_manager
+modules/pair_manager.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/pair_manager.py:2:0: C0411: standard import "os" should be placed before third party import "dotenv.load_dotenv" (wrong-import-order)
+************* Module trading_bot_ultimate.modules.arbitrage_utils
+modules/arbitrage_utils.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/arbitrage_utils.py:9:0: C0206: Consider iterating with .items() (consider-using-dict-items)
+************* Module trading_bot_ultimate.modules.arbitrage_fallback
+modules/arbitrage_fallback.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/arbitrage_fallback.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+modules/arbitrage_fallback.py:4:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.news.sentiment_processor
+modules/news/sentiment_processor.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/news/sentiment_processor.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/news/sentiment_processor.py:10:4: C0116: Missing function or method docstring (missing-function-docstring)
+modules/news/sentiment_processor.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+************* Module trading_bot_ultimate.modules.risk.advanced_risk
+modules/risk/advanced_risk.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+modules/risk/advanced_risk.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+modules/risk/advanced_risk.py:1:0: W0611: Unused timedelta imported from datetime (unused-import)
+
+-----------------------------------
+Your code has been rated at 4.89/10
+

@@ -1,0 +1,44 @@
+/Users/patricejourdan/trading_bot_ultimate/modules/telegram_bot.py:def send_enhanced_alert(symbol, action, reason, confidence, timeframe, news_link=None):
+/Users/patricejourdan/trading_bot_ultimate/modules/_arbitrage_fallback.py:def safe_find_arbitrage():
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_params.py:    def stop_loss(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_params.py:    def take_profit(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_params.py:    def max_position(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/risk_management.py:def calculate_dynamic_sl(volatility):
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_enhancements.py:    def __init__(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_enhancements.py:    def adjust_for_market_volatility(self, signal):
+/Users/patricejourdan/trading_bot_ultimate/modules/trading_enhancements.py:    def _calculate_recent_volatility(self, pair, window=14):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_ml.py:    def __init__(self, n_qubits=4):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_ml.py:        def quantum_circuit(inputs):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_ml.py:    def detect_anomalies(self, market_data):
+/Users/patricejourdan/trading_bot_ultimate/modules/market_flow.py:def detect_whale_orders(pair, window=100):
+/Users/patricejourdan/trading_bot_ultimate/modules/chain_analytics.py:    def __init__(self, api_key):
+/Users/patricejourdan/trading_bot_ultimate/modules/chain_analytics.py:    def get_whale_activity(self, asset='btc'):
+/Users/patricejourdan/trading_bot_ultimate/modules/fee_checker.py:def calculate_net_arbitrage(spread):
+/Users/patricejourdan/trading_bot_ultimate/modules/m4_optimizer.py:    def __init__(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/m4_optimizer.py:    def configure_torch(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/arbitrage_engine.py:def find_usdc_arbitrage(min_spread=0.008):  # 0.8% plus sensible
+/Users/patricejourdan/trading_bot_ultimate/modules/arbitrage_engine.py:def find_temporal_arbitrage(pair, timeframe='5m'):
+/Users/patricejourdan/trading_bot_ultimate/modules/arbitrage_engine.py:async def realtime_update(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/data_feeder.py:def fetch_real_time():
+/Users/patricejourdan/trading_bot_ultimate/modules/logger.py:def setup_logger():
+/Users/patricejourdan/trading_bot_ultimate/modules/news_integration.py:    def __init__(self, api_key):
+/Users/patricejourdan/trading_bot_ultimate/modules/news_integration.py:    def get_crypto_news(self, keywords="crypto OR blockchain"):
+/Users/patricejourdan/trading_bot_ultimate/modules/news_integration.py:def get_news_api_key():
+/Users/patricejourdan/trading_bot_ultimate/modules/news_integration.py:    def __init__(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/news_integration.py:    def filter_important_news(self, news):
+/Users/patricejourdan/trading_bot_ultimate/modules/hardware.py:def configure_quantum():
+/Users/patricejourdan/trading_bot_ultimate/modules/whale_config.py:def get_threshold(pair):
+/Users/patricejourdan/trading_bot_ultimate/modules/enhanced_news.py:    def __init__(self):
+/Users/patricejourdan/trading_bot_ultimate/modules/enhanced_news.py:    def should_alert(self, news_item):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_pattern.py:    def __init__(self, n_qubits=4):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_pattern.py:        def circuit(inputs):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_pattern.py:    def analyze(self, data):
+/Users/patricejourdan/trading_bot_ultimate/modules/performance.py:def cached_news(keywords, max_age=3600):
+/Users/patricejourdan/trading_bot_ultimate/modules/performance.py:def configure_quantum():
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_optim.py:def create_quantum_device():
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_fallback.py:    def __init__(self, n_qubits=4):
+/Users/patricejourdan/trading_bot_ultimate/modules/quantum_fallback.py:    def analyze(self, data):
+/Users/patricejourdan/trading_bot_ultimate/modules/whale_detector.py:def detect_whale_activity(pair):
+/Users/patricejourdan/trading_bot_ultimate/modules/temporal_arbitrage.py:def find_temporal_opportunities():
+/Users/patricejourdan/trading_bot_ultimate/modules/pair_manager.py:def get_trading_pairs():
+/Users/patricejourdan/trading_bot_ultimate/modules/arbitrage_utils.py:def get_active_usdc_pairs():

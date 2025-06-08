@@ -1,0 +1,16 @@
+--- src/analysis/sentiment/news_sentiment.py.orig
++++ src/analysis/sentiment/news_sentiment.py
+@@ -1,3 +1,4 @@
++import torch
+ def _init_finbert():
+     """Version corrigée pour Apple Silicon"""
+     try:
+@@ -13,7 +14,7 @@
+         _finbert_model = AutoModelForSequenceClassification.from_pretrained(model_name)
+         _finbert_model = _finbert_model.to(device).eval()
+         
+-    return torch.softmax(outputs.logits, dim=1).tolist()[0]
++        return torch.softmax(outputs.logits, dim=1).tolist()[0]
+     except Exception as e:
+         print(f"Erreur initialisation FinBERT: {e}")
+         _finbert_model = None

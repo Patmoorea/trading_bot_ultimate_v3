@@ -1,0 +1,1502 @@
+=== Analyse de ./test_ai_modules.py ===
+test_ai_modules.py:14:0: C0413: Import "from src.core.rl_allocation import CapitalAllocationEnv, train_rl_agent" should be placed at the top of the module (wrong-import-position)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./telegram_bot.py ===
+telegram_bot.py:13:4: C0116: Missing function or method docstring (missing-function-docstring)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./test_tf.py ===
+test_tf.py:2:0: C0411: standard import "time" should be placed before third party import "tensorflow" (wrong-import-order)
+
+------------------------------------------------------------------
+Your code has been rated at 6.92/10 (previous run: 6.92/10, +0.00)
+
+---
+=== Analyse de ./test_ai_full.py ===
+test_ai_full.py:6:0: E0611: No name 'ai_optimizer' in module 'core' (no-name-in-module)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./test_model.py ===
+test_model.py:5:12: E1101: Module 'tensorflow' has no 'keras' member (no-member)
+
+------------------------------------------------------------------
+Your code has been rated at 2.50/10 (previous run: 2.50/10, +0.00)
+
+---
+=== Analyse de ./technical_analyzer.py ===
+---
+=== Analyse de ./risk_management.py ===
+risk_management.py:2:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./tools/gpu_monitor.py ===
+tools/gpu_monitor.py:2:0: C0411: standard import "platform" should be placed before third party import "torch" (wrong-import-order)
+
+------------------------------------------------------------------
+Your code has been rated at 6.36/10 (previous run: 6.36/10, +0.00)
+
+---
+=== Analyse de ./run_bot.py ===
+run_bot.py:5:10: W1309: Using an f-string that does not have any interpolated variables (f-string-without-interpolation)
+
+------------------------------------------------------------------
+Your code has been rated at 5.71/10 (previous run: 5.71/10, +0.00)
+
+---
+=== Analyse de ./config.py ===
+config.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+------------------------------------------------------------------
+Your code has been rated at 6.67/10 (previous run: 6.67/10, +0.00)
+
+---
+=== Analyse de ./core/config.py ===
+core/config.py:6:4: E0602: Undefined variable 'torch' (undefined-variable)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./core/m4_config.py ===
+core/m4_config.py:8:4: E1101: Module 'tensorflow' has no 'keras' member (no-member)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+---
+=== Analyse de ./core/gpu_config.py ===
+core/gpu_config.py:2:0: C0411: standard import "os" should be placed before third party import "tensorflow" (wrong-import-order)
+
+-----------------------------------
+Your code has been rated at 8.10/10
+
+---
+=== Analyse de ./core/fallback_config.py ===
+core/fallback_config.py:6:4: E0602: Undefined variable 'os' (undefined-variable)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./core/__init__.py ===
+core/__init__.py:6:0: W0702: No exception type(s) specified (bare-except)
+
+-----------------------------------
+Your code has been rated at 7.14/10
+
+---
+=== Analyse de ./core/risk.py ===
+core/risk.py:1:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./monitor.py ===
+monitor.py:5:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 7.86/10
+
+---
+=== Analyse de ./test_ai_integration.py ===
+test_ai_integration.py:20:4: W0612: Unused variable 'model' (unused-variable)
+
+-----------------------------------
+Your code has been rated at 0.45/10
+
+---
+=== Analyse de ./benchmark.py ===
+benchmark.py:2:0: C0411: standard import "time" should be placed before third party import "tensorflow" (wrong-import-order)
+
+-----------------------------------
+Your code has been rated at 6.92/10
+
+---
+=== Analyse de ./check_gpu.py ===
+check_gpu.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 7.50/10
+
+---
+=== Analyse de ./test_all.py ===
+test_all.py:12:24: E1101: Instance of 'ArbitrageEngine' has no 'config' member (no-member)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./test/__init__.py ===
+---
+=== Analyse de ./test/test_performance.py ===
+test/test_performance.py:7:0: W0611: Unused sample_data imported from test.test_technical (unused-import)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./test/test_integration.py ===
+test/test_integration.py:6:0: W0611: Unused Config imported from config (unused-import)
+
+-----------------------------------
+Your code has been rated at 5.00/10
+
+---
+=== Analyse de ./test/test_technical.py ===
+test/test_technical.py:22:26: W0621: Redefining name 'sample_data' from outer scope (line 7) (redefined-outer-name)
+
+-----------------------------------
+Your code has been rated at 0.59/10
+
+---
+=== Analyse de ./test_perf.py ===
+test_perf.py:2:0: C0411: standard import "time" should be placed before third party import "tensorflow" (wrong-import-order)
+
+-----------------------------------
+Your code has been rated at 5.83/10
+
+---
+=== Analyse de ./config/quantum_params.py ===
+config/quantum_params.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 5.00/10
+
+---
+=== Analyse de ./config/paths.py ===
+config/paths.py:8:0: R0903: Too few public methods (0/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 7.00/10
+
+---
+=== Analyse de ./config/exchanges.py ===
+config/exchanges.py:4:0: R0903: Too few public methods (0/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 5.71/10
+
+---
+=== Analyse de ./config/constants.py ===
+config/constants.py:4:0: R0903: Too few public methods (0/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./config/__init__.py ===
+config/__init__.py:10:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 4.29/10
+
+---
+=== Analyse de ./config/hardware_config.py ===
+config/hardware_config.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/talib/abstract.py ===
+trading_bot/lib/python3.11/site-packages/talib/abstract.py:5:0: W0611: Unused TA_OUTPUT_FLAGS imported from _ta_lib (unused-import)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/talib/deprecated.py ===
+trading_bot/lib/python3.11/site-packages/talib/deprecated.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/talib/__init__.py ===
+trading_bot/lib/python3.11/site-packages/talib/__init__.py:344:78: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+
+-----------------------------------
+Your code has been rated at 2.93/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/talib/stream.py ===
+trading_bot/lib/python3.11/site-packages/talib/stream.py:6:44: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/_decode.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/_decode.py:39:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.32/10
+
+./trading_bot/lib/python3.11/site-packages/mdurl/_decode.py
+    F 39:0 repl_func_with_cache - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/_url.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/_url.py:6:0: C0115: Missing class docstring (missing-class-docstring)
+
+-----------------------------------
+Your code has been rated at 8.18/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/__init__.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/__init__.py:16:0: W0622: Redefining built-in 'format' (redefined-builtin)
+
+-----------------------------------
+Your code has been rated at 7.14/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/_format.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/_format.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.24/10
+
+./trading_bot/lib/python3.11/site-packages/mdurl/_format.py
+    F 9:0 format - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/_parse.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/_parse.py:297:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.00/10
+
+./trading_bot/lib/python3.11/site-packages/mdurl/_parse.py
+    M 116:4 MutableURL.parse - F
+    C 105:0 MutableURL - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/mdurl/_encode.py ===
+trading_bot/lib/python3.11/site-packages/mdurl/_encode.py:73:19: R1716: Simplify chained comparison between the operands (chained-comparison)
+
+-----------------------------------
+Your code has been rated at 8.65/10
+
+./trading_bot/lib/python3.11/site-packages/mdurl/_encode.py
+    F 45:0 encode - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/tags.py ===
+trading_bot/lib/python3.11/site-packages/packaging/tags.py:597:4: R1705: Unnecessary "elif" after "return", remove the leading "el" from "elif" (no-else-return)
+
+-----------------------------------
+Your code has been rated at 9.29/10
+
+./trading_bot/lib/python3.11/site-packages/packaging/tags.py
+    F 397:0 mac_platforms - C
+    F 151:0 _cpython_abis - C
+    F 184:0 cpython_tags - C
+    F 365:0 _mac_binary_formats - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_musllinux.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_musllinux.py:52:11: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+
+-----------------------------------
+Your code has been rated at 9.77/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/metadata.py ===
+trading_bot/lib/python3.11/site-packages/packaging/metadata.py:472:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 9.62/10
+
+./trading_bot/lib/python3.11/site-packages/packaging/metadata.py
+    F 286:0 parse_email - D
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/version.py ===
+trading_bot/lib/python3.11/site-packages/packaging/version.py:523:0: R0917: Too many positional arguments (6/5) (too-many-positional-arguments)
+
+-----------------------------------
+Your code has been rated at 9.81/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/licenses/__init__.py ===
+trading_bot/lib/python3.11/site-packages/packaging/licenses/__init__.py:60:0: R0915: Too many statements (54/50) (too-many-statements)
+
+-----------------------------------
+Your code has been rated at 9.02/10
+
+./trading_bot/lib/python3.11/site-packages/packaging/licenses/__init__.py
+    F 60:0 canonicalize_license_expression - D
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/licenses/_spdx.py ===
+trading_bot/lib/python3.11/site-packages/packaging/licenses/_spdx.py:10:0: C0115: Missing class docstring (missing-class-docstring)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/__init__.py ===
+trading_bot/lib/python3.11/site-packages/packaging/__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 8.75/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_parser.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_parser.py:340:4: R1705: Unnecessary "elif" after "return", remove the leading "el" from "elif" (no-else-return)
+
+-----------------------------------
+Your code has been rated at 9.03/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/utils.py ===
+trading_bot/lib/python3.11/site-packages/packaging/utils.py:137:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.29/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/requirements.py ===
+trading_bot/lib/python3.11/site-packages/packaging/requirements.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 9.33/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_structures.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_structures.py:35:0: C0115: Missing class docstring (missing-class-docstring)
+
+-----------------------------------
+Your code has been rated at 9.17/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/markers.py ===
+trading_bot/lib/python3.11/site-packages/packaging/markers.py:274:0: C0115: Missing class docstring (missing-class-docstring)
+
+-----------------------------------
+Your code has been rated at 9.53/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_manylinux.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_manylinux.py:255:22: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+
+-----------------------------------
+Your code has been rated at 9.60/10
+
+./trading_bot/lib/python3.11/site-packages/packaging/_manylinux.py
+    F 181:0 _is_compatible - C
+    F 217:0 platform_tags - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_tokenizer.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_tokenizer.py:175:4: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.41/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/specifiers.py ===
+trading_bot/lib/python3.11/site-packages/packaging/specifiers.py:992:8: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+
+-----------------------------------
+Your code has been rated at 9.75/10
+
+./trading_bot/lib/python3.11/site-packages/packaging/specifiers.py
+    M 942:4 SpecifierSet.filter - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/packaging/_elffile.py ===
+trading_bot/lib/python3.11/site-packages/packaging/_elffile.py:41:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 8.11/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/sharing.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/sharing.py:66:0: C0301: Line too long (154/100) (line-too-long)
+
+-----------------------------------
+Your code has been rated at 9.89/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/paths.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/paths.py:1360:4: C0415: Import outside toplevel (opt_einsum.path_random.random_greedy_128) (import-outside-toplevel)
+
+-----------------------------------
+Your code has been rated at 8.10/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/paths.py
+    M 1148:4 DynamicProgramming.__call__ - D
+    F 598:0 ssa_greedy_optimize - D
+    C 1108:0 DynamicProgramming - C
+    F 777:0 _tree_to_sequence - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/_version.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/_version.py:15:14: C0103: Constant name "version" doesn't conform to UPPER_CASE naming style (invalid-name)
+
+-----------------------------------
+Your code has been rated at 6.36/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/dispatch.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/dispatch.py:52:8: W0707: Consider explicitly re-raising using 'except AttributeError as exc' and 'raise AttributeError(error_msg.format(backend, func)) from exc' (raise-missing-from)
+
+-----------------------------------
+Your code has been rated at 9.84/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/object_arrays.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/object_arrays.py:53:30: W0640: Cell variable coord defined in loop (cell-var-from-loop)
+
+-----------------------------------
+Your code has been rated at 8.40/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/tensorflow.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/tensorflow.py:120:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.57/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/jax.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/jax.py:43:4: W0612: Unused variable 'jax' (unused-variable)
+
+-----------------------------------
+Your code has been rated at 5.24/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/cupy.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/cupy.py:23:15: W0212: Access to a protected member _contract of a client class (protected-access)
+
+-----------------------------------
+Your code has been rated at 4.29/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/theano.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/theano.py:40:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 3.75/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/backends/torch.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/backends/torch.py:115:20: W0212: Access to a protected member _contract of a client class (protected-access)
+
+-----------------------------------
+Your code has been rated at 8.71/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_parser.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_parser.py:73:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.42/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_input.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_input.py:263:4: W0632: Possible unbalanced tuple unpacking with sequence defined at line 22: left side has 3 labels, right side has 0 values (unbalanced-tuple-unpacking)
+
+-----------------------------------
+Your code has been rated at 9.10/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_sharing.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_sharing.py:33:4: W0611: Unused import torch (unused-import)
+
+-----------------------------------
+Your code has been rated at 8.99/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/__init__.py ===
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_contract.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_contract.py:276:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 7.88/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_blas.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_blas.py:68:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.89/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_paths.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_paths.py:532:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 7.92/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_paths.py
+    F 403:0 test_parallel_random_greedy - C
+    F 329:0 test_custom_random_greedy - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_edge_cases.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_edge_cases.py:128:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.09/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_backends.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/tests/test_backends.py:443:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.94/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/path_random.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/path_random.py:326:0: C0115: Missing class docstring (missing-class-docstring)
+
+-----------------------------------
+Your code has been rated at 8.81/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/path_random.py
+    F 211:0 thermal_chooser - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/parser.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/parser.py:289:0: R0915: Too many statements (66/50) (too-many-statements)
+
+-----------------------------------
+Your code has been rated at 8.26/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/parser.py
+    F 289:0 parse_einsum_input - E
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/blas.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/blas.py:10:0: R0912: Too many branches (16/12) (too-many-branches)
+
+-----------------------------------
+Your code has been rated at 8.95/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/blas.py
+    F 10:0 can_blas - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/typing.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/typing.py:27:0: C0301: Line too long (117/100) (line-too-long)
+
+-----------------------------------
+Your code has been rated at 6.36/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/testing.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/testing.py:207:4: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+
+-----------------------------------
+Your code has been rated at 8.26/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/testing.py
+    F 106:0 rand_equation - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/contract.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/contract.py:740:0: R0902: Too many instance attributes (9/7) (too-many-instance-attributes)
+
+-----------------------------------
+Your code has been rated at 8.86/10
+
+./trading_bot/lib/python3.11/site-packages/opt_einsum/contract.py
+    F 170:0 contract_path - D
+    F 631:0 _core_contract - C
+    M 852:4 ContractExpression.__call__ - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/opt_einsum/helpers.py ===
+trading_bot/lib/python3.11/site-packages/opt_einsum/helpers.py:148:4: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+
+-----------------------------------
+Your code has been rated at 8.82/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/__init__.py:58:0: C0411: standard import "os" should be placed before third party imports "keras.api.DTypePolicy", "keras.api.FloatDTypePolicy", "keras.api.Function" (...) "keras.api.version", "keras.api.visualization", "keras.api.wrappers" (wrong-import-order)
+
+-----------------------------------
+Your code has been rated at 9.68/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/activations/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/activations/__init__.py:30:0: W0404: Reimport 'silu' (imported line 29) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.41/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/visualization/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/tree/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/metrics/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/metrics/__init__.py:25:0: W0404: Reimport 'mean_squared_logarithmic_error' (imported line 24) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.23/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/losses/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/losses/__init__.py:55:0: W0404: Reimport 'mean_squared_logarithmic_error' (imported line 54) (reimported)
+
+-----------------------------------
+Your code has been rated at 8.87/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/wrappers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/layers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/layers/__init__.py:138:0: W0404: Reimport 'MaxPooling3D' (imported line 137) (reimported)
+
+-----------------------------------
+Your code has been rated at 8.82/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/constraints/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/constraints/__init__.py:18:0: W0404: Reimport 'UnitNorm' (imported line 17) (reimported)
+
+-----------------------------------
+Your code has been rated at 6.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/config/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/callbacks/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/quantizers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/mnist/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/boston_housing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/fashion_mnist/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/reuters/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/cifar100/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/imdb/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/california_housing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/datasets/cifar10/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/distribution/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/mixed_precision/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/mixed_precision/__init__.py:12:0: W0404: Reimport 'set_dtype_policy' (imported line 11) (reimported)
+
+-----------------------------------
+Your code has been rated at 5.71/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/legacy/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/legacy/saving/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/utils/bounding_boxes/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/utils/legacy/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/utils/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/utils/__init__.py:31:0: W0404: Reimport 'PyDataset' (imported line 30) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.50/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/backend/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/backend/__init__.py:128:0: W0622: Redefining built-in 'sum' (redefined-builtin)
+
+-----------------------------------
+Your code has been rated at 9.34/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/models/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/optimizers/legacy/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/optimizers/legacy/__init__.py:12:0: W0404: Reimport 'LegacyOptimizerWarning' (imported line 7) (reimported)
+
+-----------------------------------
+Your code has been rated at 1.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/optimizers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/optimizers/schedules/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/regularizers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/regularizers/__init__.py:17:0: W0404: Reimport 'OrthogonalRegularizer' (imported line 16) (reimported)
+
+-----------------------------------
+Your code has been rated at 6.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/dtype_policies/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/resnet50/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/densenet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/mobilenet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/convnext/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/imagenet_utils/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/resnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/efficientnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/inception_v3/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/efficientnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/vgg16/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/mobilenet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/vgg19/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/mobilenet_v3/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/resnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/xception/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/nasnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/applications/inception_resnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/linalg/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/nn/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/nn/__init__.py:43:0: W0404: Reimport 'silu' (imported line 42) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.57/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/__init__.py:99:0: W0404: Reimport 'silu' (imported line 98) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.58/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/numpy/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/numpy/__init__.py:145:0: W0622: Redefining built-in 'sum' (redefined-builtin)
+
+-----------------------------------
+Your code has been rated at 9.57/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/ops/image/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/preprocessing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/preprocessing/image/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/preprocessing/text/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/preprocessing/sequence/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/saving/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/saving/__init__.py:9:0: W0404: Reimport 'CustomObjectScope' (imported line 8) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.23/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/export/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/random/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/initializers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/keras/initializers/__init__.py:63:0: W0404: Reimport 'VarianceScaling' (imported line 62) (reimported)
+
+-----------------------------------
+Your code has been rated at 5.13/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/_tf_keras/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/_tf_keras/__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/activations/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/activations/__init__.py:30:0: W0404: Reimport 'silu' (imported line 29) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.41/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/visualization/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/tree/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/metrics/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/losses/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/wrappers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/layers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/layers/__init__.py:138:0: W0404: Reimport 'MaxPooling3D' (imported line 137) (reimported)
+
+-----------------------------------
+Your code has been rated at 8.80/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/constraints/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/constraints/__init__.py:18:0: W0404: Reimport 'UnitNorm' (imported line 17) (reimported)
+
+-----------------------------------
+Your code has been rated at 6.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/config/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/callbacks/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/quantizers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/mnist/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/boston_housing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/fashion_mnist/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/reuters/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/cifar100/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/imdb/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/california_housing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/datasets/cifar10/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/distribution/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/mixed_precision/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/mixed_precision/__init__.py:12:0: W0404: Reimport 'set_dtype_policy' (imported line 11) (reimported)
+
+-----------------------------------
+Your code has been rated at 5.71/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/legacy/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/legacy/saving/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/utils/bounding_boxes/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/utils/legacy/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/utils/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/utils/__init__.py:31:0: W0404: Reimport 'PyDataset' (imported line 30) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.50/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/backend/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/models/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/optimizers/legacy/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/optimizers/legacy/__init__.py:12:0: W0404: Reimport 'LegacyOptimizerWarning' (imported line 7) (reimported)
+
+-----------------------------------
+Your code has been rated at 1.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/optimizers/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/optimizers/schedules/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/regularizers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/regularizers/__init__.py:17:0: W0404: Reimport 'OrthogonalRegularizer' (imported line 16) (reimported)
+
+-----------------------------------
+Your code has been rated at 6.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/dtype_policies/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/resnet50/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/densenet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/mobilenet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/convnext/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/imagenet_utils/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/resnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/efficientnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/inception_v3/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/efficientnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/vgg16/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/mobilenet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/vgg19/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/mobilenet_v3/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/resnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/xception/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/nasnet/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/applications/inception_resnet_v2/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/ops/linalg/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/ops/nn/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/ops/nn/__init__.py:43:0: W0404: Reimport 'silu' (imported line 42) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.57/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/ops/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/ops/__init__.py:99:0: W0404: Reimport 'silu' (imported line 98) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.58/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/ops/numpy/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/ops/numpy/__init__.py:145:0: W0622: Redefining built-in 'sum' (redefined-builtin)
+
+-----------------------------------
+Your code has been rated at 9.57/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/ops/image/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/preprocessing/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/preprocessing/image/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/preprocessing/sequence/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/saving/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/saving/__init__.py:9:0: W0404: Reimport 'CustomObjectScope' (imported line 8) (reimported)
+
+-----------------------------------
+Your code has been rated at 9.23/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/export/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/random/__init__.py ===
+
+------------------------------------
+Your code has been rated at 10.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/api/initializers/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/api/initializers/__init__.py:63:0: W0404: Reimport 'VarianceScaling' (imported line 62) (reimported)
+
+-----------------------------------
+Your code has been rated at 5.13/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/activations/activations.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/activations/activations.py:598:4: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 8.03/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/activations/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/activations/__init__.py:75:0: C0116: Missing function or method docstring (missing-function-docstring)
+
+-----------------------------------
+Your code has been rated at 9.67/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/visualization/plot_bounding_box_gallery.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/visualization/plot_bounding_box_gallery.py:18:0: R0914: Too many local variables (22/15) (too-many-locals)
+
+-----------------------------------
+Your code has been rated at 8.79/10
+
+./trading_bot/lib/python3.11/site-packages/keras/src/visualization/plot_bounding_box_gallery.py
+    F 18:0 plot_bounding_box_gallery - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/visualization/draw_bounding_boxes.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/visualization/draw_bounding_boxes.py:17:0: R0912: Too many branches (13/12) (too-many-branches)
+
+-----------------------------------
+Your code has been rated at 9.12/10
+
+./trading_bot/lib/python3.11/site-packages/keras/src/visualization/draw_bounding_boxes.py
+    F 17:0 draw_bounding_boxes - C
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/visualization/draw_segmentation_masks.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/visualization/draw_segmentation_masks.py:9:0: R0914: Too many local variables (17/15) (too-many-locals)
+
+-----------------------------------
+Your code has been rated at 9.09/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/visualization/__init__.py ===
+trading_bot/lib/python3.11/site-packages/keras/src/visualization/__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+-----------------------------------
+Your code has been rated at 5.00/10
+
+---
+=== Analyse de ./trading_bot/lib/python3.11/site-packages/keras/src/visualization/plot_segmentation_mask_gallery.py ===

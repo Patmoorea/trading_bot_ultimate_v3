@@ -1,0 +1,4 @@
+tensorflow-macos==2.15.0
+tensorflow-metal==1.1.0
+keras==2.15.0
+protobuf==3.20.3
