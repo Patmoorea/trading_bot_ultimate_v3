@@ -6,8 +6,6 @@ import json
 
 # 2. Configuration environnement
 os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
-os.environ['CURRENT_TIME'] = "2025-06-07 03:50:55"
-os.environ['CURRENT_USER'] = "Patmoorea"
 
 # 3. Configuration asyncio et event loop
 import asyncio
@@ -79,6 +77,20 @@ from src.regime_detection.hmm_kmeans import MarketRegimeDetector
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.liquidity_heatmap.visualization import generate_heatmap
 from src.monitoring.streamlit_ui import TradingDashboard
+
+# Imports des indicateurs
+from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+from src.analysis.indicators.momentum.momentum import MomentumIndicators
+from src.analysis.indicators.volatility.volatility import VolatilityIndicators
+from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
+from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
+from src.analysis.indicators.trend.indicators import TrendIndicators
+
+# Dans les imports, ajoutons les composants existants
+from src.binance.binance_ws import AsyncClient, BinanceSocketManager
+from src.connectors.binance import BinanceConnector
+from src.exchanges.binance.binance_client import BinanceClient
+from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
 
 # Configuration
 load_dotenv()
@@ -278,7 +290,7 @@ class TradingEnv(gym.Env):
 
         except Exception as e:
             logger.error(f"Erreur calcul reward: {e}")
-            return 0.0
+            return None
 
     def _update_state(self):
         """Mise à jour de l'état avec les dernières données de marché"""
@@ -294,6 +306,7 @@ class TradingEnv(gym.Env):
 
         except Exception as e:
             logger.error(f"Erreur mise à jour state: {e}")
+            return None
 
     def _check_done(self):
         """Vérifie les conditions de fin d'épisode"""
@@ -344,9 +357,21 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
+        # Passage en mode réel
+        self.trading_mode = "production"
+        self.testnet = False
+
+        # Activation des composants réels
+        self.news_enabled = True
+        self.arbitrage_enabled = True
+        self.telegram_enabled = True
+
+        # Configuration risque pour le réel
+        self.max_drawdown = 0.05  # 5% max
+        self.daily_stop_loss = 0.02  # 2% par jour
+        self.max_position_size = 1000  # USDC
+
          # Récupération des variables d'environnement
-        self.current_user = os.getenv('CURRENT_USER', 'Patmoorea')
-        self.current_time = os.getenv('CURRENT_TIME', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
 
         # Configuration de l'exchange et des streams
@@ -370,7 +395,6 @@ class TradingBotM4:
 
         # Interface et monitoring
         self.dashboard = TradingDashboard()
-        self.current_time = "2025-06-06 01:20:02"
         self.current_user = "Patmoorea"
 
         # Composants principaux
@@ -417,6 +441,28 @@ class TradingBotM4:
         # Initialisation des analyseurs
         self._initialize_analyzers()
 
+        self.binance_ws = AsyncClient.create(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET')
+        )
+        self.socket_manager = BinanceSocketManager(self.binance_ws)
+        
+        # Connecteur pour les orderbooks
+        self.connector = BinanceConnector()
+        
+        # Client pour le spot trading
+        self.spot_client = BinanceClient(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            secret=os.getenv('BINANCE_API_SECRET')
+        )
+        
+        # Exchange principal
+        self.exchange = BinanceExchange(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET'),
+            testnet=False
+        )
+      
     def _initialize_analyzers(self):
         """Initialize all analysis components"""
         self.advanced_indicators = MultiTimeframeAnalyzer(
@@ -487,23 +533,172 @@ class TradingBotM4:
                 embedding_dim=config["AI"]["embedding_dim"]
             )
         }
+    
+    async def setup_streams(self):
+        """Configure les streams de données en temps réel"""
+        try:
+            streams = []
+            
+            # Stream de trades pour chaque paire
+            for pair in config["TRADING"]["pairs"]:
+                symbol = pair.replace('/', '').lower()
+                trade_socket = self.socket_manager.trade_socket(symbol)
+                streams.append(trade_socket)
+                
+                # Stream d'orderbook
+                depth_socket = self.socket_manager.depth_socket(symbol)
+                streams.append(depth_socket)
+                
+                # Stream de klines (bougies)
+                kline_socket = self.socket_manager.kline_socket(symbol, '1m')
+                streams.append(kline_socket)
+                
+            # Démarrage des streams
+            for stream in streams:
+                asyncio.create_task(self._handle_stream(stream))
+                
+            logger.info("✅ Streams configurés avec succès")
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur configuration streams: {e}")
+            return None
+            raise
+
+    async def _handle_stream(self, stream):
+        """Gère un stream de données"""
+        try:
+            async with stream as tscm:
+                while True:
+                    msg = await tscm.recv()
+                    await self._process_stream_message(msg)
+        except Exception as e:
+            logger.error(f"Erreur stream: {e}")
+            return None
+
+    async def _process_stream_message(self, msg):
+        """Traite les messages des streams"""
+        try:
+            if msg.get('e') == 'trade':
+                await self._handle_trade(msg)
+            elif msg.get('e') == 'depthUpdate':
+                await self._handle_orderbook(msg)
+            elif msg.get('e') == 'kline':
+                await self._handle_kline(msg)
+                
+        except Exception as e:
+            logger.error(f"Erreur traitement message: {e}")
+            return None
+
+    async def _handle_trade(self, msg):
+        """Traite un trade"""
+        try:
+            trade_data = {
+                'symbol': msg['s'],
+                'price': float(msg['p']),
+                'quantity': float(msg['q']),
+                'time': msg['T'],
+                'buyer': msg['b'],
+                'seller': msg['a']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_trades(trade_data)
+            
+            # Analyse du volume
+            self.volume_analysis.update(trade_data)
+            
+        except Exception as e:
+            logger.error(f"Erreur traitement trade: {e}")
+            return None
+
+    async def _handle_orderbook(self, msg):
+        """Traite une mise à jour d'orderbook"""
+        try:
+            orderbook_data = {
+                'symbol': msg['s'],
+                'bids': [[float(p), float(q)] for p, q in msg['b']],
+                'asks': [[float(p), float(q)] for p, q in msg['a']],
+                'time': msg['T']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_orderbook(orderbook_data)
+            
+            # Analyse de la liquidité
+            await self._analyze_market_liquidity()
+            
+        except Exception as e:
+            logger.error(f"Erreur traitement orderbook: {e}")
+            return None
+
+    async def _handle_kline(self, msg):
+        """Traite une bougie"""
+        try:
+            kline = msg['k']
+            kline_data = {
+                'symbol': msg['s'],
+                'interval': kline['i'],
+                'time': kline['t'],
+                'open': float(kline['o']),
+                'high': float(kline['h']),
+                'low': float(kline['l']),
+                'close': float(kline['c']),
+                'volume': float(kline['v']),
+                'closed': kline['x']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_klines(kline_data)
+            
+            # Analyse technique si la bougie est fermée
+            if kline_data['closed']:
+                await self.analyze_signals(
+                    market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
+                    indicators=self.advanced_indicators.analyze_timeframe(kline_data)
+                )
+                
+        except Exception as e:
+            logger.error(f"Erreur traitement kline: {e}")
+            return None
 
     async def get_latest_data(self):
         """Récupère les dernières données de marché"""
         try:
             data = {}
             for pair in config["TRADING"]["pairs"]:
-                for timeframe in config["TRADING"]["timeframes"]:
-                    data.setdefault(timeframe, {})[pair] = self.buffer.get_latest()
-            return data
+                data[pair] = {}
+                try:
+                    # WebSocket prices
+                    prices = await self.binance_ws.get_price(pair)
+                    data[pair]['price'] = prices
+
+                    # OrderBook
+                    orderbook = await self.connector.get_order_book(pair)
+                    data[pair]['orderbook'] = {
+                        'bids': orderbook[0],  # Best bid
+                        'asks': orderbook[1]   # Best ask
+                    }
+
+                    # Account data
+                    account = await self.exchange.get_balance()
+                    data[pair]['account'] = account
+                except Exception as inner_e:
+                    logger.error(f"Erreur pour {pair}: {inner_e}")
+                    continue
+
+            # Store in buffer
+            if data:
+                self.buffer.update_data(data)
+                return data
+            return None
+
         except Exception as e:
-            logger.error(f"[{datetime.utcnow()}] Erreur get_latest_data: {e}")
+            logger.error(f"Erreur get_latest_data: {e}")
             return None
 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
         logger.info("🔊 Étude du marché en cours...")
-        current_time = "2025-06-06 07:39:24"  # Mise à jour timestamp
 
         try:
             # Récupération des données historiques
@@ -513,11 +708,14 @@ class TradingBotM4:
                 period
             )
 
+            if not historical_data:
+                raise ValueError("Données historiques non disponibles")
+
             # Analyse des indicateurs par timeframe
             indicators_analysis = {}
             for timeframe in config["TRADING"]["timeframes"]:
-                tf_data = historical_data[timeframe]
                 try:
+                    tf_data = historical_data[timeframe]
                     result = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
                     indicators_analysis[timeframe] = {
                         "trend": {"trend_strength": 0},
@@ -525,50 +723,56 @@ class TradingBotM4:
                         "volume": {"volume_profile": {"strength": "N/A"}},
                         "dominant_signal": "Neutre"
                     } if result is None else result
-                except Exception as e:
-                    logger.error(f"[{current_time}] Erreur analyse {timeframe}: {e}")
+                except Exception as tf_error:
+                    logger.error(f"Erreur analyse timeframe {timeframe}: {tf_error}")
+                    indicators_analysis[timeframe] = {
+                        "trend": {"trend_strength": 0},
+                        "volatility": {"current_volatility": 0},
+                        "volume": {"volume_profile": {"strength": "N/A"}},
+                        "dominant_signal": "Erreur"
+                    }
 
             # Détection du régime de marché
             regime = self.regime_detector.predict(indicators_analysis)
             logger.info(f"🔈 Régime de marché détecté: {regime}")
 
             # Génération et envoi du rapport
-            analysis_report = self._generate_analysis_report(
-                indicators_analysis,
-                regime,
-                current_time=current_time
-            )
-            await self.telegram.send_message(analysis_report)
+            try:
+                analysis_report = self._generate_analysis_report(
+                    indicators_analysis,
+                    regime,
+                )
+                await self.telegram.send_message(analysis_report)
+            except Exception as report_error:
+                logger.error(f"Erreur génération rapport: {report_error}")
 
             # Mise à jour du dashboard
-            self.dashboard.update_market_analysis(
-                historical_data=historical_data,
-                indicators=indicators_analysis,
-                regime=regime,
-                timestamp=current_time
-            )
+            try:
+                self.dashboard.update_market_analysis(
+                    historical_data=historical_data,
+                    indicators=indicators_analysis,
+                    regime=regime,
+                )
+            except Exception as dash_error:
+                logger.error(f"Erreur mise à jour dashboard: {dash_error}")
 
             return regime, historical_data, indicators_analysis
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur lors de l'étude du marché: {str(e)}")
+            logger.error(f"Erreur study_market: {e}")
             raise
 
     async def analyze_signals(self, market_data, indicators):
         """Analyse technique et fondamentale avancée"""
-        current_time = "2025-06-06 07:39:24"  # Mise à jour timestamp
-
         try:
             # Vérification des données
             if market_data is None or indicators is None:
-                logger.warning(f"[{current_time}] Données manquantes pour l'analyse")
                 return None
 
             # Utilisation du modèle hybride pour l'analyse technique
             technical_features = self.hybrid_model.analyze_technical(
                 market_data=market_data,
                 indicators=indicators,
-                timestamp=current_time
             )
 
             # Normalisation si nécessaire
@@ -579,14 +783,11 @@ class TradingBotM4:
                 }
 
             # Analyse des news via FinBERT custom
-            news_impact = await self.news_analyzer.analyze_recent_news(
-                timestamp=current_time
-            )
+            news_impact = await self.news_analyzer.analyze_recent_news()
 
             # Détection du régime de marché via HMM + K-Means
             current_regime = self.regime_detector.detect_regime(
                 indicators,
-                timestamp=current_time
             )
 
             # Combinaison des features pour le GTrXL
@@ -599,7 +800,6 @@ class TradingBotM4:
             # Décision via PPO+GTrXL (6 couches, 512 embeddings)
             policy, value = self.decision_model(
                 combined_features,
-                timestamp=current_time
             )
 
             # Construction de la décision finale
@@ -609,18 +809,15 @@ class TradingBotM4:
                 technical_score=technical_features['score'],
                 news_sentiment=news_impact['sentiment'],
                 regime=current_regime,
-                timestamp=current_time
             )
 
             # Ajout de la gestion des risques
             decision = self._add_risk_management(
                 decision,
-                timestamp=current_time
             )
 
             # Log de la décision
             logger.info(
-                f"[{current_time}] Décision générée - "
                 f"Action: {decision['action']}, "
                 f"Confiance: {decision['confidence']:.2%}, "
                 f"Régime: {decision['regime']}"
@@ -629,10 +826,9 @@ class TradingBotM4:
             return decision
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur analyse signaux: {e}")
+            logger.error(f"Erreur: {e}")
             await self.telegram.send_message(
                 f"⚠️ Erreur analyse: {str(e)}\n"
-                f"Date: {current_time} UTC\n"
                 f"Trader: {self.current_user}"
             )
             return None
@@ -674,6 +870,7 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"[{timestamp}] Erreur construction décision: {e}")
             return None
+            
     def _combine_features(self, technical_features, news_impact, regime):
         """Combine toutes les features pour le GTrXL"""
         try:
@@ -698,7 +895,7 @@ class TradingBotM4:
             return features
 
         except Exception as e:
-            logger.error(f"[2025-06-06 07:40:42] Erreur lors de la combinaison des features: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _encode_regime(self, regime):
@@ -714,14 +911,10 @@ class TradingBotM4:
 
     async def execute_trades(self, decision):
         """Exécution des trades selon la décision"""
-        current_time = "2025-06-06 07:40:42"  # Mise à jour timestamp
-
         # Vérification du circuit breaker
         if await self.circuit_breaker.should_stop_trading():
-            logger.warning(f"[{current_time}] 🛑 Circuit breaker activé - Trading suspendu")
             await self.telegram.send_message(
                 "⚠️ Trading suspendu: Circuit breaker activé\n"
-                f"Date: {current_time} UTC\n"
                 f"Trader: {self.current_user}"
             )
             return
@@ -733,7 +926,6 @@ class TradingBotM4:
                 if arb_ops:
                     await self.telegram.send_message(
                         f"💰 Opportunité d'arbitrage détectée:\n"
-                        f"Date: {current_time} UTC\n"
                         f"Trader: {self.current_user}\n"
                         f"Details: {arb_ops}"
                     )
@@ -750,7 +942,6 @@ class TradingBotM4:
 
                 # Vérification finale avant l'ordre
                 if not self._validate_trade(decision, position_size):
-                    logger.warning(f"[{current_time}] Trade invalidé par les vérifications finales")
                     return
 
                 # Placement de l'ordre avec stop loss
@@ -775,7 +966,6 @@ class TradingBotM4:
                 # Notification Telegram détaillée
                 await self.telegram.send_message(
                     f"📄 Ordre placé:\n"
-                    f"Date: {current_time} UTC\n"
                     f"Trader: {self.current_user}\n"
                     f"Symbol: {order['symbol']}\n"
                     f"Type: {order['type']}\n"
@@ -793,52 +983,43 @@ class TradingBotM4:
                 self.dashboard.update_trades(order)
 
             except Exception as e:
-                logger.error(f"[{current_time}] Erreur lors de l'exécution: {e}")
+                logger.error(f"Erreur: {e}")
                 await self.telegram.send_message(
                     f"⚠️ Erreur d'exécution: {str(e)}\n"
-                    f"Date: {current_time} UTC\n"
                     f"Trader: {self.current_user}"
                 )
 
     def _validate_trade(self, decision, position_size):
         """Validation finale avant l'exécution du trade"""
-        current_time = "2025-06-06 07:40:42"  # Mise à jour timestamp
-
         try:
             # Vérification de la taille minimale
             if position_size < 0.001:  # Exemple de taille minimale
-                logger.warning(f"[{current_time}] Taille de position trop petite")
                 return False
 
             # Vérification du spread
             if self._check_spread_too_high(decision["symbol"]):
-                logger.warning(f"[{current_time}] Spread trop important")
                 return False
 
             # Vérification de la liquidité
             if not self._check_sufficient_liquidity(decision["symbol"], position_size):
-                logger.warning(f"[{current_time}] Liquidité insuffisante")
                 return False
 
             # Vérification des news à haut risque
             if self._check_high_risk_news():
-                logger.warning(f"[{current_time}] News à haut risque détectées")
                 return False
 
             # Vérification des limites de position
             if not self.position_manager.check_position_limits(position_size):
-                logger.warning(f"[{current_time}] Limites de position dépassées")
                 return False
 
             # Vérification du timing d'entrée
             if not self._check_entry_timing(decision):
-                logger.warning(f"[{current_time}] Timing d'entrée non optimal")
                 return False
 
             return True
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur lors de la validation du trade: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     def _check_spread_too_high(self, symbol):
@@ -852,7 +1033,7 @@ class TradingBotM4:
             return spread > 0.001  # 0.1% spread maximum
 
         except Exception as e:
-            logger.error(f"[2025-06-06 07:40:42] Erreur vérification spread: {e}")
+            logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     def _check_sufficient_liquidity(self, symbol, position_size):
@@ -869,7 +1050,7 @@ class TradingBotM4:
             return available_liquidity >= required_liquidity
 
         except Exception as e:
-            logger.error(f"[2025-06-06 07:40:42] Erreur vérification liquidité: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     def _check_entry_timing(self, decision):
@@ -893,12 +1074,11 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(f"[2025-06-06 07:40:42] Erreur vérification timing: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     def _analyze_momentum_signals(self):
         """Analyse des signaux de momentum"""
-        current_time = "2025-06-07 17:16:02"  # Mise à jour timestamp
 
         try:
             signals = {
@@ -919,16 +1099,13 @@ class TradingBotM4:
             return {
                 "signals": signals,
                 "strength": np.mean(strengths) if strengths else 0,
-                "timestamp": current_time
             }
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur analyse momentum: {e}")
-            return {"strength": 0, "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
     def _analyze_volatility(self):
         """Analyse de la volatilité actuelle"""
-        current_time = "2025-06-07 17:16:02"  # Mise à jour timestamp
 
         try:
             # Calcul des indicateurs de volatilité
@@ -945,7 +1122,6 @@ class TradingBotM4:
             return {
                 "current": current_volatility,
                 "threshold": 0.8,  # Seuil dynamique basé sur le régime
-                "timestamp": current_time,
                 "indicators": {
                     "bbands": bbands,
                     "atr": atr
@@ -953,18 +1129,20 @@ class TradingBotM4:
             }
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur analyse volatilité: {e}")
-            return {"current": 1, "threshold": 0, "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
+class TradingBotM4:
     def _analyze_volume_profile(self):
         """Analyse du profil de volume"""
-        current_time = "2025-06-07 18:35:54"  # Mise à jour timestamp
-
         try:
             vp = self._calculate_vp(self.buffer.get_latest())
 
             if not vp:
-                return {"supports_entry": False, "timestamp": current_time}
+                return {
+                    "supports_entry": False,
+                    "poc": None,
+                    "volume_trend": "insufficient_data"
+                }
 
             # Analyse des niveaux de support/résistance
             current_price = self.buffer.get_latest()["close"].iloc[-1]
@@ -978,114 +1156,93 @@ class TradingBotM4:
                 "supports_entry": price_near_poc and volume_increasing,
                 "poc": nearest_poc,
                 "volume_trend": "increasing" if volume_increasing else "decreasing",
-                "timestamp": current_time
             }
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur analyse volume profile: {e}")
-            return {"supports_entry": False, "timestamp": current_time}
-
+            logger.error(f"Erreur: {e}")
+            return None
+            
     async def run(self):
-        """Boucle principale du bot"""
-        current_time = "2025-06-07 18:35:54"  # Mise à jour timestamp
-        current_user = "Patmoorea"
-
+        """Méthode principale d'exécution"""
         try:
-            # Banner de démarrage
             logger.info(f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 Started               ║
 ╠═════════════════════════════════════════════════════════════╣
-║ Time: {current_time} UTC                                    ║
-║ User: {current_user}                                        ║
-║ Mode: BUY_ONLY                                             ║
-║ AI: PPO-GTrXL (6-layer, 512d)                             ║
-║ Status: RUNNING                                            ║
+║ User: {self.current_user}                                   ║
+║ Mode: {'REAL' if not self.testnet else 'TEST'}             ║
+║ Status: INITIALIZING                                        ║
 ╚═════════════════════════════════════════════════════════════╝
-            """)
-
+""")
+            # Initialisation
+            await self.initialize()
+            
             # Étude initiale du marché
-            regime, historical_data, initial_analysis = await self.study_market(
-                config["TRADING"]["study_period"]
-            )
-
-            # Entraînement initial si nécessaire
-            if self._should_train(historical_data):
-                await self._train_models(historical_data, initial_analysis)
-
+            regime, historical_data, analysis = await self.study_market("7d")
+            
+            # Boucle principale
             while True:
                 try:
-                    # 1. Traitement des données
-                    market_data, indicators = await self.process_market_data()
-                    if market_data is None or indicators is None:
-                        logger.warning(f"[{current_time}] Données manquantes, attente...")
-                        await asyncio.sleep(5)
+                    # Récupération des données
+                    latest_data = await self.get_latest_data()
+                    if latest_data is None:
                         continue
-
-                    # 2. Vérification des opportunités d'arbitrage
-                    await self.check_arbitrage_opportunities()
-
-                    # 3. Analyse et décision
-                    decision = await self.analyze_signals(market_data, indicators)
-
-                    # 4. Mise à jour du régime de marché si nécessaire
-                    current_regime = self.regime_detector.detect_regime(indicators)
-                    if current_regime != regime:
-                        regime = current_regime
-                        logger.info(f"[{current_time}] Changement de régime détecté: {regime}")
-                        await self.telegram.send_message(
-                            f"🔈 Changement de régime détecté!\n"
-                            f"Date: {current_time} UTC\n"
-                            f"Nouveau régime: {regime}"
-                        )
-
-                    # 5. Exécution si nécessaire
-                    if decision and decision.get('action') == 'buy':
+                        
+                    # Analyse des signaux
+                    decision = await self.analyze_signals(
+                        latest_data,
+                        await self.calculate_indicators(latest_data)
+                    )
+                    
+                    if decision and decision.get('should_trade', False):
+                        # Exécution du trade
                         await self.execute_trades(decision)
-
-                    # 6. Mise à jour du dashboard
-                    self.dashboard.update_status({
-                        'time': current_time,
-                        'user': current_user,
-                        'regime': regime,
-                        'last_decision': decision,
-                        'performance_metrics': self._calculate_performance_metrics()
-                    })
-
-                    # 7. Vérification des conditions d'arrêt
-                    if await self._should_stop_trading():
-                        logger.info(f"[{current_time}] Conditions d'arrêt atteintes")
-                        break
-
-                    # Attente avant la prochaine itération
+                        
+                    # Mise à jour du dashboard
+                    await self.update_real_dashboard()
+                    
+                    # Délai avant prochaine itération
                     await asyncio.sleep(1)
-
-                except KeyboardInterrupt:
-                    logger.info(f"[{current_time}] ❌ Arrêt manuel demandé")
-                    await self.telegram.send_message(
-                        f"🛑 Bot arrêté manuellement\n"
-                        f"Date: {current_time} UTC\n"
-                        f"User: {current_user}"
-                    )
-                    break
-
-                except Exception as e:
-                    logger.error(f"[{current_time}] Erreur critique: {e}")
-                    await self.telegram.send_message(
-                        f"🚨 Erreur critique: {str(e)}\n"
-                        f"Date: {current_time} UTC\n"
-                        f"User: {current_user}"
-                    )
+                    
+                except Exception as loop_error:
+                    logger.error(f"Erreur dans la boucle: {loop_error}")
                     await asyncio.sleep(5)
+                    continue
+                    
+        except KeyboardInterrupt:
+            logger.info("❌ Arrêt manuel demandé")
+            await self.shutdown()
+        except Exception as e:
+            logger.error(f"Erreur fatale: {e}")
+            if hasattr(self, 'telegram'):
+                await self.telegram.send_message(
+                    chat_id=self.chat_id,
+                    text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
+                )
+            raise
+        finally:
+            await self.shutdown()
+    async def process_market_data(self):
+        """Traite les données de marché en temps réel"""
+        try:
+            latest_data = await self.get_latest_data()
+            if not latest_data:
+                return None, None
+
+            # Analyse des indicateurs
+            indicators = {}
+            for timeframe in config["TRADING"]["timeframes"]:
+                if timeframe_data := latest_data.get(timeframe):
+                    indicators[timeframe] = self.advanced_indicators.analyze_timeframe(
+                        timeframe_data,
+                        timeframe
+                    )
+
+            return latest_data, indicators
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur fatale: {e}")
-            await self.telegram.send_message(
-                f"💀 Erreur fatale - Bot arrêté: {str(e)}\n"
-                f"Date: {current_time} UTC\n"
-                f"User: {current_user}"
-            )
-            raise
+            logger.error(f"Erreur: {e}")
+            return None, None
 
     def _should_train(self, historical_data):
         """Détermine si les modèles doivent être réentraînés"""
@@ -1095,22 +1252,18 @@ class TradingBotM4:
                 return False
 
             # Vérification de la dernière session d'entraînement
-            if not hasattr(self, 'last_training_time'):
                 return True
 
-            time_since_training = datetime.utcnow() - self.last_training_time
             return time_since_training.days >= 1  # Réentraînement quotidien
 
         except Exception as e:
-            logger.error(f"[2025-06-07 18:35:54] Erreur vérification entraînement: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     async def _train_models(self, historical_data, initial_analysis):
         """Entraîne ou met à jour les modèles"""
-        current_time = "2025-06-06 07:42:32"  # Mise à jour timestamp
 
         try:
-            logger.info(f"[{current_time}] 🎮 Début de l'entraînement des modèles...")
 
             # Préparation des données d'entraînement
             X_train, y_train = self._prepare_training_data(
@@ -1146,20 +1299,17 @@ class TradingBotM4:
             )
 
             # Mise à jour du timestamp d'entraînement
-            self.last_training_time = datetime.utcnow()
 
             # Sauvegarde des modèles
             self._save_models()
 
-            logger.info(f"[{current_time}] ✅ Entraînement terminé avec succès")
 
         except Exception as e:
-            logger.error(f"[{current_time}] ❌ Erreur lors de l'entraînement: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _prepare_training_data(self, historical_data, initial_analysis):
         """Prépare les données pour l'entraînement"""
-        current_time = "2025-06-06 07:42:32"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1195,12 +1345,11 @@ class TradingBotM4:
             return X, y
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur préparation données: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _extract_technical_features(self, data):
         """Extrait les features techniques des données"""
-        current_time = "2025-06-06 07:42:32"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1228,12 +1377,11 @@ class TradingBotM4:
             return np.concatenate(features, axis=1)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur extraction features techniques: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_market_features(self, data):
         """Extrait les features de marché"""
-        current_time = "2025-06-06 07:42:32"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1258,12 +1406,11 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur extraction features marché: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_indicator_features(self, analysis):
         """Extrait les features des indicateurs"""
-        current_time = "2025-06-06 07:42:32"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1297,11 +1444,11 @@ class TradingBotM4:
             return np.array(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur extraction features indicateurs: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
+    
     def _calculate_trend_features(self, data):
         """Calcule les features de tendance"""
-        current_time = "2025-06-06 07:43:21"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1336,12 +1483,11 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul features tendance: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_momentum_features(self, data):
         """Calcule les features de momentum"""
-        current_time = "2025-06-06 07:43:21"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1386,12 +1532,11 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul features momentum: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_volatility_features(self, data):
         """Calcule les features de volatilité"""
-        current_time = "2025-06-06 07:43:21"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1430,12 +1575,11 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul features volatilité: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_gap_features(self, data):
         """Calcule les features de gaps"""
-        current_time = "2025-06-06 07:43:21"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1457,11 +1601,10 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul features gaps: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
     def _calculate_liquidity_features(self, data):
         """Calcule les features de liquidité"""
-        current_time = "2025-06-06 07:44:10"  # Mise à jour timestamp
 
         try:
             features = []
@@ -1508,12 +1651,11 @@ class TradingBotM4:
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul features liquidité: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _detect_liquidity_clusters(self, orderbook):
         """Détecte les clusters de liquidité dans le carnet d'ordres"""
-        current_time = "2025-06-06 07:44:10"  # Mise à jour timestamp
 
         try:
             bid_clusters = []
@@ -1552,16 +1694,13 @@ class TradingBotM4:
             return {
                 "bid_clusters": bid_clusters,
                 "ask_clusters": ask_clusters,
-                "timestamp": current_time
             }
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur détection clusters: {e}")
-            return {"bid_clusters": [], "ask_clusters": [], "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
     def _calculate_impact_resistance(self, orderbook, impact_size=1.0):
         """Calcule la résistance à l'impact de marché"""
-        current_time = "2025-06-06 07:44:10"  # Mise à jour timestamp
 
         try:
             # Calcul de l'impact sur les bids
@@ -1588,12 +1727,11 @@ class TradingBotM4:
             return resistance_score
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul résistance impact: {e}")
-            return 0.0
+            logger.error(f"Erreur: {e}")
+            return
 
     def _calculate_future_returns(self, data, horizons=[1, 5, 10, 20]):
         """Calcule les returns futurs pour différents horizons"""
-        current_time = "2025-06-06 07:44:10"  # Mise à jour timestamp
 
         try:
             returns = []
@@ -1614,11 +1752,10 @@ class TradingBotM4:
             return np.column_stack(returns)
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur calcul returns futurs: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
     def _save_models(self):
         """Sauvegarde les modèles entraînés"""
-        current_time = "2025-06-06 07:44:59"  # Mise à jour timestamp
 
         try:
             # Création du dossier de sauvegarde
@@ -1639,7 +1776,6 @@ class TradingBotM4:
 
             # Sauvegarde des métadonnées
             metadata = {
-                "timestamp": current_time,
                 "user": self.current_user,
                 "model_versions": {
                     "hybrid": self.hybrid_model.version,
@@ -1653,15 +1789,13 @@ class TradingBotM4:
             with open(metadata_path, "w") as f:
                 json.dump(metadata, f, indent=4)
 
-            logger.info(f"[{current_time}] ✅ Modèles sauvegardés avec succès")
 
         except Exception as e:
-            logger.error(f"[{current_time}] ❌ Erreur sauvegarde modèles: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _get_training_metrics(self):
         """Récupère les métriques d'entraînement"""
-        current_time = "2025-06-06 07:44:59"  # Mise à jour timestamp
 
         try:
             metrics = {
@@ -1685,46 +1819,40 @@ class TradingBotM4:
             return metrics
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur récupération métriques: {e}")
+            logger.error(f"Erreur: {e}")
             return {}
 
     async def _should_stop_trading(self):
         """Vérifie les conditions d'arrêt du trading"""
-        current_time = "2025-06-06 07:44:59"  # Mise à jour timestamp
 
         try:
             # Vérification du circuit breaker
             if await self.circuit_breaker.should_stop_trading():
-                logger.warning(f"[{current_time}] Circuit breaker activé")
                 return True
 
             # Vérification du drawdown maximum
             current_drawdown = self.position_manager.calculate_drawdown()
             if current_drawdown > config["RISK"]["max_drawdown"]:
-                logger.warning(f"[{current_time}] Drawdown maximum atteint: {current_drawdown:.2%}")
                 return True
 
             # Vérification de la perte journalière
             daily_loss = self.position_manager.calculate_daily_loss()
             if daily_loss > config["RISK"]["daily_stop_loss"]:
-                logger.warning(f"[{current_time}] Stop loss journalier atteint: {daily_loss:.2%}")
                 return True
 
             # Vérification des conditions de marché
             market_conditions = await self._check_market_conditions()
             if not market_conditions["safe_to_trade"]:
-                logger.warning(f"[{current_time}] Conditions de marché dangereuses: {market_conditions['reason']}")
                 return True
 
             return False
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur vérification conditions d'arrêt: {e}")
+            logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     async def _check_market_conditions(self):
         """Vérifie les conditions de marché"""
-        current_time = "2025-06-06 07:44:59"  # Mise à jour timestamp
 
         try:
             conditions = {
@@ -1762,17 +1890,15 @@ class TradingBotM4:
             return conditions
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur vérification conditions marché: {e}")
+            logger.error(f"Erreur: {e}")
             return {"safe_to_trade": False, "reason": "Erreur système"}
     async def _analyze_market_liquidity(self):
         """Analyse détaillée de la liquidité du marché"""
-        current_time = "2025-06-06 07:45:39"  # Mise à jour timestamp
 
         try:
             liquidity_status = {
                 "status": "sufficient",
                 "metrics": {},
-                "timestamp": current_time
             }
 
             # Analyse du carnet d'ordres
@@ -1808,12 +1934,10 @@ class TradingBotM4:
             return liquidity_status
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur analyse liquidité: {e}")
-            return {"status": "insufficient", "metrics": {}, "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
     def _check_technical_conditions(self):
         """Vérifie les conditions techniques du marché"""
-        current_time = "2025-06-06 07:45:39"  # Mise à jour timestamp
 
         try:
             conditions = {
@@ -1858,18 +1982,16 @@ class TradingBotM4:
             return conditions
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur vérification technique: {e}")
+            logger.error(f"Erreur: {e}")
             return {"safe": False, "reason": "Erreur système", "details": {}}
 
     def _check_divergences(self, data):
         """Détecte les divergences entre prix et indicateurs"""
-        current_time = "2025-06-06 07:45:39"  # Mise à jour timestamp
 
         try:
             divergences = {
                 "critical": False,
                 "types": [],
-                "timestamp": current_time
             }
 
             # RSI Divergence
@@ -1901,19 +2023,16 @@ class TradingBotM4:
             return divergences
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur détection divergences: {e}")
-            return {"critical": False, "types": [], "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
     def _check_critical_patterns(self, data):
         """Détecte les patterns techniques critiques"""
-        current_time = "2025-06-06 07:45:39"  # Mise à jour timestamp
 
         try:
             patterns = {
                 "detected": False,
                 "pattern": None,
                 "confidence": 0,
-                "timestamp": current_time
             }
 
             # Head and Shoulders
@@ -1940,22 +2059,23 @@ class TradingBotM4:
             return patterns
 
         except Exception as e:
-            logger.error(f"[{current_time}] Erreur détection patterns: {e}")
-            return {"detected": False, "pattern": None, "confidence": 0, "timestamp": current_time}
+            logger.error(f"Erreur: {e}")
 
-def run_trading_bot():
+async def run_trading_bot():
     """Point d'entrée synchrone pour le bot de trading"""
     try:
         # Interface Streamlit
         st.title("Trading Bot Ultimate v4 🤖")
 
         # Informations de session
-        st.sidebar.info(f"""
+        st.sidebar.info("""
         **Session Info**
-        - User: {os.getenv('CURRENT_USER')}
-        - Time: {os.getenv('CURRENT_TIME')} UTC
         """)
-
+        
+        # Initialisation des valeurs par défaut
+        portfolio_value = 0.0
+        pnl = 0.0
+        
         # Configuration trading
         with st.sidebar:
             st.header("Trading Configuration")
@@ -1985,42 +2105,20 @@ def run_trading_bot():
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
 
-                with st.spinner("Initializing trading bot..."):
+                with st.spinner("Initialisation du bot de trading..."):
                     bot = TradingBotM4()
                     loop.run_until_complete(bot.run())
             except Exception as e:
+                logger.error(f"Erreur du bot: {e}")
                 st.error(f"Bot error: {str(e)}")
                 logging.error("Bot error", exc_info=True)
             finally:
                 loop.close()
 
     except Exception as e:
+        logger.error(f"Erreur critique: {e}")
         st.error(f"Critical error: {str(e)}")
         logging.error("Fatal error", exc_info=True)
-
-if __name__ == "__main__":
-    # Configuration du logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('trading_bot.log'),
-            logging.StreamHandler()
-        ]
-    )
-    logger = logging.getLogger(__name__)
-
-    # Configuration de l'event loop au démarrage
-    setup_event_loop()
-
-    # Lancement de l'application
-    run_trading_bot()
-
-# Update des variables d'environnement sans modifier les existantes
-if 'CURRENT_TIME' not in os.environ:
-    os.environ['CURRENT_TIME'] = "2025-06-09 00:39:01"
-if 'CURRENT_USER' not in os.environ:
-    os.environ['CURRENT_USER'] = "Patmoorea"
 
 # Ajout des méthodes de trading réel à la classe TradingBotM4
 async def setup_real_exchange(self):
@@ -2047,11 +2145,11 @@ async def setup_real_telegram(self):
             self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
             await self.telegram.send_message(
                 chat_id=self.chat_id,
-                text=f"🤖 Bot connecté\nDate: {self.current_time}\nTrader: {self.current_user}"
             )
             return True
         except Exception as e:
             logger.error(f"Erreur configuration Telegram: {e}")
+            return None
             return False
 
 async def get_real_portfolio(self):
@@ -2138,6 +2236,7 @@ Take Profit: {take_profit}"""
         
     except Exception as e:
         logger.error(f"Erreur trade: {e}")
+            return None
         return None
 
 # Extension sécurisée de la méthode run() existante
@@ -2156,7 +2255,6 @@ async def run_real_trading(self):
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
 ╠═════════════════════════════════════════════════════════════╣
-║ Time: {self.current_time} UTC                              ║
 ║ User: {self.current_user}                                  ║
 ║ Mode: REAL TRADING                                         ║
 ║ Status: RUNNING                                            ║
@@ -2168,10 +2266,10 @@ async def run_real_trading(self):
         if not initial_portfolio:
             raise Exception("Impossible de récupérer le portfolio")
             
-        # Boucle principale existante avec trading réel
+        # Boucle principale
         while True:
             try:
-                # Analyse et décision depuis le code existant
+                # Analyse et décision
                 decision = await self.analyze_signals(
                     await self.get_latest_data(),
                     await self.calculate_indicators()
@@ -2191,10 +2289,11 @@ async def run_real_trading(self):
                 
             except Exception as e:
                 logger.error(f"Erreur dans la boucle: {e}")
-                continue
+                await asyncio.sleep(5)
+                raise
                 
     except Exception as e:
-        logger.error(f"Erreur fatale: {e}")
+        logger.error(f"Erreur: {e}")
         if hasattr(self, 'telegram'):
             await self.telegram.send_message(
                 chat_id=self.chat_id,
@@ -2204,38 +2303,17 @@ async def run_real_trading(self):
 
 
 
-# Classe pour gérer le portfolio réel
-class RealPortfolio:
-    def __init__(self):
-        self.current_time = "2025-06-09 01:12:00"
-        self.current_user = "Patmoorea"
-        self.portfolio_value = 0.0
-        self.positions_count = 0
-        self.daily_pnl = 0.0
-        
-    async def update(self, exchange):
-        try:
-            balance = await exchange.fetch_balance()
-            positions = await exchange.fetch_positions()
-            
-            self.portfolio_value = float(balance['total'].get('USDC', 0))
-            self.positions_count = len([p for p in positions if p['contracts'] > 0])
-            self.daily_pnl = sum([p['unrealizedPnl'] for p in positions])
-            
-            return True
-        except Exception as e:
-            logger.error(f"Erreur mise à jour portfolio: {e}")
-            return False
 
 # Modification de la fonction update_dashboard pour utiliser les vraies données
 async def update_real_dashboard(self):
+    """Met à jour le dashboard avec les données réelles"""
     try:
         portfolio = RealPortfolio()
         if await portfolio.update(self.exchange):
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric(
-                    "Portfolio Value", 
+                    "Portfolio Value",
                     f"{portfolio.portfolio_value:.2f} USDC",
                     f"{portfolio.daily_pnl:+.2f} USDC"
                 )
@@ -2255,3 +2333,240 @@ async def update_real_dashboard(self):
         logger.error(f"Erreur mise à jour dashboard: {e}")
         st.error(f"Erreur mise à jour métriques: {str(e)}")
 
+    def _get_portfolio_value(self):
+        """Récupère la valeur actuelle du portfolio"""
+        try:
+            if hasattr(self, 'position_manager') and hasattr(self.position_manager, 'positions'):
+                return sum(self.position_manager.positions.values())
+            return 0.0
+        except Exception as e:
+            logger.error(f"Erreur calcul portfolio: {e}")
+            return None
+
+    def _calculate_total_pnl(self):
+        """Calcule le PnL total"""
+        try:
+            if hasattr(self, 'position_history'):
+                return sum(trade.get('pnl', 0) for trade in self.position_history)
+        except Exception as e:
+            logger.error(f"Erreur calcul PnL: {e}")
+            return None
+
+    def _calculate_supertrend(self, data):
+        """Calcule l'indicateur Supertrend"""
+        try:
+            # Vérifie si toute la configuration nécessaire est présente
+            if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
+                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
+                return None
+            
+            # Récupère les paramètres de configuration
+            try:
+                period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
+                multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
+            except KeyError:
+                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
+                return None
+            
+            high = data['high']
+            low = data['low']
+            close = data['close']
+            
+            # Calcul de l'ATR
+            tr = pd.DataFrame()
+            tr['h-l'] = high - low
+            tr['h-pc'] = abs(high - close.shift(1))
+            tr['l-pc'] = abs(low - close.shift(1))
+            tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
+            atr = tr['tr'].rolling(period).mean()
+            
+            # Calcul des bandes
+            hl2 = (high + low) / 2
+            final_upperband = hl2 + (multiplier * atr)
+            final_lowerband = hl2 - (multiplier * atr)
+            
+            # Calcul du Supertrend
+            supertrend = pd.Series(index=data.index)
+            direction = pd.Series(index=data.index)
+            
+            for i in range(period, len(data)):
+                if close[i] > final_upperband[i-1]:
+                    supertrend[i] = final_lowerband[i]
+                    direction[i] = 1
+                elif close[i] < final_lowerband[i-1]:
+                    supertrend[i] = final_upperband[i]
+                    direction[i] = -1
+                else:
+                    supertrend[i] = supertrend[i-1]
+                    direction[i] = direction[i-1]
+            
+            # Si on arrive ici, l'indicateur est calculé avec succès
+            self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+            
+            return {
+                "value": supertrend,
+                "direction": direction,
+                "strength": abs(close - supertrend) / close
+            }
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
+            return None
+
+    def initialize_models(self):
+        """Initialise les modèles d'IA"""
+        self.models = {
+            "cnn_lstm": CNNLSTM(
+                input_size=42,
+                hidden_size=256,
+                num_layers=3,
+                dropout=config["AI"]["dropout"]
+            ),
+            "ppo_gtrxl": PPOGTrXL(
+                state_dim=42 * len(config["TRADING"]["timeframes"]),
+                action_dim=len(config["TRADING"]["pairs"]),
+                n_layers=config["AI"]["gtrxl_layers"],
+                embedding_dim=config["AI"]["embedding_dim"]
+            )
+        }
+
+async def get_latest_data(self):
+    """Récupère les dernières données de marché"""
+    try:
+        data = {}
+        for pair in config["TRADING"]["pairs"]:
+            for timeframe in config["TRADING"]["timeframes"]:
+                data.setdefault(timeframe, {})[pair] = self.buffer.get_latest()
+        return data
+    except Exception as e:
+        logger.error(f"Erreur: {e}")
+        return None
+
+async def get_real_time_data(self):
+    """Récupère les données en temps réel"""
+    try:
+        latest_data = await self.websocket.get_latest_data()
+        orderbook = await self.exchange.get_orderbook(self.trading_pair)
+        volume_24h = await self.exchange.get_24h_volume(self.trading_pair)
+        account_balance = await self.exchange.get_balance()
+        open_positions = await self.exchange.get_open_positions()
+        
+        return {
+            'price_data': latest_data,
+            'orderbook': orderbook,
+            'volume': volume_24h,
+            'balance': account_balance,
+            'positions': open_positions
+        }
+    except Exception as e:
+        logger.error(f"Erreur récupération données temps réel: {e}")
+        return None
+
+async def update_real_time(self):
+    """Met à jour toutes les données en temps réel"""
+    while True:
+        try:
+            real_time_data = await self.get_real_time_data()
+            if real_time_data:
+                self.latest_data = real_time_data
+                
+                # Mise à jour du buffer circulaire
+                self.buffer.update(real_time_data)
+                
+                # Notification des changements importants
+                await self.check_significant_changes(real_time_data)
+                
+            await asyncio.sleep(1)  # Mise à jour chaque seconde
+        except Exception as e:
+            logger.error(f"Erreur mise à jour temps réel: {e}")
+            await asyncio.sleep(5)  # Attente plus longue en cas d'erreur
+
+async def initialize(self):
+    """Initialise les connexions asynchrones"""
+    try:
+        await self.exchange.initialize()
+        
+        self.binance_ws = await AsyncClient.create(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET')
+        )
+        self.socket_manager = BinanceSocketManager(self.binance_ws)
+        
+        await self.setup_streams()
+        logger.info("✅ Connexions initialisées avec succès")
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur initialisation: {e}")
+        raise  # Relance l'exception pour permettre une gestion appropriée
+
+async def shutdown(self):
+    """Ferme proprement les connexions"""
+    try:
+        await self.binance_ws.close_connection()
+        await self.connector.close()
+        await self.exchange.close()
+        logger.info("✅ Connexions fermées avec succès")
+    except Exception as e:
+        logger.error(f"Erreur fermeture connexions: {e}")
+
+# Point d'entrée principal
+if __name__ == "__main__":
+    # Configuration du logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('trading_bot.log'),
+            logging.StreamHandler()
+        ]
+    )
+    logger = logging.getLogger(__name__)
+
+    try:
+        # Configuration de l'event loop
+        setup_event_loop()
+        
+        # Instance du bot
+        bot = TradingBotM4()
+        
+        # Interface Streamlit
+        st.title("Trading Bot Ultimate v4 🤖")
+
+        # Colonnes pour l'interface
+        col1, col2 = st.columns([3, 1])
+
+        with col2:
+            # Informations de session
+            st.sidebar.info(f"""
+            **Session Info**
+            User: {os.getenv('CURRENT_USER', 'Patmoorea')}
+            Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+            """)
+            
+            # Configuration trading
+            st.header("Trading Configuration")
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Medium"
+            )
+            pairs = st.multiselect(
+                "Trading Pairs",
+                options=config["TRADING"]["pairs"],
+                default=config["TRADING"]["pairs"]
+            )
+
+        with col1:
+            # Zone principale pour les graphiques
+            st.header("Market Analysis")
+            
+            # Bouton de démarrage
+            if st.button("Start Trading Bot", type="primary"):
+                with st.spinner("Initialisation du bot de trading..."):
+                    asyncio.run(bot.run())
+
+    except Exception as e:
+        logger.error(f"Erreur fatale: {e}")
+        if 'st' in globals():
+            st.error(f"Une erreur est survenue: {e}")
+        logging.error("Fatal error", exc_info=True)
