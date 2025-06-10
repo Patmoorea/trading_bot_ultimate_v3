@@ -90,6 +90,7 @@ from src.binance.binance_ws import AsyncClient, BinanceSocketManager
 from src.connectors.binance import BinanceConnector
 from src.exchanges.binance.binance_client import BinanceClient
 from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
+from src.analysis.news.analyzer import NewsAnalyzer
 
 # Configuration
 load_dotenv()
@@ -103,7 +104,8 @@ config = {
         "volume_filter": 1000,
         "price_check": True,
         "max_slippage": 0.0005
-    },    "TRADING": {
+    },
+    "TRADING": {
         "base_currency": "USDC",
         "pairs": ["BTC/USDC", "ETH/USDC"],
         "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
@@ -356,6 +358,8 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
+        self.news_analyzer = NewsAnalyzer()
+    
         # Passage en mode réel
         self.trading_mode = "production"
         self.testnet = False
@@ -389,7 +393,6 @@ class TradingBotM4:
         # Configuration de l'exchange
         self.websocket.setup_exchange("binance")
 
-        self.buffer = CircularBuffer()
         self.buffer = CircularBuffer()
 
         # Interface et monitoring
@@ -598,6 +601,41 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"Erreur traitement orderbook: {e}")
             return None
+        
+        def decision_model(self, features, timestamp=None):
+            try:
+                policy = self.models["ppo_gtrxl"].get_policy(features)
+                value = self.models["ppo_gtrxl"].get_value(features)
+                return policy, value
+            except Exception as e:
+                logger.error(f"[{timestamp}] Erreur decision_model: {e}")
+                return None, None
+        
+        def _add_risk_management(self, decision, timestamp=None):
+            try:
+                # Calcul du stop loss
+                stop_loss = self._calculate_stop_loss(decision)
+        
+                # Calcul du take profit
+                take_profit = self._calculate_take_profit(decision)
+        
+                # Ajout trailing stop
+                trailing_stop = {
+                    "activation_price": stop_loss * 1.02,
+                    "callback_rate": 0.01
+                }
+        
+                decision.update({
+                    "stop_loss": stop_loss,
+                    "take_profit": take_profit,
+                    "trailing_stop": trailing_stop
+                })
+        
+                return decision
+        
+    except Exception as e:
+        logger.error(f"[{timestamp}] Erreur risk management: {e}")
+        return decision
 
     async def _handle_kline(self, msg):
         """Traite une bougie"""
@@ -1385,7 +1423,8 @@ class TradingBotM4:
             features = []
 
             # Features de tendance
-            if trend_data := self._calculate_trend_features(data):
+            trend_data = self._calculate_trend_features(data)
+            if trend_data:
                 features.append(trend_data)
 
             # Features de momentum
