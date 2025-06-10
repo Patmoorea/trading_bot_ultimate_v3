@@ -40,6 +40,13 @@ from dotenv import load_dotenv
 # 6. Setup de l'event loop avant les imports PyTorch
 setup_event_loop()
 
+import ta
+from ta.trend import *
+from ta.momentum import *
+from ta.volatility import *
+from ta.volume import *
+from ta.others import *
+
 # 7. Imports ML/AI
 import gymnasium as gym
 from gymnasium import spaces
@@ -464,59 +471,28 @@ class TradingBotM4:
         )
       
     def _initialize_analyzers(self):
-        """Initialize all analysis components"""
-        self.advanced_indicators = MultiTimeframeAnalyzer(
-            config=self.timeframe_config
-        )
-        self.orderflow_analysis = OrderFlowAnalysis(
-            config=OrderFlowConfig(tick_size=0.1)
-        )
-        self.volume_analysis = VolumeAnalysis()
-        self.volatility_indicators = VolatilityIndicators()
+    """Initialize all analysis components"""
+    self.advanced_indicators = MultiTimeframeAnalyzer(
+        config=self.timeframe_config
+    )
+    self.orderflow_analysis = OrderFlowAnalysis(
+        config=OrderFlowConfig(tick_size=0.1)
+    )
+    self.volume_analysis = VolumeAnalysis()
+    self.volatility_indicators = VolatilityIndicators()
 
-        # Dictionnaire des 42 indicateurs avec leurs méthodes de calcul
-        self.indicators = {
-            "trend": {
-                "supertrend": self._calculate_supertrend,
-                "ichimoku": self._calculate_ichimoku,
-                "vwma": self._calculate_vwma,
-                "ema_ribbon": self._calculate_ema_ribbon,
-                "parabolic_sar": self._calculate_psar,
-                "zigzag": self._calculate_zigzag
-            },
-            "momentum": {
-                "rsi": self._calculate_rsi,
-                "stoch_rsi": self._calculate_stoch_rsi,
-                "macd": self._calculate_macd,
-                "awesome": self._calculate_ao,
-                "momentum": self._calculate_momentum,
-                "tsi": self._calculate_tsi
-            },
-            "volatility": {
-                "bbands": self._calculate_bbands,
-                "keltner": self._calculate_keltner,
-                "atr": self._calculate_atr,
-                "vix_fix": self._calculate_vix_fix,
-                "natr": self._calculate_natr,
-                "true_range": self._calculate_tr
-            },
-            "volume": {
-                "obv": self._calculate_obv,
-                "vwap": self._calculate_vwap,
-                "acc_dist": self._calculate_ad,
-                "chaikin_money": self._calculate_cmf,
-                "ease_move": self._calculate_emv,
-                "volume_profile": self._calculate_vp
-            },
-            "orderflow": {
-                "delta": self._calculate_delta,
-                "cvd": self._calculate_cvd,
-                "footprint": self._calculate_footprint,
-                "liquidity": self._calculate_liquidity,
-                "imbalance": self._calculate_imbalance,
-                "absorption": self._calculate_absorption
-            }
-        }
+    # Supprimez le dictionnaire self.indicators existant et remplacez-le par :
+    def add_indicators(self, df):
+        """Ajoute tous les indicateurs (130+) au DataFrame"""
+        return ta.add_all_ta_features(
+            df,
+            open="open",
+            high="high",
+            low="low",
+            close="close",
+            volume="volume",
+            fillna=True
+        )
 
         # Initialisation des modèles d'IA
         self.models = {
@@ -763,75 +739,137 @@ class TradingBotM4:
             raise
 
     async def analyze_signals(self, market_data, indicators):
-        """Analyse technique et fondamentale avancée"""
-        try:
-            # Vérification des données
-            if market_data is None or indicators is None:
-                return None
+    """Analyse technique et fondamentale avancée avec indicateurs TA étendus"""
+    current_time = "2025-06-10 00:32:15"  # Utilisation du timestamp actuel
 
-            # Utilisation du modèle hybride pour l'analyse technique
-            technical_features = self.hybrid_model.analyze_technical(
-                market_data=market_data,
-                indicators=indicators,
-            )
-
-            # Normalisation si nécessaire
-            if not isinstance(technical_features, dict):
-                technical_features = {
-                    'tensor': technical_features,
-                    'score': float(torch.mean(technical_features).item())
-                }
-
-            # Analyse des news via FinBERT custom
-            news_impact = await self.news_analyzer.analyze_recent_news()
-
-            # Détection du régime de marché via HMM + K-Means
-            current_regime = self.regime_detector.detect_regime(
-                indicators,
-            )
-
-            # Combinaison des features pour le GTrXL
-            combined_features = self._combine_features(
-                technical_features,
-                news_impact,
-                current_regime
-            )
-
-            # Décision via PPO+GTrXL (6 couches, 512 embeddings)
-            policy, value = self.decision_model(
-                combined_features,
-            )
-
-            # Construction de la décision finale
-            decision = self._build_decision(
-                policy=policy,
-                value=value,
-                technical_score=technical_features['score'],
-                news_sentiment=news_impact['sentiment'],
-                regime=current_regime,
-            )
-
-            # Ajout de la gestion des risques
-            decision = self._add_risk_management(
-                decision,
-            )
-
-            # Log de la décision
-            logger.info(
-                f"Action: {decision['action']}, "
-                f"Confiance: {decision['confidence']:.2%}, "
-                f"Régime: {decision['regime']}"
-            )
-
-            return decision
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            await self.telegram.send_message(
-                f"⚠️ Erreur analyse: {str(e)}\n"
-                f"Trader: {self.current_user}"
-            )
+    try:
+        # Vérification des données
+        if market_data is None or indicators is None:
+            logger.warning(f"[{current_time}] Données manquantes pour l'analyse")
             return None
+
+        # Ajout de tous les indicateurs techniques (130+)
+        df_with_indicators = self.add_indicators(market_data)
+        
+        # Construction du dictionnaire d'analyse avec les indicateurs techniques
+        technical_analysis = {
+            # Indicateurs de Tendance
+            'trend': {
+                'sma': df_with_indicators['trend_sma_fast'],
+                'ema': df_with_indicators['trend_ema_fast'],
+                'macd': df_with_indicators['trend_macd'],
+                'vortex': df_with_indicators['trend_vortex_ind_pos'],
+                'trix': df_with_indicators['trend_trix']
+            },
+            
+            # Indicateurs de Momentum
+            'momentum': {
+                'rsi': df_with_indicators['momentum_rsi'],
+                'stoch': df_with_indicators['momentum_stoch'],
+                'stoch_signal': df_with_indicators['momentum_stoch_signal'],
+                'tsi': df_with_indicators['momentum_tsi'],
+                'uo': df_with_indicators['momentum_uo']
+            },
+            
+            # Indicateurs de Volatilité
+            'volatility': {
+                'bbm': df_with_indicators['volatility_bbm'],
+                'bbh': df_with_indicators['volatility_bbh'],
+                'bbl': df_with_indicators['volatility_bbl'],
+                'atr': df_with_indicators['volatility_atr'],
+                'ui': df_with_indicators['volatility_ui']
+            },
+            
+            # Indicateurs de Volume
+            'volume': {
+                'adi': df_with_indicators['volume_adi'],
+                'obv': df_with_indicators['volume_obv'],
+                'cmf': df_with_indicators['volume_cmf'],
+                'fi': df_with_indicators['volume_fi'],
+                'em': df_with_indicators['volume_em']
+            },
+            
+            # Autres Indicateurs
+            'others': {
+                'dr': df_with_indicators['others_dr'],
+                'dlr': df_with_indicators['others_dlr'],
+                'cr': df_with_indicators['others_cr']
+            }
+        }
+
+        # Utilisation du modèle hybride pour l'analyse technique
+        technical_features = self.hybrid_model.analyze_technical(
+            market_data=df_with_indicators,  # Utilisation du DataFrame enrichi
+            indicators=technical_analysis,
+            timestamp=current_time
+        )
+
+        # Normalisation des features si nécessaire
+        if not isinstance(technical_features, dict):
+            technical_features = {
+                'tensor': technical_features,
+                'score': float(torch.mean(technical_features).item()),
+                'indicators': technical_analysis  # Ajout des indicateurs au dict
+            }
+
+        # Analyse des news via FinBERT custom
+        news_impact = await self.news_analyzer.analyze_recent_news()
+
+        # Détection du régime de marché avec indicateurs étendus
+        current_regime = self.regime_detector.detect_regime(
+            technical_analysis,  # Utilisation des nouveaux indicateurs
+        )
+
+        # Combinaison améliorée des features pour le GTrXL
+        combined_features = self._combine_features(
+            technical_features,
+            news_impact,
+            current_regime,
+            technical_analysis  # Ajout des indicateurs techniques
+        )
+
+        # Décision via PPO+GTrXL (6 couches, 512 embeddings)
+        policy, value = self.decision_model(
+            combined_features,
+        )
+
+        # Construction de la décision finale avec indicateurs étendus
+        decision = self._build_decision(
+            policy=policy,
+            value=value,
+            technical_score=technical_features['score'],
+            news_sentiment=news_impact['sentiment'],
+            regime=current_regime,
+            technical_indicators=technical_analysis  # Ajout des indicateurs
+        )
+
+        # Gestion des risques améliorée avec nouveaux indicateurs
+        decision = self._add_risk_management(
+            decision,
+            technical_analysis=technical_analysis  # Passage des indicateurs
+        )
+
+        # Log détaillé de la décision
+        logger.info(
+            f"[{current_time}] "
+            f"Action: {decision['action']}, "
+            f"Confiance: {decision['confidence']:.2%}, "
+            f"Régime: {decision['regime']}, "
+            f"RSI: {technical_analysis['momentum']['rsi'][-1]:.2f}, "
+            f"MACD: {technical_analysis['trend']['macd'][-1]:.2f}"
+        )
+
+        return decision
+
+    except Exception as e:
+        error_msg = f"[{current_time}] Erreur: {e}"
+        logger.error(error_msg)
+        await self.telegram.send_message(
+            f"⚠️ Erreur analyse: {str(e)}\n"
+            f"Trader: {self.current_user}\n"
+            f"Timestamp: {current_time}"
+        )
+        return None
 
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
