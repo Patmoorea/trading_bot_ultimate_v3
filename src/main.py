@@ -564,12 +564,11 @@ class TradingBotM4:
                 await self._handle_orderbook(msg)
             elif msg.get('e') == 'kline':
                 await self._handle_kline(msg)
-            else:
-                logger.warning(f"Type de message non géré: {msg.get('e')}")
                 
-    except Exception as e:
-        logger.error(f"Erreur traitement message: {e}")
-            
+        except Exception as e:
+            logger.error(f"Erreur traitement message: {e}")
+            return None
+         
     async def _handle_trade(self, msg):
         """Traite un trade"""
         try:
@@ -587,6 +586,8 @@ class TradingBotM4:
             
             # Analyse du volume
             self.volume_analysis.update(trade_data)
+            
+            return trade_data
             
         except Exception as e:
             logger.error(f"Erreur traitement trade: {e}")
@@ -608,6 +609,8 @@ class TradingBotM4:
             # Analyse de la liquidité
             await self._analyze_market_liquidity()
             
+            return orderbook_data
+            
         except Exception as e:
             logger.error(f"Erreur traitement orderbook: {e}")
             return None
@@ -620,6 +623,37 @@ class TradingBotM4:
             except Exception as e:
                 logger.error(f"[{timestamp}] Erreur decision_model: {e}")
                 return None, None
+        
+    async def _handle_kline(self, msg):
+        """Traite une bougie"""
+        try:
+            kline = msg['k']
+            kline_data = {
+                'symbol': msg['s'],
+                'interval': kline['i'],
+                'time': kline['t'],
+                'open': float(kline['o']),
+                'high': float(kline['h']),
+                'low': float(kline['l']),
+                'close': float(kline['c']),
+                'volume': float(kline['v']),
+                'closed': kline['x']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_klines(kline_data)
+            
+            # Analyse technique si la bougie est fermée
+            if kline_data['closed']:
+                await self.analyze_signals(
+                    market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
+                    indicators=self.advanced_indicators.analyze_timeframe(kline_data)
+                )
+           return kline_data
+
+        except Exception as e:
+            logger.error(f"Erreur traitement kline: {e}")
+            return None
         
         def _add_risk_management(self, decision, timestamp=None):
             try:
@@ -646,36 +680,6 @@ class TradingBotM4:
     except Exception as e:
         logger.error(f"[{timestamp}] Erreur risk management: {e}")
         return decision
-
-    async def _handle_kline(self, msg):
-        """Traite une bougie"""
-        try:
-            kline = msg['k']
-            kline_data = {
-                'symbol': msg['s'],
-                'interval': kline['i'],
-                'time': kline['t'],
-                'open': float(kline['o']),
-                'high': float(kline['h']),
-                'low': float(kline['l']),
-                'close': float(kline['c']),
-                'volume': float(kline['v']),
-                'closed': kline['x']
-            }
-            
-            # Mise à jour du buffer
-            self.buffer.update_klines(kline_data)
-            
-            # Analyse technique si la bougie est fermée
-            if kline_data['closed']:
-                await self.analyze_signals(
-                    market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
-                    indicators=self.advanced_indicators.analyze_timeframe(kline_data)
-                )
-                
-        except Exception as e:
-            logger.error(f"Erreur traitement kline: {e}")
-            return None
 
     async def get_latest_data(self):
         """Récupère les dernières données de marché"""
