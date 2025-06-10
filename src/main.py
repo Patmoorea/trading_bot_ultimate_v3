@@ -47,11 +47,6 @@ from dotenv import load_dotenv
 setup_event_loop()
 
 import ta
-from ta.trend import *
-from ta.momentum import *
-from ta.volatility import *
-from ta.volume import *
-from ta.others import *
 
 # 7. Imports ML/AI
 import gymnasium as gym
@@ -484,31 +479,97 @@ class TradingBotM4:
     # Supprimez le dictionnaire self.indicators existant et remplacez-le par :
     def add_indicators(self, df):
         """Ajoute tous les indicateurs (130+) au DataFrame"""
-        return ta.add_all_ta_features(
-            df,
-            open="open",
-            high="high",
-            low="low",
-            close="close",
-            volume="volume",
-            fillna=True
-        )
-
-        # Initialisation des modèles d'IA
-        self.models = {
-            "cnn_lstm": CNNLSTM(
-                input_size=42,
-                hidden_size=256,
-                num_layers=3,
-                dropout=config["AI"]["dropout"]
-            ),
-            "ppo_gtrxl": PPOGTrXL(
-                state_dim=42 * len(config["TRADING"]["timeframes"]),
-                action_dim=len(config["TRADING"]["pairs"]),
-                n_layers=config["AI"]["gtrxl_layers"],
-                embedding_dim=config["AI"]["embedding_dim"]
+        try:
+            # Ajout de tous les indicateurs techniques
+            df_with_indicators = ta.add_all_ta_features(
+                df,
+                open="open",
+                high="high",
+                low="low",
+                close="close",
+                volume="volume",
+                fillna=True
             )
-        }
+        
+            # Organisez les indicateurs par catégories
+            indicators = {
+                'trend': {
+                    'sma_fast': df_with_indicators['trend_sma_fast'],
+                    'sma_slow': df_with_indicators['trend_sma_slow'],
+                    'ema_fast': df_with_indicators['trend_ema_fast'],
+                    'ema_slow': df_with_indicators['trend_ema_slow'],
+                    'adx': df_with_indicators['trend_adx'],
+                    'adx_pos': df_with_indicators['trend_adx_pos'],
+                    'adx_neg': df_with_indicators['trend_adx_neg'],
+                    'vortex_ind_pos': df_with_indicators['trend_vortex_ind_pos'],
+                    'vortex_ind_neg': df_with_indicators['trend_vortex_ind_neg'],
+                    'vortex_ind_diff': df_with_indicators['trend_vortex_ind_diff'],
+                    'trix': df_with_indicators['trend_trix'],
+                    'mass_index': df_with_indicators['trend_mass_index'],
+                    'cci': df_with_indicators['trend_cci'],
+                    'dpo': df_with_indicators['trend_dpo'],
+                    'kst': df_with_indicators['trend_kst'],
+                    'kst_sig': df_with_indicators['trend_kst_sig'],
+                    'kst_diff': df_with_indicators['trend_kst_diff'],
+                    'ichimoku_a': df_with_indicators['trend_ichimoku_a'],
+                    'ichimoku_b': df_with_indicators['trend_ichimoku_b'],
+                    'visual_ichimoku_a': df_with_indicators['trend_visual_ichimoku_a'],
+                    'visual_ichimoku_b': df_with_indicators['trend_visual_ichimoku_b'],
+                    'aroon_up': df_with_indicators['trend_aroon_up'],
+                    'aroon_down': df_with_indicators['trend_aroon_down'],
+                    'aroon_ind': df_with_indicators['trend_aroon_ind']
+                },
+                'momentum': {
+                    'rsi': df_with_indicators['momentum_rsi'],
+                    'stoch': df_with_indicators['momentum_stoch'],
+                    'stoch_signal': df_with_indicators['momentum_stoch_signal'],
+                    'tsi': df_with_indicators['momentum_tsi'],
+                    'uo': df_with_indicators['momentum_uo'],
+                    'stoch_rsi': df_with_indicators['momentum_stoch_rsi'],
+                    'stoch_rsi_k': df_with_indicators['momentum_stoch_rsi_k'],
+                    'stoch_rsi_d': df_with_indicators['momentum_stoch_rsi_d'],
+                    'williams_r': df_with_indicators['momentum_wr'],
+                    'ao': df_with_indicators['momentum_ao']
+                },
+                'volatility': {
+                    'bbm': df_with_indicators['volatility_bbm'],
+                    'bbh': df_with_indicators['volatility_bbh'],
+                    'bbl': df_with_indicators['volatility_bbl'],
+                    'bbw': df_with_indicators['volatility_bbw'],
+                    'bbp': df_with_indicators['volatility_bbp'],
+                    'kcc': df_with_indicators['volatility_kcc'],
+                    'kch': df_with_indicators['volatility_kch'],
+                    'kcl': df_with_indicators['volatility_kcl'],
+                    'kcw': df_with_indicators['volatility_kcw'],
+                    'kcp': df_with_indicators['volatility_kcp'],
+                    'atr': df_with_indicators['volatility_atr'],
+                    'ui': df_with_indicators['volatility_ui']
+                },
+                'volume': {
+                    'mfi': df_with_indicators['volume_mfi'],
+                    'adi': df_with_indicators['volume_adi'],
+                    'obv': df_with_indicators['volume_obv'],
+                    'cmf': df_with_indicators['volume_cmf'],
+                    'fi': df_with_indicators['volume_fi'],
+                    'em': df_with_indicators['volume_em'],
+                    'sma_em': df_with_indicators['volume_sma_em'],
+                    'vpt': df_with_indicators['volume_vpt'],
+                    'nvi': df_with_indicators['volume_nvi'],
+                    'vwap': df_with_indicators['volume_vwap']
+                },
+                'others': {
+                    'dr': df_with_indicators['others_dr'],
+                    'dlr': df_with_indicators['others_dlr'],
+                    'cr': df_with_indicators['others_cr']
+                }
+            }
+        
+            logger.info(f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories")
+            return indicators
+        
+        except Exception as e:
+            logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            return None
     
     async def setup_streams(self):
         """Configure les streams de données en temps réel"""
@@ -782,138 +843,100 @@ class TradingBotM4:
             logger.error(f"Erreur study_market: {e}")
             raise
 
-    async def analyze_signals(self, market_data, indicators):
-        """Analyse technique et fondamentale avancée avec indicateurs TA étendus"""
-        current_time = "2025-06-10 00:32:15"  # Utilisation du timestamp actuel
-
+    async def analyze_signals(self, market_data):
+        """Analyse des signaux de trading basée sur tous les indicateurs"""
         try:
-            # Vérification des données
-            if market_data is None or indicators is None:
-                logger.warning(f"[{current_time}] Données manquantes pour l'analyse")
+            # Obtention des indicateurs
+            indicators = self.add_indicators(market_data)
+            if not indicators:
                 return None
-
-            # Ajout de tous les indicateurs techniques (130+)
-            df_with_indicators = self.add_indicators(market_data)
-        
-            # Construction du dictionnaire d'analyse avec les indicateurs techniques
-            technical_analysis = {
-                # Indicateurs de Tendance
-                'trend': {
-                    'sma': df_with_indicators['trend_sma_fast'],
-                    'ema': df_with_indicators['trend_ema_fast'],
-                    'macd': df_with_indicators['trend_macd'],
-                    'vortex': df_with_indicators['trend_vortex_ind_pos'],
-                    'trix': df_with_indicators['trend_trix']
-                },
             
-                # Indicateurs de Momentum
-                'momentum': {
-                    'rsi': df_with_indicators['momentum_rsi'],
-                    'stoch': df_with_indicators['momentum_stoch'],
-                    'stoch_signal': df_with_indicators['momentum_stoch_signal'],
-                    'tsi': df_with_indicators['momentum_tsi'],
-                    'uo': df_with_indicators['momentum_uo']
-                },
-            
-                # Indicateurs de Volatilité
-                'volatility': {
-                    'bbm': df_with_indicators['volatility_bbm'],
-                    'bbh': df_with_indicators['volatility_bbh'],
-                    'bbl': df_with_indicators['volatility_bbl'],
-                    'atr': df_with_indicators['volatility_atr'],
-                    'ui': df_with_indicators['volatility_ui']
-                },
-            
-                # Indicateurs de Volume
-                'volume': {
-                    'adi': df_with_indicators['volume_adi'],
-                    'obv': df_with_indicators['volume_obv'],
-                    'cmf': df_with_indicators['volume_cmf'],
-                    'fi': df_with_indicators['volume_fi'],
-                    'em': df_with_indicators['volume_em']
-                },
-            
-                # Autres Indicateurs
-                'others': {
-                    'dr': df_with_indicators['others_dr'],
-                    'dlr': df_with_indicators['others_dlr'],
-                    'cr': df_with_indicators['others_cr']
-                }
+            # Analyse des tendances
+            trend_analysis = {
+                'primary_trend': 'bullish' if indicators['trend']['ema_fast'] > indicators['trend']['sma_slow'] else 'bearish',
+                'trend_strength': indicators['trend']['adx'],
+                'trend_direction': 1 if indicators['trend']['vortex_ind_diff'] > 0 else -1,
+                'ichimoku_signal': 'buy' if indicators['trend']['ichimoku_a'] > indicators['trend']['ichimoku_b'] else 'sell'
             }
-
-            # Utilisation du modèle hybride pour l'analyse technique
-            technical_features = self.hybrid_model.analyze_technical(
-                market_data=df_with_indicators,  # Utilisation du DataFrame enrichi
-                indicators=technical_analysis,
-                timestamp=current_time
-            )
-
-            # Normalisation des features si nécessaire
-            if not isinstance(technical_features, dict):
-                technical_features = {
-                    'tensor': technical_features,
-                    'score': float(torch.mean(technical_features).item()),
-                    'indicators': technical_analysis  # Ajout des indicateurs au dict
-                }
-
-            # Analyse des news via FinBERT custom
-            news_impact = await self.news_analyzer.analyze_recent_news()
-
-            # Détection du régime de marché avec indicateurs étendus
-            current_regime = self.regime_detector.detect_regime(
-                technical_analysis,  # Utilisation des nouveaux indicateurs
-            )
-
-            # Combinaison améliorée des features pour le GTrXL
-            combined_features = self._combine_features(
-                technical_features,
-                news_impact,
-                current_regime,
-                technical_analysis  # Ajout des indicateurs techniques
-            )
-
-            # Décision via PPO+GTrXL (6 couches, 512 embeddings)
-            policy, value = self.decision_model(
-                combined_features,
-            )
-
-            # Construction de la décision finale avec indicateurs étendus
-            decision = self._build_decision(
-                policy=policy,
-                value=value,
-                technical_score=technical_features['score'],
-                news_sentiment=news_impact['sentiment'],
-                regime=current_regime,
-                technical_indicators=technical_analysis  # Ajout des indicateurs
-            )
-
-            # Gestion des risques améliorée avec nouveaux indicateurs
-            decision = self._add_risk_management(
-                decision,
-                technical_analysis=technical_analysis  # Passage des indicateurs
-            )
-
-            # Log détaillé de la décision
-            logger.info(
-                f"[{current_time}] "
-                f"Action: {decision['action']}, "
-                f"Confiance: {decision['confidence']:.2%}, "
-                f"Régime: {decision['regime']}, "
-                f"RSI: {technical_analysis['momentum']['rsi'][-1]:.2f}, "
-                f"MACD: {technical_analysis['trend']['macd'][-1]:.2f}"
-            )
-
-            return decision
-
+        
+            # Analyse du momentum
+            momentum_analysis = {
+                'rsi_signal': 'oversold' if indicators['momentum']['rsi'] < 30 else 'overbought' if indicators['momentum']['rsi'] > 70 else 'neutral',
+                'stoch_signal': 'buy' if indicators['momentum']['stoch_rsi_k'] > indicators['momentum']['stoch_rsi_d'] else 'sell',
+                'ultimate_signal': 'buy' if indicators['momentum']['uo'] > 70 else 'sell' if indicators['momentum']['uo'] < 30 else 'neutral'
+            }
+        
+            # Analyse de la volatilité
+            volatility_analysis = {
+                'bb_signal': 'oversold' if market_data['close'].iloc[-1] < indicators['volatility']['bbl'].iloc[-1] else 'overbought' if market_data['close'].iloc[-1] > indicators['volatility']['bbh'].iloc[-1] else 'neutral',
+                'kc_signal': 'breakout' if market_data['close'].iloc[-1] > indicators['volatility']['kch'].iloc[-1] else 'breakdown' if market_data['close'].iloc[-1] < indicators['volatility']['kcl'].iloc[-1] else 'range',
+                'atr_volatility': indicators['volatility']['atr'].iloc[-1]
+            }
+        
+            # Analyse du volume
+            volume_analysis = {
+                'mfi_signal': 'buy' if indicators['volume']['mfi'].iloc[-1] < 20 else 'sell' if indicators['volume']['mfi'].iloc[-1] > 80 else 'neutral',
+                'cmf_trend': 'positive' if indicators['volume']['cmf'].iloc[-1] > 0 else 'negative',
+                'obv_trend': 'up' if indicators['volume']['obv'].diff().iloc[-1] > 0 else 'down'
+            }
+        
+            # Décision finale
+            signal = {
+                'timestamp': pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                'trend': trend_analysis,
+                'momentum': momentum_analysis,
+                'volatility': volatility_analysis,
+                'volume': volume_analysis,
+                'recommendation': self._generate_recommendation(trend_analysis, momentum_analysis, volatility_analysis, volume_analysis)
+            }
+        
+            logger.info(f"✅ Analyse des signaux complétée: {signal['recommendation']}")
+            return signal
+        
         except Exception as e:
-            error_msg = f"[{current_time}] Erreur: {e}"
-            logger.error(error_msg)
-            await self.telegram.send_message(
-                f"⚠️ Erreur analyse: {str(e)}\n"
-                f"Trader: {self.current_user}\n"
-                f"Timestamp: {current_time}"
-            )
+            logger.error(f"❌ Erreur analyse signaux: {e}")
             return None
+
+    def _generate_recommendation(self, trend, momentum, volatility, volume):
+        """Génère une recommandation basée sur l'analyse des indicateurs"""
+        try:
+            # Système de points pour la décision
+            points = 0
+        
+            # Points basés sur la tendance
+            if trend['primary_trend'] == 'bullish': points += 2
+            if trend['trend_strength'] > 25: points += 1
+            if trend['trend_direction'] == 1: points += 1
+        
+            # Points basés sur le momentum
+            if momentum['rsi_signal'] == 'oversold': points += 2
+            if momentum['stoch_signal'] == 'buy': points += 1
+            if momentum['ultimate_signal'] == 'buy': points += 1
+        
+            # Points basés sur la volatilité
+            if volatility['bb_signal'] == 'oversold': points += 1
+            if volatility['kc_signal'] == 'breakout': points += 1
+        
+            # Points basés sur le volume
+            if volume['mfi_signal'] == 'buy': points += 1
+            if volume['cmf_trend'] == 'positive': points += 1
+            if volume['obv_trend'] == 'up': points += 1
+        
+            # Génération de la recommandation
+            if points >= 8:
+                return {'action': 'strong_buy', 'confidence': points/12}
+            elif points >= 6:
+                return {'action': 'buy', 'confidence': points/12}
+            elif points <= 2:
+                return {'action': 'strong_sell', 'confidence': 1 - points/12}
+            elif points <= 4:
+                return {'action': 'sell', 'confidence': 1 - points/12}
+            else:
+                return {'action': 'neutral', 'confidence': 0.5}
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur génération recommandation: {e}")
+            return {'action': 'error', 'confidence': 0}
 
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
