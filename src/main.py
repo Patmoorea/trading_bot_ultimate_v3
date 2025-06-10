@@ -3,6 +3,11 @@ import os
 import sys
 import logging
 import json
+import plotly.graph_objects as go
+
+# Ajout du chemin racine au PYTHONPATH
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 2. Configuration environnement
 os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
@@ -37,7 +42,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from asyncio import TimeoutError
 import telegram
-from src.exchanges.binance.exchange import BinanceExchange
+from src.exchanges.binance_exchange import BinanceExchange
 from src.portfolio.real_portfolio import RealPortfolio
 import numpy as np
 import ccxt
@@ -90,7 +95,7 @@ from src.analysis.indicators.trend.indicators import TrendIndicators
 from src.binance.binance_ws import AsyncClient, BinanceSocketManager
 from src.connectors.binance import BinanceConnector
 from src.exchanges.binance.binance_client import BinanceClient
-from src.analysis.news.analyzer import NewsAnalyzer
+from web_interface.app.services.news_analyzer import NewsAnalyzer
 
 # Configuration
 load_dotenv()
@@ -710,37 +715,37 @@ class TradingBotM4:
                     market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
                     indicators=self.advanced_indicators.analyze_timeframe(kline_data)
                 )
-           return kline_data
+            return kline_data
 
         except Exception as e:
             logger.error(f"Erreur traitement kline: {e}")
             return None
         
-        def _add_risk_management(self, decision, timestamp=None):
-            try:
-                # Calcul du stop loss
-                stop_loss = self._calculate_stop_loss(decision)
+    def _add_risk_management(self, decision, timestamp=None):
+        try:
+            # Calcul du stop loss
+            stop_loss = self._calculate_stop_loss(decision)
         
-                # Calcul du take profit
-                take_profit = self._calculate_take_profit(decision)
+            # Calcul du take profit
+            take_profit = self._calculate_take_profit(decision)
         
-                # Ajout trailing stop
-                trailing_stop = {
-                    "activation_price": stop_loss * 1.02,
-                    "callback_rate": 0.01
-                }
+            # Ajout trailing stop
+            trailing_stop = {
+                "activation_price": stop_loss * 1.02,
+                "callback_rate": 0.01
+            }
         
-                decision.update({
-                    "stop_loss": stop_loss,
-                    "take_profit": take_profit,
-                    "trailing_stop": trailing_stop
-                })
+            decision.update({
+                "stop_loss": stop_loss,
+                "take_profit": take_profit,
+                "trailing_stop": trailing_stop
+            })
         
-                return decision
+            return decision
         
-    except Exception as e:
-        logger.error(f"[{timestamp}] Erreur risk management: {e}")
-        return decision
+        except Exception as e:
+            logger.error(f"[{timestamp}] Erreur risk management: {e}")
+            return decision
 
     async def get_latest_data(self):
         """Récupère les dernières données de marché"""
@@ -2280,10 +2285,7 @@ async def get_real_portfolio(self):
                 for pos in positions if pos['contracts'] > 0
             ]
         }
-        except Exception as e:
-            logger.error(f"Erreur récupération portfolio: {e}")
-            return None
-        
+
         await self.telegram.send_message(
             chat_id=self.chat_id,
             text=f"""💰 Portfolio Update:
@@ -2344,10 +2346,10 @@ Take Profit: {take_profit}"""
         )
         
         return order
-        
-        except Exception as e:
-            logger.error(f"Erreur trade: {e}")
-            return None
+    
+    except Exception as e:  # Correction de l'indentation ici
+        logger.error(f"Erreur trade: {e}")
+        return None
         
 # Extension sécurisée de la méthode run() existante
 async def run_real_trading(self):
