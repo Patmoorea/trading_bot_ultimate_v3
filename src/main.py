@@ -66,6 +66,8 @@ sys.path.append(parent_dir)
 sys.path.append(current_dir)
 
 # Imports des modules existants
+from src.regime_detection.hmm_kmeans import MarketRegimeDetector
+from src.monitoring.streamlit_ui import TradingDashboard
 from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 from src.core.buffer.circular_buffer import CircularBuffer
 from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
@@ -469,7 +471,9 @@ class TradingBotM4:
             api_secret=os.getenv('BINANCE_API_SECRET'),
             testnet=False
         )
-      
+        # Initialisation des modèles
+        self.initialize_models()
+        
     def _initialize_analyzers(self):
         """Initialize all analysis components"""
         self.advanced_indicators = MultiTimeframeAnalyzer(
@@ -1364,7 +1368,7 @@ class TradingBotM4:
                 return False
 
             # Vérification de la dernière session d'entraînement
-                return True
+            return True
 
             return time_since_training.days >= 1  # Réentraînement quotidien
 
@@ -2262,7 +2266,6 @@ async def setup_real_telegram(self):
             return True
         except Exception as e:
             logger.error(f"Erreur configuration Telegram: {e}")
-            return None
             return False
 
 async def get_real_portfolio(self):
