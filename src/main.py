@@ -32,7 +32,13 @@ st.set_page_config(
 )
 
 # 5. Imports standards
-from datetime import datetime
+from typing import Dict, List, Optional, Union
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from asyncio import TimeoutError
+import telegram
+from src.exchanges.binance.exchange import BinanceExchange
+from src.portfolio.real_portfolio import RealPortfolio
 import numpy as np
 import ccxt
 from dotenv import load_dotenv
@@ -89,7 +95,6 @@ from src.analysis.indicators.trend.indicators import TrendIndicators
 from src.binance.binance_ws import AsyncClient, BinanceSocketManager
 from src.connectors.binance import BinanceConnector
 from src.exchanges.binance.binance_client import BinanceClient
-from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
 from src.analysis.news.analyzer import NewsAnalyzer
 
 # Configuration
@@ -1295,11 +1300,13 @@ class TradingBotM4:
             raise
         finally:
             await self.shutdown()
+            
     async def process_market_data(self):
         """Traite les données de marché en temps réel"""
         try:
             latest_data = await self.get_latest_data()
             if not latest_data:
+                logger.warning("Pas de données disponibles")
                 return None, None
 
             # Analyse des indicateurs
@@ -1314,7 +1321,7 @@ class TradingBotM4:
             return latest_data, indicators
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur process_market_data: {e}")
             return None, None
 
     def _should_train(self, historical_data):
@@ -1968,7 +1975,6 @@ class TradingBotM4:
             return {"safe_to_trade": False, "reason": "Erreur système"}
     async def _analyze_market_liquidity(self):
         """Analyse détaillée de la liquidité du marché"""
-
         try:
             liquidity_status = {
                 "status": "sufficient",
@@ -2008,7 +2014,8 @@ class TradingBotM4:
             return liquidity_status
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur analyse liquidité: {e}")
+            return {"status": "insufficient", "metrics": {}}
 
     def _check_technical_conditions(self):
         """Vérifie les conditions techniques du marché"""
