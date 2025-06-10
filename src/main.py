@@ -549,17 +549,22 @@ class TradingBotM4:
     async def _process_stream_message(self, msg):
         """Traite les messages des streams"""
         try:
+            if not msg:
+                logger.warning("Message vide reçu")
+                return
+            
             if msg.get('e') == 'trade':
                 await self._handle_trade(msg)
             elif msg.get('e') == 'depthUpdate':
                 await self._handle_orderbook(msg)
             elif msg.get('e') == 'kline':
                 await self._handle_kline(msg)
+            else:
+                logger.warning(f"Type de message non géré: {msg.get('e')}")
                 
-        except Exception as e:
-            logger.error(f"Erreur traitement message: {e}")
-            return None
-
+    except Exception as e:
+        logger.error(f"Erreur traitement message: {e}")
+            
     async def _handle_trade(self, msg):
         """Traite un trade"""
         try:
@@ -2241,6 +2246,9 @@ async def get_real_portfolio(self):
                 for pos in positions if pos['contracts'] > 0
             ]
         }
+        except Exception as e:
+            logger.error(f"Erreur récupération portfolio: {e}")
+            return None
         
         await self.telegram.send_message(
             chat_id=self.chat_id,
@@ -2358,7 +2366,7 @@ async def run_real_trading(self):
             except Exception as e:
                 logger.error(f"Erreur dans la boucle: {e}")
                 await asyncio.sleep(5)
-                raise
+                continue
                 
     except Exception as e:
         logger.error(f"Erreur: {e}")
@@ -2566,7 +2574,10 @@ async def initialize(self):
     except Exception as e:
         logger.error(f"❌ Erreur initialisation: {e}")
         raise  # Relance l'exception pour permettre une gestion appropriée
-
+    finally:
+        # Nettoyage des ressources si nécessaire
+        pass
+        
 async def shutdown(self):
     """Ferme proprement les connexions"""
     try:
