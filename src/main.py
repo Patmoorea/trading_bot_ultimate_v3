@@ -59,19 +59,11 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 sys.path.append(current_dir)
 
-
-# Ajout des chemins pour les modules
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-sys.path.append(current_dir)
-
 # Imports des modules existants
 from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 from src.core.buffer.circular_buffer import CircularBuffer
 from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
 from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
-from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
 from src.analysis.indicators.volatility.volatility import VolatilityIndicators
 from src.ai.cnn_lstm import CNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
@@ -471,15 +463,15 @@ class TradingBotM4:
         )
       
     def _initialize_analyzers(self):
-    """Initialize all analysis components"""
-    self.advanced_indicators = MultiTimeframeAnalyzer(
-        config=self.timeframe_config
-    )
-    self.orderflow_analysis = OrderFlowAnalysis(
-        config=OrderFlowConfig(tick_size=0.1)
-    )
-    self.volume_analysis = VolumeAnalysis()
-    self.volatility_indicators = VolatilityIndicators()
+        """Initialize all analysis components"""
+        self.advanced_indicators = MultiTimeframeAnalyzer(
+            config=self.timeframe_config
+        )
+        self.orderflow_analysis = OrderFlowAnalysis(
+            config=OrderFlowConfig(tick_size=0.1)
+        )
+        self.volume_analysis = VolumeAnalysis()
+        self.volatility_indicators = VolatilityIndicators()
 
     # Supprimez le dictionnaire self.indicators existant et remplacez-le par :
     def add_indicators(self, df):
@@ -739,137 +731,137 @@ class TradingBotM4:
             raise
 
     async def analyze_signals(self, market_data, indicators):
-    """Analyse technique et fondamentale avancée avec indicateurs TA étendus"""
-    current_time = "2025-06-10 00:32:15"  # Utilisation du timestamp actuel
+        """Analyse technique et fondamentale avancée avec indicateurs TA étendus"""
+        current_time = "2025-06-10 00:32:15"  # Utilisation du timestamp actuel
 
-    try:
-        # Vérification des données
-        if market_data is None or indicators is None:
-            logger.warning(f"[{current_time}] Données manquantes pour l'analyse")
-            return None
+        try:
+            # Vérification des données
+            if market_data is None or indicators is None:
+                logger.warning(f"[{current_time}] Données manquantes pour l'analyse")
+                return None
 
-        # Ajout de tous les indicateurs techniques (130+)
-        df_with_indicators = self.add_indicators(market_data)
+            # Ajout de tous les indicateurs techniques (130+)
+            df_with_indicators = self.add_indicators(market_data)
         
-        # Construction du dictionnaire d'analyse avec les indicateurs techniques
-        technical_analysis = {
-            # Indicateurs de Tendance
-            'trend': {
-                'sma': df_with_indicators['trend_sma_fast'],
-                'ema': df_with_indicators['trend_ema_fast'],
-                'macd': df_with_indicators['trend_macd'],
-                'vortex': df_with_indicators['trend_vortex_ind_pos'],
-                'trix': df_with_indicators['trend_trix']
-            },
+            # Construction du dictionnaire d'analyse avec les indicateurs techniques
+            technical_analysis = {
+                # Indicateurs de Tendance
+                'trend': {
+                    'sma': df_with_indicators['trend_sma_fast'],
+                    'ema': df_with_indicators['trend_ema_fast'],
+                    'macd': df_with_indicators['trend_macd'],
+                    'vortex': df_with_indicators['trend_vortex_ind_pos'],
+                    'trix': df_with_indicators['trend_trix']
+                },
             
-            # Indicateurs de Momentum
-            'momentum': {
-                'rsi': df_with_indicators['momentum_rsi'],
-                'stoch': df_with_indicators['momentum_stoch'],
-                'stoch_signal': df_with_indicators['momentum_stoch_signal'],
-                'tsi': df_with_indicators['momentum_tsi'],
-                'uo': df_with_indicators['momentum_uo']
-            },
+                # Indicateurs de Momentum
+                'momentum': {
+                    'rsi': df_with_indicators['momentum_rsi'],
+                    'stoch': df_with_indicators['momentum_stoch'],
+                    'stoch_signal': df_with_indicators['momentum_stoch_signal'],
+                    'tsi': df_with_indicators['momentum_tsi'],
+                    'uo': df_with_indicators['momentum_uo']
+                },
             
-            # Indicateurs de Volatilité
-            'volatility': {
-                'bbm': df_with_indicators['volatility_bbm'],
-                'bbh': df_with_indicators['volatility_bbh'],
-                'bbl': df_with_indicators['volatility_bbl'],
-                'atr': df_with_indicators['volatility_atr'],
-                'ui': df_with_indicators['volatility_ui']
-            },
+                # Indicateurs de Volatilité
+                'volatility': {
+                    'bbm': df_with_indicators['volatility_bbm'],
+                    'bbh': df_with_indicators['volatility_bbh'],
+                    'bbl': df_with_indicators['volatility_bbl'],
+                    'atr': df_with_indicators['volatility_atr'],
+                    'ui': df_with_indicators['volatility_ui']
+                },
             
-            # Indicateurs de Volume
-            'volume': {
-                'adi': df_with_indicators['volume_adi'],
-                'obv': df_with_indicators['volume_obv'],
-                'cmf': df_with_indicators['volume_cmf'],
-                'fi': df_with_indicators['volume_fi'],
-                'em': df_with_indicators['volume_em']
-            },
+                # Indicateurs de Volume
+                'volume': {
+                    'adi': df_with_indicators['volume_adi'],
+                    'obv': df_with_indicators['volume_obv'],
+                    'cmf': df_with_indicators['volume_cmf'],
+                    'fi': df_with_indicators['volume_fi'],
+                    'em': df_with_indicators['volume_em']
+                },
             
-            # Autres Indicateurs
-            'others': {
-                'dr': df_with_indicators['others_dr'],
-                'dlr': df_with_indicators['others_dlr'],
-                'cr': df_with_indicators['others_cr']
-            }
-        }
-
-        # Utilisation du modèle hybride pour l'analyse technique
-        technical_features = self.hybrid_model.analyze_technical(
-            market_data=df_with_indicators,  # Utilisation du DataFrame enrichi
-            indicators=technical_analysis,
-            timestamp=current_time
-        )
-
-        # Normalisation des features si nécessaire
-        if not isinstance(technical_features, dict):
-            technical_features = {
-                'tensor': technical_features,
-                'score': float(torch.mean(technical_features).item()),
-                'indicators': technical_analysis  # Ajout des indicateurs au dict
+                # Autres Indicateurs
+                'others': {
+                    'dr': df_with_indicators['others_dr'],
+                    'dlr': df_with_indicators['others_dlr'],
+                    'cr': df_with_indicators['others_cr']
+                }
             }
 
-        # Analyse des news via FinBERT custom
-        news_impact = await self.news_analyzer.analyze_recent_news()
+            # Utilisation du modèle hybride pour l'analyse technique
+            technical_features = self.hybrid_model.analyze_technical(
+                market_data=df_with_indicators,  # Utilisation du DataFrame enrichi
+                indicators=technical_analysis,
+                timestamp=current_time
+            )
 
-        # Détection du régime de marché avec indicateurs étendus
-        current_regime = self.regime_detector.detect_regime(
-            technical_analysis,  # Utilisation des nouveaux indicateurs
-        )
+            # Normalisation des features si nécessaire
+            if not isinstance(technical_features, dict):
+                technical_features = {
+                    'tensor': technical_features,
+                    'score': float(torch.mean(technical_features).item()),
+                    'indicators': technical_analysis  # Ajout des indicateurs au dict
+                }
 
-        # Combinaison améliorée des features pour le GTrXL
-        combined_features = self._combine_features(
-            technical_features,
-            news_impact,
-            current_regime,
-            technical_analysis  # Ajout des indicateurs techniques
-        )
+            # Analyse des news via FinBERT custom
+            news_impact = await self.news_analyzer.analyze_recent_news()
 
-        # Décision via PPO+GTrXL (6 couches, 512 embeddings)
-        policy, value = self.decision_model(
-            combined_features,
-        )
+            # Détection du régime de marché avec indicateurs étendus
+            current_regime = self.regime_detector.detect_regime(
+                technical_analysis,  # Utilisation des nouveaux indicateurs
+            )
 
-        # Construction de la décision finale avec indicateurs étendus
-        decision = self._build_decision(
-            policy=policy,
-            value=value,
-            technical_score=technical_features['score'],
-            news_sentiment=news_impact['sentiment'],
-            regime=current_regime,
-            technical_indicators=technical_analysis  # Ajout des indicateurs
-        )
+            # Combinaison améliorée des features pour le GTrXL
+            combined_features = self._combine_features(
+                technical_features,
+                news_impact,
+                current_regime,
+                technical_analysis  # Ajout des indicateurs techniques
+            )
 
-        # Gestion des risques améliorée avec nouveaux indicateurs
-        decision = self._add_risk_management(
-            decision,
-            technical_analysis=technical_analysis  # Passage des indicateurs
-        )
+            # Décision via PPO+GTrXL (6 couches, 512 embeddings)
+            policy, value = self.decision_model(
+                combined_features,
+            )
 
-        # Log détaillé de la décision
-        logger.info(
-            f"[{current_time}] "
-            f"Action: {decision['action']}, "
-            f"Confiance: {decision['confidence']:.2%}, "
-            f"Régime: {decision['regime']}, "
-            f"RSI: {technical_analysis['momentum']['rsi'][-1]:.2f}, "
-            f"MACD: {technical_analysis['trend']['macd'][-1]:.2f}"
-        )
+            # Construction de la décision finale avec indicateurs étendus
+            decision = self._build_decision(
+                policy=policy,
+                value=value,
+                technical_score=technical_features['score'],
+                news_sentiment=news_impact['sentiment'],
+                regime=current_regime,
+                technical_indicators=technical_analysis  # Ajout des indicateurs
+            )
 
-        return decision
+            # Gestion des risques améliorée avec nouveaux indicateurs
+            decision = self._add_risk_management(
+                decision,
+                technical_analysis=technical_analysis  # Passage des indicateurs
+            )
 
-    except Exception as e:
-        error_msg = f"[{current_time}] Erreur: {e}"
-        logger.error(error_msg)
-        await self.telegram.send_message(
-            f"⚠️ Erreur analyse: {str(e)}\n"
-            f"Trader: {self.current_user}\n"
-            f"Timestamp: {current_time}"
-        )
-        return None
+            # Log détaillé de la décision
+            logger.info(
+                f"[{current_time}] "
+                f"Action: {decision['action']}, "
+                f"Confiance: {decision['confidence']:.2%}, "
+                f"Régime: {decision['regime']}, "
+                f"RSI: {technical_analysis['momentum']['rsi'][-1]:.2f}, "
+                f"MACD: {technical_analysis['trend']['macd'][-1]:.2f}"
+            )
+
+            return decision
+
+        except Exception as e:
+            error_msg = f"[{current_time}] Erreur: {e}"
+            logger.error(error_msg)
+            await self.telegram.send_message(
+                f"⚠️ Erreur analyse: {str(e)}\n"
+                f"Trader: {self.current_user}\n"
+                f"Timestamp: {current_time}"
+            )
+            return None
 
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
@@ -2272,11 +2264,10 @@ Take Profit: {take_profit}"""
         
         return order
         
-    except Exception as e:
-        logger.error(f"Erreur trade: {e}")
+        except Exception as e:
+            logger.error(f"Erreur trade: {e}")
             return None
-        return None
-
+        
 # Extension sécurisée de la méthode run() existante
 async def run_real_trading(self):
     """Boucle de trading réel sécurisée"""
