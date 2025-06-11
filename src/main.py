@@ -901,47 +901,254 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"❌ Erreur analyse signaux: {e}")
             return None
-
-    def _generate_recommendation(self, trend, momentum, volatility, volume):
-        """Génère une recommandation basée sur l'analyse des indicateurs"""
-        try:
-            # Système de points pour la décision
-            points = 0
-        
-            # Points basés sur la tendance
-            if trend['primary_trend'] == 'bullish': points += 2
-            if trend['trend_strength'] > 25: points += 1
-            if trend['trend_direction'] == 1: points += 1
-        
-            # Points basés sur le momentum
-            if momentum['rsi_signal'] == 'oversold': points += 2
-            if momentum['stoch_signal'] == 'buy': points += 1
-            if momentum['ultimate_signal'] == 'buy': points += 1
-        
-            # Points basés sur la volatilité
-            if volatility['bb_signal'] == 'oversold': points += 1
-            if volatility['kc_signal'] == 'breakout': points += 1
-        
-            # Points basés sur le volume
-            if volume['mfi_signal'] == 'buy': points += 1
-            if volume['cmf_trend'] == 'positive': points += 1
-            if volume['obv_trend'] == 'up': points += 1
-        
-            # Génération de la recommandation
-            if points >= 8:
-                return {'action': 'strong_buy', 'confidence': points/12}
-            elif points >= 6:
-                return {'action': 'buy', 'confidence': points/12}
-            elif points <= 2:
-                return {'action': 'strong_sell', 'confidence': 1 - points/12}
-            elif points <= 4:
-                return {'action': 'sell', 'confidence': 1 - points/12}
-            else:
-                return {'action': 'neutral', 'confidence': 0.5}
             
+        # Ajout des méthodes de trading réel à la classe TradingBotM4
+    async def setup_real_exchange(self):
+        """Configuration sécurisée de l'exchange"""
+        if not hasattr(self, 'exchange') or self.exchange is None:
+            try:
+                self.exchange = ccxt.binance({
+                    'apiKey': os.getenv('BINANCE_API_KEY'),
+                    'secret': os.getenv('BINANCE_API_SECRET'),
+                    'enableRateLimit': True
+                })
+                await self.exchange.load_markets()
+                logger.info("Exchange configuré avec succès")
+                return True
+            except Exception as e:
+                logger.error(f"Erreur configuration exchange: {e}")
+                return False
+
+    async def setup_real_telegram(self):
+        """Configuration sécurisée de Telegram"""
+        if not hasattr(self, 'telegram') or self.telegram is None:
+            try:
+                self.telegram = telegram.Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
+                self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
+                await self.telegram.send_message(
+                    chat_id=self.chat_id,
+                )
+                return True
+            except Exception as e:
+                logger.error(f"Erreur configuration Telegram: {e}")
+                return False
+
+    async def get_real_portfolio(self):
+        """Récupération sécurisée du portfolio"""
+        try:
+            balance = await self.exchange.fetch_balance()
+            positions = await self.exchange.fetch_positions()
+        
+            portfolio = {
+                'total_value': float(balance['total'].get('USDC', 0)),
+                'free': float(balance['free'].get('USDC', 0)),
+                'used': float(balance['used'].get('USDC', 0)),
+                'positions': [
+                    {
+                        'symbol': pos['symbol'],
+                        'size': pos['contracts'],
+                        'value': pos['notional'],
+                        'pnl': pos['unrealizedPnl']
+                    }
+                    for pos in positions if pos['contracts'] > 0
+                ]
+            }
+
+            await self.telegram.send_message(
+                chat_id=self.chat_id,
+                text=f"""💰 Portfolio Update:
+Total: {portfolio['total_value']:.2f} USDC
+Positions: {len(portfolio['positions'])}
+PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
+            )
+        
+            return portfolio
+        
         except Exception as e:
-            logger.error(f"❌ Erreur génération recommandation: {e}")
-            return {'action': 'error', 'confidence': 0}
+            logger.error(f"Erreur portfolio: {e}")
+            return None
+
+    async def execute_real_trade(self, signal):
+        """Exécution sécurisée des trades"""
+        try:
+            # Vérification du solde
+            balance = await self.get_real_portfolio()
+            if not balance or balance['free'] < signal['amount'] * signal['price']:
+                logger.warning("Solde insuffisant pour le trade")
+                return None
+            
+            # Calcul stop loss et take profit
+            stop_loss = signal['price'] * (1 - signal['risk_ratio'])
+            take_profit = signal['price'] * (1 + signal['risk_ratio'] * 2)
+        
+            # Placement de l'ordre
+            order = await self.exchange.create_order(
+                symbol=signal['symbol'],
+                type='limit',
+                side=signal['side'],
+                amount=signal['amount'],
+                price=signal['price'],
+                params={
+                    'stopLoss': {
+                    'type': 'trailing',
+                    'stopPrice': stop_loss,
+                    'callbackRate': 1.0
+                },
+                'takeProfit': {
+                    'price': take_profit
+                }
+            }
+        )
+        
+        # Notification
+        await self.telegram.send_message(
+            chat_id=self.chat_id,
+            text=f"""🔵 Nouvel ordre:
+Symbol: {order['symbol']}
+Type: {order['type']}
+Side: {order['side']}
+Amount: {order['amount']}
+Prix: {order['price']}
+Stop Loss: {stop_loss}
+Take Profit: {take_profit}"""
+        )
+        
+        return order
+    
+    except Exception as e:  # Correction de l'indentation ici
+        logger.error(f"Erreur trade: {e}")
+        return None
+        
+    # Extension sécurisée de la méthode run() existante
+    async def run_real_trading(self):
+        """Boucle de trading réel sécurisée"""
+        try:
+            # Initialisation des connexions réelles
+            if not await self.setup_real_exchange():
+                raise Exception("Échec configuration exchange")
+            
+            if not await self.setup_real_telegram():
+                raise Exception("Échec configuration Telegram")
+            
+            # Démarrage du bot
+            logger.info(f"""
+╔═════════════════════════════════════════════════════════════╗
+║                Trading Bot Ultimate v4 - REAL               ║
+╠═════════════════════════════════════════════════════════════╣
+║ User: {self.current_user}                                  ║
+║ Mode: REAL TRADING                                         ║
+║ Status: RUNNING                                            ║
+╚═════════════════════════════════════════════════════════════╝
+            """)
+        
+            # Premier check du portfolio
+            initial_portfolio = await self.get_real_portfolio()
+            if not initial_portfolio:
+                raise Exception("Impossible de récupérer le portfolio")
+            
+            # Boucle principale
+            while True:
+                try:
+                    # Analyse et décision
+                    decision = await self.analyze_signals(
+                        await self.get_latest_data(),
+                        await self.calculate_indicators()
+                    )
+                
+                    if decision and decision.get('should_trade', False):
+                        # Exécution réelle
+                        trade_result = await self.execute_real_trade(decision)
+                        if trade_result:
+                            logger.info(f"Trade exécuté: {trade_result['id']}")
+                        
+                    # Mise à jour portfolio
+                    await self.get_real_portfolio()
+                
+                    # Délai avant prochaine itération
+                    await asyncio.sleep(1)
+                
+                except Exception as e:
+                    logger.error(f"Erreur dans la boucle: {e}")
+                    await asyncio.sleep(5)
+                    continue
+                
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            if hasattr(self, 'telegram'):
+                await self.telegram.send_message(
+                    chat_id=self.chat_id,
+                    text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
+                )
+            raise
+
+    # Modification de la fonction update_dashboard pour utiliser les vraies données
+    async def update_real_dashboard(self):
+        """Met à jour le dashboard avec les données réelles"""
+        try:
+            portfolio = RealPortfolio()
+            if await portfolio.update(self.exchange):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric(
+                        "Portfolio Value",
+                        f"{portfolio.portfolio_value:.2f} USDC",
+                        f"{portfolio.daily_pnl:+.2f} USDC"
+                    )
+                with col2:
+                    st.metric(
+                        "Active Positions",
+                        str(portfolio.positions_count)
+                    )
+                with col3:
+                    pnl_percent = (portfolio.daily_pnl / portfolio.portfolio_value * 100) if portfolio.portfolio_value > 0 else 0
+                    st.metric(
+                        "24h P&L",
+                        f"{portfolio.daily_pnl:+.2f} USDC",
+                        f"{pnl_percent:+.2f}%"
+                    )
+        except Exception as e:
+            logger.error(f"Erreur mise à jour dashboard: {e}")
+            st.error(f"Erreur mise à jour métriques: {str(e)}")
+        def _generate_recommendation(self, trend, momentum, volatility, volume):
+            """Génère une recommandation basée sur l'analyse des indicateurs"""
+            try:
+                # Système de points pour la décision
+                points = 0
+        
+                # Points basés sur la tendance
+                if trend['primary_trend'] == 'bullish': points += 2
+                if trend['trend_strength'] > 25: points += 1
+                if trend['trend_direction'] == 1: points += 1
+        
+                # Points basés sur le momentum
+                if momentum['rsi_signal'] == 'oversold': points += 2
+                if momentum['stoch_signal'] == 'buy': points += 1
+                if momentum['ultimate_signal'] == 'buy': points += 1
+        
+                # Points basés sur la volatilité
+                if volatility['bb_signal'] == 'oversold': points += 1
+                if volatility['kc_signal'] == 'breakout': points += 1
+        
+                # Points basés sur le volume
+                if volume['mfi_signal'] == 'buy': points += 1
+                if volume['cmf_trend'] == 'positive': points += 1
+                if volume['obv_trend'] == 'up': points += 1
+        
+                # Génération de la recommandation
+                if points >= 8:
+                    return {'action': 'strong_buy', 'confidence': points/12}
+                elif points >= 6:
+                    return {'action': 'buy', 'confidence': points/12}
+                elif points <= 2:
+                    return {'action': 'strong_sell', 'confidence': 1 - points/12}
+                elif points <= 4:
+                    return {'action': 'sell', 'confidence': 1 - points/12}
+                else:
+                    return {'action': 'neutral', 'confidence': 0.5}
+            
+            except Exception as e:
+                logger.error(f"❌ Erreur génération recommandation: {e}")
+                return {'action': 'error', 'confidence': 0}
 
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
@@ -1423,101 +1630,6 @@ class TradingBotM4:
         )
         self.volume_analysis = VolumeAnalysis()
         self.volatility_indicators = VolatilityIndicators()
-
-    # Supprimez le dictionnaire self.indicators existant et remplacez-le par :
-    def add_indicators(self, df):
-        """Ajoute tous les indicateurs (130+) au DataFrame"""
-        try:
-            # Ajout de tous les indicateurs techniques
-            df_with_indicators = ta.add_all_ta_features(
-                df,
-                open="open",
-                high="high",
-                low="low",
-                close="close",
-                volume="volume",
-                fillna=True
-            )
-        
-            # Organisez les indicateurs par catégories
-            indicators = {
-                'trend': {
-                    'sma_fast': df_with_indicators['trend_sma_fast'],
-                    'sma_slow': df_with_indicators['trend_sma_slow'],
-                    'ema_fast': df_with_indicators['trend_ema_fast'],
-                    'ema_slow': df_with_indicators['trend_ema_slow'],
-                    'adx': df_with_indicators['trend_adx'],
-                    'adx_pos': df_with_indicators['trend_adx_pos'],
-                    'adx_neg': df_with_indicators['trend_adx_neg'],
-                    'vortex_ind_pos': df_with_indicators['trend_vortex_ind_pos'],
-                    'vortex_ind_neg': df_with_indicators['trend_vortex_ind_neg'],
-                    'vortex_ind_diff': df_with_indicators['trend_vortex_ind_diff'],
-                    'trix': df_with_indicators['trend_trix'],
-                    'mass_index': df_with_indicators['trend_mass_index'],
-                    'cci': df_with_indicators['trend_cci'],
-                    'dpo': df_with_indicators['trend_dpo'],
-                    'kst': df_with_indicators['trend_kst'],
-                    'kst_sig': df_with_indicators['trend_kst_sig'],
-                    'kst_diff': df_with_indicators['trend_kst_diff'],
-                    'ichimoku_a': df_with_indicators['trend_ichimoku_a'],
-                    'ichimoku_b': df_with_indicators['trend_ichimoku_b'],
-                    'visual_ichimoku_a': df_with_indicators['trend_visual_ichimoku_a'],
-                    'visual_ichimoku_b': df_with_indicators['trend_visual_ichimoku_b'],
-                    'aroon_up': df_with_indicators['trend_aroon_up'],
-                    'aroon_down': df_with_indicators['trend_aroon_down'],
-                    'aroon_ind': df_with_indicators['trend_aroon_ind']
-                },
-                'momentum': {
-                    'rsi': df_with_indicators['momentum_rsi'],
-                    'stoch': df_with_indicators['momentum_stoch'],
-                    'stoch_signal': df_with_indicators['momentum_stoch_signal'],
-                    'tsi': df_with_indicators['momentum_tsi'],
-                    'uo': df_with_indicators['momentum_uo'],
-                    'stoch_rsi': df_with_indicators['momentum_stoch_rsi'],
-                    'stoch_rsi_k': df_with_indicators['momentum_stoch_rsi_k'],
-                    'stoch_rsi_d': df_with_indicators['momentum_stoch_rsi_d'],
-                    'williams_r': df_with_indicators['momentum_wr'],
-                    'ao': df_with_indicators['momentum_ao']
-                },
-                'volatility': {
-                    'bbm': df_with_indicators['volatility_bbm'],
-                    'bbh': df_with_indicators['volatility_bbh'],
-                    'bbl': df_with_indicators['volatility_bbl'],
-                    'bbw': df_with_indicators['volatility_bbw'],
-                    'bbp': df_with_indicators['volatility_bbp'],
-                    'kcc': df_with_indicators['volatility_kcc'],
-                    'kch': df_with_indicators['volatility_kch'],
-                    'kcl': df_with_indicators['volatility_kcl'],
-                    'kcw': df_with_indicators['volatility_kcw'],
-                    'kcp': df_with_indicators['volatility_kcp'],
-                    'atr': df_with_indicators['volatility_atr'],
-                    'ui': df_with_indicators['volatility_ui']
-                },
-                'volume': {
-                    'mfi': df_with_indicators['volume_mfi'],
-                    'adi': df_with_indicators['volume_adi'],
-                    'obv': df_with_indicators['volume_obv'],
-                    'cmf': df_with_indicators['volume_cmf'],
-                    'fi': df_with_indicators['volume_fi'],
-                    'em': df_with_indicators['volume_em'],
-                    'sma_em': df_with_indicators['volume_sma_em'],
-                    'vpt': df_with_indicators['volume_vpt'],
-                    'nvi': df_with_indicators['volume_nvi'],
-                    'vwap': df_with_indicators['volume_vwap']
-                },
-                'others': {
-                    'dr': df_with_indicators['others_dr'],
-                    'dlr': df_with_indicators['others_dlr'],
-                    'cr': df_with_indicators['others_cr']
-                }
-            }
-        
-            logger.info(f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories")
-            return indicators
-        
-        except Exception as e:
-            logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            return None
     
     async def setup_streams(self):
         """Configure les streams de données en temps réel"""
@@ -3041,216 +3153,7 @@ async def run_trading_bot():
         st.error(f"Critical error: {str(e)}")
         logging.error("Fatal error", exc_info=True)
 
-# Ajout des méthodes de trading réel à la classe TradingBotM4
-async def setup_real_exchange(self):
-    """Configuration sécurisée de l'exchange"""
-    if not hasattr(self, 'exchange') or self.exchange is None:
-        try:
-            self.exchange = ccxt.binance({
-                'apiKey': os.getenv('BINANCE_API_KEY'),
-                'secret': os.getenv('BINANCE_API_SECRET'),
-                'enableRateLimit': True
-            })
-            await self.exchange.load_markets()
-            logger.info("Exchange configuré avec succès")
-            return True
-        except Exception as e:
-            logger.error(f"Erreur configuration exchange: {e}")
-            return False
 
-async def setup_real_telegram(self):
-    """Configuration sécurisée de Telegram"""
-    if not hasattr(self, 'telegram') or self.telegram is None:
-        try:
-            self.telegram = telegram.Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
-            self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
-            await self.telegram.send_message(
-                chat_id=self.chat_id,
-            )
-            return True
-        except Exception as e:
-            logger.error(f"Erreur configuration Telegram: {e}")
-            return False
-
-async def get_real_portfolio(self):
-    """Récupération sécurisée du portfolio"""
-    try:
-        balance = await self.exchange.fetch_balance()
-        positions = await self.exchange.fetch_positions()
-        
-        portfolio = {
-            'total_value': float(balance['total'].get('USDC', 0)),
-            'free': float(balance['free'].get('USDC', 0)),
-            'used': float(balance['used'].get('USDC', 0)),
-            'positions': [
-                {
-                    'symbol': pos['symbol'],
-                    'size': pos['contracts'],
-                    'value': pos['notional'],
-                    'pnl': pos['unrealizedPnl']
-                }
-                for pos in positions if pos['contracts'] > 0
-            ]
-        }
-
-        await self.telegram.send_message(
-            chat_id=self.chat_id,
-            text=f"""💰 Portfolio Update:
-Total: {portfolio['total_value']:.2f} USDC
-Positions: {len(portfolio['positions'])}
-PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
-        )
-        
-        return portfolio
-        
-    except Exception as e:
-        logger.error(f"Erreur portfolio: {e}")
-        return None
-
-async def execute_real_trade(self, signal):
-    """Exécution sécurisée des trades"""
-    try:
-        # Vérification du solde
-        balance = await self.get_real_portfolio()
-        if not balance or balance['free'] < signal['amount'] * signal['price']:
-            logger.warning("Solde insuffisant pour le trade")
-            return None
-            
-        # Calcul stop loss et take profit
-        stop_loss = signal['price'] * (1 - signal['risk_ratio'])
-        take_profit = signal['price'] * (1 + signal['risk_ratio'] * 2)
-        
-        # Placement de l'ordre
-        order = await self.exchange.create_order(
-            symbol=signal['symbol'],
-            type='limit',
-            side=signal['side'],
-            amount=signal['amount'],
-            price=signal['price'],
-            params={
-                'stopLoss': {
-                    'type': 'trailing',
-                    'stopPrice': stop_loss,
-                    'callbackRate': 1.0
-                },
-                'takeProfit': {
-                    'price': take_profit
-                }
-            }
-        )
-        
-        # Notification
-        await self.telegram.send_message(
-            chat_id=self.chat_id,
-            text=f"""🔵 Nouvel ordre:
-Symbol: {order['symbol']}
-Type: {order['type']}
-Side: {order['side']}
-Amount: {order['amount']}
-Prix: {order['price']}
-Stop Loss: {stop_loss}
-Take Profit: {take_profit}"""
-        )
-        
-        return order
-    
-    except Exception as e:  # Correction de l'indentation ici
-        logger.error(f"Erreur trade: {e}")
-        return None
-        
-# Extension sécurisée de la méthode run() existante
-async def run_real_trading(self):
-    """Boucle de trading réel sécurisée"""
-    try:
-        # Initialisation des connexions réelles
-        if not await self.setup_real_exchange():
-            raise Exception("Échec configuration exchange")
-            
-        if not await self.setup_real_telegram():
-            raise Exception("Échec configuration Telegram")
-            
-        # Démarrage du bot
-        logger.info(f"""
-╔═════════════════════════════════════════════════════════════╗
-║                Trading Bot Ultimate v4 - REAL               ║
-╠═════════════════════════════════════════════════════════════╣
-║ User: {self.current_user}                                  ║
-║ Mode: REAL TRADING                                         ║
-║ Status: RUNNING                                            ║
-╚═════════════════════════════════════════════════════════════╝
-        """)
-        
-        # Premier check du portfolio
-        initial_portfolio = await self.get_real_portfolio()
-        if not initial_portfolio:
-            raise Exception("Impossible de récupérer le portfolio")
-            
-        # Boucle principale
-        while True:
-            try:
-                # Analyse et décision
-                decision = await self.analyze_signals(
-                    await self.get_latest_data(),
-                    await self.calculate_indicators()
-                )
-                
-                if decision and decision.get('should_trade', False):
-                    # Exécution réelle
-                    trade_result = await self.execute_real_trade(decision)
-                    if trade_result:
-                        logger.info(f"Trade exécuté: {trade_result['id']}")
-                        
-                # Mise à jour portfolio
-                await self.get_real_portfolio()
-                
-                # Délai avant prochaine itération
-                await asyncio.sleep(1)
-                
-            except Exception as e:
-                logger.error(f"Erreur dans la boucle: {e}")
-                await asyncio.sleep(5)
-                continue
-                
-    except Exception as e:
-        logger.error(f"Erreur: {e}")
-        if hasattr(self, 'telegram'):
-            await self.telegram.send_message(
-                chat_id=self.chat_id,
-                text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
-            )
-        raise
-
-
-
-
-# Modification de la fonction update_dashboard pour utiliser les vraies données
-async def update_real_dashboard(self):
-    """Met à jour le dashboard avec les données réelles"""
-    try:
-        portfolio = RealPortfolio()
-        if await portfolio.update(self.exchange):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric(
-                    "Portfolio Value",
-                    f"{portfolio.portfolio_value:.2f} USDC",
-                    f"{portfolio.daily_pnl:+.2f} USDC"
-                )
-            with col2:
-                st.metric(
-                    "Active Positions",
-                    str(portfolio.positions_count)
-                )
-            with col3:
-                pnl_percent = (portfolio.daily_pnl / portfolio.portfolio_value * 100) if portfolio.portfolio_value > 0 else 0
-                st.metric(
-                    "24h P&L",
-                    f"{portfolio.daily_pnl:+.2f} USDC",
-                    f"{pnl_percent:+.2f}%"
-                )
-    except Exception as e:
-        logger.error(f"Erreur mise à jour dashboard: {e}")
-        st.error(f"Erreur mise à jour métriques: {str(e)}")
 
     def _get_portfolio_value(self):
         """Récupère la valeur actuelle du portfolio"""
