@@ -921,24 +921,28 @@ class TradingBotM4:
 
     async def setup_real_telegram(self):
         """Configuration sécurisée de Telegram"""
-        if not hasattr(self, 'telegram') or self.telegram is None:
-            try:
+        try:
+            if not hasattr(self, 'telegram') or self.telegram is None:
                 self.telegram = telegram.Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
                 self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
-                await self.telegram.send_message(
-                    chat_id=self.chat_id,
-                )
+                try:
+                    await self.telegram.send_message(
+                        chat_id=self.chat_id,
+                        text="🤖 Bot de trading démarré"
+                    )
+                except Exception as msg_error:
+                    logger.error(f"Erreur envoi message Telegram: {msg_error}")
                 return True
-            except Exception as e:
-                logger.error(f"Erreur configuration Telegram: {e}")
-                return False
+        except Exception as e:
+            logger.error(f"Erreur configuration Telegram: {e}")
+            return False
 
     async def get_real_portfolio(self):
         """Récupération sécurisée du portfolio"""
         try:
             balance = await self.exchange.fetch_balance()
             positions = await self.exchange.fetch_positions()
-        
+            
             portfolio = {
                 'total_value': float(balance['total'].get('USDC', 0)),
                 'free': float(balance['free'].get('USDC', 0)),
@@ -954,16 +958,18 @@ class TradingBotM4:
                 ]
             }
 
-            await self.telegram.send_message(
-                chat_id=self.chat_id,
-                text=f"""💰 Portfolio Update:
-Total: {portfolio['total_value']:.2f} USDC
-Positions: {len(portfolio['positions'])}
-PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
-            )
-        
+            try:
+                await self.telegram.send_message(
+                    chat_id=self.chat_id,
+                    text=f"""💰 Portfolio Update:
+                    Total: {portfolio['total_value']:.2f} USDC
+                    Positions: {len(portfolio['positions'])}
+                    PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
+                )
+            except Exception as msg_error:
+                logger.error(f"Erreur envoi message portfolio: {msg_error}")
+            
             return portfolio
-        
         except Exception as e:
             logger.error(f"Erreur portfolio: {e}")
             return None
@@ -976,11 +982,11 @@ PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
             if not balance or balance['free'] < signal['amount'] * signal['price']:
                 logger.warning("Solde insuffisant pour le trade")
                 return None
-            
+                
             # Calcul stop loss et take profit
             stop_loss = signal['price'] * (1 - signal['risk_ratio'])
             take_profit = signal['price'] * (1 + signal['risk_ratio'] * 2)
-        
+            
             # Placement de l'ordre
             order = await self.exchange.create_order(
                 symbol=signal['symbol'],
@@ -990,20 +996,20 @@ PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
                 price=signal['price'],
                 params={
                     'stopLoss': {
-                    'type': 'trailing',
-                    'stopPrice': stop_loss,
-                    'callbackRate': 1.0
-                },
-                'takeProfit': {
-                    'price': take_profit
+                        'type': 'trailing',
+                        'stopPrice': stop_loss,
+                        'callbackRate': 1.0
+                    },
+                    'takeProfit': {
+                        'price': take_profit
+                    }
                 }
-            }
-        )
-        
-        # Notification
-        await self.telegram.send_message(
-            chat_id=self.chat_id,
-            text=f"""🔵 Nouvel ordre:
+            )
+
+            try:
+                await self.telegram.send_message(
+                    chat_id=self.chat_id,
+                    text=f"""🔵 Nouvel ordre:
 Symbol: {order['symbol']}
 Type: {order['type']}
 Side: {order['side']}
@@ -1011,26 +1017,26 @@ Amount: {order['amount']}
 Prix: {order['price']}
 Stop Loss: {stop_loss}
 Take Profit: {take_profit}"""
-        )
-        
-        return order
-    
-    except Exception as e:  # Correction de l'indentation ici
-        logger.error(f"Erreur trade: {e}")
-        return None
-        
-    # Extension sécurisée de la méthode run() existante
+                )
+            except Exception as msg_error:
+                logger.error(f"Erreur envoi notification trade: {msg_error}")
+
+            return order
+            
+        except Exception as e:
+            logger.error(f"Erreur trade: {e}")
+            return None
+
     async def run_real_trading(self):
         """Boucle de trading réel sécurisée"""
         try:
-            # Initialisation des connexions réelles
+            # Configuration initiale
             if not await self.setup_real_exchange():
                 raise Exception("Échec configuration exchange")
-            
+                
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
-            
-            # Démarrage du bot
+                
             logger.info(f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
@@ -1040,45 +1046,41 @@ Take Profit: {take_profit}"""
 ║ Status: RUNNING                                            ║
 ╚═════════════════════════════════════════════════════════════╝
             """)
-        
-            # Premier check du portfolio
+            
             initial_portfolio = await self.get_real_portfolio()
             if not initial_portfolio:
                 raise Exception("Impossible de récupérer le portfolio")
-            
-            # Boucle principale
+                
             while True:
                 try:
-                    # Analyse et décision
                     decision = await self.analyze_signals(
                         await self.get_latest_data(),
                         await self.calculate_indicators()
                     )
-                
+                    
                     if decision and decision.get('should_trade', False):
-                        # Exécution réelle
                         trade_result = await self.execute_real_trade(decision)
                         if trade_result:
                             logger.info(f"Trade exécuté: {trade_result['id']}")
-                        
-                    # Mise à jour portfolio
+                            
                     await self.get_real_portfolio()
-                
-                    # Délai avant prochaine itération
                     await asyncio.sleep(1)
-                
-                except Exception as e:
-                    logger.error(f"Erreur dans la boucle: {e}")
+                    
+                except Exception as loop_error:
+                    logger.error(f"Erreur dans la boucle: {loop_error}")
                     await asyncio.sleep(5)
                     continue
-                
+                    
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur fatale: {e}")
             if hasattr(self, 'telegram'):
-                await self.telegram.send_message(
-                    chat_id=self.chat_id,
-                    text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
-                )
+                try:
+                    await self.telegram.send_message(
+                        chat_id=self.chat_id,
+                        text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
+                    )
+                except Exception as telegram_error:
+                    logger.error(f"Erreur envoi notification erreur: {telegram_error}")
             raise
 
     # Modification de la fonction update_dashboard pour utiliser les vraies données
@@ -1619,603 +1621,7 @@ Take Profit: {take_profit}"""
             api_secret=os.getenv('BINANCE_API_SECRET'),
             testnet=False
         )
-        
-    def _initialize_analyzers(self):
-        """Initialize all analysis components"""
-        self.advanced_indicators = MultiTimeframeAnalyzer(
-            config=self.timeframe_config
-        )
-        self.orderflow_analysis = OrderFlowAnalysis(
-            config=OrderFlowConfig(tick_size=0.1)
-        )
-        self.volume_analysis = VolumeAnalysis()
-        self.volatility_indicators = VolatilityIndicators()
-         
-    async def _handle_trade(self, msg):
-        """Traite un trade"""
-        try:
-            trade_data = {
-                'symbol': msg['s'],
-                'price': float(msg['p']),
-                'quantity': float(msg['q']),
-                'time': msg['T'],
-                'buyer': msg['b'],
-                'seller': msg['a']
-            }
-            
-            # Mise à jour du buffer
-            self.buffer.update_trades(trade_data)
-            
-            # Analyse du volume
-            self.volume_analysis.update(trade_data)
-            
-            return trade_data
-            
-        except Exception as e:
-            logger.error(f"Erreur traitement trade: {e}")
-            return None
 
-    async def _handle_orderbook(self, msg):
-        """Traite une mise à jour d'orderbook"""
-        try:
-            orderbook_data = {
-                'symbol': msg['s'],
-                'bids': [[float(p), float(q)] for p, q in msg['b']],
-                'asks': [[float(p), float(q)] for p, q in msg['a']],
-                'time': msg['T']
-            }
-            
-            # Mise à jour du buffer
-            self.buffer.update_orderbook(orderbook_data)
-            
-            # Analyse de la liquidité
-            await self._analyze_market_liquidity()
-            
-            return orderbook_data
-            
-        except Exception as e:
-            logger.error(f"Erreur traitement orderbook: {e}")
-            return None
-        
-    async def _handle_kline(self, msg):
-        """Traite une bougie"""
-        try:
-            kline = msg['k']
-            kline_data = {
-                'symbol': msg['s'],
-                'interval': kline['i'],
-                'time': kline['t'],
-                'open': float(kline['o']),
-                'high': float(kline['h']),
-                'low': float(kline['l']),
-                'close': float(kline['c']),
-                'volume': float(kline['v']),
-                'closed': kline['x']
-            }
-            
-            # Mise à jour du buffer
-            self.buffer.update_klines(kline_data)
-            
-            # Analyse technique si la bougie est fermée
-            if kline_data['closed']:
-                await self.analyze_signals(
-                    market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
-                    indicators=self.advanced_indicators.analyze_timeframe(kline_data)
-                )
-            return kline_data
-
-        except Exception as e:
-            logger.error(f"Erreur traitement kline: {e}")
-            return None
-        
-    def _add_risk_management(self, decision, timestamp=None):
-        try:
-            # Calcul du stop loss
-            stop_loss = self._calculate_stop_loss(decision)
-        
-            # Calcul du take profit
-            take_profit = self._calculate_take_profit(decision)
-        
-            # Ajout trailing stop
-            trailing_stop = {
-                "activation_price": stop_loss * 1.02,
-                "callback_rate": 0.01
-            }
-        
-            decision.update({
-                "stop_loss": stop_loss,
-                "take_profit": take_profit,
-                "trailing_stop": trailing_stop
-            })
-        
-            return decision
-        
-        except Exception as e:
-            logger.error(f"[{timestamp}] Erreur risk management: {e}")
-            return decision
-
-    async def study_market(self, period="7d"):
-        """Analyse initiale du marché"""
-        logger.info("🔊 Étude du marché en cours...")
-
-        try:
-            # Récupération des données historiques
-            historical_data = await self.exchange.get_historical_data(
-                config["TRADING"]["pairs"],
-                config["TRADING"]["timeframes"],
-                period
-            )
-
-            if not historical_data:
-                raise ValueError("Données historiques non disponibles")
-
-            # Analyse des indicateurs par timeframe
-            indicators_analysis = {}
-            for timeframe in config["TRADING"]["timeframes"]:
-                try:
-                    tf_data = historical_data[timeframe]
-                    result = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
-                    indicators_analysis[timeframe] = {
-                        "trend": {"trend_strength": 0},
-                        "volatility": {"current_volatility": 0},
-                        "volume": {"volume_profile": {"strength": "N/A"}},
-                        "dominant_signal": "Neutre"
-                    } if result is None else result
-                except Exception as tf_error:
-                    logger.error(f"Erreur analyse timeframe {timeframe}: {tf_error}")
-                    indicators_analysis[timeframe] = {
-                        "trend": {"trend_strength": 0},
-                        "volatility": {"current_volatility": 0},
-                        "volume": {"volume_profile": {"strength": "N/A"}},
-                        "dominant_signal": "Erreur"
-                    }
-
-            # Détection du régime de marché
-            regime = self.regime_detector.predict(indicators_analysis)
-            logger.info(f"🔈 Régime de marché détecté: {regime}")
-
-            # Génération et envoi du rapport
-            try:
-                analysis_report = self._generate_analysis_report(
-                    indicators_analysis,
-                    regime,
-                )
-                await self.telegram.send_message(analysis_report)
-            except Exception as report_error:
-                logger.error(f"Erreur génération rapport: {report_error}")
-
-            # Mise à jour du dashboard
-            try:
-                self.dashboard.update_market_analysis(
-                    historical_data=historical_data,
-                    indicators=indicators_analysis,
-                    regime=regime,
-                )
-            except Exception as dash_error:
-                logger.error(f"Erreur mise à jour dashboard: {dash_error}")
-
-            return regime, historical_data, indicators_analysis
-
-        except Exception as e:
-            logger.error(f"Erreur study_market: {e}")
-            raise
-
-    async def analyze_signals(self, market_data):
-        """Analyse des signaux de trading basée sur tous les indicateurs"""
-        try:
-            # Obtention des indicateurs
-            indicators = self.add_indicators(market_data)
-            if not indicators:
-                return None
-            
-            # Analyse des tendances
-            trend_analysis = {
-                'primary_trend': 'bullish' if indicators['trend']['ema_fast'] > indicators['trend']['sma_slow'] else 'bearish',
-                'trend_strength': indicators['trend']['adx'],
-                'trend_direction': 1 if indicators['trend']['vortex_ind_diff'] > 0 else -1,
-                'ichimoku_signal': 'buy' if indicators['trend']['ichimoku_a'] > indicators['trend']['ichimoku_b'] else 'sell'
-            }
-        
-            # Analyse du momentum
-            momentum_analysis = {
-                'rsi_signal': 'oversold' if indicators['momentum']['rsi'] < 30 else 'overbought' if indicators['momentum']['rsi'] > 70 else 'neutral',
-                'stoch_signal': 'buy' if indicators['momentum']['stoch_rsi_k'] > indicators['momentum']['stoch_rsi_d'] else 'sell',
-                'ultimate_signal': 'buy' if indicators['momentum']['uo'] > 70 else 'sell' if indicators['momentum']['uo'] < 30 else 'neutral'
-            }
-        
-            # Analyse de la volatilité
-            volatility_analysis = {
-                'bb_signal': 'oversold' if market_data['close'].iloc[-1] < indicators['volatility']['bbl'].iloc[-1] else 'overbought' if market_data['close'].iloc[-1] > indicators['volatility']['bbh'].iloc[-1] else 'neutral',
-                'kc_signal': 'breakout' if market_data['close'].iloc[-1] > indicators['volatility']['kch'].iloc[-1] else 'breakdown' if market_data['close'].iloc[-1] < indicators['volatility']['kcl'].iloc[-1] else 'range',
-                'atr_volatility': indicators['volatility']['atr'].iloc[-1]
-            }
-        
-            # Analyse du volume
-            volume_analysis = {
-                'mfi_signal': 'buy' if indicators['volume']['mfi'].iloc[-1] < 20 else 'sell' if indicators['volume']['mfi'].iloc[-1] > 80 else 'neutral',
-                'cmf_trend': 'positive' if indicators['volume']['cmf'].iloc[-1] > 0 else 'negative',
-                'obv_trend': 'up' if indicators['volume']['obv'].diff().iloc[-1] > 0 else 'down'
-            }
-        
-            # Décision finale
-            signal = {
-                'timestamp': pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                'trend': trend_analysis,
-                'momentum': momentum_analysis,
-                'volatility': volatility_analysis,
-                'volume': volume_analysis,
-                'recommendation': self._generate_recommendation(trend_analysis, momentum_analysis, volatility_analysis, volume_analysis)
-            }
-        
-            logger.info(f"✅ Analyse des signaux complétée: {signal['recommendation']}")
-            return signal
-        
-        except Exception as e:
-            logger.error(f"❌ Erreur analyse signaux: {e}")
-            return None
-
-    def _generate_recommendation(self, trend, momentum, volatility, volume):
-        """Génère une recommandation basée sur l'analyse des indicateurs"""
-        try:
-            # Système de points pour la décision
-            points = 0
-        
-            # Points basés sur la tendance
-            if trend['primary_trend'] == 'bullish': points += 2
-            if trend['trend_strength'] > 25: points += 1
-            if trend['trend_direction'] == 1: points += 1
-        
-            # Points basés sur le momentum
-            if momentum['rsi_signal'] == 'oversold': points += 2
-            if momentum['stoch_signal'] == 'buy': points += 1
-            if momentum['ultimate_signal'] == 'buy': points += 1
-        
-            # Points basés sur la volatilité
-            if volatility['bb_signal'] == 'oversold': points += 1
-            if volatility['kc_signal'] == 'breakout': points += 1
-        
-            # Points basés sur le volume
-            if volume['mfi_signal'] == 'buy': points += 1
-            if volume['cmf_trend'] == 'positive': points += 1
-            if volume['obv_trend'] == 'up': points += 1
-        
-            # Génération de la recommandation
-            if points >= 8:
-                return {'action': 'strong_buy', 'confidence': points/12}
-            elif points >= 6:
-                return {'action': 'buy', 'confidence': points/12}
-            elif points <= 2:
-                return {'action': 'strong_sell', 'confidence': 1 - points/12}
-            elif points <= 4:
-                return {'action': 'sell', 'confidence': 1 - points/12}
-            else:
-                return {'action': 'neutral', 'confidence': 0.5}
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur génération recommandation: {e}")
-            return {'action': 'error', 'confidence': 0}
-
-    def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
-        """Construit la décision finale basée sur tous les inputs"""
-        try:
-            # Conversion policy en numpy pour le traitement
-            policy_np = policy.detach().numpy()
-
-            # Ne garder que les actions d'achat (long only)
-            buy_actions = np.maximum(policy_np, 0)
-
-            # Calculer la confiance basée sur value et les scores
-            confidence = float(np.mean([
-                float(value.detach().numpy()),
-                technical_score,
-                news_sentiment['score']
-            ]))
-
-            # Trouver le meilleur actif à acheter
-            best_pair_idx = np.argmax(buy_actions)
-
-            # Construire la décision
-            decision = {
-                "action": "buy" if confidence > config["AI"]["confidence_threshold"] else "wait",
-                "symbol": config["TRADING"]["pairs"][best_pair_idx],
-                "confidence": confidence,
-                "timestamp": timestamp,
-                "regime": regime,
-                "technical_score": technical_score,
-                "news_impact": news_sentiment['sentiment'],
-                "value_estimate": float(value.detach().numpy()),
-                "position_size": buy_actions[best_pair_idx]
-            }
-
-            return decision
-
-        except Exception as e:
-            logger.error(f"[{timestamp}] Erreur construction décision: {e}")
-            return None
-            
-    def _combine_features(self, technical_features, news_impact, regime):
-        """Combine toutes les features pour le GTrXL"""
-        try:
-            # Conversion en tensors
-            technical_tensor = technical_features['tensor']
-            news_tensor = torch.tensor(news_impact['embeddings'], dtype=torch.float32)
-            regime_tensor = torch.tensor(self._encode_regime(regime), dtype=torch.float32)
-
-            # Ajout de dimensions si nécessaire
-            if news_tensor.dim() == 1:
-                news_tensor = news_tensor.unsqueeze(0)
-            if regime_tensor.dim() == 1:
-                regime_tensor = regime_tensor.unsqueeze(0)
-
-            # Combinaison
-            features = torch.cat([
-                technical_tensor,
-                news_tensor,
-                regime_tensor
-            ], dim=-1)
-
-            return features
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            raise
-
-    def _encode_regime(self, regime):
-        """Encode le régime de marché en vecteur"""
-        regime_mapping = {
-            'High Volatility Bull': [1, 0, 0, 0, 0],
-            'Low Volatility Bull': [0, 1, 0, 0, 0],
-            'High Volatility Bear': [0, 0, 1, 0, 0],
-            'Low Volatility Bear': [0, 0, 0, 1, 0],
-            'Sideways': [0, 0, 0, 0, 1]
-        }
-        return regime_mapping.get(regime, [0, 0, 0, 0, 0])
-
-    async def execute_trades(self, decision):
-        """Exécution des trades selon la décision"""
-        # Vérification du circuit breaker
-        if await self.circuit_breaker.should_stop_trading():
-            await self.telegram.send_message(
-                "⚠️ Trading suspendu: Circuit breaker activé\n"
-                f"Trader: {self.current_user}"
-            )
-            return
-
-        if decision and decision["confidence"] > config["AI"]["confidence_threshold"]:
-            try:
-                # Vérification des opportunités d'arbitrage
-                arb_ops = await self.arbitrage_engine.find_opportunities()
-                if arb_ops:
-                    await self.telegram.send_message(
-                        f"💰 Opportunité d'arbitrage détectée:\n"
-                        f"Trader: {self.current_user}\n"
-                        f"Details: {arb_ops}"
-                    )
-
-                # Récupération du prix actuel
-                current_price = await self.exchange.get_price(decision["symbol"])
-                decision["entry_price"] = current_price
-
-                # Calcul de la taille de position avec gestion du risque
-                position_size = self.position_manager.calculate_position_size(
-                    decision,
-                    available_balance=await self.exchange.get_balance(config["TRADING"]["base_currency"])
-                )
-
-                # Vérification finale avant l'ordre
-                if not self._validate_trade(decision, position_size):
-                    return
-
-                # Placement de l'ordre avec stop loss
-                order = await self.exchange.create_order(
-                    symbol=decision["symbol"],
-                    type="limit",
-                    side="buy",  # Achat uniquement comme demandé
-                    amount=position_size,
-                    price=decision["entry_price"],
-                    params={
-                        "stopLoss": {
-                            "type": "trailing",
-                            "activation_price": decision["trailing_stop"]["activation_price"],
-                            "callback_rate": decision["trailing_stop"]["callback_rate"]
-                        },
-                        "takeProfit": {
-                            "price": decision["take_profit"]
-                        }
-                    }
-                )
-
-                # Notification Telegram détaillée
-                await self.telegram.send_message(
-                    f"📄 Ordre placé:\n"
-                    f"Trader: {self.current_user}\n"
-                    f"Symbol: {order['symbol']}\n"
-                    f"Type: {order['type']}\n"
-                    f"Prix: {order['price']}\n"
-                    f"Stop Loss: {decision['stop_loss']}\n"
-                    f"Take Profit: {decision['take_profit']}\n"
-                    f"Trailing Stop: {decision['trailing_stop']['activation_price']}\n"
-                    f"Confiance: {decision['confidence']:.2%}\n"
-                    f"Régime: {decision['regime']}\n"
-                    f"News Impact: {decision['news_impact']}\n"
-                    f"Volume: {position_size} {config['TRADING']['base_currency']}"
-                )
-
-                # Mise à jour du dashboard
-                self.dashboard.update_trades(order)
-
-            except Exception as e:
-                logger.error(f"Erreur: {e}")
-                await self.telegram.send_message(
-                    f"⚠️ Erreur d'exécution: {str(e)}\n"
-                    f"Trader: {self.current_user}"
-                )
-
-    def _validate_trade(self, decision, position_size):
-        """Validation finale avant l'exécution du trade"""
-        try:
-            # Vérification de la taille minimale
-            if position_size < 0.001:  # Exemple de taille minimale
-                return False
-
-            # Vérification du spread
-            if self._check_spread_too_high(decision["symbol"]):
-                return False
-
-            # Vérification de la liquidité
-            if not self._check_sufficient_liquidity(decision["symbol"], position_size):
-                return False
-
-            # Vérification des news à haut risque
-            if self._check_high_risk_news():
-                return False
-
-            # Vérification des limites de position
-            if not self.position_manager.check_position_limits(position_size):
-                return False
-
-            # Vérification du timing d'entrée
-            if not self._check_entry_timing(decision):
-                return False
-
-            return True
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            return False
-
-    def _check_spread_too_high(self, symbol):
-        """Vérifie si le spread est trop important"""
-        try:
-            orderbook = self.buffer.get_orderbook(symbol)
-            best_bid = orderbook['bids'][0][0]
-            best_ask = orderbook['asks'][0][0]
-
-            spread = (best_ask - best_bid) / best_bid
-            return spread > 0.001  # 0.1% spread maximum
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            return True  # Par sécurité
-
-    def _check_sufficient_liquidity(self, symbol, position_size):
-        """Vérifie s'il y a assez de liquidité pour le trade"""
-        try:
-            orderbook = self.buffer.get_orderbook(symbol)
-
-            # Calcul de la profondeur de marché nécessaire
-            required_liquidity = position_size * 3  # 3x la taille pour la sécurité
-
-            # Somme de la liquidité disponible
-            available_liquidity = sum(vol for _, vol in orderbook['bids'][:10])
-
-            return available_liquidity >= required_liquidity
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            return False
-
-    def _check_entry_timing(self, decision):
-        """Vérifie si le timing d'entrée est optimal"""
-        try:
-            # Vérification des signaux de momentum
-            momentum_signals = self._analyze_momentum_signals()
-            if momentum_signals["strength"] < 0.5:
-                return False
-
-            # Vérification de la volatilité
-            volatility = self._analyze_volatility()
-            if volatility["current"] > volatility["threshold"]:
-                return False
-
-            # Vérification du volume
-            volume_analysis = self._analyze_volume_profile()
-            if not volume_analysis["supports_entry"]:
-                return False
-
-            return True
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            return False
-
-    def _analyze_momentum_signals(self):
-        """Analyse des signaux de momentum"""
-
-        try:
-            signals = {
-                "rsi": self._calculate_rsi(self.buffer.get_latest()),
-                "macd": self._calculate_macd(self.buffer.get_latest()),
-                "stoch": self._calculate_stoch_rsi(self.buffer.get_latest())
-            }
-
-            # Calcul de la force globale
-            strengths = []
-            if signals["rsi"]:
-                strengths.append(abs(signals["rsi"]["strength"]))
-            if signals["macd"]:
-                strengths.append(abs(signals["macd"]["strength"]))
-            if signals["stoch"]:
-                strengths.append(abs(signals["stoch"]["strength"]))
-
-            return {
-                "signals": signals,
-                "strength": np.mean(strengths) if strengths else 0,
-            }
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-
-    def _analyze_volatility(self):
-        """Analyse de la volatilité actuelle"""
-
-        try:
-            # Calcul des indicateurs de volatilité
-            bbands = self._calculate_bbands(self.buffer.get_latest())
-            atr = self._calculate_atr(self.buffer.get_latest())
-
-            # Calcul de la volatilité normalisée
-            current_volatility = 0
-            if bbands and atr:
-                bb_width = bbands["bandwidth"]
-                atr_norm = atr["normalized"]
-                current_volatility = (bb_width + atr_norm) / 2
-
-            return {
-                "current": current_volatility,
-                "threshold": 0.8,  # Seuil dynamique basé sur le régime
-                "indicators": {
-                    "bbands": bbands,
-                    "atr": atr
-                }
-            }
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-
-            
-    async def process_market_data(self):
-        """Traite les données de marché en temps réel"""
-        try:
-            latest_data = await self.get_latest_data()
-            if not latest_data:
-                logger.warning("Pas de données disponibles")
-                return None, None
-
-            # Analyse des indicateurs
-            indicators = {}
-            for timeframe in config["TRADING"]["timeframes"]:
-                if timeframe_data := latest_data.get(timeframe):
-                    indicators[timeframe] = self.advanced_indicators.analyze_timeframe(
-                        timeframe_data,
-                        timeframe
-                    )
-
-            return latest_data, indicators
-
-        except Exception as e:
-            logger.error(f"Erreur process_market_data: {e}")
-            return None, None
 
     def _should_train(self, historical_data):
         """Détermine si les modèles doivent être réentraînés"""
@@ -2577,6 +1983,7 @@ Take Profit: {take_profit}"""
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
+        
     def _calculate_liquidity_features(self, data):
         """Calcule les features de liquidité"""
 
@@ -2728,6 +2135,7 @@ Take Profit: {take_profit}"""
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
+        
     def _save_models(self):
         """Sauvegarde les modèles entraînés"""
 
@@ -2762,7 +2170,6 @@ Take Profit: {take_profit}"""
             metadata_path = os.path.join(save_dir, "metadata.json")
             with open(metadata_path, "w") as f:
                 json.dump(metadata, f, indent=4)
-
 
         except Exception as e:
             logger.error(f"Erreur: {e}")
@@ -2889,7 +2296,6 @@ Take Profit: {take_profit}"""
 
                     # Résistance à l'impact
                     impact_resistance = self._calculate_impact_resistance(orderbook)
-
                     liquidity_status["metrics"][pair] = {
                         "depth": depth,
                         "bid_ask_ratio": bid_ask_ratio,
