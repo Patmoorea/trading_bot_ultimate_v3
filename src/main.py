@@ -80,7 +80,6 @@ from src.risk_management.circuit_breakers import CircuitBreaker
 from src.risk_management.position_manager import PositionManager
 from src.core.exchange import ExchangeInterface as Exchange
 from src.notifications.telegram_bot import TelegramBot
-from src.regime_detection.hmm_kmeans import MarketRegimeDetector
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.liquidity_heatmap.visualization import generate_heatmap
 from src.monitoring.streamlit_ui import TradingDashboard
@@ -1599,29 +1598,6 @@ Take Profit: {take_profit}"""
                 f"Trader: {self.current_user}"
             )
             raise
-
-        self.binance_ws = AsyncClient.create(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET')
-        )
-        self.socket_manager = BinanceSocketManager(self.binance_ws)
-        
-        # Connecteur pour les orderbooks
-        self.connector = BinanceConnector()
-        
-        # Client pour le spot trading
-        self.spot_client = BinanceClient(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            secret=os.getenv('BINANCE_API_SECRET')
-        )
-        
-        # Exchange principal
-        self.exchange = BinanceExchange(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET'),
-            testnet=False
-        )
-
 
     def _should_train(self, historical_data):
         """Détermine si les modèles doivent être réentraînés"""
