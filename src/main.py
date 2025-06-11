@@ -1416,8 +1416,6 @@ class TradingBotM4:
             api_secret=os.getenv('BINANCE_API_SECRET'),
             testnet=False
         )
-        # Initialisation des modèles
-        self.initialize_models()
         
     def _initialize_analyzers(self):
         """Initialize all analysis components"""
@@ -1695,41 +1693,6 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"[{timestamp}] Erreur risk management: {e}")
             return decision
-
-    async def get_latest_data(self):
-        """Récupère les dernières données de marché"""
-        try:
-            data = {}
-            for pair in config["TRADING"]["pairs"]:
-                data[pair] = {}
-                try:
-                    # WebSocket prices
-                    prices = await self.binance_ws.get_price(pair)
-                    data[pair]['price'] = prices
-
-                    # OrderBook
-                    orderbook = await self.connector.get_order_book(pair)
-                    data[pair]['orderbook'] = {
-                        'bids': orderbook[0],  # Best bid
-                        'asks': orderbook[1]   # Best ask
-                    }
-
-                    # Account data
-                    account = await self.exchange.get_balance()
-                    data[pair]['account'] = account
-                except Exception as inner_e:
-                    logger.error(f"Erreur pour {pair}: {inner_e}")
-                    continue
-
-            # Store in buffer
-            if data:
-                self.buffer.update_data(data)
-                return data
-            return None
-
-        except Exception as e:
-            logger.error(f"Erreur get_latest_data: {e}")
-            return None
 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
@@ -3441,105 +3404,6 @@ async def update_real_dashboard(self):
             logger.error(f"Erreur: {e}")
             self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
             return None
-
-    def initialize_models(self):
-        """Initialise les modèles d'IA"""
-        self.models = {
-            "cnn_lstm": CNNLSTM(
-                input_size=42,
-                hidden_size=256,
-                num_layers=3,
-                dropout=config["AI"]["dropout"]
-            ),
-            "ppo_gtrxl": PPOGTrXL(
-                state_dim=42 * len(config["TRADING"]["timeframes"]),
-                action_dim=len(config["TRADING"]["pairs"]),
-                n_layers=config["AI"]["gtrxl_layers"],
-                embedding_dim=config["AI"]["embedding_dim"]
-            )
-        }
-
-async def get_latest_data(self):
-    """Récupère les dernières données de marché"""
-    try:
-        data = {}
-        for pair in config["TRADING"]["pairs"]:
-            for timeframe in config["TRADING"]["timeframes"]:
-                data.setdefault(timeframe, {})[pair] = self.buffer.get_latest()
-        return data
-    except Exception as e:
-        logger.error(f"Erreur: {e}")
-        return None
-
-async def get_real_time_data(self):
-    """Récupère les données en temps réel"""
-    try:
-        latest_data = await self.websocket.get_latest_data()
-        orderbook = await self.exchange.get_orderbook(self.trading_pair)
-        volume_24h = await self.exchange.get_24h_volume(self.trading_pair)
-        account_balance = await self.exchange.get_balance()
-        open_positions = await self.exchange.get_open_positions()
-        
-        return {
-            'price_data': latest_data,
-            'orderbook': orderbook,
-            'volume': volume_24h,
-            'balance': account_balance,
-            'positions': open_positions
-        }
-    except Exception as e:
-        logger.error(f"Erreur récupération données temps réel: {e}")
-        return None
-
-async def update_real_time(self):
-    """Met à jour toutes les données en temps réel"""
-    while True:
-        try:
-            real_time_data = await self.get_real_time_data()
-            if real_time_data:
-                self.latest_data = real_time_data
-                
-                # Mise à jour du buffer circulaire
-                self.buffer.update(real_time_data)
-                
-                # Notification des changements importants
-                await self.check_significant_changes(real_time_data)
-                
-            await asyncio.sleep(1)  # Mise à jour chaque seconde
-        except Exception as e:
-            logger.error(f"Erreur mise à jour temps réel: {e}")
-            await asyncio.sleep(5)  # Attente plus longue en cas d'erreur
-
-async def initialize(self):
-    """Initialise les connexions asynchrones"""
-    try:
-        await self.exchange.initialize()
-        
-        self.binance_ws = await AsyncClient.create(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET')
-        )
-        self.socket_manager = BinanceSocketManager(self.binance_ws)
-        
-        await self.setup_streams()
-        logger.info("✅ Connexions initialisées avec succès")
-        
-    except Exception as e:
-        logger.error(f"❌ Erreur initialisation: {e}")
-        raise  # Relance l'exception pour permettre une gestion appropriée
-    finally:
-        # Nettoyage des ressources si nécessaire
-        pass
-        
-async def shutdown(self):
-    """Ferme proprement les connexions"""
-    try:
-        await self.binance_ws.close_connection()
-        await self.connector.close()
-        await self.exchange.close()
-        logger.info("✅ Connexions fermées avec succès")
-    except Exception as e:
-        logger.error(f"Erreur fermeture connexions: {e}")
 
 # Point d'entrée principal
 if __name__ == "__main__":
