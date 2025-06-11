@@ -82,14 +82,12 @@ from src.core.exchange import ExchangeInterface as Exchange
 from src.notifications.telegram_bot import TelegramBot
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.liquidity_heatmap.visualization import generate_heatmap
-from src.monitoring.streamlit_ui import TradingDashboard
 
 # Imports des indicateurs
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
 from src.analysis.indicators.momentum.momentum import MomentumIndicators
 from src.analysis.indicators.volatility.volatility import VolatilityIndicators
 from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
-from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
 from src.analysis.indicators.trend.indicators import TrendIndicators
 
 # Dans les imports, ajoutons les composants existants
