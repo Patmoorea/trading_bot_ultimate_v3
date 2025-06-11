@@ -363,28 +363,28 @@ class MultiStreamManager:
         self.exchange = Exchange(exchange_id=exchange_id)
 
 class TradingBotM4:
-    """Classe principale du bot de trading v4"""
+    """Classe principale du bot de trading v4 - Version unifiée et mise à jour le 2025-06-10 18:48:29"""
     def __init__(self):
+        # Configuration utilisateur et date
+        self.current_date = "2025-06-10 18:48:29"
+        self.current_user = "Patmoorea"
         self.news_analyzer = NewsAnalyzer()
-    
-        # Passage en mode réel
-        self.trading_mode = "production"
+        
+        # Mode de trading
+        self.trading_mode = os.getenv('TRADING_MODE', 'production')
         self.testnet = False
 
-        # Activation des composants réels
+        # Activation des composants
         self.news_enabled = True
         self.arbitrage_enabled = True
         self.telegram_enabled = True
 
-        # Configuration risque pour le réel
+        # Configuration risque
         self.max_drawdown = 0.05  # 5% max
         self.daily_stop_loss = 0.02  # 2% par jour
         self.max_position_size = 1000  # USDC
 
-         # Récupération des variables d'environnement
-        self.trading_mode = os.getenv('TRADING_MODE', 'production')
-
-        # Configuration de l'exchange et des streams
+        # Configuration des streams
         self.stream_config = StreamConfig(
             max_connections=12,
             reconnect_delay=1.0,
@@ -399,12 +399,10 @@ class TradingBotM4:
 
         # Configuration de l'exchange
         self.websocket.setup_exchange("binance")
-
         self.buffer = CircularBuffer()
 
         # Interface et monitoring
         self.dashboard = TradingDashboard()
-        self.current_user = "Patmoorea"
 
         # Composants principaux
         self.arbitrage_engine = ArbitrageEngine(
@@ -438,7 +436,8 @@ class TradingBotM4:
             liquidity_threshold=0.5,
             volatility_threshold=0.3
         )
-        # Configuration des timeframes et indicateurs
+
+        # Configuration timeframes
         self.timeframe_config = TimeframeConfig(
             timeframes=config["TRADING"]["timeframes"],
             weights={
@@ -446,6 +445,952 @@ class TradingBotM4:
                 "1h": 0.25, "4h": 0.15, "1d": 0.15
             }
         )
+
+        # Configuration Binance
+        self.binance_ws = AsyncClient.create(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET')
+        )
+        self.socket_manager = BinanceSocketManager(self.binance_ws)
+        
+        # Connecteurs
+        self.connector = BinanceConnector()
+        self.spot_client = BinanceClient(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            secret=os.getenv('BINANCE_API_SECRET')
+        )
+        
+        # Exchange principal
+        self.exchange = BinanceExchange(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET'),
+            testnet=False
+        )
+
+        # Initialisation des analyseurs et modèles
+        self._initialize_analyzers()
+        self.initialize_models()
+
+    def _initialize_analyzers(self):
+        """Initialize all analysis components"""
+        self.advanced_indicators = MultiTimeframeAnalyzer(
+            config=self.timeframe_config
+        )
+        self.orderflow_analysis = OrderFlowAnalysis(
+            config=OrderFlowConfig(tick_size=0.1)
+        )
+        self.volume_analysis = VolumeAnalysis()
+        self.volatility_indicators = VolatilityIndicators()
+
+    def add_indicators(self, df):
+        """Ajoute tous les indicateurs (130+) au DataFrame"""
+        try:
+            # Ajout de tous les indicateurs techniques
+            df_with_indicators = ta.add_all_ta_features(
+                df,
+                open="open",
+                high="high",
+                low="low",
+                close="close",
+                volume="volume",
+                fillna=True
+            )
+        
+            # Organisez les indicateurs par catégories
+            indicators = {
+                'trend': {
+                    'sma_fast': df_with_indicators['trend_sma_fast'],
+                    'sma_slow': df_with_indicators['trend_sma_slow'],
+                    'ema_fast': df_with_indicators['trend_ema_fast'],
+                    'ema_slow': df_with_indicators['trend_ema_slow'],
+                    'adx': df_with_indicators['trend_adx'],
+                    'adx_pos': df_with_indicators['trend_adx_pos'],
+                    'adx_neg': df_with_indicators['trend_adx_neg'],
+                    'vortex_ind_pos': df_with_indicators['trend_vortex_ind_pos'],
+                    'vortex_ind_neg': df_with_indicators['trend_vortex_ind_neg'],
+                    'vortex_ind_diff': df_with_indicators['trend_vortex_ind_diff'],
+                    'trix': df_with_indicators['trend_trix'],
+                    'mass_index': df_with_indicators['trend_mass_index'],
+                    'cci': df_with_indicators['trend_cci'],
+                    'dpo': df_with_indicators['trend_dpo'],
+                    'kst': df_with_indicators['trend_kst'],
+                    'kst_sig': df_with_indicators['trend_kst_sig'],
+                    'kst_diff': df_with_indicators['trend_kst_diff'],
+                    'ichimoku_a': df_with_indicators['trend_ichimoku_a'],
+                    'ichimoku_b': df_with_indicators['trend_ichimoku_b'],
+                    'visual_ichimoku_a': df_with_indicators['trend_visual_ichimoku_a'],
+                    'visual_ichimoku_b': df_with_indicators['trend_visual_ichimoku_b'],
+                    'aroon_up': df_with_indicators['trend_aroon_up'],
+                    'aroon_down': df_with_indicators['trend_aroon_down'],
+                    'aroon_ind': df_with_indicators['trend_aroon_ind']
+                },
+                'momentum': {
+                    'rsi': df_with_indicators['momentum_rsi'],
+                    'stoch': df_with_indicators['momentum_stoch'],
+                    'stoch_signal': df_with_indicators['momentum_stoch_signal'],
+                    'tsi': df_with_indicators['momentum_tsi'],
+                    'uo': df_with_indicators['momentum_uo'],
+                    'stoch_rsi': df_with_indicators['momentum_stoch_rsi'],
+                    'stoch_rsi_k': df_with_indicators['momentum_stoch_rsi_k'],
+                    'stoch_rsi_d': df_with_indicators['momentum_stoch_rsi_d'],
+                    'williams_r': df_with_indicators['momentum_wr'],
+                    'ao': df_with_indicators['momentum_ao']
+                },
+                'volatility': {
+                    'bbm': df_with_indicators['volatility_bbm'],
+                    'bbh': df_with_indicators['volatility_bbh'],
+                    'bbl': df_with_indicators['volatility_bbl'],
+                    'bbw': df_with_indicators['volatility_bbw'],
+                    'bbp': df_with_indicators['volatility_bbp'],
+                    'kcc': df_with_indicators['volatility_kcc'],
+                    'kch': df_with_indicators['volatility_kch'],
+                    'kcl': df_with_indicators['volatility_kcl'],
+                    'kcw': df_with_indicators['volatility_kcw'],
+                    'kcp': df_with_indicators['volatility_kcp'],
+                    'atr': df_with_indicators['volatility_atr'],
+                    'ui': df_with_indicators['volatility_ui']
+                },
+                'volume': {
+                    'mfi': df_with_indicators['volume_mfi'],
+                    'adi': df_with_indicators['volume_adi'],
+                    'obv': df_with_indicators['volume_obv'],
+                    'cmf': df_with_indicators['volume_cmf'],
+                    'fi': df_with_indicators['volume_fi'],
+                    'em': df_with_indicators['volume_em'],
+                    'sma_em': df_with_indicators['volume_sma_em'],
+                    'vpt': df_with_indicators['volume_vpt'],
+                    'nvi': df_with_indicators['volume_nvi'],
+                    'vwap': df_with_indicators['volume_vwap']
+                },
+                'others': {
+                    'dr': df_with_indicators['others_dr'],
+                    'dlr': df_with_indicators['others_dlr'],
+                    'cr': df_with_indicators['others_cr']
+                }
+            }
+        
+            logger.info(f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories")
+            return indicators
+        
+        except Exception as e:
+            logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            return None
+
+    async def setup_streams(self):
+        """Configure les streams de données en temps réel"""
+        try:
+            streams = []
+            
+            # Stream de trades pour chaque paire
+            for pair in config["TRADING"]["pairs"]:
+                symbol = pair.replace('/', '').lower()
+                trade_socket = self.socket_manager.trade_socket(symbol)
+                streams.append(trade_socket)
+                
+                # Stream d'orderbook
+                depth_socket = self.socket_manager.depth_socket(symbol)
+                streams.append(depth_socket)
+                
+                # Stream de klines (bougies)
+                kline_socket = self.socket_manager.kline_socket(symbol, '1m')
+                streams.append(kline_socket)
+                
+            # Démarrage des streams
+            for stream in streams:
+                asyncio.create_task(self._handle_stream(stream))
+                
+            logger.info("✅ Streams configurés avec succès")
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur configuration streams: {e}")
+            return None
+            raise
+
+    async def _handle_stream(self, stream):
+        """Gère un stream de données"""
+        try:
+            async with stream as tscm:
+                while True:
+                    msg = await tscm.recv()
+                    await self._process_stream_message(msg)
+        except Exception as e:
+            logger.error(f"Erreur stream: {e}")
+            return None
+
+    async def _process_stream_message(self, msg):
+        """Traite les messages des streams"""
+        try:
+            if not msg:
+                logger.warning("Message vide reçu")
+                return
+            
+            if msg.get('e') == 'trade':
+                await self._handle_trade(msg)
+            elif msg.get('e') == 'depthUpdate':
+                await self._handle_orderbook(msg)
+            elif msg.get('e') == 'kline':
+                await self._handle_kline(msg)
+                
+        except Exception as e:
+            logger.error(f"Erreur traitement message: {e}")
+            return None
+
+    async def _handle_trade(self, msg):
+        """Traite un trade"""
+        try:
+            trade_data = {
+                'symbol': msg['s'],
+                'price': float(msg['p']),
+                'quantity': float(msg['q']),
+                'time': msg['T'],
+                'buyer': msg['b'],
+                'seller': msg['a']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_trades(trade_data)
+            
+            # Analyse du volume
+            self.volume_analysis.update(trade_data)
+            
+            return trade_data
+            
+        except Exception as e:
+            logger.error(f"Erreur traitement trade: {e}")
+            return None
+
+    async def _handle_orderbook(self, msg):
+        """Traite une mise à jour d'orderbook"""
+        try:
+            orderbook_data = {
+                'symbol': msg['s'],
+                'bids': [[float(p), float(q)] for p, q in msg['b']],
+                'asks': [[float(p), float(q)] for p, q in msg['a']],
+                'time': msg['T']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_orderbook(orderbook_data)
+            
+            # Analyse de la liquidité
+            await self._analyze_market_liquidity()
+            
+            return orderbook_data
+            
+        except Exception as e:
+            logger.error(f"Erreur traitement orderbook: {e}")
+            return None
+
+    async def _handle_kline(self, msg):
+        """Traite une bougie"""
+        try:
+            kline = msg['k']
+            kline_data = {
+                'symbol': msg['s'],
+                'interval': kline['i'],
+                'time': kline['t'],
+                'open': float(kline['o']),
+                'high': float(kline['h']),
+                'low': float(kline['l']),
+                'close': float(kline['c']),
+                'volume': float(kline['v']),
+                'closed': kline['x']
+            }
+            
+            # Mise à jour du buffer
+            self.buffer.update_klines(kline_data)
+            
+            # Analyse technique si la bougie est fermée
+            if kline_data['closed']:
+                await self.analyze_signals(
+                    market_data=self.buffer.get_latest_ohlcv(kline_data['symbol']),
+                    indicators=self.advanced_indicators.analyze_timeframe(kline_data)
+                )
+            return kline_data
+
+        except Exception as e:
+            logger.error(f"Erreur traitement kline: {e}")
+            return None
+
+    def decision_model(self, features, timestamp=None):
+        try:
+            policy = self.models["ppo_gtrxl"].get_policy(features)
+            value = self.models["ppo_gtrxl"].get_value(features)
+            return policy, value
+        except Exception as e:
+            logger.error(f"[{timestamp}] Erreur decision_model: {e}")
+            return None, None
+
+    def _add_risk_management(self, decision, timestamp=None):
+        try:
+            # Calcul du stop loss
+            stop_loss = self._calculate_stop_loss(decision)
+        
+            # Calcul du take profit
+            take_profit = self._calculate_take_profit(decision)
+        
+            # Ajout trailing stop
+            trailing_stop = {
+                "activation_price": stop_loss * 1.02,
+                "callback_rate": 0.01
+            }
+        
+            decision.update({
+                "stop_loss": stop_loss,
+                "take_profit": take_profit,
+                "trailing_stop": trailing_stop
+            })
+        
+            return decision
+        
+        except Exception as e:
+            logger.error(f"[{timestamp}] Erreur risk management: {e}")
+            return decision
+
+    async def get_latest_data(self):
+        """Récupère les dernières données de marché"""
+        try:
+            data = {}
+            for pair in config["TRADING"]["pairs"]:
+                data[pair] = {}
+                try:
+                    # WebSocket prices
+                    prices = await self.binance_ws.get_price(pair)
+                    data[pair]['price'] = prices
+
+                    # OrderBook
+                    orderbook = await self.connector.get_order_book(pair)
+                    data[pair]['orderbook'] = {
+                        'bids': orderbook[0],  # Best bid
+                        'asks': orderbook[1]   # Best ask
+                    }
+
+                    # Account data
+                    account = await self.exchange.get_balance()
+                    data[pair]['account'] = account
+                except Exception as inner_e:
+                    logger.error(f"Erreur pour {pair}: {inner_e}")
+                    continue
+
+            # Store in buffer
+            if data:
+                self.buffer.update_data(data)
+                return data
+            return None
+
+        except Exception as e:
+            logger.error(f"Erreur get_latest_data: {e}")
+            return None
+
+    async def study_market(self, period="7d"):
+        """Analyse initiale du marché"""
+        logger.info("🔊 Étude du marché en cours...")
+
+        try:
+            # Récupération des données historiques
+            historical_data = await self.exchange.get_historical_data(
+                config["TRADING"]["pairs"],
+                config["TRADING"]["timeframes"],
+                period
+            )
+
+            if not historical_data:
+                raise ValueError("Données historiques non disponibles")
+
+            # Analyse des indicateurs par timeframe
+            indicators_analysis = {}
+            for timeframe in config["TRADING"]["timeframes"]:
+                try:
+                    tf_data = historical_data[timeframe]
+                    result = self.advanced_indicators.analyze_timeframe(tf_data, timeframe)
+                    indicators_analysis[timeframe] = {
+                        "trend": {"trend_strength": 0},
+                        "volatility": {"current_volatility": 0},
+                        "volume": {"volume_profile": {"strength": "N/A"}},
+                        "dominant_signal": "Neutre"
+                    } if result is None else result
+                except Exception as tf_error:
+                    logger.error(f"Erreur analyse timeframe {timeframe}: {tf_error}")
+                    indicators_analysis[timeframe] = {
+                        "trend": {"trend_strength": 0},
+                        "volatility": {"current_volatility": 0},
+                        "volume": {"volume_profile": {"strength": "N/A"}},
+                        "dominant_signal": "Erreur"
+                    }
+
+            # Détection du régime de marché
+            regime = self.regime_detector.predict(indicators_analysis)
+            logger.info(f"🔈 Régime de marché détecté: {regime}")
+
+            # Génération et envoi du rapport
+            try:
+                analysis_report = self._generate_analysis_report(
+                    indicators_analysis,
+                    regime,
+                )
+                await self.telegram.send_message(analysis_report)
+            except Exception as report_error:
+                logger.error(f"Erreur génération rapport: {report_error}")
+
+            # Mise à jour du dashboard
+            try:
+                self.dashboard.update_market_analysis(
+                    historical_data=historical_data,
+                    indicators=indicators_analysis,
+                    regime=regime,
+                )
+            except Exception as dash_error:
+                logger.error(f"Erreur mise à jour dashboard: {dash_error}")
+
+            return regime, historical_data, indicators_analysis
+
+        except Exception as e:
+            logger.error(f"Erreur study_market: {e}")
+            raise
+
+    async def analyze_signals(self, market_data):
+        """Analyse des signaux de trading basée sur tous les indicateurs"""
+        try:
+            # Obtention des indicateurs
+            indicators = self.add_indicators(market_data)
+            if not indicators:
+                return None
+            
+            # Analyse des tendances
+            trend_analysis = {
+                'primary_trend': 'bullish' if indicators['trend']['ema_fast'] > indicators['trend']['sma_slow'] else 'bearish',
+                'trend_strength': indicators['trend']['adx'],
+                'trend_direction': 1 if indicators['trend']['vortex_ind_diff'] > 0 else -1,
+                'ichimoku_signal': 'buy' if indicators['trend']['ichimoku_a'] > indicators['trend']['ichimoku_b'] else 'sell'
+            }
+        
+            # Analyse du momentum
+            momentum_analysis = {
+                'rsi_signal': 'oversold' if indicators['momentum']['rsi'] < 30 else 'overbought' if indicators['momentum']['rsi'] > 70 else 'neutral',
+                'stoch_signal': 'buy' if indicators['momentum']['stoch_rsi_k'] > indicators['momentum']['stoch_rsi_d'] else 'sell',
+                'ultimate_signal': 'buy' if indicators['momentum']['uo'] > 70 else 'sell' if indicators['momentum']['uo'] < 30 else 'neutral'
+            }
+        
+            # Analyse de la volatilité
+            volatility_analysis = {
+                'bb_signal': 'oversold' if market_data['close'].iloc[-1] < indicators['volatility']['bbl'].iloc[-1] else 'overbought',
+                'kc_signal': 'breakout' if market_data['close'].iloc[-1] > indicators['volatility']['kch'].iloc[-1] else 'breakdown',
+                'atr_volatility': indicators['volatility']['atr'].iloc[-1]
+            }
+        
+            # Analyse du volume
+            volume_analysis = {
+                'mfi_signal': 'buy' if indicators['volume']['mfi'].iloc[-1] < 20 else 'sell' if indicators['volume']['mfi'].iloc[-1] > 80 else 'neutral',
+                'cmf_trend': 'positive' if indicators['volume']['cmf'].iloc[-1] > 0 else 'negative',
+                'obv_trend': 'up' if indicators['volume']['obv'].diff().iloc[-1] > 0 else 'down'
+            }
+        
+            # Décision finale
+            signal = {
+                'timestamp': pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                'trend': trend_analysis,
+                'momentum': momentum_analysis,
+                'volatility': volatility_analysis,
+                'volume': volume_analysis,
+                'recommendation': self._generate_recommendation(trend_analysis, momentum_analysis, volatility_analysis, volume_analysis)
+            }
+        
+            logger.info(f"✅ Analyse des signaux complétée: {signal['recommendation']}")
+            return signal
+        
+        except Exception as e:
+            logger.error(f"❌ Erreur analyse signaux: {e}")
+            return None
+
+    def _generate_recommendation(self, trend, momentum, volatility, volume):
+        """Génère une recommandation basée sur l'analyse des indicateurs"""
+        try:
+            # Système de points pour la décision
+            points = 0
+        
+            # Points basés sur la tendance
+            if trend['primary_trend'] == 'bullish': points += 2
+            if trend['trend_strength'] > 25: points += 1
+            if trend['trend_direction'] == 1: points += 1
+        
+            # Points basés sur le momentum
+            if momentum['rsi_signal'] == 'oversold': points += 2
+            if momentum['stoch_signal'] == 'buy': points += 1
+            if momentum['ultimate_signal'] == 'buy': points += 1
+        
+            # Points basés sur la volatilité
+            if volatility['bb_signal'] == 'oversold': points += 1
+            if volatility['kc_signal'] == 'breakout': points += 1
+        
+            # Points basés sur le volume
+            if volume['mfi_signal'] == 'buy': points += 1
+            if volume['cmf_trend'] == 'positive': points += 1
+            if volume['obv_trend'] == 'up': points += 1
+        
+            # Génération de la recommandation
+            if points >= 8:
+                return {'action': 'strong_buy', 'confidence': points/12}
+            elif points >= 6:
+                return {'action': 'buy', 'confidence': points/12}
+            elif points <= 2:
+                return {'action': 'strong_sell', 'confidence': 1 - points/12}
+            elif points <= 4:
+                return {'action': 'sell', 'confidence': 1 - points/12}
+            else:
+                return {'action': 'neutral', 'confidence': 0.5}
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur génération recommandation: {e}")
+            return {'action': 'error', 'confidence': 0}
+
+    def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
+        """Construit la décision finale basée sur tous les inputs"""
+        try:
+            # Conversion policy en numpy pour le traitement
+            policy_np = policy.detach().numpy()
+
+            # Ne garder que les actions d'achat (long only)
+            buy_actions = np.maximum(policy_np, 0)
+
+            # Calculer la confiance basée sur value et les scores
+            confidence = float(np.mean([
+                float(value.detach().numpy()),
+                technical_score,
+                news_sentiment['score']
+            ]))
+
+            # Trouver le meilleur actif à acheter
+            best_pair_idx = np.argmax(buy_actions)
+
+            # Construire la décision
+            decision = {
+                "action": "buy" if confidence > config["AI"]["confidence_threshold"] else "wait",
+                "symbol": config["TRADING"]["pairs"][best_pair_idx],
+                "confidence": confidence,
+                "timestamp": timestamp,
+                "regime": regime,
+                "technical_score": technical_score,
+                "news_impact": news_sentiment['sentiment'],
+                "value_estimate": float(value.detach().numpy()),
+                "position_size": buy_actions[best_pair_idx]
+            }
+
+            return decision
+
+        except Exception as e:
+            logger.error(f"[{timestamp}] Erreur construction décision: {e}")
+            return None
+
+    def _combine_features(self, technical_features, news_impact, regime):
+        """Combine toutes les features pour le GTrXL"""
+        try:
+            # Conversion en tensors
+            technical_tensor = technical_features['tensor']
+            news_tensor = torch.tensor(news_impact['embeddings'], dtype=torch.float32)
+            regime_tensor = torch.tensor(self._encode_regime(regime), dtype=torch.float32)
+
+            # Ajout de dimensions si nécessaire
+            if news_tensor.dim() == 1:
+                news_tensor = news_tensor.unsqueeze(0)
+            if regime_tensor.dim() == 1:
+                regime_tensor = regime_tensor.unsqueeze(0)
+
+            # Combinaison
+            features = torch.cat([
+                technical_tensor,
+                news_tensor,
+                regime_tensor
+            ], dim=-1)
+
+            return features
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            raise
+
+    def _encode_regime(self, regime):
+        """Encode le régime de marché en vecteur"""
+        regime_mapping = {
+            'High Volatility Bull': [1, 0, 0, 0, 0],
+            'Low Volatility Bull': [0, 1, 0, 0, 0],
+            'High Volatility Bear': [0, 0, 1, 0, 0],
+            'Low Volatility Bear': [0, 0, 0, 1, 0],
+            'Sideways': [0, 0, 0, 0, 1]
+        }
+        return regime_mapping.get(regime, [0, 0, 0, 0, 0])
+
+    async def execute_trades(self, decision):
+        """Exécution des trades selon la décision"""
+        # Vérification du circuit breaker
+        if await self.circuit_breaker.should_stop_trading():
+            await self.telegram.send_message(
+                "⚠️ Trading suspendu: Circuit breaker activé\n"
+                f"Trader: {self.current_user}"
+            )
+            return
+
+        if decision and decision["confidence"] > config["AI"]["confidence_threshold"]:
+            try:
+                # Vérification des opportunités d'arbitrage
+                arb_ops = await self.arbitrage_engine.find_opportunities()
+                if arb_ops:
+                    await self.telegram.send_message(
+                        f"💰 Opportunité d'arbitrage détectée:\n"
+                        f"Trader: {self.current_user}\n"
+                        f"Details: {arb_ops}"
+                    )
+
+                # Récupération du prix actuel
+                current_price = await self.exchange.get_price(decision["symbol"])
+                decision["entry_price"] = current_price
+
+                # Calcul de la taille de position avec gestion du risque
+                position_size = self.position_manager.calculate_position_size(
+                    decision,
+                    available_balance=await self.exchange.get_balance(config["TRADING"]["base_currency"])
+                )
+
+                # Vérification finale avant l'ordre
+                if not self._validate_trade(decision, position_size):
+                    return
+
+                # Placement de l'ordre avec stop loss
+                order = await self.exchange.create_order(
+                    symbol=decision["symbol"],
+                    type="limit",
+                    side="buy",  # Achat uniquement comme demandé
+                    amount=position_size,
+                    price=decision["entry_price"],
+                    params={
+                        "stopLoss": {
+                            "type": "trailing",
+                            "activation_price": decision["trailing_stop"]["activation_price"],
+                            "callback_rate": decision["trailing_stop"]["callback_rate"]
+                        },
+                        "takeProfit": {
+                            "price": decision["take_profit"]
+                        }
+                    }
+                )
+
+                # Notification Telegram détaillée
+                await self.telegram.send_message(
+                    f"📄 Ordre placé:\n"
+                    f"Trader: {self.current_user}\n"
+                    f"Symbol: {order['symbol']}\n"
+                    f"Type: {order['type']}\n"
+                    f"Prix: {order['price']}\n"
+                    f"Stop Loss: {decision['stop_loss']}\n"
+                    f"Take Profit: {decision['take_profit']}\n"
+                    f"Trailing Stop: {decision['trailing_stop']['activation_price']}\n"
+                    f"Confiance: {decision['confidence']:.2%}\n"
+                    f"Régime: {decision['regime']}\n"
+                    f"News Impact: {decision['news_impact']}\n"
+                    f"Volume: {position_size} {config['TRADING']['base_currency']}"
+                )
+
+                # Mise à jour du dashboard
+                self.dashboard.update_trades(order)
+
+            except Exception as e:
+                logger.error(f"Erreur: {e}")
+                await self.telegram.send_message(
+                    f"⚠️ Erreur d'exécution: {str(e)}\n"
+                    f"Trader: {self.current_user}"
+                )
+
+    def _validate_trade(self, decision, position_size):
+        """Validation finale avant l'exécution du trade"""
+        try:
+            # Vérification de la taille minimale
+            if position_size < 0.001:  # Exemple de taille minimale
+                return False
+
+            # Vérification du spread
+            if self._check_spread_too_high(decision["symbol"]):
+                return False
+
+            # Vérification de la liquidité
+            if not self._check_sufficient_liquidity(decision["symbol"], position_size):
+                return False
+
+            # Vérification des news à haut risque
+            if self._check_high_risk_news():
+                return False
+
+            # Vérification des limites de position
+            if not self.position_manager.check_position_limits(position_size):
+                return False
+
+            # Vérification du timing d'entrée
+            if not self._check_entry_timing(decision):
+                return False
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return False
+
+    def _check_spread_too_high(self, symbol):
+        """Vérifie si le spread est trop important"""
+        try:
+            orderbook = self.buffer.get_orderbook(symbol)
+            best_bid = orderbook['bids'][0][0]
+            best_ask = orderbook['asks'][0][0]
+
+            spread = (best_ask - best_bid) / best_bid
+            return spread > 0.001  # 0.1% spread maximum
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return True  # Par sécurité
+
+    def _check_sufficient_liquidity(self, symbol, position_size):
+        """Vérifie s'il y a assez de liquidité pour le trade"""
+        try:
+            orderbook = self.buffer.get_orderbook(symbol)
+
+            # Calcul de la profondeur de marché nécessaire
+            required_liquidity = position_size * 3  # 3x la taille pour la sécurité
+
+            # Somme de la liquidité disponible
+            available_liquidity = sum(vol for _, vol in orderbook['bids'][:10])
+
+            return available_liquidity >= required_liquidity
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return False
+
+    def _check_entry_timing(self, decision):
+        """Vérifie si le timing d'entrée est optimal"""
+        try:
+            # Vérification des signaux de momentum
+            momentum_signals = self._analyze_momentum_signals()
+            if momentum_signals["strength"] < 0.5:
+                return False
+
+            # Vérification de la volatilité
+            volatility = self._analyze_volatility()
+            if volatility["current"] > volatility["threshold"]:
+                return False
+
+            # Vérification du volume
+            volume_analysis = self._analyze_volume_profile()
+            if not volume_analysis["supports_entry"]:
+                return False
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return False
+
+    def _analyze_momentum_signals(self):
+        """Analyse des signaux de momentum"""
+        try:
+            signals = {
+                "rsi": self._calculate_rsi(self.buffer.get_latest()),
+                "macd": self._calculate_macd(self.buffer.get_latest()),
+                "stoch": self._calculate_stoch_rsi(self.buffer.get_latest())
+            }
+
+            # Calcul de la force globale
+            strengths = []
+            if signals["rsi"]:
+                strengths.append(abs(signals["rsi"]["strength"]))
+            if signals["macd"]:
+                strengths.append(abs(signals["macd"]["strength"]))
+            if signals["stoch"]:
+                strengths.append(abs(signals["stoch"]["strength"]))
+
+            return {
+                "signals": signals,
+                "strength": np.mean(strengths) if strengths else 0,
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"strength": 0, "signals": {}}
+
+    def _analyze_volatility(self):
+        """Analyse de la volatilité actuelle"""
+        try:
+            # Calcul des indicateurs de volatilité
+            bbands = self._calculate_bbands(self.buffer.get_latest())
+            atr = self._calculate_atr(self.buffer.get_latest())
+
+            # Calcul de la volatilité normalisée
+            current_volatility = 0
+            if bbands and atr:
+                bb_width = bbands["bandwidth"]
+                atr_norm = atr["normalized"]
+                current_volatility = (bb_width + atr_norm) / 2
+
+            return {
+                "current": current_volatility,
+                "threshold": 0.8,  # Seuil dynamique basé sur le régime
+                "indicators": {
+                    "bbands": bbands,
+                    "atr": atr
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"current": float('inf'), "threshold": 0.8, "indicators": {}}
+
+    def _analyze_volume_profile(self):
+        """Analyse du profil de volume"""
+        try:
+            volume_data = self.buffer.get_volume_profile()
+            if not volume_data:
+                return {"supports_entry": False}
+
+            # Calcul des niveaux de support/résistance basés sur le volume
+            poc_level = self._calculate_poc(volume_data)
+            value_area = self._calculate_value_area(volume_data)
+            
+            # Analyse de la distribution du volume
+            volume_distribution = {
+                "above_poc": sum(v for p, v in volume_data.items() if p > poc_level),
+                "below_poc": sum(v for p, v in volume_data.items() if p < poc_level)
+            }
+
+            # Calcul du ratio de support du volume
+            current_price = self.buffer.get_latest_price()
+            volume_support = (
+                volume_distribution["above_poc"] /
+                (volume_distribution["above_poc"] + volume_distribution["below_poc"])
+                if current_price > poc_level
+                else volume_distribution["below_poc"] /
+                (volume_distribution["above_poc"] + volume_distribution["below_poc"])
+            )
+
+            return {
+                "supports_entry": volume_support > 0.6,
+                "poc": poc_level,
+                "value_area": value_area,
+                "distribution": volume_distribution
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"supports_entry": False}
+
+    def _calculate_poc(self, volume_profile):
+        """Calcul du Point of Control"""
+        try:
+            if not volume_profile:
+                return None
+            return max(volume_profile.items(), key=lambda x: x[1])[0]
+        except Exception as e:
+            logger.error(f"Erreur calcul POC: {e}")
+            return None
+
+    def _calculate_value_area(self, volume_profile, value_area_pct=0.68):
+        """Calcul de la Value Area"""
+        try:
+            if not volume_profile:
+                return None
+
+            # Trier les prix par volume décroissant
+            sorted_prices = sorted(
+                volume_profile.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )
+
+            # Calculer le volume total
+            total_volume = sum(volume_profile.values())
+            target_volume = total_volume * value_area_pct
+            cumulative_volume = 0
+            value_area_prices = []
+
+            # Construire la value area
+            for price, volume in sorted_prices:
+                cumulative_volume += volume
+                value_area_prices.append(price)
+                if cumulative_volume >= target_volume:
+                    break
+
+            return {
+                "high": max(value_area_prices),
+                "low": min(value_area_prices)
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur calcul Value Area: {e}")
+            return None
+
+    async def run(self):
+        """Point d'entrée principal du bot"""
+        try:
+            logger.info(f"🚀 Démarrage du bot - {self.current_date}")
+            logger.info(f"👤 Trader: {self.current_user}")
+
+            # Configuration initiale
+            await self.setup_streams()
+            
+            # Étude initiale du marché
+            market_regime, historical_data, initial_analysis = await self.study_market()
+            
+            while True:
+                try:
+                    # Mise à jour des données
+                    market_data = await self.get_latest_data()
+                    if not market_data:
+                        continue
+
+                    # Analyse technique
+                    signals = await self.analyze_signals(market_data)
+                    
+                    # Analyse des news
+                    news_impact = await self.news_analyzer.analyze()
+                    
+                    # Construction des features
+                    features = self._combine_features(
+                        technical_features=signals,
+                        news_impact=news_impact,
+                        regime=market_regime
+                    )
+                    
+                    # Obtention de la politique et valeur
+                    policy, value = self.decision_model(features)
+                    
+                    if policy is not None and value is not None:
+                        # Construction de la décision
+                        decision = self._build_decision(
+                            policy=policy,
+                            value=value,
+                            technical_score=signals["recommendation"]["confidence"],
+                            news_sentiment=news_impact,
+                            regime=market_regime,
+                            timestamp=pd.Timestamp.utcnow()
+                        )
+                        
+                        # Ajout gestion des risques
+                        decision = self._add_risk_management(decision)
+                        
+                        # Exécution des trades
+                        await self.execute_trades(decision)
+                    
+                    # Attente avant la prochaine itération
+                    await asyncio.sleep(config["TRADING"]["update_interval"])
+                    
+                except Exception as loop_error:
+                    logger.error(f"Erreur dans la boucle principale: {loop_error}")
+                    continue
+                    
+        except Exception as e:
+            logger.error(f"Erreur fatale: {e}")
+            await self.telegram.send_message(
+                f"🚨 Erreur critique du bot:\n{str(e)}\n"
+                f"Trader: {self.current_user}"
+            )
+            raise
+
 
         # Initialisation des analyseurs
         self._initialize_analyzers()
@@ -1244,37 +2189,6 @@ class TradingBotM4:
 
         except Exception as e:
             logger.error(f"Erreur: {e}")
-
-class TradingBotM4:
-    def _analyze_volume_profile(self):
-        """Analyse du profil de volume"""
-        try:
-            vp = self._calculate_vp(self.buffer.get_latest())
-
-            if not vp:
-                return {
-                    "supports_entry": False,
-                    "poc": None,
-                    "volume_trend": "insufficient_data"
-                }
-
-            # Analyse des niveaux de support/résistance
-            current_price = self.buffer.get_latest()["close"].iloc[-1]
-            nearest_poc = min(vp["poc"], key=lambda x: abs(x - current_price))
-
-            # Vérification des conditions d'entrée
-            price_near_poc = abs(current_price - nearest_poc) / current_price < 0.01
-            volume_increasing = vp["profile"][-1] > np.mean(vp["profile"][-5:])
-
-            return {
-                "supports_entry": price_near_poc and volume_increasing,
-                "poc": nearest_poc,
-                "volume_trend": "increasing" if volume_increasing else "decreasing",
-            }
-
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            return None
             
     async def run(self):
         """Méthode principale d'exécution"""
