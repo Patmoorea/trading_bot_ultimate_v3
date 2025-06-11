@@ -1391,10 +1391,6 @@ class TradingBotM4:
             )
             raise
 
-
-        # Initialisation des analyseurs
-        self._initialize_analyzers()
-
         self.binance_ws = AsyncClient.create(
             api_key=os.getenv('BINANCE_API_KEY'),
             api_secret=os.getenv('BINANCE_API_SECRET')
@@ -1627,15 +1623,6 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"Erreur traitement orderbook: {e}")
             return None
-        
-        def decision_model(self, features, timestamp=None):
-            try:
-                policy = self.models["ppo_gtrxl"].get_policy(features)
-                value = self.models["ppo_gtrxl"].get_value(features)
-                return policy, value
-            except Exception as e:
-                logger.error(f"[{timestamp}] Erreur decision_model: {e}")
-                return None, None
         
     async def _handle_kline(self, msg):
         """Traite une bougie"""
@@ -2152,67 +2139,7 @@ class TradingBotM4:
 
         except Exception as e:
             logger.error(f"Erreur: {e}")
-            
-    async def run(self):
-        """Méthode principale d'exécution"""
-        try:
-            logger.info(f"""
-╔═════════════════════════════════════════════════════════════╗
-║                Trading Bot Ultimate v4 Started               ║
-╠═════════════════════════════════════════════════════════════╣
-║ User: {self.current_user}                                   ║
-║ Mode: {'REAL' if not self.testnet else 'TEST'}             ║
-║ Status: INITIALIZING                                        ║
-╚═════════════════════════════════════════════════════════════╝
-""")
-            # Initialisation
-            await self.initialize()
-            
-            # Étude initiale du marché
-            regime, historical_data, analysis = await self.study_market("7d")
-            
-            # Boucle principale
-            while True:
-                try:
-                    # Récupération des données
-                    latest_data = await self.get_latest_data()
-                    if latest_data is None:
-                        continue
-                        
-                    # Analyse des signaux
-                    decision = await self.analyze_signals(
-                        latest_data,
-                        await self.calculate_indicators(latest_data)
-                    )
-                    
-                    if decision and decision.get('should_trade', False):
-                        # Exécution du trade
-                        await self.execute_trades(decision)
-                        
-                    # Mise à jour du dashboard
-                    await self.update_real_dashboard()
-                    
-                    # Délai avant prochaine itération
-                    await asyncio.sleep(1)
-                    
-                except Exception as loop_error:
-                    logger.error(f"Erreur dans la boucle: {loop_error}")
-                    await asyncio.sleep(5)
-                    continue
-                    
-        except KeyboardInterrupt:
-            logger.info("❌ Arrêt manuel demandé")
-            await self.shutdown()
-        except Exception as e:
-            logger.error(f"Erreur fatale: {e}")
-            if hasattr(self, 'telegram'):
-                await self.telegram.send_message(
-                    chat_id=self.chat_id,
-                    text=f"🚨 Erreur critique - Bot arrêté: {str(e)}"
-                )
-            raise
-        finally:
-            await self.shutdown()
+
             
     async def process_market_data(self):
         """Traite les données de marché en temps réel"""
