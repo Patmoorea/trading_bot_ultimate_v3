@@ -1630,65 +1630,6 @@ Take Profit: {take_profit}"""
         )
         self.volume_analysis = VolumeAnalysis()
         self.volatility_indicators = VolatilityIndicators()
-    
-    async def setup_streams(self):
-        """Configure les streams de données en temps réel"""
-        try:
-            streams = []
-            
-            # Stream de trades pour chaque paire
-            for pair in config["TRADING"]["pairs"]:
-                symbol = pair.replace('/', '').lower()
-                trade_socket = self.socket_manager.trade_socket(symbol)
-                streams.append(trade_socket)
-                
-                # Stream d'orderbook
-                depth_socket = self.socket_manager.depth_socket(symbol)
-                streams.append(depth_socket)
-                
-                # Stream de klines (bougies)
-                kline_socket = self.socket_manager.kline_socket(symbol, '1m')
-                streams.append(kline_socket)
-                
-            # Démarrage des streams
-            for stream in streams:
-                asyncio.create_task(self._handle_stream(stream))
-                
-            logger.info("✅ Streams configurés avec succès")
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur configuration streams: {e}")
-            return None
-            raise
-
-    async def _handle_stream(self, stream):
-        """Gère un stream de données"""
-        try:
-            async with stream as tscm:
-                while True:
-                    msg = await tscm.recv()
-                    await self._process_stream_message(msg)
-        except Exception as e:
-            logger.error(f"Erreur stream: {e}")
-            return None
-
-    async def _process_stream_message(self, msg):
-        """Traite les messages des streams"""
-        try:
-            if not msg:
-                logger.warning("Message vide reçu")
-                return
-            
-            if msg.get('e') == 'trade':
-                await self._handle_trade(msg)
-            elif msg.get('e') == 'depthUpdate':
-                await self._handle_orderbook(msg)
-            elif msg.get('e') == 'kline':
-                await self._handle_kline(msg)
-                
-        except Exception as e:
-            logger.error(f"Erreur traitement message: {e}")
-            return None
          
     async def _handle_trade(self, msg):
         """Traite un trade"""
