@@ -442,6 +442,62 @@ class TradingBotM4:
                 "1h": 0.25, "4h": 0.15, "1d": 0.15
             }
         )
+    async def _initialize_models(self):
+        """Initialise les modèles d'IA"""
+        try:
+            # Initialisation de PPO-GTrXL
+            self.models = {
+                "ppo_gtrxl": PPOGTrXL(
+                    n_layers=config["AI"]["gtrxl_layers"],
+                    embedding_dim=config["AI"]["embedding_dim"],
+                    dropout=config["AI"]["dropout"]
+                ),
+                "cnn_lstm": CNNLSTM()
+            }
+        
+            # Chargement des poids pré-entraînés si disponibles
+            models_path = os.path.join(current_dir, "models")
+            if os.path.exists(models_path):
+                for model_name, model in self.models.items():
+                    model_path = os.path.join(models_path, f"{model_name}.pt")
+                    if os.path.exists(model_path):
+                        model.load_state_dict(torch.load(model_path))
+                        logger.info(f"Modèle {model_name} chargé avec succès")
+                    
+            logger.info("✅ Modèles initialisés avec succès")
+            return True
+        
+        except Exception as e:
+            logger.error(f"❌ Erreur initialisation modèles: {e}")
+            return False
+
+    async def _cleanup(self):
+        """Nettoie les ressources avant de fermer"""
+        try:
+            # Fermeture des connexions WebSocket
+            if hasattr(self, 'socket_manager'):
+                await self.socket_manager.close()
+            
+            # Fermeture de la connexion Binance
+            if hasattr(self, 'binance_ws'):
+                await self.binance_ws.close_connection()
+            
+            # Sauvegarde des modèles
+            if hasattr(self, 'models'):
+                models_path = os.path.join(current_dir, "models")
+                os.makedirs(models_path, exist_ok=True)
+                for model_name, model in self.models.items():
+                    model_path = os.path.join(models_path, f"{model_name}.pt")
+                    torch.save(model.state_dict(), model_path)
+                
+            # Sauvegarde des métriques
+            if hasattr(self, 'dashboard'):
+                await self.dashboard.save_metrics()
+            
+                logger.info("✅ Nettoyage effectué avec succès")
+        
+        except Exception as e:
+            logger.error(f"❌ Erreur nettoyage: {e}")
 
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
