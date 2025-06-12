@@ -540,6 +540,17 @@ class TradingBotM4:
                     api_secret=os.getenv('BINANCE_API_SECRET')
                 )
                 
+                # Configuration de l'exchange ccxt pour le portfolio
+                self.exchange = ccxt.binance({
+                    'apiKey': os.getenv('BINANCE_API_KEY'),
+                    'secret': os.getenv('BINANCE_API_SECRET'),
+                    'enableRateLimit': True,
+                    'options': {
+                        'defaultType': 'future',
+                        'adjustForTimeDifference': True
+                    }
+                })
+                
                 # Configuration des streams
                 self.stream_config = StreamConfig(
                     max_connections=12,
@@ -550,12 +561,18 @@ class TradingBotM4:
                 # Initialisation des composants
                 await self._setup_components()
                 
+                # Test de récupération du portfolio
+                portfolio = await self.get_real_portfolio()
+                if not portfolio:
+                    logger.warning("Unable to fetch initial portfolio data")
+                
                 self.initialized = True
                 logger.info("Bot initialized successfully")
             except Exception as e:
                 logger.error(f"Initialization error: {e}")
                 await self._cleanup()
                 raise
+            
     async def _setup_components(self):
         """Configure les composants du bot"""
         try:
@@ -943,37 +960,37 @@ class TradingBotM4:
             return {}
 
     async def trading_loop(self):
-    """Boucle principale de trading"""
-    while True:
-        try:
-            # Mise à jour des données
-            data = await self.get_latest_data()
-            if data:
-                for pair in config["TRADING"]["pairs"]:
-                    # Calcul des indicateurs pour chaque symbole
-                    indicators = await self.calculate_indicators(pair)
-                    if indicators:
-                        # Analyse des signaux
-                        signals = await self.analyze_signals(data)
+        """Boucle principale de trading"""
+        while True:
+            try:
+                # Mise à jour des données
+                data = await self.get_latest_data()
+                if data:
+                    for pair in config["TRADING"]["pairs"]:
+                        # Calcul des indicateurs pour chaque symbole
+                        indicators = await self.calculate_indicators(pair)
+                        if indicators:
+                            # Analyse des signaux
+                            signals = await self.analyze_signals(data)
                         
-                        if signals:
-                            # Construction de la décision
-                            decision = await self.analyze_signals(data, indicators)
+                            if signals:
+                                # Construction de la décision
+                                decision = await self.analyze_signals(data, indicators)
                             
-                            if decision and decision.get('should_trade', False):
-                                trade_result = await self.execute_real_trade(decision)
-                                if trade_result:
-                                    logger.info(f"Trade exécuté: {trade_result['id']}")
+                                if decision and decision.get('should_trade', False):
+                                    trade_result = await self.execute_real_trade(decision)
+                                    if trade_result:
+                                        logger.info(f"Trade exécuté: {trade_result['id']}")
                                     
-                # Mise à jour du portfolio            
-                await self.get_real_portfolio()
+                    # Mise à jour du portfolio            
+                    await self.get_real_portfolio()
                 
-            # Attente avant la prochaine itération
-            await asyncio.sleep(1)
+                # Attente avant la prochaine itération
+                await asyncio.sleep(1)
             
-        except Exception as e:
-            logger.error(f"Erreur dans la boucle: {str(e)}")
-            await asyncio.sleep(5)
+            except Exception as e:
+                logger.error(f"Erreur dans la boucle: {str(e)}")
+                await asyncio.sleep(5)
                 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
@@ -1184,50 +1201,65 @@ class TradingBotM4:
             # Vérification de l'exchange
             if not hasattr(self, 'exchange') or self.exchange is None:
                 raise ValueError("Exchange non configuré")
-            
-            # Récupération des données avec ccxt
+        
             try:
-                # Utilisation des méthodes synchrones de ccxt
-                balance = self.exchange.fetch_balance()
-                positions = self.exchange.fetch_positions() if hasattr(self.exchange, 'fetch_positions') else []
+                # Récupération du solde RÉEL via l'API Binance
+                account = await self.binance_ws.get_account()
+                balances = account.get('balances', [])
+            
+                # Récupération du solde USDC
+                usdc_balance = next(
+                    (b for b in balances if b['asset'] == 'USDC'),
+                    {'free': '0', 'locked': '0'}
+                )
+            
+                # Conversion en float
+                free_usdc = float(usdc_balance['free'])
+                locked_usdc = float(usdc_balance['locked'])
+                total_usdc = free_usdc + locked_usdc
             
                 portfolio = {
-                    'total_value': float(balance['total'].get('USDC', 0)),
-                    'free': float(balance['free'].get('USDC', 0)),
-                    'used': float(balance['used'].get('USDC', 0)),
-                    'positions': [
-                        {
-                            'symbol': pos['symbol'],
-                            'size': float(pos['contracts']),
-                            'value': float(pos['notional']) if 'notional' in pos else 0.0,
-                            'pnl': float(pos['unrealizedPnl']) if 'unrealizedPnl' in pos else 0.0
-                        }
-                        for pos in positions if float(pos.get('contracts', 0)) > 0
-                    ]
+                    'total_value': total_usdc,
+                    'free': free_usdc,
+                    'used': locked_usdc,
+                    'positions': []  # À remplir avec les positions actives
                 }
 
-                # Envoi du message Telegram
+                # Récupération des positions ouvertes
+                positions = await self.binance_ws.futures_position_information()
+                portfolio['positions'] = [
+                    {
+                        'symbol': pos['symbol'],
+                        'size': float(pos['positionAmt']),
+                        'value': float(pos['notional']),
+                        'pnl': float(pos['unrealizedProfit'])
+                    }
+                    for pos in positions if float(pos['positionAmt']) != 0
+                ]
+
+                # Message Telegram avec les vraies valeurs
                 try:
                     message = f"""💰 Portfolio Update:
 Total: {portfolio['total_value']:.2f} USDC
-Positions: {len(portfolio['positions'])}
-PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
+Free: {portfolio['free']:.2f} USDC
+Used: {portfolio['used']:.2f} USDC
+Positions: {len(portfolio['positions'])}"""
                 
                     if hasattr(self, 'telegram') and self.telegram is not None:
                         await self.telegram.send_message(message)
-                    
+                
                 except Exception as msg_error:
                     logger.error(f"Erreur envoi message portfolio: {msg_error}")
-            
+        
                 return portfolio
             
             except Exception as e:
                 raise ValueError(f"Erreur récupération données portfolio: {str(e)}")
-            
+        
         except Exception as e:
             logger.error(f"Erreur portfolio: {str(e)}")
             return None
-
+    
     # 2. Mise à jour de setup_real_portfolio pour utiliser get_real_portfolio
     async def setup_real_portfolio(self):
         """Configure le portfolio réel"""
@@ -2850,98 +2882,83 @@ def main():
         # Get or create bot instance
         bot = get_bot()
 
-        # Colonnes pour l'interface
-        col1, col2, col3 = st.columns([2, 2, 1])
+        # Information de session
+        st.info(f"""
+        **Session Info**
+        User: {bot.current_user}
+        Status: {'Initialized' if bot.initialized else 'Not Initialized'}
+        """)
 
-        with col1:
-            # Informations de session
-            st.info(f"""
-            **Session Info**
-            User: {bot.current_user}
-            Status: {'Initialized' if bot.initialized else 'Not Initialized'}
-            """)
+        # Configuration trading
+        st.subheader("Trading Configuration")
+        risk_level = st.select_slider(
+            "Risk Level",
+            options=["Low", "Medium", "High"],
+            value="Medium"
+        )
+        
+        pairs = st.multiselect(
+            "Trading Pairs",
+            options=config["TRADING"]["pairs"],
+            default=config["TRADING"]["pairs"][:2]
+        )
 
-        with col2:
-            # Configuration trading
-            st.subheader("Trading Configuration")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Medium"
-            )
-            
-            pairs = st.multiselect(
-                "Trading Pairs",
-                options=config["TRADING"]["pairs"],
-                default=config["TRADING"]["pairs"][:2]
-            )
+        # Section Actions
+        st.subheader("Actions")
+        
+        if st.button("Initialize Bot", type="primary"):
+            with st.spinner("Initializing trading bot..."):
+                try:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.run_until_complete(bot.initialize())
+                    # Récupération du portfolio initial
+                    portfolio = loop.run_until_complete(bot.get_real_portfolio())
+                    st.success("Bot initialized successfully!")
+                except Exception as e:
+                    st.error(f"Initialization failed: {str(e)}")
+                    logger.error("Initialization error", exc_info=True)
+                finally:
+                    loop.close()
 
-        with col3:
-            st.subheader("Actions")
-            
-            if st.button("Initialize Bot", type="primary"):
-                with st.spinner("Initializing trading bot..."):
-                    try:
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        loop.run_until_complete(bot.initialize())
-                        st.success("Bot initialized successfully!")
-                        st.rerun()  # Nouveau nom de la fonction
-                    except Exception as e:
-                        st.error(f"Initialization failed: {str(e)}")
-                        logger.error("Initialization error", exc_info=True)
-                    finally:
-                        loop.close()
-
-            if bot.initialized and st.button("Start Trading", type="primary"):
-                with st.spinner("Starting trading operations..."):
-                    try:
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        loop.run_until_complete(bot.run_real_trading())
-                    except Exception as e:
-                        st.error(f"Trading error: {str(e)}")
-                        logger.error("Trading error", exc_info=True)
-                    finally:
-                        loop.close()
-
-        # Section des métriques
-        if bot.initialized:
-            st.subheader("Market Metrics")
-            metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
-            
-            with metrics_col1:
-                st.metric(
-                    "Portfolio Value",
-                    f"0.00 USDC",
-                    "0.00%"
-                )
-            
-            with metrics_col2:
-                st.metric(
-                    "24h Volume",
-                    "0.00 USDC",
-                    "0.00%"
-                )
-            
-            with metrics_col3:
-                st.metric(
-                    "Active Positions",
-                    "0",
-                    "No open positions"
-                )
-
-            # Graphiques
-            st.subheader("Market Analysis")
-            chart_col1, chart_col2 = st.columns(2)
-            
-            with chart_col1:
-                st.write("Price Chart")
-                st.empty()
-            
-            with chart_col2:
-                st.write("Volume Profile")
-                st.empty()
+        if bot.initialized and st.button("Start Trading", type="primary"):
+            with st.spinner("Starting trading operations..."):
+                try:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    # Récupération du portfolio avant de démarrer
+                    portfolio = loop.run_until_complete(bot.get_real_portfolio())
+                    
+                    # Métriques mises à jour
+                    st.subheader("Market Metrics")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric(
+                            "Portfolio Value",
+                            f"{portfolio['total_value']:.2f} USDC",
+                            f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
+                        )
+                    with col2:
+                        st.metric(
+                            "24h Volume",
+                            f"{portfolio.get('volume_24h', 0):.2f} USDC",
+                            f"{portfolio.get('volume_change', 0):+.2f}%"
+                        )
+                    with col3:
+                        st.metric(
+                            "Active Positions",
+                            str(len(portfolio.get('positions', []))),
+                            f"{len(portfolio.get('positions', []))} positions"
+                        )
+                    
+                    # Démarrage de la boucle de trading
+                    loop.run_until_complete(bot.trading_loop())
+                    
+                except Exception as e:
+                    st.error(f"Trading error: {str(e)}")
+                    logger.error("Trading error", exc_info=True)
+                finally:
+                    loop.close()
 
     except Exception as e:
         logger.error(f"Main function error: {e}")
