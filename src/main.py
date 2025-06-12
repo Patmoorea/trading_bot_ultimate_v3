@@ -918,13 +918,13 @@ class TradingBotM4:
             logger.error(f"Erreur get_latest_data: {e}")
             return None
 
-    def calculate_indicators(self, symbol: str) -> dict:
+    async def calculate_indicators(self, symbol: str) -> dict:
         """Calcule les indicateurs techniques"""
         try:
             data = self.latest_data.get(symbol)
             if not data:
                 return {}
-                
+            
             # Calcul des indicateurs de base
             indicators = {
                 'price': data['price'],
@@ -933,37 +933,47 @@ class TradingBotM4:
                 'high_low_range': data['high'] - data['low'],
                 'timestamp': data['timestamp']
             }
-            
+        
             # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
-            
+        
         except Exception as e:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
 
     async def trading_loop(self):
-        """Boucle principale de trading"""
-        while True:
-            try:
-                # Mise à jour des données
-                await self.get_latest_data()
-                
-                # Calcul des indicateurs pour chaque symbole
-                for symbol in self.latest_data.keys():
-                    indicators = self.calculate_indicators(symbol)
-                    
-                    # Analyse des conditions de trading
+    """Boucle principale de trading"""
+    while True:
+        try:
+            # Mise à jour des données
+            data = await self.get_latest_data()
+            if data:
+                for pair in config["TRADING"]["pairs"]:
+                    # Calcul des indicateurs pour chaque symbole
+                    indicators = await self.calculate_indicators(pair)
                     if indicators:
-                        # Votre logique de trading ici
-                        pass
+                        # Analyse des signaux
+                        signals = await self.analyze_signals(data)
                         
-                # Attente avant la prochaine itération
-                await asyncio.sleep(5)
+                        if signals:
+                            # Construction de la décision
+                            decision = await self.analyze_signals(data, indicators)
+                            
+                            if decision and decision.get('should_trade', False):
+                                trade_result = await self.execute_real_trade(decision)
+                                if trade_result:
+                                    logger.info(f"Trade exécuté: {trade_result['id']}")
+                                    
+                # Mise à jour du portfolio            
+                await self.get_real_portfolio()
                 
-            except Exception as e:
-                logger.error(f"Erreur dans la boucle: {str(e)}")
-                await asyncio.sleep(5)
+            # Attente avant la prochaine itération
+            await asyncio.sleep(1)
+            
+        except Exception as e:
+            logger.error(f"Erreur dans la boucle: {str(e)}")
+            await asyncio.sleep(5)
                 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
@@ -2834,28 +2844,108 @@ def _calculate_supertrend(self, data):
         return None
 
 def main():
-    """Fonction principale"""
+    st.title("Trading Bot Ultimate v4 🤖")
+    
     try:
-        st.title("Trading Bot Ultimate v4 - REAL")
-        
-        # Initialisation du bot
+        # Get or create bot instance
         bot = get_bot()
-        
-        # Affichage des informations
-        st.write(f"Date actuelle: {bot.current_date}")
-        st.write(f"Utilisateur: {bot.current_user}")
-        
-        # Démarrage de la boucle de trading
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        nest_asyncio.apply()
-        
-        # Exécution de la boucle de trading
-        loop.run_until_complete(bot.trading_loop())
-        
+
+        # Colonnes pour l'interface
+        col1, col2, col3 = st.columns([2, 2, 1])
+
+        with col1:
+            # Informations de session
+            st.info(f"""
+            **Session Info**
+            User: {bot.current_user}
+            Status: {'Initialized' if bot.initialized else 'Not Initialized'}
+            """)
+
+        with col2:
+            # Configuration trading
+            st.subheader("Trading Configuration")
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Medium"
+            )
+            
+            pairs = st.multiselect(
+                "Trading Pairs",
+                options=config["TRADING"]["pairs"],
+                default=config["TRADING"]["pairs"][:2]
+            )
+
+        with col3:
+            st.subheader("Actions")
+            
+            if st.button("Initialize Bot", type="primary"):
+                with st.spinner("Initializing trading bot..."):
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(bot.initialize())
+                        st.success("Bot initialized successfully!")
+                        st.rerun()  # Nouveau nom de la fonction
+                    except Exception as e:
+                        st.error(f"Initialization failed: {str(e)}")
+                        logger.error("Initialization error", exc_info=True)
+                    finally:
+                        loop.close()
+
+            if bot.initialized and st.button("Start Trading", type="primary"):
+                with st.spinner("Starting trading operations..."):
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(bot.run_real_trading())
+                    except Exception as e:
+                        st.error(f"Trading error: {str(e)}")
+                        logger.error("Trading error", exc_info=True)
+                    finally:
+                        loop.close()
+
+        # Section des métriques
+        if bot.initialized:
+            st.subheader("Market Metrics")
+            metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
+            
+            with metrics_col1:
+                st.metric(
+                    "Portfolio Value",
+                    f"0.00 USDC",
+                    "0.00%"
+                )
+            
+            with metrics_col2:
+                st.metric(
+                    "24h Volume",
+                    "0.00 USDC",
+                    "0.00%"
+                )
+            
+            with metrics_col3:
+                st.metric(
+                    "Active Positions",
+                    "0",
+                    "No open positions"
+                )
+
+            # Graphiques
+            st.subheader("Market Analysis")
+            chart_col1, chart_col2 = st.columns(2)
+            
+            with chart_col1:
+                st.write("Price Chart")
+                st.empty()
+            
+            with chart_col2:
+                st.write("Volume Profile")
+                st.empty()
+
     except Exception as e:
-        st.error(f"Erreur dans l'application: {str(e)}")
-        logger.error(f"Erreur dans l'application: {str(e)}")
+        logger.error(f"Main function error: {e}")
+        st.error(f"Application error: {str(e)}")
 
 if __name__ == "__main__":
     main()
