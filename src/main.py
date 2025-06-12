@@ -412,6 +412,10 @@ class TradingBotM4:
             price_check=config["ARBITRAGE"]["price_check"],
             max_slippage=config["ARBITRAGE"]["max_slippage"]
         )
+
+         # Configuration Telegram
+        self.telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
         self.telegram = TelegramBot()
 
         # IA et analyse
@@ -445,17 +449,29 @@ class TradingBotM4:
     async def _initialize_models(self):
         """Initialise les modèles d'IA"""
         try:
-            # Initialisation de PPO-GTrXL
+            # Calcul des dimensions pour CNNLSTM
+            input_shape = (
+                len(config["TRADING"]["timeframes"]),  # Nombre de timeframes
+                len(config["TRADING"]["pairs"]),       # Nombre de paires
+                42                                     # Nombre de features par candlestick
+            )
+        
+            # Calcul des dimensions pour PPO-GTrXL
+            state_dim = input_shape[0] * input_shape[1] * input_shape[2]
+            action_dim = len(config["TRADING"]["pairs"])
+        
+            # Initialisation des modèles
             self.models = {
                 "ppo_gtrxl": PPOGTrXL(
-                    n_layers=config["AI"]["gtrxl_layers"],
-                    embedding_dim=config["AI"]["embedding_dim"],
-                    dropout=config["AI"]["dropout"]
+                    state_dim=state_dim,
+                    action_dim=action_dim,
+                    num_layers=config["AI"]["gtrxl_layers"],
+                    d_model=config["AI"]["embedding_dim"]
                 ),
-                "cnn_lstm": CNNLSTM()
+                "cnn_lstm": CNNLSTM(input_shape=input_shape)
             }
         
-            # Chargement des poids pré-entraînés si disponibles
+            # Chargement des poids pré-entraînés
             models_path = os.path.join(current_dir, "models")
             if os.path.exists(models_path):
                 for model_name, model in self.models.items():
@@ -1005,34 +1021,80 @@ class TradingBotM4:
         # Ajout des méthodes de trading réel à la classe TradingBotM4
     async def setup_real_exchange(self):
         """Configuration sécurisée de l'exchange"""
-        if not hasattr(self, 'exchange') or self.exchange is None:
-            try:
-                self.exchange = ccxt.binance({
-                    'apiKey': os.getenv('BINANCE_API_KEY'),
-                    'secret': os.getenv('BINANCE_API_SECRET'),
-                    'enableRateLimit': True
-                })
-                await self.exchange.load_markets()
-                logger.info("Exchange configuré avec succès")
-                return True
-            except Exception as e:
-                logger.error(f"Erreur configuration exchange: {e}")
-                return False
+        try:
+            api_key = os.getenv('BINANCE_API_KEY')
+            api_secret = os.getenv('BINANCE_API_SECRET')
+        
+            if not api_key or not api_secret:
+                raise ValueError("Clés API Binance manquantes dans les variables d'environnement")
+            
+            # Configuration de l'exchange avec ccxt
+            self.exchange = ccxt.binance({
+                'apiKey': api_key,
+                'secret': api_secret,
+                'enableRateLimit': True,
+                'options': {
+                    'defaultType': 'spot',
+                    'adjustForTimeDifference': True
+                }
+            })
+        
+            # Test de la connexion de manière synchrone
+            self.exchange.load_markets()
+            balance = self.exchange.fetch_balance()
+        
+            if not balance:
+                raise ValueError("Impossible de récupérer le solde - Vérifiez vos clés API")
+            
+            logger.info("Exchange configuré avec succès")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Erreur configuration exchange: {e}")
+            return False
+    
+    # 3. Correction de l'envoi des messages Telegram
+    async def send_telegram_message(self, message: str):
+        """Envoie un message via Telegram"""
+        try:
+            if hasattr(self, 'telegram') and self.telegram.enabled:
+                success = await self.telegram.send_message(
+                    message=message,
+                    parse_mode='HTML'
+                )
+                if success:
+                    logger.info(f"Message Telegram envoyé: {message[:50]}...")
+                else:
+                    logger.error("Échec envoi message Telegram")
+        except Exception as e:
+            logger.error(f"Erreur envoi Telegram: {e}")
 
     async def setup_real_telegram(self):
         """Configuration sécurisée de Telegram"""
         try:
-            if not hasattr(self, 'telegram') or self.telegram is None:
-                self.telegram = telegram.Bot(token=os.getenv('TELEGRAM_BOT_TOKEN'))
-                self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
-                try:
-                    await self.telegram.send_message(
-                        chat_id=self.chat_id,
-                        text="🤖 Bot de trading démarré"
-                    )
-                except Exception as msg_error:
-                    logger.error(f"Erreur envoi message Telegram: {msg_error}")
+            # Création de l'instance TelegramBot (l'initialisation se fait dans __init__)
+            self.telegram = TelegramBot()
+        
+            if not self.telegram.enabled:
+                logger.warning("Telegram notifications désactivées")
+                return False
+            
+            # Démarrage du processeur de queue
+            await self.telegram.start()
+        
+            # Test d'envoi d'un message
+            success = await self.telegram.send_message(
+                "🤖 Bot de trading démarré",
+                parse_mode='HTML'
+            )
+        
+            if success:
+                logger.info("Telegram configuré avec succès")
                 return True
+            else:
+                logger.error("Échec du test d'envoi Telegram")
+                return False
+            
         except Exception as e:
             logger.error(f"Erreur configuration Telegram: {e}")
             return False
@@ -1040,39 +1102,68 @@ class TradingBotM4:
     async def get_real_portfolio(self):
         """Récupération sécurisée du portfolio"""
         try:
-            balance = await self.exchange.fetch_balance()
-            positions = await self.exchange.fetch_positions()
+            # Vérification de l'exchange
+            if not hasattr(self, 'exchange') or self.exchange is None:
+                raise ValueError("Exchange non configuré")
             
-            portfolio = {
-                'total_value': float(balance['total'].get('USDC', 0)),
-                'free': float(balance['free'].get('USDC', 0)),
-                'used': float(balance['used'].get('USDC', 0)),
-                'positions': [
-                    {
-                        'symbol': pos['symbol'],
-                        'size': pos['contracts'],
-                        'value': pos['notional'],
-                        'pnl': pos['unrealizedPnl']
-                    }
-                    for pos in positions if pos['contracts'] > 0
-                ]
-            }
-
+            # Récupération des données avec gestion d'erreur
             try:
-                await self.telegram.send_message(
-                    chat_id=self.chat_id,
-                    text=f"""💰 Portfolio Update:
-                    Total: {portfolio['total_value']:.2f} USDC
-                    Positions: {len(portfolio['positions'])}
-                    PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
-                )
-            except Exception as msg_error:
-                logger.error(f"Erreur envoi message portfolio: {msg_error}")
+                balance = await self.exchange.fetch_balance()
+                positions = await self.exchange.fetch_positions()
             
-            return portfolio
+                portfolio = {
+                    'total_value': float(balance['total'].get('USDC', 0)),
+                    'free': float(balance['free'].get('USDC', 0)),
+                    'used': float(balance['used'].get('USDC', 0)),
+                    'positions': [
+                        {
+                            'symbol': pos['symbol'],
+                            'size': pos['contracts'],
+                            'value': pos['notional'],
+                            'pnl': pos['unrealizedPnl']
+                        }
+                        for pos in positions if pos['contracts'] > 0
+                    ]
+                }
+
+                # Envoi du message Telegram avec la nouvelle méthode
+                try:
+                    message = f"""💰 Portfolio Update:
+Total: {portfolio['total_value']:.2f} USDC
+Positions: {len(portfolio['positions'])}
+PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
+                
+                    await self.telegram.send_message(
+                        message=message,
+                        parse_mode='HTML'
+                    )
+                except Exception as msg_error:
+                    logger.error(f"Erreur envoi message portfolio: {msg_error}")
+            
+                return portfolio
+            
+            except Exception as e:
+                raise ValueError(f"Erreur récupération données portfolio: {str(e)}")
+            
         except Exception as e:
-            logger.error(f"Erreur portfolio: {e}")
+            logger.error(f"Erreur portfolio: {str(e)}")
             return None
+
+    # 2. Mise à jour de setup_real_portfolio pour utiliser get_real_portfolio
+    async def setup_real_portfolio(self):
+        """Configure le portfolio réel"""
+        try:
+            portfolio = await self.get_real_portfolio()
+            if portfolio is None:
+                return False
+            
+            self.portfolio = portfolio
+            logger.info(f"Portfolio configuré avec succès: {portfolio['total_value']} USDC")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Erreur configuration portfolio: {str(e)}")
+            return False
 
     async def execute_real_trade(self, signal):
         """Exécution sécurisée des trades"""
