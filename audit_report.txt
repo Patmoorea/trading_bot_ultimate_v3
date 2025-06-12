@@ -1,0 +1,54 @@
+=== Analyse de ./test_ai_modules.py ===
+Your code has been rated at 0.00/10
+
+       0
+---
+=== Analyse de ./telegram_bot.py ===
+Your code has been rated at 0.00/10
+
+       0
+---
+=== Analyse de ./test_tf.py ===
+Your code has been rated at 6.92/10
+
+       0
+---
+=== Analyse de ./test_ai_full.py ===
+Your code has been rated at 0.00/10
+
+       0
+---
+=== Analyse de ./test_model.py ===
+Your code has been rated at 2.50/10
+
+       0
+---
+=== Analyse de ./technical_analyzer.py ===
+       0
+---
+=== Analyse de ./risk_management.py ===
+Your code has been rated at 0.00/10
+
+       0
+---
+=== Analyse de ./tools/gpu_monitor.py ===
+Your code has been rated at 6.36/10
+
+       0
+---
+=== Analyse de ./run_bot.py ===
+Your code has been rated at 5.71/10
+
+       0
+---
+=== Analyse de ./config.py ===
+Your code has been rated at 6.67/10
+
+       0
+---
+=== Analyse de ./core/config.py ===
+Your code has been rated at 0.00/10
+
+       0
+---
+=== Analyse de ./core/m4_config.py ===

@@ -1,0 +1,24 @@
+2025-05-02 17:12:50,337 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:14:37,578 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:17:29,222 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:40:34,270 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:40:44,813 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:40:50,512 - __main__ - INFO - Arrêt manuel du bot
+2025-05-02 17:40:53,680 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:40:56,583 - __main__ - INFO - Arrêt manuel du bot
+2025-05-02 17:44:19,460 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:44:28,501 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:44:36,270 - root - ERROR - Erreur critique: 'TechnicalAnalyzer' object has no attribute 'analyze'
+Traceback (most recent call last):
+  File "/Users/patricejourdan/trading_bot_ultimate/src/core/engine.py", line 189, in main
+    engine.run()
+  File "/Users/patricejourdan/trading_bot_ultimate/src/core/engine.py", line 67, in run
+    signals = self.generate_signals(market_data, current_sentiment)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/patricejourdan/trading_bot_ultimate/src/core/engine.py", line 99, in generate_signals
+    analysis = self.technical_analyzer.analyze(df)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TechnicalAnalyzer' object has no attribute 'analyze'
+2025-05-02 17:45:02,456 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:45:11,500 - __main__ - INFO - Démarrage du trading bot
+2025-05-02 17:45:17,133 - __main__ - INFO - Arrêt manuel du bot

@@ -1,0 +1,127 @@
+{
+    "min_spread": 0.008,
+    "max_pairs": 20,
+    "update_interval": 60,
+    "exchanges": ["binance", "kraken", "coinbase"]  # Bybit retiré, Coinbase ajouté
+}
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}
+{
+    "binance": {
+        "api_key": "$BINANCE_API_KEY",
+        "type": "spot"
+    },
+    "kraken": {
+        "api_key": "$KRAKEN_API_KEY",
+        "type": "spot"
+    }
+}
+{
+    "glassnode": {
+        "api_key": "${GLASSNODE_KEY}",
+        "endpoints": {
+            "whales": "v1/metrics/distribution/transfers_volume_sum"
+        }
+    }
+}
+{
+  "direction_restriction": {
+    "long_only": true,
+    "allowed_quote_assets": ["USDC"]
+  }
+}
+"""
+Configuration centrale optimisée pour M4
+"""
+import os
+import platform
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Config:
+    # Configuration Binance
+    BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
+    BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
+    TRADING_PAIRS = [f"{pair.strip()}USDT" for pair in os.getenv("TRADING_PAIRS").split(",")]
+    
+    # Paramètres de trading
+    STOP_LOSS = float(os.getenv("STOP_LOSS", 0.05))
+    TAKE_PROFIT = float(os.getenv("TAKE_PROFIT", 0.15))
+    TRAILING_OFFSET = float(os.getenv("TRAILING_OFFSET", 0.01))
+    
+    # News et Sentiment
+    NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+    SENTIMENT_THRESHOLD = float(os.getenv("SENTIMENT_THRESHOLD", 0.7))
+    
+    # Telegram
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+    
+    # Optimisation M4
+    IS_M4 = platform.processor() == 'arm' and platform.machine().startswith('arm64')
+    USE_METAL = os.getenv("USE_METAL", "true") == "true" and IS_M4
+    USE_NUMBA = os.getenv("USE_NUMBA", "true") == "true"
+    
+    @classmethod
+    def validate(cls):
+        if not cls.BINANCE_API_KEY or not cls.BINANCE_API_SECRET:
+            raise ValueError("Configuration Binance manquante")
+"""
+Constantes de trading
+"""
+class Constants:
+    # Timeframes
+    TIMEFRAMES = ['15m', '1h', '4h', '1d']
+    
+    # Indicateurs techniques
+    INDICATORS = {
+        'trend': ['ichimoku', 'supertrend', 'vwma'],
+        'momentum': ['rsi', 'stoch_rsi', 'macd'],
+        'volatility': ['atr', 'bb_width', 'keltner'],
+        'volume': ['obv', 'vwap', 'accumulation']
+    }
+    
+    # Paramètres de risque
+    RISK_PARAMS = {
+        'max_drawdown': 0.05,
+        'daily_stop_loss': 0.02,
+        'position_sizing': 'volatility_based'
+    }
+"""
+Configuration des exchanges
+"""
+class BinanceConfig:
+    SPOT_API_URL = "https://api.binance.com"
+    FUTURES_API_URL = "https://fapi.binance.com"
+    TESTNET_URL = "https://testnet.binance.vision"
+    
+    STREAM_LIMIT = 12
+    WS_BUFFER_SIZE = 1000
+    RECONNECT_DELAY = 15
+"""
+Configuration des paths
+"""
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.parent
+
+class Paths:
+    DATA = BASE_DIR / 'data'
+    LOGS = BASE_DIR / 'logs'
+    MODELS = BASE_DIR / 'models'
+    
+    MARKET_DATA = DATA / 'market'
+    SIGNALS = DATA / 'signals'
+    BACKTEST = DATA / 'backtest'
+    NEWS = DATA / 'news'
+BUY_THRESHOLD = 0.85  # Seuil ajusté après backtests
+N_QUBITS = 4          # Garder 4 qubits pour M4

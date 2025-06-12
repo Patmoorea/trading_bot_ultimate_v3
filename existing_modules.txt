@@ -1,0 +1,137 @@
+/Users/patricejourdan/Desktop/trading_bot_ultimate/test_telegram.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/telegram_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/test_arbitrage_v2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/core/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests_archive/test_arbitrage_debug.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/check_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/monitor_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/real_arbitrage_fixes.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/unit/risk_management/test_circuit_breaker.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/core/test_risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/integration/test_arbitrage_minimal.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/integration/test_arbitrage_basic.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/integration/test_arbitrage_debug.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/integration/test_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/integration/test_arbitrage_final.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/disabled/test_real_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/disabled/test_arbitrage_integration.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/tests/benchmark_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/test_arbitrage_cli.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/hybrid_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/news/telegram_enhanced.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/execution/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/examples/arbitrage_wrapper.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/examples/arbitrage_wrapper_pro.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/scripts/run_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/data 2/backtest/__init__.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/test_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/backtest.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/simple_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/telegram_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/_arbitrage_fallback.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/advanced_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/arbitrage_engine.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/utils/telegram_logger.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/hybrid_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/arbitrage_config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/temporal_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/arbitrage_utils.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/modules/arbitrage_fallback.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/data/backtest/__init__.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/risk_extension.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/arbitrage_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/independent_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/real_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/multi_exchange/multi_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/analytics/pairs_config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/analytics/advanced_analytics.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/risk_management/__init__.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/risk_management/circuit_breaker.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/risk_management/circuit_breakers.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules 2/news/telegram_integration.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules 2/risk/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/modules 2/news/telegram_integration.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/modules 2/risk/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/advanced.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/service.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/execution.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/arbitrage_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/independent_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/arbitrage_bot 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/independent_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/real_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/real_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/compat.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/cross_exchange.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/advanced 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/tests/test_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/config 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/__init__.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/service 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/main 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/optimizer.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/real_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/execution 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage_enhanced.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/main.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/analytics/pairs_config 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/analytics/pairs_config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/analytics/advanced_analytics.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/analytics/advanced_analytics 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/monitoring/telegram_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/advanced.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/service.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/execution.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/arbitrage_bot.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/independent_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/arbitrage_bot 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/independent_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/real_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/real_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/compat.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/cross_exchange.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/advanced 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/tests/test_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/config 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/__init__.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/service 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/main 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/optimizer.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/real_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/execution 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage_enhanced.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/main.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/analytics/pairs_config 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/analytics/pairs_config.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/analytics/advanced_analytics.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/analytics/advanced_analytics 2.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules/risk/risk_management.py
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/notifications/telegram.py

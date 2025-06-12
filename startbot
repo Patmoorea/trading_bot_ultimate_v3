@@ -1,0 +1,9 @@
+#!/bin/zsh
+BASEDIR=$(cd $(dirname "$0") && pwd)
+source "$BASEDIR/venv/trading_bot/bin/activate" || {
+    echo "Échec activation venv - utilisez python direct"
+    python "$BASEDIR/src/main.py" "$@"
+    exit
+}
+export PYTHONPATH="$BASEDIR:$PYTHONPATH"
+python "$BASEDIR/src/main.py" "$@"

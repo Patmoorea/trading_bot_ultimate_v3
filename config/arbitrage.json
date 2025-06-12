@@ -1,0 +1,10 @@
+{
+    "min_spread": 0.0005,
+    "target_pairs": ["BTC/USDC", "ETH/USDC", "SOL/USDC"],
+    "update_interval": 10,
+    "exchanges": {
+        "binance": {"enabled": true},
+        "kucoin": {"enabled": true},
+        "coinbase": {"enabled": true}
+    }
+}

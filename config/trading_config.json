@@ -1,0 +1,5 @@
+{
+    "min_spread": 0.008,
+    "whitelist": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+    "exchanges": ["binance", "gateio", "bingx"]
+}

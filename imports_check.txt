@@ -1,0 +1,102 @@
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/connectors/binance.py:from ccxt.async_support import binance
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/core/ai/hybrid_model.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/config/tensorflow_m4 2.py:import os
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/config/tensorflow_m4.py:import os
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/independent_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/core/real_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/multi_exchange/multi_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies/arbitrage/multi_exchange/multi_arbitrage.py:    from utils.telegram_notifications import notifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/advanced/cnn_lstm.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/advanced/cnn_lstm.py:from tensorflow.keras.layers import Input, Conv1D, LSTM, Dense, Add
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/automl_optimizer.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/cnn_lstm_model.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/cnn_lstm_model.py:from tensorflow.keras.layers import (
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/cnn_lstm_model.py:from tensorflow.keras.models import Model
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai_engine/cnn_lstm_model.py:from tensorflow.keras.regularizers import l2
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:import os
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:import requests
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:from dotenv import load_dotenv
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:import logging
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:from time import perf_counter
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:import statistics
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:from Crypto.Cipher import AES
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/telegram_notifications.py:from datetime import datetime
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/utils/notifications.py:from .telegram_notifications import TelegramNotifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/models/ai_engine.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules 2/news/telegram_integration.py:from telegram import Bot
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules 2/news/telegram_integration.py:from .realtime_processing import RealTimeNewsMonitor
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/modules 2/news/start_service.py:from .telegram_integration import NewsTelegramBridge
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/modules 2/news/telegram_integration.py:from telegram import Bot
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/modules 2/news/telegram_integration.py:from .realtime_processing import RealTimeNewsMonitor
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/modules 2/news/start_service.py:from .telegram_integration import NewsTelegramBridge
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/execution.py:    import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/service.py:from ccxt.async_support import gateio, bingx, okx
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/execution.py:from ccxt import Exchange
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/independent_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/independent_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/real_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core/real_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/service 2.py:from ccxt.async_support import gateio, bingx, okx
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/core 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/real_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/execution 2.py:from ccxt import Exchange
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/arbitrage_enhanced.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py:    from utils.telegram_notifications import notifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py:    from utils.telegram_notifications import notifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_check.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_check.py:        from tensorflow.python.compiler.mlcompute import mlcompute
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_patched.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_patched.py:from tensorflow.keras.optimizers import Adam
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_fallback.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_fallback.py:from tensorflow.keras.optimizers import Adam
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_config.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_config.py:    import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_config.py:    import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_robust.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer_robust.py:from tensorflow.keras.optimizers import Adam
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/arbitrage.py:from ccxt import Exchange
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/arbitrage.py:        from ccxt import binance
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/base_model.py:from tensorflow.keras.models import Model
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/base_model.py:        from tensorflow.keras.layers import Input, Dense
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/technical_engine.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai/hybrid_model.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_setup.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/gpu_acceleration.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/data_fetcher.py:    from ccxt import binance
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/enable_metal.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/_archived/core 2/ai_optimizer.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/execution/iceberg_engine.py:from ccxt import binance
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/execution/order_executor.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/hybrid_engine.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/hybrid_model.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/cnn_lstm.py:import tensorflow as tf
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/cnn_lstm.py:from tensorflow.keras.layers import Conv1D, LSTM, Dense
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/cnn_lstm.py:from tensorflow.keras.models import Sequential
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/enhanced_cnn_lstm.py:from tensorflow.keras.layers import Dropout
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/cnn_lstm_updated.py:from tensorflow.keras.models import Sequential
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/ai/cnn_lstm_updated.py:from tensorflow.keras.layers import Conv1D, LSTM, Dense
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/monitoring/telegram_bot.py:    from analysis.sentiment import analyze_with_finbert
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/execution.py:    import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/service.py:from ccxt.async_support import gateio, bingx, okx
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/execution.py:from ccxt import Exchange
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/independent_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/independent_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/real_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core/real_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/service 2.py:from ccxt.async_support import gateio, bingx, okx
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/core 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/real_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/execution 2.py:from ccxt import Exchange
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/arbitrage_enhanced.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage.py:    from utils.telegram_notifications import notifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py:import ccxt
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/strategies 2/arbitrage/multi_exchange/multi_arbitrage 2.py:    from utils.telegram_notifications import notifier
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/notifications/telegram.py:import requests
+/Users/patricejourdan/Desktop/trading_bot_ultimate/src/notifications/telegram.py:from config import Config

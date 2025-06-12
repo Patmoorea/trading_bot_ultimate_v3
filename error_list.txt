@@ -1,0 +1,11 @@
+ERROR
+ERRORS
+tests/unit/ai/test_ai_optimization.py
+tests/unit/core/test_model.py
+tests/unit/test_ai_full_DISABLED.py
+tests/unit/test_ai_modules_DISABLED.py
+tests/unit/test_ai_optimization_DISABLED.py
+tests/unit/test_import.py
+tests/unit/test_imports.py
+tests/unit/test_model.py
+tests/unit/test_sentiment_adjustment.py
