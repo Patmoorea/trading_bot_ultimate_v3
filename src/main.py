@@ -86,7 +86,6 @@ from src.liquidity_heatmap.visualization import generate_heatmap
 # Imports des indicateurs
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
 from src.analysis.indicators.momentum.momentum import MomentumIndicators
-from src.analysis.indicators.volatility.volatility import VolatilityIndicators
 from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
 from src.analysis.indicators.trend.indicators import TrendIndicators
 
@@ -365,7 +364,8 @@ class TradingBotM4:
         # Configuration utilisateur et date
         self.current_date = "2025-06-10 18:48:29"
         self.current_user = "Patmoorea"
-        self.news_analyzer = NewsAnalyzer()
+        self.news_analyzer = None
+        self.initialized = False
         
         # Mode de trading
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
@@ -443,32 +443,79 @@ class TradingBotM4:
             }
         )
 
-        # Configuration Binance
-        self.binance_ws = AsyncClient.create(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET')
-        )
-        self.socket_manager = BinanceSocketManager(self.binance_ws)
-        
-        # Connecteurs
-        self.connector = BinanceConnector()
-        self.spot_client = BinanceClient(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            secret=os.getenv('BINANCE_API_SECRET')
-        )
-        
-        # Exchange principal
-        self.exchange = BinanceExchange(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET'),
-            testnet=False
-        )
+    async def initialize(self):
+        """Initialisation asynchrone des connexions"""
+        if not self.initialized:
+            try:
+                # Configuration Binance
+                self.binance_ws = await AsyncClient.create(
+                    api_key=os.getenv('BINANCE_API_KEY'),
+                    api_secret=os.getenv('BINANCE_API_SECRET')
+                )
+                self.socket_manager = BinanceSocketManager(self.binance_ws)
+                
+                # Client Binance standard (non async)
+                self.spot_client = BinanceClient(
+                    api_key=os.getenv('BINANCE_API_KEY'),
+                    api_secret=os.getenv('BINANCE_API_SECRET')
+                )
+                
+                # Configuration des streams
+                self.stream_config = StreamConfig(
+                    max_connections=12,
+                    reconnect_delay=1.0,
+                    buffer_size=10000
+                )
 
-        # Initialisation des analyseurs et modèles
-        self._initialize_analyzers()
-        self.initialize_models()
+                # Initialisation des composants
+                await self._setup_components()
+                
+                self.initialized = True
+                logger.info("Bot initialized successfully")
+            except Exception as e:
+                logger.error(f"Initialization error: {e}")
+                await self._cleanup()
+                raise
+    async def _setup_components(self):
+        """Configure les composants du bot"""
+        try:
+            # Initialisation du MultiStreamManager
+            self.websocket = MultiStreamManager(
+                pairs=config["TRADING"]["pairs"],
+                config=self.stream_config
+            )
+            
+            # Configuration de l'exchange
+            self.websocket.setup_exchange("binance")
+            self.buffer = CircularBuffer()
+            
+            # Interface et monitoring
+            self.dashboard = TradingDashboard()
+            
+            # News Analyzer
+            self.news_analyzer = NewsAnalyzer()
+            
+            # Composants principaux
+            self.arbitrage_engine = ArbitrageEngine(
+                exchanges=config["ARBITRAGE"]["exchanges"],
+                pairs=config["ARBITRAGE"]["pairs"],
+                min_profit=config["ARBITRAGE"]["min_profit"],
+                max_trade_size=config["ARBITRAGE"]["max_trade_size"],
+                timeout=config["ARBITRAGE"]["timeout"],
+                volume_filter=config["ARBITRAGE"]["volume_filter"],
+                price_check=config["ARBITRAGE"]["price_check"],
+                max_slippage=config["ARBITRAGE"]["max_slippage"]
+            )
+            
+            # Configuration des analyseurs et modèles
+            await self._initialize_analyzers()
+            await self._initialize_models()
+            
+        except Exception as e:
+            logger.error(f"Setup components error: {e}")
+            raise
 
-    def _initialize_analyzers(self):
+    async def _initialize_analyzers(self):
         """Initialize all analysis components"""
         self.advanced_indicators = MultiTimeframeAnalyzer(
             config=self.timeframe_config
@@ -2461,6 +2508,7 @@ async def run_trading_bot():
 
                 with st.spinner("Initialisation du bot de trading..."):
                     bot = TradingBotM4()
+                    asyncio.run(bot.async_init())
                     loop.run_until_complete(bot.run())
             except Exception as e:
                 logger.error(f"Erreur du bot: {e}")
@@ -2555,29 +2603,25 @@ async def run_trading_bot():
             logger.error(f"Erreur: {e}")
             self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
             return None
+    @st.cache_resource
+    def get_bot():
+        """Create or get the bot instance"""
+        try:
+            bot = TradingBotM4()
+            bot.current_date = "2025-06-12 05:31:05"  # Mise à jour de la date
+            bot.current_user = "Patmoorea"
+            return bot
+        except Exception as e:
+            logger.error(f"Error creating bot instance: {e}")
+            raise
 
-# Point d'entrée principal
-if __name__ == "__main__":
-    # Configuration du logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('trading_bot.log'),
-            logging.StreamHandler()
-        ]
-    )
-    logger = logging.getLogger(__name__)
-
+# Point d'entrée principal modifié
+def main():
+    st.title("Trading Bot Ultimate v4 🤖")
+    
     try:
-        # Configuration de l'event loop
-        setup_event_loop()
-        
-        # Instance du bot
-        bot = TradingBotM4()
-        
-        # Interface Streamlit
-        st.title("Trading Bot Ultimate v4 🤖")
+        # Get or create bot instance
+        bot = get_bot()
 
         # Colonnes pour l'interface
         col1, col2 = st.columns([3, 1])
@@ -2586,8 +2630,8 @@ if __name__ == "__main__":
             # Informations de session
             st.sidebar.info(f"""
             **Session Info**
-            User: {os.getenv('CURRENT_USER', 'Patmoorea')}
-            Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+            User: {bot.current_user}
+            Date: {bot.current_date} UTC
             """)
             
             # Configuration trading
@@ -2597,23 +2641,43 @@ if __name__ == "__main__":
                 options=["Low", "Medium", "High"],
                 value="Medium"
             )
-            pairs = st.multiselect(
-                "Trading Pairs",
-                options=config["TRADING"]["pairs"],
-                default=config["TRADING"]["pairs"]
-            )
 
         with col1:
-            # Zone principale pour les graphiques
             st.header("Market Analysis")
             
-            # Bouton de démarrage
-            if st.button("Start Trading Bot", type="primary"):
-                with st.spinner("Initialisation du bot de trading..."):
-                    asyncio.run(bot.run())
+            if st.button("Initialize Bot", type="primary"):
+                with st.spinner("Initializing trading bot..."):
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(bot.initialize())
+                        st.success("Bot initialized successfully!")
+                    except Exception as e:
+                        st.error(f"Initialization failed: {str(e)}")
+                        logger.error("Initialization error", exc_info=True)
+                    finally:
+                        loop.close()
 
+            if bot.initialized and st.button("Start Trading"):
+                with st.spinner("Starting trading operations..."):
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(bot.run_real_trading())
+                    except Exception as e:
+                        st.error(f"Trading error: {str(e)}")
+                        logger.error("Trading error", exc_info=True)
+                    finally:
+                        loop.close()
     except Exception as e:
-        logger.error(f"Erreur fatale: {e}")
+        logger.error(f"Main function error: {e}")
+        st.error(f"Application error: {str(e)}")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        logger.error("Fatal error", exc_info=True)
         if 'st' in globals():
-            st.error(f"Une erreur est survenue: {e}")
-        logging.error("Fatal error", exc_info=True)
+            st.error(f"Fatal error: {str(e)}")
+        sys.exit(1)

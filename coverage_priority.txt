@@ -1,4 +1,0 @@
-Ordre de priorité pour améliorer la couverture:
-1. src/core/risk_management.py (47%)
-2. src/core/engine.py (54%)
-3. src/core/ai_engine.py (42%)
