@@ -1199,23 +1199,17 @@ class TradingBotM4:
         """Récupération sécurisée du portfolio"""
         try:
             # Vérification de l'exchange
-            if not hasattr(self, 'exchange') or self.exchange is None:
-                raise ValueError("Exchange non configuré")
+            if not hasattr(self, 'spot_client') or self.spot_client is None:
+                raise ValueError("Spot client non configuré")
         
             try:
-                # Récupération du solde RÉEL via l'API Binance
-                account = await self.binance_ws.get_account()
-                balances = account.get('balances', [])
-            
-                # Récupération du solde USDC
-                usdc_balance = next(
-                    (b for b in balances if b['asset'] == 'USDC'),
-                    {'free': '0', 'locked': '0'}
-                )
+                # Récupération du solde RÉEL via le spot client
+                # Utilisation de get_asset_balance au lieu de get_account
+                usdc_balance = self.spot_client.get_asset_balance(asset='USDC')
             
                 # Conversion en float
-                free_usdc = float(usdc_balance['free'])
-                locked_usdc = float(usdc_balance['locked'])
+                free_usdc = float(usdc_balance.get('free', 0))
+                locked_usdc = float(usdc_balance.get('locked', 0))
                 total_usdc = free_usdc + locked_usdc
             
                 portfolio = {
@@ -1226,16 +1220,21 @@ class TradingBotM4:
                 }
 
                 # Récupération des positions ouvertes
-                positions = await self.binance_ws.futures_position_information()
-                portfolio['positions'] = [
-                    {
-                        'symbol': pos['symbol'],
-                        'size': float(pos['positionAmt']),
-                        'value': float(pos['notional']),
-                        'pnl': float(pos['unrealizedProfit'])
-                    }
-                    for pos in positions if float(pos['positionAmt']) != 0
-                ]
+                try:
+                    # Récupération des ordres ouverts pour USDC
+                    open_orders = self.spot_client.get_open_orders(symbol='BTCUSDC')
+                    portfolio['positions'] = [
+                        {
+                            'symbol': order['symbol'],
+                            'size': float(order['origQty']),
+                            'value': float(order['price']) * float(order['origQty']),
+                            'side': order['side']
+                        }
+                        for order in open_orders
+                    ]
+                except Exception as orders_error:
+                    logger.warning(f"Impossible de récupérer les ordres ouverts: {orders_error}")
+                    portfolio['positions'] = []
 
                 # Message Telegram avec les vraies valeurs
                 try:
