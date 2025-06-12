@@ -93,7 +93,7 @@ from src.analysis.indicators.trend.indicators import TrendIndicators
 from src.binance.binance_ws import AsyncClient, BinanceSocketManager
 from src.connectors.binance import BinanceConnector
 from src.exchanges.binance.binance_client import BinanceClient
-from web_interface.app.services.news_analyzer import NewsAnalyzer
+from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
 
 # Configuration
 load_dotenv()
@@ -1155,7 +1155,7 @@ Take Profit: {take_profit}"""
         except Exception as e:
             logger.error(f"Erreur mise à jour dashboard: {e}")
             st.error(f"Erreur mise à jour métriques: {str(e)}")
-        def _generate_recommendation(self, trend, momentum, volatility, volume):
+    def _generate_recommendation(self, trend, momentum, volatility, volume):
             """Génère une recommandation basée sur l'analyse des indicateurs"""
             try:
                 # Système de points pour la décision
@@ -2543,79 +2543,80 @@ async def run_trading_bot():
             logger.error(f"Erreur calcul PnL: {e}")
             return None
 
-    def _calculate_supertrend(self, data):
-        """Calcule l'indicateur Supertrend"""
-        try:
-            # Vérifie si toute la configuration nécessaire est présente
-            if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
-                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
-                return None
-            
-            # Récupère les paramètres de configuration
-            try:
-                period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
-                multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
-            except KeyError:
-                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
-                return None
-            
-            high = data['high']
-            low = data['low']
-            close = data['close']
-            
-            # Calcul de l'ATR
-            tr = pd.DataFrame()
-            tr['h-l'] = high - low
-            tr['h-pc'] = abs(high - close.shift(1))
-            tr['l-pc'] = abs(low - close.shift(1))
-            tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
-            atr = tr['tr'].rolling(period).mean()
-            
-            # Calcul des bandes
-            hl2 = (high + low) / 2
-            final_upperband = hl2 + (multiplier * atr)
-            final_lowerband = hl2 - (multiplier * atr)
-            
-            # Calcul du Supertrend
-            supertrend = pd.Series(index=data.index)
-            direction = pd.Series(index=data.index)
-            
-            for i in range(period, len(data)):
-                if close[i] > final_upperband[i-1]:
-                    supertrend[i] = final_lowerband[i]
-                    direction[i] = 1
-                elif close[i] < final_lowerband[i-1]:
-                    supertrend[i] = final_upperband[i]
-                    direction[i] = -1
-                else:
-                    supertrend[i] = supertrend[i-1]
-                    direction[i] = direction[i-1]
-            
-            # Si on arrive ici, l'indicateur est calculé avec succès
-            self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
-            
-            return {
-                "value": supertrend,
-                "direction": direction,
-                "strength": abs(close - supertrend) / close
-            }
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
-            return None
-    @st.cache_resource
-    def get_bot():
-        """Create or get the bot instance"""
-        try:
-            bot = TradingBotM4()
-            bot.current_date = "2025-06-12 05:31:05"  # Mise à jour de la date
-            bot.current_user = "Patmoorea"
-            return bot
-        except Exception as e:
-            logger.error(f"Error creating bot instance: {e}")
-            raise
+    # 1. Déplacer get_bot() avant main() et le mettre au bon niveau d'indentation
+@st.cache_resource
+def get_bot():
+    """Create or get the bot instance"""
+    try:
+        bot = TradingBotM4()
+        bot.current_date = "2025-06-12 05:51:27"  # Date mise à jour
+        bot.current_user = "Patmoorea"
+        return bot
+    except Exception as e:
+        logger.error(f"Error creating bot instance: {e}")
+        raise
 
-# Point d'entrée principal modifié
+def _calculate_supertrend(self, data):
+    """Calcule l'indicateur Supertrend"""
+    try:
+        # Vérifie si toute la configuration nécessaire est présente
+        if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
+            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
+            return None
+        
+        # Récupère les paramètres de configuration
+        try:
+            period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
+            multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
+        except KeyError:
+            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
+            return None
+        
+        high = data['high']
+        low = data['low']
+        close = data['close']
+        
+        # Calcul de l'ATR
+        tr = pd.DataFrame()
+        tr['h-l'] = high - low
+        tr['h-pc'] = abs(high - close.shift(1))
+        tr['l-pc'] = abs(low - close.shift(1))
+        tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
+        atr = tr['tr'].rolling(period).mean()
+        
+        # Calcul des bandes
+        hl2 = (high + low) / 2
+        final_upperband = hl2 + (multiplier * atr)
+        final_lowerband = hl2 - (multiplier * atr)
+        
+        # Calcul du Supertrend
+        supertrend = pd.Series(index=data.index)
+        direction = pd.Series(index=data.index)
+        
+        for i in range(period, len(data)):
+            if close[i] > final_upperband[i-1]:
+                supertrend[i] = final_lowerband[i]
+                direction[i] = 1
+            elif close[i] < final_lowerband[i-1]:
+                supertrend[i] = final_upperband[i]
+                direction[i] = -1
+            else:
+                supertrend[i] = supertrend[i-1]
+                direction[i] = direction[i-1]
+        
+        # Si on arrive ici, l'indicateur est calculé avec succès
+        self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+        
+        return {
+            "value": supertrend,
+            "direction": direction,
+            "strength": abs(close - supertrend) / close
+        }
+    except Exception as e:
+        logger.error(f"Erreur: {e}")
+        self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
+        return None
+
 def main():
     st.title("Trading Bot Ultimate v4 🤖")
     
