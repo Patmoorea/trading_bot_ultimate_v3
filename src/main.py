@@ -1034,15 +1034,17 @@ class TradingBotM4:
                 'secret': api_secret,
                 'enableRateLimit': True,
                 'options': {
-                    'defaultType': 'spot',
-                    'adjustForTimeDifference': True
+                    'defaultType': 'future',
+                    'adjustForTimeDifference': True,
+                    'createMarketBuyOrderRequiresPrice': False
                 }
             })
         
-            # Test de la connexion de manière synchrone
+            # Chargement des marchés de manière synchrone
             self.exchange.load_markets()
-            balance = self.exchange.fetch_balance()
         
+            # Test de la connexion
+            balance = self.exchange.fetch_balance()
             if not balance:
                 raise ValueError("Impossible de récupérer le solde - Vérifiez vos clés API")
             
@@ -1106,10 +1108,11 @@ class TradingBotM4:
             if not hasattr(self, 'exchange') or self.exchange is None:
                 raise ValueError("Exchange non configuré")
             
-            # Récupération des données avec gestion d'erreur
+            # Récupération des données avec ccxt
             try:
-                balance = await self.exchange.fetch_balance()
-                positions = await self.exchange.fetch_positions()
+                # Utilisation des méthodes synchrones de ccxt
+                balance = self.exchange.fetch_balance()
+                positions = self.exchange.fetch_positions() if hasattr(self.exchange, 'fetch_positions') else []
             
                 portfolio = {
                     'total_value': float(balance['total'].get('USDC', 0)),
@@ -1118,25 +1121,24 @@ class TradingBotM4:
                     'positions': [
                         {
                             'symbol': pos['symbol'],
-                            'size': pos['contracts'],
-                            'value': pos['notional'],
-                            'pnl': pos['unrealizedPnl']
+                            'size': float(pos['contracts']),
+                            'value': float(pos['notional']) if 'notional' in pos else 0.0,
+                            'pnl': float(pos['unrealizedPnl']) if 'unrealizedPnl' in pos else 0.0
                         }
-                        for pos in positions if pos['contracts'] > 0
+                        for pos in positions if float(pos.get('contracts', 0)) > 0
                     ]
                 }
 
-                # Envoi du message Telegram avec la nouvelle méthode
+                # Envoi du message Telegram
                 try:
                     message = f"""💰 Portfolio Update:
 Total: {portfolio['total_value']:.2f} USDC
 Positions: {len(portfolio['positions'])}
 PnL: {sum(p['pnl'] for p in portfolio['positions']):.2f} USDC"""
                 
-                    await self.telegram.send_message(
-                        message=message,
-                        parse_mode='HTML'
-                    )
+                    if hasattr(self, 'telegram') and self.telegram is not None:
+                        await self.telegram.send_message(message)
+                    
                 except Exception as msg_error:
                     logger.error(f"Erreur envoi message portfolio: {msg_error}")
             
