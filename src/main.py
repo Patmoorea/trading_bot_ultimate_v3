@@ -4,13 +4,11 @@ import sys
 import logging
 import json
 import plotly.graph_objects as go
+import re
 
 # Ajout du chemin racine au PYTHONPATH
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# 2. Configuration environnement
-os.environ['STREAMLIT_HIDE_PYTORCH_WARNING'] = '1'
 
 # 3. Configuration asyncio et event loop
 import asyncio
@@ -70,6 +68,7 @@ from src.regime_detection.hmm_kmeans import MarketRegimeDetector
 from src.monitoring.streamlit_ui import TradingDashboard
 from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 from src.core.buffer.circular_buffer import CircularBuffer
+from src.core.data import CircularBuffer
 from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
 from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
 from src.analysis.indicators.volatility.volatility import VolatilityIndicators
@@ -94,6 +93,10 @@ from src.binance.binance_ws import AsyncClient, BinanceSocketManager
 from src.connectors.binance import BinanceConnector
 from src.exchanges.binance.binance_client import BinanceClient
 from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
+
+# Configuration du logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configuration
 load_dotenv()
@@ -361,6 +364,11 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4 - Version unifiée et mise à jour le 2025-06-10 18:48:29"""
     def __init__(self):
+        """Initialisation du bot de trading"""
+        self.buffer = CircularBuffer(maxlen=1000, compress=True)
+        self.indicators = {}
+        self.latest_data = {}
+        
         # Configuration utilisateur et date
         self.current_date = "2025-06-10 18:48:29"
         self.current_user = "Patmoorea"
@@ -867,30 +875,42 @@ class TradingBotM4:
         """Récupère les dernières données de marché"""
         try:
             data = {}
+            if not hasattr(self, 'binance_ws') or self.binance_ws is None:
+                # Si binance_ws n'est pas initialisé, on l'initialise
+                if not self.initialized:
+                    await self.initialize()
+                return None
+
             for pair in config["TRADING"]["pairs"]:
                 data[pair] = {}
                 try:
                     # WebSocket prices
-                    prices = await self.binance_ws.get_price(pair)
-                    data[pair]['price'] = prices
+                    if hasattr(self.binance_ws, 'get_price'):
+                        prices = await self.binance_ws.get_price(pair)
+                        data[pair]['price'] = prices
 
                     # OrderBook
-                    orderbook = await self.connector.get_order_book(pair)
-                    data[pair]['orderbook'] = {
-                        'bids': orderbook[0],  # Best bid
-                        'asks': orderbook[1]   # Best ask
-                    }
+                    if hasattr(self, 'connector') and hasattr(self.connector, 'get_order_book'):
+                        orderbook = await self.connector.get_order_book(pair)
+                        data[pair]['orderbook'] = {
+                            'bids': orderbook[0],  # Best bid
+                            'asks': orderbook[1]   # Best ask
+                        }
 
                     # Account data
-                    account = await self.exchange.get_balance()
-                    data[pair]['account'] = account
+                    if hasattr(self, 'exchange') and hasattr(self.exchange, 'get_balance'):
+                        account = await self.exchange.get_balance()
+                        data[pair]['account'] = account
+
                 except Exception as inner_e:
                     logger.error(f"Erreur pour {pair}: {inner_e}")
                     continue
 
-            # Store in buffer
-            if data:
-                self.buffer.update_data(data)
+            # Store in buffer if we have data
+            if data and any(data.values()):
+                for symbol, symbol_data in data.items():
+                    if symbol_data:
+                        self.buffer.update_data(symbol, symbol_data)
                 return data
             return None
 
@@ -898,6 +918,53 @@ class TradingBotM4:
             logger.error(f"Erreur get_latest_data: {e}")
             return None
 
+    def calculate_indicators(self, symbol: str) -> dict:
+        """Calcule les indicateurs techniques"""
+        try:
+            data = self.latest_data.get(symbol)
+            if not data:
+                return {}
+                
+            # Calcul des indicateurs de base
+            indicators = {
+                'price': data['price'],
+                'volume': data['volume'],
+                'bid_ask_spread': data['ask'] - data['bid'],
+                'high_low_range': data['high'] - data['low'],
+                'timestamp': data['timestamp']
+            }
+            
+            # Stockage des indicateurs
+            self.indicators[symbol] = indicators
+            return indicators
+            
+        except Exception as e:
+            logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
+            return {}
+
+    async def trading_loop(self):
+        """Boucle principale de trading"""
+        while True:
+            try:
+                # Mise à jour des données
+                await self.get_latest_data()
+                
+                # Calcul des indicateurs pour chaque symbole
+                for symbol in self.latest_data.keys():
+                    indicators = self.calculate_indicators(symbol)
+                    
+                    # Analyse des conditions de trading
+                    if indicators:
+                        # Votre logique de trading ici
+                        pass
+                        
+                # Attente avant la prochaine itération
+                await asyncio.sleep(5)
+                
+            except Exception as e:
+                logger.error(f"Erreur dans la boucle: {str(e)}")
+                await asyncio.sleep(5)
+                
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
         logger.info("🔊 Étude du marché en cours...")
@@ -2767,67 +2834,28 @@ def _calculate_supertrend(self, data):
         return None
 
 def main():
-    st.title("Trading Bot Ultimate v4 🤖")
-    
+    """Fonction principale"""
     try:
-        # Get or create bot instance
+        st.title("Trading Bot Ultimate v4 - REAL")
+        
+        # Initialisation du bot
         bot = get_bot()
-
-        # Colonnes pour l'interface
-        col1, col2 = st.columns([3, 1])
-
-        with col2:
-            # Informations de session
-            st.sidebar.info(f"""
-            **Session Info**
-            User: {bot.current_user}
-            Date: {bot.current_date} UTC
-            """)
-            
-            # Configuration trading
-            st.header("Trading Configuration")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Medium"
-            )
-
-        with col1:
-            st.header("Market Analysis")
-            
-            if st.button("Initialize Bot", type="primary"):
-                with st.spinner("Initializing trading bot..."):
-                    try:
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        loop.run_until_complete(bot.initialize())
-                        st.success("Bot initialized successfully!")
-                    except Exception as e:
-                        st.error(f"Initialization failed: {str(e)}")
-                        logger.error("Initialization error", exc_info=True)
-                    finally:
-                        loop.close()
-
-            if bot.initialized and st.button("Start Trading"):
-                with st.spinner("Starting trading operations..."):
-                    try:
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                        loop.run_until_complete(bot.run_real_trading())
-                    except Exception as e:
-                        st.error(f"Trading error: {str(e)}")
-                        logger.error("Trading error", exc_info=True)
-                    finally:
-                        loop.close()
+        
+        # Affichage des informations
+        st.write(f"Date actuelle: {bot.current_date}")
+        st.write(f"Utilisateur: {bot.current_user}")
+        
+        # Démarrage de la boucle de trading
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        nest_asyncio.apply()
+        
+        # Exécution de la boucle de trading
+        loop.run_until_complete(bot.trading_loop())
+        
     except Exception as e:
-        logger.error(f"Main function error: {e}")
-        st.error(f"Application error: {str(e)}")
+        st.error(f"Erreur dans l'application: {str(e)}")
+        logger.error(f"Erreur dans l'application: {str(e)}")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logger.error("Fatal error", exc_info=True)
-        if 'st' in globals():
-            st.error(f"Fatal error: {str(e)}")
-        sys.exit(1)
+    main()
