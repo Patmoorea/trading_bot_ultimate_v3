@@ -101,6 +101,14 @@ logger = logging.getLogger(__name__)
 # Configuration
 load_dotenv()
 config = {
+    'NEWS': {
+        'enabled': True,
+        'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
+    }, 
+    'BINANCE': {
+        'API_KEY': os.getenv('BINANCE_API_KEY'),
+        'API_SECRET': os.getenv('BINANCE_API_SECRET')
+    },
     "ARBITRAGE": {
         "exchanges": ["binance", "bitfinex", "kraken"],
         "min_profit": 0.001,
@@ -569,8 +577,7 @@ class TradingBotM4:
                 self.initialized = True
                 logger.info("Bot initialized successfully")
             except Exception as e:
-                logger.error(f"Initialization error: {e}")
-                await self._cleanup()
+                self.logger.error(f"Initialization error: {e}")
                 raise
             
     async def _setup_components(self):
@@ -1196,84 +1203,75 @@ class TradingBotM4:
             return False
 
     async def get_real_portfolio(self):
-        """Récupération sécurisée du portfolio"""
-        try:
-            # Vérification de l'exchange
-            if not hasattr(self, 'spot_client') or self.spot_client is None:
-                raise ValueError("Spot client non configuré")
-        
-            try:
-                # Récupération du solde RÉEL via le spot client
-                # Utilisation de get_asset_balance au lieu de get_account
-                usdc_balance = self.spot_client.get_asset_balance(asset='USDC')
-            
-                # Conversion en float
-                free_usdc = float(usdc_balance.get('free', 0))
-                locked_usdc = float(usdc_balance.get('locked', 0))
-                total_usdc = free_usdc + locked_usdc
-            
-                portfolio = {
-                    'total_value': total_usdc,
-                    'free': free_usdc,
-                    'used': locked_usdc,
-                    'positions': []  # À remplir avec les positions actives
-                }
-
-                # Récupération des positions ouvertes
-                try:
-                    # Récupération des ordres ouverts pour USDC
-                    open_orders = self.spot_client.get_open_orders(symbol='BTCUSDC')
-                    portfolio['positions'] = [
-                        {
-                            'symbol': order['symbol'],
-                            'size': float(order['origQty']),
-                            'value': float(order['price']) * float(order['origQty']),
-                            'side': order['side']
-                        }
-                        for order in open_orders
-                    ]
-                except Exception as orders_error:
-                    logger.warning(f"Impossible de récupérer les ordres ouverts: {orders_error}")
-                    portfolio['positions'] = []
-
-                # Message Telegram avec les vraies valeurs
-                try:
-                    message = f"""💰 Portfolio Update:
-Total: {portfolio['total_value']:.2f} USDC
-Free: {portfolio['free']:.2f} USDC
-Used: {portfolio['used']:.2f} USDC
-Positions: {len(portfolio['positions'])}"""
-                
-                    if hasattr(self, 'telegram') and self.telegram is not None:
-                        await self.telegram.send_message(message)
-                
-                except Exception as msg_error:
-                    logger.error(f"Erreur envoi message portfolio: {msg_error}")
-        
-                return portfolio
-            
-            except Exception as e:
-                raise ValueError(f"Erreur récupération données portfolio: {str(e)}")
-        
-        except Exception as e:
-            logger.error(f"Erreur portfolio: {str(e)}")
+        """
+        Récupère le portfolio en temps réel avec les balances et positions.
+        Returns:
+            dict: Portfolio contenant total_value, free, used et positions
+            None: En cas d'erreur
+        """
+        if not hasattr(self, 'spot_client') or self.spot_client is None:
+            self.logger.error("❌ Spot client non configuré")
             return None
-    
-    # 2. Mise à jour de setup_real_portfolio pour utiliser get_real_portfolio
-    async def setup_real_portfolio(self):
-        """Configure le portfolio réel"""
+
         try:
-            portfolio = await self.get_real_portfolio()
-            if portfolio is None:
-                return False
-            
-            self.portfolio = portfolio
-            logger.info(f"Portfolio configuré avec succès: {portfolio['total_value']} USDC")
-            return True
+            # 1. Récupération de la balance
+            balance = self.spot_client.get_balance()
+            if not balance:
+                self.logger.error("❌ Balance non disponible ou vide")
+                return None
+
+            self.logger.info(f"💰 Balance reçue: {balance}")
         
+            # 2. Calcul des valeurs USDC
+            free_usdc = float(balance.get('free', 0))
+            locked_usdc = float(balance.get('locked', 0))
+            total_usdc = free_usdc + locked_usdc
+
+            # 3. Construction du portfolio
+            portfolio = {
+                'total_value': total_usdc,
+                'free': free_usdc,
+                'used': locked_usdc,
+                'positions': []
+            }
+
+            # 4. Récupération des positions depuis l'order book
+            try:
+                order_book = self.spot_client.get_order_book('BTCUSDC')
+                if order_book and 'bids' in order_book:
+                    positions = [
+                        {
+                            'symbol': 'BTCUSDC',
+                            'size': float(bid[1]),
+                            'value': float(bid[0]) * float(bid[1]),
+                            'side': 'BUY'
+                        }
+                        for bid in order_book['bids'][:5]
+                        if float(bid[1]) > 0
+                    ]
+                    portfolio['positions'] = positions
+            except Exception as orders_error:
+                self.logger.warning(f"⚠️ Impossible de récupérer les ordres: {orders_error}")
+
+            # 5. Envoi notification Telegram si configuré
+            if hasattr(self, 'telegram') and self.telegram is not None:
+                try:
+                    message = (
+                        f"💰 Portfolio Update:\n"
+                        f"Total: {portfolio['total_value']:.2f} USDC\n"
+                        f"Free: {portfolio['free']:.2f} USDC\n"
+                        f"Used: {portfolio['used']:.2f} USDC\n"
+                        f"Positions: {len(portfolio['positions'])}"
+                    )
+                    await self.telegram.send_message(message)
+                except Exception as msg_error:
+                    self.logger.error(f"📱 Erreur envoi message Telegram: {msg_error}")
+
+            return portfolio
+
         except Exception as e:
-            logger.error(f"Erreur configuration portfolio: {str(e)}")
-            return False
+            self.logger.error(f"❌ Erreur critique portfolio: {str(e)}")
+            return None
 
     async def execute_real_trade(self, signal):
         """Exécution sécurisée des trades"""
