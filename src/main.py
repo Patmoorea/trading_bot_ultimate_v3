@@ -372,11 +372,12 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4 - Version unifiée et mise à jour le 2025-06-10 18:48:29"""
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        
         """Initialisation du bot de trading"""
         self.buffer = CircularBuffer(maxlen=1000, compress=True)
         self.indicators = {}
         self.latest_data = {}
-        self.logger = logging.getLogger(__name__)
         self.config = {
             'NEWS': {
                 'enabled': True,
@@ -1222,51 +1223,88 @@ class TradingBotM4:
             dict: Portfolio contenant total_value, free, used et positions
             None: En cas d'erreur
         """
+        # Vérification initiale du spot_client
         if not hasattr(self, 'spot_client') or self.spot_client is None:
             self.logger.error("❌ Spot client non configuré")
             return None
 
         try:
             # 1. Récupération de la balance
-            balance = self.spot_client.get_balance()
-            if not balance:
-                self.logger.error("❌ Balance non disponible ou vide")
-                return None
+            try:
+                balance = self.spot_client.get_balance()
+                if not balance:
+                    self.logger.error("❌ Balance non disponible ou vide")
+                    return None
 
-            self.logger.info(f"💰 Balance reçue: {balance}")
-        
-            # 2. Calcul des valeurs USDC
-            free_usdc = float(balance.get('free', 0))
-            locked_usdc = float(balance.get('locked', 0))
-            total_usdc = free_usdc + locked_usdc
+                self.logger.info("💰 Balance reçue")
+
+                # 2. Extraction des valeurs USDC de la balance
+                usdc_balance = None
+                for asset_balance in balance.get('balances', []):
+                    if asset_balance['asset'] == 'USDC':
+                        usdc_balance = {
+                            'free': float(asset_balance['free']),
+                            'locked': float(asset_balance['locked'])
+                        }
+                        break
+
+                if usdc_balance is None:
+                    self.logger.error("❌ Balance USDC non trouvée")
+                    return None
+
+                free_usdc = usdc_balance['free']
+                locked_usdc = usdc_balance['locked']
+                total_usdc = free_usdc + locked_usdc
+
+            except Exception as balance_error:
+                self.logger.error(f"❌ Erreur récupération balance: {balance_error}")
+                return None
 
             # 3. Construction du portfolio
             portfolio = {
                 'total_value': total_usdc,
                 'free': free_usdc,
                 'used': locked_usdc,
-                'positions': []
+                'positions': [],
+                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                'update_user': self.current_user
             }
 
             # 4. Récupération des positions depuis l'order book
             try:
                 order_book = self.spot_client.get_order_book('BTCUSDC')
-                if order_book and 'bids' in order_book:
-                    positions = [
-                        {
-                            'symbol': 'BTCUSDC',
-                            'size': float(bid[1]),
-                            'value': float(bid[0]) * float(bid[1]),
-                            'side': 'BUY'
-                        }
-                        for bid in order_book['bids'][:5]
-                        if float(bid[1]) > 0
-                    ]
+                if order_book and isinstance(order_book.get('bids', []), list):
+                    positions = []
+                    for bid in order_book['bids'][:5]:  # Top 5 bids
+                        try:
+                            size = float(bid[1])
+                            price = float(bid[0])
+                            if size > 0:
+                                positions.append({
+                                    'symbol': 'BTCUSDC',
+                                    'size': size,
+                                    'value': price * size,
+                                    'price': price,
+                                    'side': 'BUY',
+                                    'timestamp': portfolio['timestamp']
+                                })
+                        except (IndexError, ValueError) as bid_error:
+                            self.logger.warning(f"⚠️ Erreur traitement bid: {bid_error}")
+                            continue
+
                     portfolio['positions'] = positions
+                    self.logger.info(f"📊 {len(positions)} positions récupérées")
+
             except Exception as orders_error:
                 self.logger.warning(f"⚠️ Impossible de récupérer les ordres: {orders_error}")
+                # On continue même si on ne peut pas récupérer les positions
 
-            # 5. Envoi notification Telegram si configuré
+            # 5. Calcul des métriques additionnelles
+            portfolio['position_count'] = len(portfolio['positions'])
+            portfolio['total_position_value'] = sum(pos['value'] for pos in portfolio['positions'])
+            portfolio['available_margin'] = portfolio['free'] - portfolio['total_position_value']
+
+            # 6. Envoi notification Telegram si configuré
             if hasattr(self, 'telegram') and self.telegram is not None:
                 try:
                     message = (
@@ -1274,12 +1312,19 @@ class TradingBotM4:
                         f"Total: {portfolio['total_value']:.2f} USDC\n"
                         f"Free: {portfolio['free']:.2f} USDC\n"
                         f"Used: {portfolio['used']:.2f} USDC\n"
-                        f"Positions: {len(portfolio['positions'])}"
+                        f"Positions: {portfolio['position_count']}\n"
+                        f"Position Value: {portfolio['total_position_value']:.2f} USDC\n"
+                        f"Available Margin: {portfolio['available_margin']:.2f} USDC\n"
+                        f"Updated by: {portfolio['update_user']}\n"
+                        f"Timestamp: {portfolio['timestamp']}"
                     )
                     await self.telegram.send_message(message)
+                    self.logger.info("📱 Notification Telegram envoyée avec succès")
                 except Exception as msg_error:
                     self.logger.error(f"📱 Erreur envoi message Telegram: {msg_error}")
+                    # On continue même si l'envoi Telegram échoue
 
+            self.logger.info(f"✅ Portfolio mis à jour avec succès: {portfolio['total_value']:.2f} USDC")
             return portfolio
 
         except Exception as e:
@@ -2896,6 +2941,7 @@ def main():
         st.info(f"""
         **Session Info**
         User: {bot.current_user}
+        Date: {bot.current_date}
         Status: {'Initialized' if bot.initialized else 'Not Initialized'}
         """)
 
@@ -2924,7 +2970,10 @@ def main():
                     loop.run_until_complete(bot.initialize())
                     # Récupération du portfolio initial
                     portfolio = loop.run_until_complete(bot.get_real_portfolio())
-                    st.success("Bot initialized successfully!")
+                    if portfolio:
+                        st.success("Bot initialized successfully!")
+                    else:
+                        st.warning("Bot initialized but unable to fetch portfolio")
                 except Exception as e:
                     st.error(f"Initialization failed: {str(e)}")
                     logger.error("Initialization error", exc_info=True)
@@ -2939,27 +2988,37 @@ def main():
                     # Récupération du portfolio avant de démarrer
                     portfolio = loop.run_until_complete(bot.get_real_portfolio())
                     
-                    # Métriques mises à jour
+                    # Métriques mises à jour avec gestion des valeurs None
                     st.subheader("Market Metrics")
                     col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric(
-                            "Portfolio Value",
-                            f"{portfolio['total_value']:.2f} USDC",
-                            f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                        )
-                    with col2:
-                        st.metric(
-                            "24h Volume",
-                            f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                            f"{portfolio.get('volume_change', 0):+.2f}%"
-                        )
-                    with col3:
-                        st.metric(
-                            "Active Positions",
-                            str(len(portfolio.get('positions', []))),
-                            f"{len(portfolio.get('positions', []))} positions"
-                        )
+
+                    if portfolio:
+                        with col1:
+                            st.metric(
+                                "Portfolio Value",
+                                f"{portfolio['total_value']:.2f} USDC",
+                                f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
+                            )
+                        with col2:
+                            st.metric(
+                                "24h Volume",
+                                f"{portfolio.get('volume_24h', 0):.2f} USDC",
+                                f"{portfolio.get('volume_change', 0):+.2f}%"
+                            )
+                        with col3:
+                            st.metric(
+                                "Active Positions",
+                                str(len(portfolio.get('positions', []))),
+                                f"{len(portfolio.get('positions', []))} positions"
+                            )
+                    else:
+                        with col1:
+                            st.metric("Portfolio Value", "0.00 USDC", "0.00 USDC")
+                        with col2:
+                            st.metric("24h Volume", "0.00 USDC", "0.00%")
+                        with col3:
+                            st.metric("Active Positions", "0", "0 positions")
+                        st.warning("Unable to fetch portfolio data")
                     
                     # Démarrage de la boucle de trading
                     loop.run_until_complete(bot.trading_loop())
