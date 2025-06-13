@@ -1,0 +1,32 @@
+/* Thème sombre professionnel */
+:root {
+    --gradient-primary: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --glow: 0 0 10px rgba(0, 180, 216, 0.2);
+}
+
+.dark-theme {
+    --chart-grid: rgba(255, 255, 255, 0.1);
+    --chart-text: rgba(255, 255, 255, 0.7);
+}
+
+/* Effets visuels */
+.glow-effect {
+    box-shadow: var(--glow);
+    transition: box-shadow 0.3s ease;
+}
+
+.glow-effect:hover {
+    box-shadow: 0 0 20px rgba(0, 180, 216, 0.4);
+}
+
+/* Animations fluides */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

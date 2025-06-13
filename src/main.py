@@ -376,6 +376,19 @@ class TradingBotM4:
         self.buffer = CircularBuffer(maxlen=1000, compress=True)
         self.indicators = {}
         self.latest_data = {}
+        self.logger = logging.getLogger(__name__)
+        self.config = {
+            'NEWS': {
+                'enabled': True,
+                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
+            },
+            'BINANCE': {
+                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
+                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
+            }
+        }
+        self.spot_client = None
+        self.ws_manager = None
         
         # Configuration utilisateur et date
         self.current_date = "2025-06-10 18:48:29"
