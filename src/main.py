@@ -1134,6 +1134,7 @@ class TradingBotM4:
             return None
             
         # Ajout des méthodes de trading réel à la classe TradingBotM4
+    
     async def setup_real_exchange(self):
         """Configuration sécurisée de l'exchange"""
         try:
@@ -1157,7 +1158,11 @@ class TradingBotM4:
         
             # Chargement des marchés de manière synchrone
             self.exchange.load_markets()
-        
+            self.spot_client = self.exchange
+            self.spot_client = BinanceClient(
+                api_key=os.getenv('BINANCE_API_KEY'),
+                api_secret=os.getenv('BINANCE_API_SECRET')
+            )
             # Test de la connexion
             balance = self.exchange.fetch_balance()
             if not balance:
@@ -1169,7 +1174,7 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"Erreur configuration exchange: {e}")
             return False
-    
+        
     # 3. Correction de l'envoi des messages Telegram
     async def send_telegram_message(self, message: str):
         """Envoie un message via Telegram"""
@@ -1223,88 +1228,74 @@ class TradingBotM4:
             dict: Portfolio contenant total_value, free, used et positions
             None: En cas d'erreur
         """
-        # Vérification initiale du spot_client
         if not hasattr(self, 'spot_client') or self.spot_client is None:
             self.logger.error("❌ Spot client non configuré")
             return None
 
         try:
-            # 1. Récupération de la balance
-            try:
-                balance = self.spot_client.get_balance()
-                if not balance:
-                    self.logger.error("❌ Balance non disponible ou vide")
-                    return None
-
-                self.logger.info("💰 Balance reçue")
-
-                # 2. Extraction des valeurs USDC de la balance
-                usdc_balance = None
-                for asset_balance in balance.get('balances', []):
-                    if asset_balance['asset'] == 'USDC':
-                        usdc_balance = {
-                            'free': float(asset_balance['free']),
-                            'locked': float(asset_balance['locked'])
-                        }
-                        break
-
-                if usdc_balance is None:
-                    self.logger.error("❌ Balance USDC non trouvée")
-                    return None
-
-                free_usdc = usdc_balance['free']
-                locked_usdc = usdc_balance['locked']
-                total_usdc = free_usdc + locked_usdc
-
-            except Exception as balance_error:
-                self.logger.error(f"❌ Erreur récupération balance: {balance_error}")
+            # Récupération de la balance
+            balance = self.spot_client.get_balance()
+            if not balance or 'balances' not in balance:
+                self.logger.error("❌ Balance non disponible ou vide")
                 return None
 
-            # 3. Construction du portfolio
+            self.logger.info("💰 Balance reçue")
+
+            # Extraction des USDC
+            usdc_balance = None
+            for asset_balance in balance['balances']:
+                if asset_balance['asset'] == 'USDC':
+                    usdc_balance = {
+                        'free': float(asset_balance['free']),
+                        'locked': float(asset_balance['locked'])
+                    }
+                    break
+
+            if not usdc_balance:
+                self.logger.error("❌ Balance USDC non trouvée")
+                return None
+
+            usdc_free = usdc_balance['free']
+            usdc_locked = usdc_balance['locked']
+            total_usdc = usdc_free + usdc_locked
+
+            # Construction du portfolio
             portfolio = {
                 'total_value': total_usdc,
-                'free': free_usdc,
-                'used': locked_usdc,
+                'free': usdc_free,
+                'used': usdc_locked,
                 'positions': [],
-                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                'update_user': self.current_user
+                'timestamp': "2025-06-13 05:52:38",
+                'update_user': "Patmoorea"
             }
 
-            # 4. Récupération des positions depuis l'order book
+            # Récupération des positions réelles
             try:
-                order_book = self.spot_client.get_order_book('BTCUSDC')
-                if order_book and isinstance(order_book.get('bids', []), list):
-                    positions = []
-                    for bid in order_book['bids'][:5]:  # Top 5 bids
-                        try:
-                            size = float(bid[1])
-                            price = float(bid[0])
-                            if size > 0:
-                                positions.append({
-                                    'symbol': 'BTCUSDC',
-                                    'size': size,
-                                    'value': price * size,
-                                    'price': price,
-                                    'side': 'BUY',
-                                    'timestamp': portfolio['timestamp']
-                                })
-                        except (IndexError, ValueError) as bid_error:
-                            self.logger.warning(f"⚠️ Erreur traitement bid: {bid_error}")
-                            continue
+                open_orders = self.spot_client.get_open_orders('BTC/USDC')
+                positions = []
+            
+                for order in open_orders:
+                    if float(order['amount']) > 0:  # Vérifier que la position n'est pas vide
+                        positions.append({
+                            'symbol': order['symbol'],
+                            'size': float(order['amount']),
+                            'value': float(order['price']) * float(order['amount']),
+                            'price': float(order['price']),
+                            'side': order['side'].upper(),
+                            'timestamp': portfolio['timestamp']  # Utiliser la même date fixe
+                        })
+            
+                portfolio['positions'] = positions
+                self.logger.info(f"📊 {len(positions)} positions réelles récupérées")
+            except Exception as e:
+                self.logger.warning(f"⚠️ Impossible de récupérer les positions: {e}")
 
-                    portfolio['positions'] = positions
-                    self.logger.info(f"📊 {len(positions)} positions récupérées")
-
-            except Exception as orders_error:
-                self.logger.warning(f"⚠️ Impossible de récupérer les ordres: {orders_error}")
-                # On continue même si on ne peut pas récupérer les positions
-
-            # 5. Calcul des métriques additionnelles
+            # Calculs additionnels
             portfolio['position_count'] = len(portfolio['positions'])
             portfolio['total_position_value'] = sum(pos['value'] for pos in portfolio['positions'])
             portfolio['available_margin'] = portfolio['free'] - portfolio['total_position_value']
 
-            # 6. Envoi notification Telegram si configuré
+            # Envoi notification Telegram si configuré
             if hasattr(self, 'telegram') and self.telegram is not None:
                 try:
                     message = (
@@ -1320,15 +1311,14 @@ class TradingBotM4:
                     )
                     await self.telegram.send_message(message)
                     self.logger.info("📱 Notification Telegram envoyée avec succès")
-                except Exception as msg_error:
-                    self.logger.error(f"📱 Erreur envoi message Telegram: {msg_error}")
-                    # On continue même si l'envoi Telegram échoue
+                except Exception as e:
+                    self.logger.error(f"📱 Erreur envoi message Telegram: {e}")
 
             self.logger.info(f"✅ Portfolio mis à jour avec succès: {portfolio['total_value']:.2f} USDC")
             return portfolio
 
         except Exception as e:
-            self.logger.error(f"❌ Erreur critique portfolio: {str(e)}")
+            self.logger.error(f"❌ Erreur critique portfolio: {e}")
             return None
 
     async def execute_real_trade(self, signal):
@@ -1440,34 +1430,150 @@ Take Profit: {take_profit}"""
                     logger.error(f"Erreur envoi notification erreur: {telegram_error}")
             raise
 
-    # Modification de la fonction update_dashboard pour utiliser les vraies données
-    async def update_real_dashboard(self):
-        """Met à jour le dashboard avec les données réelles"""
-        try:
-            portfolio = RealPortfolio()
-            if await portfolio.update(self.exchange):
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "Portfolio Value",
-                        f"{portfolio.portfolio_value:.2f} USDC",
-                        f"{portfolio.daily_pnl:+.2f} USDC"
-                    )
-                with col2:
-                    st.metric(
-                        "Active Positions",
-                        str(portfolio.positions_count)
-                    )
-                with col3:
-                    pnl_percent = (portfolio.daily_pnl / portfolio.portfolio_value * 100) if portfolio.portfolio_value > 0 else 0
-                    st.metric(
-                        "24h P&L",
-                        f"{portfolio.daily_pnl:+.2f} USDC",
-                        f"{pnl_percent:+.2f}%"
-                    )
-        except Exception as e:
-            logger.error(f"Erreur mise à jour dashboard: {e}")
-            st.error(f"Erreur mise à jour métriques: {str(e)}")
+    def create_dashboard(self):
+        # En-tête avec informations principales
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(f"📅 {self.current_date}")
+        with col2:
+            st.write(f"👤 {self.current_user}")
+        with col3:
+            st.write("🤖 Bot Status: Active")
+
+        # Tabs pour organiser l'information
+        tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
+
+        # TAB 1: PORTFOLIO
+        with tab1:
+            # Métriques principales sur 4 colonnes
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric(
+                    "Total Value", 
+                    f"${portfolio['total_value']:,.2f}",
+                    delta=f"{daily_change:+.2f}%"
+                )
+            with col2:
+                st.metric(
+                    "Available USDC", 
+                    f"${portfolio['free']:,.2f}"
+                )
+            with col3:
+                st.metric(
+                    "Locked USDC", 
+                    f"${portfolio['used']:,.2f}"
+                )
+            with col4:
+                st.metric(
+                    "Available Margin",
+                    f"${portfolio['available_margin']:,.2f}"
+                )
+
+            # Positions actuelles
+            st.subheader("📊 Active Positions")
+            positions_df = pd.DataFrame(portfolio['positions'])
+            if not positions_df.empty:
+                positions_df['ROI'] = positions_df.apply(
+                    lambda x: calculate_roi(x['entry_price'], current_price), axis=1
+                )
+                st.dataframe(
+                    positions_df[['symbol', 'size', 'entry_price', 'current_price', 'ROI', 'side']],
+                    use_container_width=True
+                )
+
+            # Graphique performance
+            st.subheader("📈 Portfolio Performance")
+            fig = plot_portfolio_performance(historical_data)
+            st.plotly_chart(fig, use_container_width=True)
+
+        # TAB 2: TRADING
+        with tab2:
+            col1, col2 = st.columns(2)
+            with col1:
+                # Signaux de trading actifs
+                st.subheader("🎯 Trading Signals")
+                signals_df = pd.DataFrame(current_signals)
+                st.dataframe(signals_df, use_container_width=True)
+            
+            with col2:
+                # Ordres en cours
+                st.subheader("📋 Open Orders")
+                orders_df = pd.DataFrame(open_orders)
+                st.dataframe(orders_df, use_container_width=True)
+
+            # Graphique prix en temps réel avec indicateurs
+            st.subheader("📊 Live Trading Chart")
+            fig = plot_trading_chart(
+                price_data=price_data,
+                indicators=self.indicators,
+                signals=current_signals
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        # TAB 3: ANALYSIS
+        with tab3:
+            col1, col2 = st.columns(2)
+            with col1:
+                # Indicateurs techniques
+                st.subheader("📉 Technical Indicators")
+                indicators_df = pd.DataFrame({
+                    'Indicator': ['RSI', 'MACD', 'BB Width', 'MA Cross'],
+                    'Value': [current_rsi, current_macd, bb_width, ma_cross],
+                    'Signal': [rsi_signal, macd_signal, bb_signal, ma_signal]
+                })
+                st.dataframe(indicators_df, use_container_width=True)
+
+            with col2:
+                # Statistiques de trading
+                st.subheader("📊 Trading Statistics")
+                stats_df = pd.DataFrame({
+                    'Metric': ['Win Rate', 'Profit Factor', 'Avg Trade', 'Max Drawdown'],
+                    'Value': [f"{win_rate:.2f}%", profit_factor, f"${avg_trade:.2f}", f"{max_dd:.2f}%"]
+                })
+                st.dataframe(stats_df, use_container_width=True)
+
+            # Graphiques d'analyse
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("🎯 Win/Loss Distribution")
+                fig = plot_win_loss_distribution(trade_history)
+                st.plotly_chart(fig, use_container_width=True)
+        
+            with col2:
+                st.subheader("📈 Equity Curve")
+                fig = plot_equity_curve(account_history)
+                st.plotly_chart(fig, use_container_width=True)
+
+        # TAB 4: SETTINGS
+        with tab4:
+            st.subheader("⚙️ Bot Configuration")
+            col1, col2 = st.columns(2)
+            with col1:
+                # Paramètres de trading
+                st.write("Trading Parameters")
+                risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
+            max_positions = st.number_input("Max Open Positions", 1, 10, 3)
+            
+            with col2:
+                # Paramètres des indicateurs
+                st.write("Indicator Parameters")
+                rsi_period = st.slider("RSI Period", 7, 21, 14)
+                macd_fast = st.slider("MACD Fast", 8, 21, 12)
+
+        # Sidebar avec contrôles rapides
+        with st.sidebar:
+            st.header("Quick Controls")
+            if st.button("🟢 Start Bot"):
+                start_bot()
+            if st.button("🔴 Stop Bot"):
+                stop_bot()
+        
+            st.divider()
+        
+            st.subheader("Market Overview")
+            st.metric("BTC/USDC", f"${btc_price:,.2f}", f"{btc_change:+.2f}%")
+            st.metric("Market Trend", market_trend, market_strength)
+        
     def _generate_recommendation(self, trend, momentum, volatility, volume):
             """Génère une recommandation basée sur l'analyse des indicateurs"""
             try:
