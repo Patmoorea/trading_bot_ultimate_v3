@@ -5,6 +5,7 @@ import logging
 import json
 import plotly.graph_objects as go
 import re
+import time
 
 # Ajout du chemin racine au PYTHONPATH
 import sys
@@ -1430,149 +1431,120 @@ Take Profit: {take_profit}"""
                     logger.error(f"Erreur envoi notification erreur: {telegram_error}")
             raise
 
-    def create_dashboard(self):
-        # En-tête avec informations principales
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.write(f"📅 {self.current_date}")
-        with col2:
-            st.write(f"👤 {self.current_user}")
-        with col3:
-            st.write("🤖 Bot Status: Active")
+    async def create_dashboard(self):
+        """Crée le dashboard Streamlit"""
+        try:
+            # Récupération du portfolio
+            portfolio = await self.get_real_portfolio()
+            if not portfolio:
+                st.error("Unable to fetch portfolio data")
+                return
 
-        # Tabs pour organiser l'information
-        tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
+            # En-tête
+            st.title("Trading Bot Ultimate v4 🤖")
+        
+            # Info session
+            st.info(f"""
+            **Session Info**
+            User: {self.current_user}
+            Date: {self.current_date}
+            Status: {'Active' if self.initialized else 'Inactive'}
+            """)
 
-        # TAB 1: PORTFOLIO
-        with tab1:
-            # Métriques principales sur 4 colonnes
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric(
-                    "Total Value", 
-                    f"${portfolio['total_value']:,.2f}",
-                    delta=f"{daily_change:+.2f}%"
-                )
-            with col2:
-                st.metric(
-                    "Available USDC", 
-                    f"${portfolio['free']:,.2f}"
-                )
-            with col3:
-                st.metric(
-                    "Locked USDC", 
-                    f"${portfolio['used']:,.2f}"
-                )
-            with col4:
-                st.metric(
-                    "Available Margin",
-                    f"${portfolio['available_margin']:,.2f}"
-                )
+            # Tabs pour organiser l'information
+            tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
 
-            # Positions actuelles
-            st.subheader("📊 Active Positions")
-            positions_df = pd.DataFrame(portfolio['positions'])
-            if not positions_df.empty:
-                positions_df['ROI'] = positions_df.apply(
-                    lambda x: calculate_roi(x['entry_price'], current_price), axis=1
-                )
-                st.dataframe(
-                    positions_df[['symbol', 'size', 'entry_price', 'current_price', 'ROI', 'side']],
-                    use_container_width=True
-                )
+            # TAB 1: PORTFOLIO
+            with tab1:
+                # Métriques principales sur 4 colonnes
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric(
+                        "Total Value", 
+                        f"${portfolio['total_value']:,.2f}",
+                        delta=f"{portfolio.get('daily_pnl', 0):+.2f}%"
+                    )
+                with col2:
+                    st.metric(
+                        "Available USDC", 
+                        f"${portfolio['free']:,.2f}"
+                    )
+                with col3:
+                    st.metric(
+                        "Locked USDC", 
+                        f"${portfolio['used']:,.2f}"
+                    )
+                with col4:
+                    st.metric(
+                        "Available Margin",
+                        f"${portfolio['available_margin']:,.2f}"
+                    )
 
-            # Graphique performance
-            st.subheader("📈 Portfolio Performance")
-            fig = plot_portfolio_performance(historical_data)
-            st.plotly_chart(fig, use_container_width=True)
+                # Positions actuelles
+                st.subheader("📊 Active Positions")
+                positions_df = pd.DataFrame(portfolio['positions'])
+                if not positions_df.empty:
+                    st.dataframe(positions_df, use_container_width=True)
 
-        # TAB 2: TRADING
-        with tab2:
-            col1, col2 = st.columns(2)
-            with col1:
-                # Signaux de trading actifs
-                st.subheader("🎯 Trading Signals")
-                signals_df = pd.DataFrame(current_signals)
-                st.dataframe(signals_df, use_container_width=True)
+            # TAB 2: TRADING
+            with tab2:
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Signaux de trading actifs
+                    st.subheader("🎯 Trading Signals")
+                    if self.indicators:
+                        st.dataframe(pd.DataFrame(self.indicators), use_container_width=True)
             
-            with col2:
-                # Ordres en cours
-                st.subheader("📋 Open Orders")
-                orders_df = pd.DataFrame(open_orders)
-                st.dataframe(orders_df, use_container_width=True)
+                with col2:
+                    # Ordres en cours
+                    st.subheader("📋 Open Orders")
+                    if hasattr(self, 'spot_client'):
+                        orders = self.spot_client.get_open_orders('BTCUSDC')
+                        if orders:
+                            st.dataframe(pd.DataFrame(orders), use_container_width=True)
 
-            # Graphique prix en temps réel avec indicateurs
-            st.subheader("📊 Live Trading Chart")
-            fig = plot_trading_chart(
-                price_data=price_data,
-                indicators=self.indicators,
-                signals=current_signals
-            )
-            st.plotly_chart(fig, use_container_width=True)
+            # TAB 3: ANALYSIS
+            with tab3:
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Indicateurs techniques
+                    st.subheader("📉 Technical Analysis")
+                    if hasattr(self, 'advanced_indicators'):
+                        st.dataframe(
+                            pd.DataFrame(self.advanced_indicators.get_all_signals()),
+                            use_container_width=True
+                        )
 
-        # TAB 3: ANALYSIS
-        with tab3:
-            col1, col2 = st.columns(2)
-            with col1:
-                # Indicateurs techniques
-                st.subheader("📉 Technical Indicators")
-                indicators_df = pd.DataFrame({
-                    'Indicator': ['RSI', 'MACD', 'BB Width', 'MA Cross'],
-                    'Value': [current_rsi, current_macd, bb_width, ma_cross],
-                    'Signal': [rsi_signal, macd_signal, bb_signal, ma_signal]
-                })
-                st.dataframe(indicators_df, use_container_width=True)
-
-            with col2:
-                # Statistiques de trading
-                st.subheader("📊 Trading Statistics")
-                stats_df = pd.DataFrame({
-                    'Metric': ['Win Rate', 'Profit Factor', 'Avg Trade', 'Max Drawdown'],
-                    'Value': [f"{win_rate:.2f}%", profit_factor, f"${avg_trade:.2f}", f"{max_dd:.2f}%"]
-                })
-                st.dataframe(stats_df, use_container_width=True)
-
-            # Graphiques d'analyse
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("🎯 Win/Loss Distribution")
-                fig = plot_win_loss_distribution(trade_history)
-                st.plotly_chart(fig, use_container_width=True)
-        
-            with col2:
-                st.subheader("📈 Equity Curve")
-                fig = plot_equity_curve(account_history)
-                st.plotly_chart(fig, use_container_width=True)
-
-        # TAB 4: SETTINGS
-        with tab4:
-            st.subheader("⚙️ Bot Configuration")
-            col1, col2 = st.columns(2)
-            with col1:
-                # Paramètres de trading
-                st.write("Trading Parameters")
-                risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
-            max_positions = st.number_input("Max Open Positions", 1, 10, 3)
+            # TAB 4: SETTINGS
+            with tab4:
+                st.subheader("⚙️ Bot Configuration")
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Paramètres de trading
+                    st.write("Trading Parameters")
+                    risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
+                    max_positions = st.number_input("Max Open Positions", 1, 10, 3)
             
-            with col2:
-                # Paramètres des indicateurs
-                st.write("Indicator Parameters")
-                rsi_period = st.slider("RSI Period", 7, 21, 14)
-                macd_fast = st.slider("MACD Fast", 8, 21, 12)
+            # Sidebar avec contrôles rapides
+            with st.sidebar:
+                st.header("Quick Controls")
+                if st.button("🟢 Start Bot"):
+                    await self.run()
+                if st.button("🔴 Stop Bot"):
+                    await self._cleanup()
+            
+                st.divider()
+            
+                # Market Overview
+                st.subheader("Market Overview")
+                latest_data = self.buffer.get_latest_data() if hasattr(self, 'buffer') else None
+                if latest_data:
+                    st.metric("BTC/USDC", f"${latest_data.get('price', 0):,.2f}", 
+                            f"{latest_data.get('change', 0):+.2f}%")
 
-        # Sidebar avec contrôles rapides
-        with st.sidebar:
-            st.header("Quick Controls")
-            if st.button("🟢 Start Bot"):
-                start_bot()
-            if st.button("🔴 Stop Bot"):
-                stop_bot()
-        
-            st.divider()
-        
-            st.subheader("Market Overview")
-            st.metric("BTC/USDC", f"${btc_price:,.2f}", f"{btc_change:+.2f}%")
-            st.metric("Market Trend", market_trend, market_strength)
+        except Exception as e:
+            self.logger.error(f"Erreur création dashboard: {e}")
+            st.error(f"Error creating dashboard: {str(e)}")
         
     def _generate_recommendation(self, trend, momentum, volatility, volume):
             """Génère une recommandation basée sur l'analyse des indicateurs"""
@@ -3047,97 +3019,109 @@ def main():
         st.info(f"""
         **Session Info**
         User: {bot.current_user}
-        Date: {bot.current_date}
+        Date: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
         Status: {'Initialized' if bot.initialized else 'Not Initialized'}
         """)
 
-        # Configuration trading
-        st.subheader("Trading Configuration")
-        risk_level = st.select_slider(
-            "Risk Level",
-            options=["Low", "Medium", "High"],
-            value="Medium"
-        )
-        
-        pairs = st.multiselect(
-            "Trading Pairs",
-            options=config["TRADING"]["pairs"],
-            default=config["TRADING"]["pairs"][:2]
-        )
+        # Configuration trading dans la sidebar
+        with st.sidebar:
+            st.header("Trading Configuration")
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Low"
+            )
+            
+            st.divider()
+            
+            if st.button("🟢 Initialize Bot"):
+                with st.spinner("Initializing..."):
+                    asyncio.run(bot.initialize())
+                    st.success("Bot initialized!")
 
-        # Section Actions
-        st.subheader("Actions")
-        
-        if st.button("Initialize Bot", type="primary"):
-            with st.spinner("Initializing trading bot..."):
-                try:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.run_until_complete(bot.initialize())
-                    # Récupération du portfolio initial
-                    portfolio = loop.run_until_complete(bot.get_real_portfolio())
-                    if portfolio:
-                        st.success("Bot initialized successfully!")
-                    else:
-                        st.warning("Bot initialized but unable to fetch portfolio")
-                except Exception as e:
-                    st.error(f"Initialization failed: {str(e)}")
-                    logger.error("Initialization error", exc_info=True)
-                finally:
-                    loop.close()
+            if st.button("▶️ Start Trading"):
+                with st.spinner("Starting trading..."):
+                    asyncio.run(bot.run_real_trading())
 
-        if bot.initialized and st.button("Start Trading", type="primary"):
-            with st.spinner("Starting trading operations..."):
-                try:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    # Récupération du portfolio avant de démarrer
-                    portfolio = loop.run_until_complete(bot.get_real_portfolio())
-                    
-                    # Métriques mises à jour avec gestion des valeurs None
-                    st.subheader("Market Metrics")
+            if st.button("⏹️ Stop Bot"):
+                with st.spinner("Stopping..."):
+                    asyncio.run(bot._cleanup())
+                    st.success("Bot stopped!")
+
+        # Onglets principaux
+        tab1, tab2, tab3 = st.tabs(["Portfolio", "Trading", "Analysis"])
+
+        with tab1:
+            try:
+                portfolio = asyncio.run(bot.get_real_portfolio())
+                
+                if portfolio:
                     col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric(
+                            "Portfolio Value",
+                            f"{portfolio['total_value']:.2f} USDC",
+                            f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
+                        )
+                    with col2:
+                        st.metric(
+                            "Available USDC",
+                            f"{portfolio['free']:.2f} USDC"
+                        )
+                    with col3:
+                        st.metric(
+                            "Used USDC",
+                            f"{portfolio['used']:.2f} USDC"
+                        )
 
-                    if portfolio:
-                        with col1:
-                            st.metric(
-                                "Portfolio Value",
-                                f"{portfolio['total_value']:.2f} USDC",
-                                f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                            )
-                        with col2:
-                            st.metric(
-                                "24h Volume",
-                                f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                                f"{portfolio.get('volume_change', 0):+.2f}%"
-                            )
-                        with col3:
-                            st.metric(
-                                "Active Positions",
-                                str(len(portfolio.get('positions', []))),
-                                f"{len(portfolio.get('positions', []))} positions"
-                            )
+                    # Positions actives
+                    st.subheader("Active Positions")
+                    if portfolio.get('positions'):
+                        positions_df = pd.DataFrame(portfolio['positions'])
+                        st.dataframe(positions_df, use_container_width=True)
                     else:
-                        with col1:
-                            st.metric("Portfolio Value", "0.00 USDC", "0.00 USDC")
-                        with col2:
-                            st.metric("24h Volume", "0.00 USDC", "0.00%")
-                        with col3:
-                            st.metric("Active Positions", "0", "0 positions")
-                        st.warning("Unable to fetch portfolio data")
-                    
-                    # Démarrage de la boucle de trading
-                    loop.run_until_complete(bot.trading_loop())
-                    
+                        st.info("No active positions")
+
+            except Exception as e:
+                st.error(f"Error fetching portfolio: {str(e)}")
+
+        with tab2:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Trading Signals")
+                if hasattr(bot, 'indicators') and bot.indicators:
+                    st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
+                else:
+                    st.info("No trading signals available")
+
+            with col2:
+                st.subheader("Open Orders")
+                if hasattr(bot, 'spot_client'):
+                    try:
+                        orders = bot.spot_client.get_open_orders('BTCUSDC')
+                        if orders:
+                            st.dataframe(pd.DataFrame(orders), use_container_width=True)
+                        else:
+                            st.info("No open orders")
+                    except Exception as e:
+                        st.error(f"Error fetching orders: {str(e)}")
+
+        with tab3:
+            st.subheader("Technical Analysis")
+            if hasattr(bot, 'advanced_indicators'):
+                try:
+                    analysis = bot.advanced_indicators.get_all_signals()
+                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
                 except Exception as e:
-                    st.error(f"Trading error: {str(e)}")
-                    logger.error("Trading error", exc_info=True)
-                finally:
-                    loop.close()
+                    st.error(f"Error getting analysis: {str(e)}")
+
+        # Auto-refresh toutes les 5 secondes
+        time.sleep(5)
+        st.rerun()
 
     except Exception as e:
-        logger.error(f"Main function error: {e}")
         st.error(f"Application error: {str(e)}")
+        logger.error(f"Main error: {e}")
 
 if __name__ == "__main__":
     main()
