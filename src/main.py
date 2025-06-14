@@ -3250,10 +3250,10 @@ def _calculate_supertrend(self, data):
         self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
         return None
                     
-def main():
+async def main_async():
     st.title("Trading Bot Ultimate v4 🤖")
     
-   # Initialisation de l'état
+    # Initialisation de l'état
     if 'portfolio' not in st.session_state:
         st.session_state.portfolio = None
     if 'latest_data' not in st.session_state:
@@ -3313,64 +3313,32 @@ def main():
                         with st.spinner("Starting trading bot..."):
                             # Initialisation si pas déjà fait
                             if not bot.initialized:
-                                asyncio.run(bot.initialize())
-
-                            # Définition de la variable running pour le thread
-                            running = True
+                                await bot.initialize()  # Notez le await ici au lieu de asyncio.run
                 
-                            # Démarrage du trading dans un thread séparé
-                            def trading_loop():
-                                running = True  # Variable locale pour contrôler le thread
-                                while running:  # Utiliser la variable locale au lieu de st.session_state
-                                    try:
-                                        logger.info("🔄 Trading loop iteration started")  # Nouveau log
-                                        loop = asyncio.new_event_loop()
-                                        asyncio.set_event_loop(loop)
-            
-                                        market_data = loop.run_until_complete(bot.get_latest_data())
-                                        if market_data:
-                                            indicators = loop.run_until_complete(
-                                                bot.calculate_indicators('BTC/USDC')
-                                            )
-                                            logger.info(f"📈 Indicators calculated: {indicators}")
-                                            portfolio = loop.run_until_complete(bot.get_real_portfolio())
+                            # Mise à jour de la date et de l'utilisateur
+                            bot.current_date = "2025-06-14 22:57:19"
+                            bot.current_user = "Patmoorea"
                 
-                                            # Mise à jour directe sur l'objet bot plutôt que session_state
-                                            bot.latest_data = market_data
-                                            bot.indicators = indicators
-                                            bot.portfolio = portfolio
-                
-                                        time.sleep(1)
-            
-                                    except Exception as loop_error:
-                                        logger.error(f"Loop error: {loop_error}")
-                                        time.sleep(5)
-                                    finally:
-                                        loop.close()
-                
-                            # Démarrage du thread de trading
-                            trading_thread = threading.Thread(target=trading_loop)
-                            trading_thread.daemon = True
-                            st.session_state.trading_thread = trading_thread
+                            # Activation du mode trading
                             st.session_state.bot_running = True
-                            trading_thread.start()
+                
+                            # Démarrage du trading en mode asynchrone
+                            await bot.run_real_trading()  # Notez le await ici
                 
                             st.success("✅ Bot is now trading!")
                 
                     except Exception as e:
                         st.error(f"❌ Failed to start bot: {str(e)}")
                         logger.error(f"Start error: {e}")
+                        st.session_state.bot_running = False
             else:
                 if st.button("🔴 Stop Trading", use_container_width=True):
                     try:
                         with st.spinner("Stopping trading bot..."):
-                            bot.running = False  # Utilisez une propriété du bot
-                            if 'trading_thread' in st.session_state:
-                                st.session_state.trading_thread.join(timeout=5)
-                        asyncio.run(bot._cleanup())
-                        st.session_state.bot_running = False
-                        st.success("✅ Bot stopped successfully!")
-                        st.rerun()
+                            st.session_state.bot_running = False
+                            await bot._cleanup()  # Notez le await ici
+                            st.success("✅ Bot stopped successfully!")
+                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Failed to stop bot: {str(e)}")
 
