@@ -286,7 +286,11 @@ def initialize_websocket(bot):
                     bot.ws_connection['last_connection'] = time.time()
                 
                 # Exécuter la connexion WebSocket
-                asyncio.run(connect_ws())
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(connect_ws())
+                finally:
+                    loop.close()
                 return True
         except Exception as e:
             logger.error(f"WebSocket initialization error: {e}")
