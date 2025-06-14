@@ -216,6 +216,29 @@ config = {
     }
 }
 
+@st.cache_resource
+def get_bot():
+    """Create or get the bot instance"""
+    try:
+        from trading_bot import TradingBotM4  # Assurez-vous que c'est le bon chemin
+        bot = TradingBotM4()
+        bot.current_date = "2025-06-14 00:25:31"
+        bot.current_user = "Patmoorea"
+        
+        # Configuration du WebSocket
+        bot.ws_connection = {
+            'enabled': False,
+            'reconnect_count': 0,
+            'max_reconnects': 3,
+            'last_connection': None
+        }
+        
+        return bot
+    except Exception as e:
+        # Log l'erreur mais ne pas crasher
+        logger.error(f"Error creating bot instance: {e}")
+        return None
+        
 # Initialisation du logging
 logging.basicConfig(
     level=logging.INFO,
@@ -3030,29 +3053,6 @@ def _calculate_supertrend(self, data):
         logger.error(f"Erreur: {e}")
         self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
         return None
-    
-    @st.cache_resource
-    def get_bot():
-        """Create or get the bot instance"""
-        try:
-            from trading_bot import TradingBotM4  # Assurez-vous que c'est le bon chemin
-            bot = TradingBotM4()
-            bot.current_date = "2025-06-14 00:25:31"
-            bot.current_user = "Patmoorea"
-        
-            # Configuration du WebSocket
-            bot.ws_connection = {
-                'enabled': False,
-                'reconnect_count': 0,
-                'max_reconnects': 3,
-                'last_connection': None
-            }
-        
-            return bot
-        except Exception as e:
-            # Log l'erreur mais ne pas crasher
-            logger.error(f"Error creating bot instance: {e}")
-            return None
     
     def initialize_websocket(bot):
         """Initialize WebSocket connection"""
