@@ -1044,16 +1044,40 @@ class TradingBotM4:
             return decision
 
     async def get_latest_data(self):
-        """Récupère les dernières données de marché en temps réel"""
         try:
             data = {}
-        
-            # Vérification de la connexion WebSocket
-            if not hasattr(self, 'binance_ws') or self.binance_ws is None:
-                logger.warning("🔄 WebSocket non initialisé, tentative d'initialisation...")
-                if not self.initialized:
-                    await self.initialize()
+            
+            if not self.ws_connection["enabled"]:
+                await self.initialize()
+                if not self.ws_connection["enabled"]:
+                    return None
+            
+            async def fetch_market_data():
+                tasks = []
+                for pair in config["TRADING"]["pairs"]:
+                    tasks.append(asyncio.create_task(self._fetch_pair_data(pair)))
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                return {
+                    pair: result for pair, result in zip(config["TRADING"]["pairs"], results)
+                    if not isinstance(result, Exception)
+                }
+            
+            try:
+                market_data = await asyncio.wait_for(fetch_market_data(), timeout=5.0)
+                if market_data:
+                    for pair, ticker_data in market_data.items():
+                        self.buffer.update_data(pair, ticker_data)
+                        self.latest_data[pair] = ticker_data
+                    return market_data
                 return None
+                
+            except asyncio.TimeoutError:
+                logger.warning("⏱️ Timeout récupération données")
+                return None
+
+        except Exception as e:
+            logger.error(f"❌ Erreur critique: {str(e)}")
+            return None
 
             # Récupération des données pour chaque paire
             for pair in config["TRADING"]["pairs"]:
@@ -1175,38 +1199,6 @@ class TradingBotM4:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
 
-    async def trading_loop(self):
-        """Boucle principale de trading"""
-        while True:
-            try:
-                # Mise à jour des données
-                data = await self.get_latest_data()
-                if data:
-                    for pair in config["TRADING"]["pairs"]:
-                        # Calcul des indicateurs pour chaque symbole
-                        indicators = await self.calculate_indicators(pair)
-                        if indicators:
-                            # Analyse des signaux
-                            signals = await self.analyze_signals(data)
-                        
-                            if signals:
-                                # Construction de la décision
-                                decision = await self.analyze_signals(data, indicators)
-                            
-                                if decision and decision.get('should_trade', False):
-                                    trade_result = await self.execute_real_trade(decision)
-                                    if trade_result:
-                                        logger.info(f"Trade exécuté: {trade_result['id']}")
-                                    
-                    # Mise à jour du portfolio
-                    await self.get_real_portfolio()
-                
-                # Attente avant la prochaine itération
-                await asyncio.sleep(1)
-            
-            except Exception as e:
-                logger.error(f"Erreur dans la boucle: {str(e)}")
-                await asyncio.sleep(5)
                 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
@@ -1602,81 +1594,70 @@ Take Profit: {take_profit}"""
                 """)
 
             # Création d'un thread pour la boucle de trading
-            def trading_loop():
-                while st.session_state.bot_running:
-                    try:
-                        # Création d'un nouveau loop pour le thread
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                    
-                        # Récupération des données
-                        market_data = loop.run_until_complete(self.get_latest_data())
+    def trading_loop():
+        async def async_loop():
+            while st.session_state.bot_running:
+                try:
+                    async def process_iteration():
+                        market_data = await bot.get_latest_data()
                         if market_data:
-                            # Calcul des indicateurs
-                            indicators = loop.run_until_complete(
-                                self.calculate_indicators('BTC/USDC')
-                            )
-                        
-                            # Analyse des signaux
-                            decision = loop.run_until_complete(
-                                self.analyze_signals(market_data, indicators)
-                            )
-                        
-                            if decision and decision.get('should_trade', False):
-                                trade_result = loop.run_until_complete(
-                                    self.execute_real_trade(decision)
-                                )
-                                if trade_result:
-                                    logger.info(f"Trade exécuté: {trade_result['id']}")
-                        
-                            # Mise à jour du portfolio
-                            portfolio = loop.run_until_complete(self.get_real_portfolio())
-                        
-                            # Mise à jour de l'état
-                            if portfolio:
-                                st.session_state.portfolio = portfolio
-                                st.session_state.latest_data = market_data
-                                st.session_state.indicators = indicators
-                            
-                        time.sleep(1)  # Délai entre les itérations
-                    
-                    except Exception as loop_error:
-                        logger.error(f"Erreur dans la boucle: {loop_error}")
-                        time.sleep(5)
-                        continue
-                    finally:
-                        loop.close()
+                            indicators = await bot.calculate_indicators("BTC/USDC")
+                            if indicators:
+                                decision = await bot.analyze_signals(market_data, indicators)
+                                if decision and decision.get("should_trade", False):
+                                    return await bot.execute_real_trade(decision)
+                        return None
 
-            # Démarrage du thread de trading
-            trading_thread = threading.Thread(target=trading_loop)
-            trading_thread.daemon = True  # Le thread s'arrêtera quand le programme principal s'arrête
-        
-            # Stockage du thread dans la session
-            st.session_state.trading_thread = trading_thread
-        
-            # Démarrage du thread
-            trading_thread.start()
-        
-            # Mise à jour de l'état du bot
-            st.session_state.bot_running = True
-        
-            # Message de confirmation
-            logger.info("✅ Bot de trading démarré avec succès")
+                    try:
+                        result = await asyncio.wait_for(process_iteration(), timeout=10.0)
+                        if result:
+                            logger.info(f"✅ Itération complétée: {result}")
+                    except asyncio.TimeoutError:
+                        logger.warning("⏱️ Timeout dans la boucle")
                 
-        except Exception as e:
-            logger.error(f"Erreur fatale: {e}")
-            st.session_state.bot_running = False
+                    await asyncio.sleep(1)
+
+                except Exception as e:
+                    logger.error(f"❌ Erreur dans la boucle: {str(e)}")
+                    await asyncio.sleep(5)
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(async_loop())
+        finally:
+            loop.close()
+
+                # Démarrage du thread de trading
+                trading_thread = threading.Thread(target=trading_loop)
+                trading_thread.daemon = True  # Le thread s'arrêtera quand le programme principal s'arrête
         
-        # Notification Telegram en cas d'erreur
-        if hasattr(self, 'telegram'):
-            try:
-                await self.telegram.send_message(
-                    f"🚨 Erreur critique du bot:\n{str(e)}\n"
-                    f"Trader: {self.current_user}"
-                )
-            except:
-                pass
-        raise
+                # Stockage du thread dans la session
+                st.session_state.trading_thread = trading_thread
+        
+                # Démarrage du thread
+                trading_thread.start()
+        
+                # Mise à jour de l'état du bot
+                st.session_state.bot_running = True
+        
+                # Message de confirmation
+                logger.info("✅ Bot de trading démarré avec succès")
+                
+            except Exception as e:
+                logger.error(f"Erreur fatale: {e}")
+                st.session_state.bot_running = False
+        
+            # Notification Telegram en cas d'erreur
+            if hasattr(self, 'telegram'):
+                try:
+                    await self.telegram.send_message(
+                        f"🚨 Erreur critique du bot:\n{str(e)}\n"
+                        f"Trader: {self.current_user}"
+                    )
+                except:
+                    pass
+            raise
 
     async def create_dashboard(self):
         """Crée le dashboard Streamlit"""
@@ -3328,34 +3309,39 @@ def main():
                             running = True
                 
                             # Démarrage du trading dans un thread séparé
-                            def trading_loop():
-                                running = True  # Variable locale pour contrôler le thread
-                                while running:  # Utiliser la variable locale au lieu de st.session_state
-                                    try:
-                                        logger.info("🔄 Trading loop iteration started")  # Nouveau log
-                                        loop = asyncio.new_event_loop()
-                                        asyncio.set_event_loop(loop)
-            
-                                        market_data = loop.run_until_complete(bot.get_latest_data())
-                                        if market_data:
-                                            indicators = loop.run_until_complete(
-                                                bot.calculate_indicators('BTC/USDC')
-                                            )
-                                            logger.info(f"📈 Indicators calculated: {indicators}")
-                                            portfolio = loop.run_until_complete(bot.get_real_portfolio())
+def trading_loop():
+    async def async_loop():
+        while st.session_state.bot_running:
+            try:
+                async def process_iteration():
+                    market_data = await bot.get_latest_data()
+                    if market_data:
+                        indicators = await bot.calculate_indicators("BTC/USDC")
+                        if indicators:
+                            decision = await bot.analyze_signals(market_data, indicators)
+                            if decision and decision.get("should_trade", False):
+                                return await bot.execute_real_trade(decision)
+                    return None
+
+                try:
+                    result = await asyncio.wait_for(process_iteration(), timeout=10.0)
+                    if result:
+                        logger.info(f"✅ Itération complétée: {result}")
+                except asyncio.TimeoutError:
+                    logger.warning("⏱️ Timeout dans la boucle")
                 
-                                            # Mise à jour directe sur l'objet bot plutôt que session_state
-                                            bot.latest_data = market_data
-                                            bot.indicators = indicators
-                                            bot.portfolio = portfolio
-                
-                                        time.sleep(1)
-            
-                                    except Exception as loop_error:
-                                        logger.error(f"Loop error: {loop_error}")
-                                        time.sleep(5)
-                                    finally:
-                                        loop.close()
+                await asyncio.sleep(1)
+
+            except Exception as e:
+                logger.error(f"❌ Erreur dans la boucle: {str(e)}")
+                await asyncio.sleep(5)
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(async_loop())
+    finally:
+        loop.close()
                 
                             # Démarrage du thread de trading
                             trading_thread = threading.Thread(target=trading_loop)
