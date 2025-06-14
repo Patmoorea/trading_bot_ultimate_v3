@@ -107,7 +107,7 @@ config = {
     'NEWS': {
         'enabled': True,
         'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-    }, 
+    },
     'BINANCE': {
         'API_KEY': os.getenv('BINANCE_API_KEY'),
         'API_SECRET': os.getenv('BINANCE_API_SECRET')
@@ -230,8 +230,10 @@ def get_bot():
             'enabled': False,
             'reconnect_count': 0,
             'max_reconnects': 3,
-            'last_connection': None
+            'last_connection': None,
+            'status': 'disconnected'
         }
+        logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
         
         return bot
     except Exception as e:
@@ -1042,50 +1044,107 @@ class TradingBotM4:
             return decision
 
     async def get_latest_data(self):
-        """Récupère les dernières données de marché"""
+        """Récupère les dernières données de marché en temps réel"""
         try:
             data = {}
+        
+            # Vérification de la connexion WebSocket
             if not hasattr(self, 'binance_ws') or self.binance_ws is None:
-                # Si binance_ws n'est pas initialisé, on l'initialise
+                logger.warning("🔄 WebSocket non initialisé, tentative d'initialisation...")
                 if not self.initialized:
                     await self.initialize()
                 return None
 
+            # Récupération des données pour chaque paire
             for pair in config["TRADING"]["pairs"]:
+                logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
+            
                 try:
-                    # WebSocket prices
-                    if hasattr(self.binance_ws, 'get_price'):
-                        prices = await self.binance_ws.get_price(pair)
-                        data[pair]['price'] = prices
+                    # Création des tâches asynchrones pour chaque type de données
+                    async def fetch_ticker():
+                        if hasattr(self.binance_ws, 'get_symbol_ticker'):
+                            ticker = await self.binance_ws.get_symbol_ticker(symbol=pair.replace('/', ''))
+                            if ticker:
+                                return float(ticker['price'])
+                        return None
 
-                    # OrderBook
-                    if hasattr(self, 'connector') and hasattr(self.connector, 'get_order_book'):
-                        orderbook = await self.connector.get_order_book(pair)
-                        data[pair]['orderbook'] = {
-                            'bids': orderbook[0],  # Best bid
-                            'asks': orderbook[1]   # Best ask
-                        }
+                    async def fetch_orderbook():
+                        if hasattr(self, 'spot_client'):
+                            orderbook = await self.spot_client.get_order_book(pair)
+                            if orderbook:
+                                return {
+                                    'bids': orderbook['bids'][:5],
+                                    'asks': orderbook['asks'][:5]
+                                }
+                        return None
 
-                    # Account data
-                    if hasattr(self, 'exchange') and hasattr(self.exchange, 'get_balance'):
-                        account = await self.exchange.get_balance()
-                        data[pair]['account'] = account
+                    async def fetch_balance():
+                        if hasattr(self, 'spot_client'):
+                            return await self.spot_client.get_balance()
+                        return None
 
+                    async def fetch_24h_ticker():
+                        if hasattr(self.binance_ws, 'get_24h_ticker'):
+                            ticker_24h = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
+                            if ticker_24h:
+                                return {
+                                    'volume': float(ticker_24h['volume']),
+                                    'price_change': float(ticker_24h['priceChangePercent'])
+                                }
+                        return None
+
+                    # Exécution des tâches avec timeout
+                    tasks = [
+                        asyncio.create_task(fetch_ticker()),
+                        asyncio.create_task(fetch_orderbook()),
+                        asyncio.create_task(fetch_balance()),
+                        asyncio.create_task(fetch_24h_ticker())
+                    ]
+
+                    # Attendre les résultats avec timeout
+                    results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=5.0)
+                
+                    # Traitement des résultats
+                    price, orderbook, balance, ticker_24h = results
+                
+                    if price is not None:
+                        data[pair]['price'] = price
+                        logger.info(f"💰 Prix {pair}: {price}")
+                
+                    if orderbook is not None:
+                        data[pair]['orderbook'] = orderbook
+                        logger.info(f"📚 Orderbook mis à jour pour {pair}")
+                
+                    if balance is not None:
+                        data[pair]['account'] = balance
+                        logger.info(f"💼 Balance mise à jour: {balance.get('total', 0)} USDC")
+                
+                    if ticker_24h is not None:
+                        data[pair].update(ticker_24h)
+                        logger.info(f"📈 Volume 24h {pair}: {ticker_24h.get('volume', 0)}")
+
+                except asyncio.TimeoutError:
+                    logger.warning(f"⏱️ Timeout pour {pair}")
+                    continue
                 except Exception as inner_e:
-                    logger.error(f"Erreur pour {pair}: {inner_e}")
+                    logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
                     continue
 
-            # Store in buffer if we have data
+            # Mise en cache des données si disponibles
             if data and any(data.values()):
+                logger.info("✅ Données reçues, mise à jour du buffer")
                 for symbol, symbol_data in data.items():
                     if symbol_data:
                         self.buffer.update_data(symbol, symbol_data)
+                        self.latest_data[symbol] = symbol_data
                 return data
-            return None
+            else:
+                logger.warning("⚠️ Aucune donnée reçue")
+                return None
 
         except Exception as e:
-            logger.error(f"Erreur get_latest_data: {e}")
+            logger.error(f"❌ Erreur critique get_latest_data: {e}")
             return None
 
     async def calculate_indicators(self, symbol: str) -> dict:
@@ -1093,6 +1152,7 @@ class TradingBotM4:
         try:
             data = self.latest_data.get(symbol)
             if not data:
+                logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
             
             # Calcul des indicateurs de base
@@ -1103,7 +1163,10 @@ class TradingBotM4:
                 'high_low_range': data['high'] - data['low'],
                 'timestamp': data['timestamp']
             }
-        
+            # Log des données reçues
+            logger.info(f"Calcul indicateurs pour {symbol}: {data}")# Log des données reçues
+            logger.info(f"Calcul indicateurs pour {symbol}: {data}")
+                
             # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
@@ -1135,7 +1198,7 @@ class TradingBotM4:
                                     if trade_result:
                                         logger.info(f"Trade exécuté: {trade_result['id']}")
                                     
-                    # Mise à jour du portfolio            
+                    # Mise à jour du portfolio
                     await self.get_real_portfolio()
                 
                 # Attente avant la prochaine itération
@@ -1359,6 +1422,14 @@ class TradingBotM4:
         """
         try:
             if not hasattr(self, 'spot_client') or self.spot_client is None:
+                logger.error("❌ Spot client non initialisé")
+                 # Log de debug
+                logger.info("Récupération du portfolio...")
+        
+                # Récupération de la balance
+                balance = self.spot_client.get_balance()
+                logger.info(f"Balance reçue: {balance}")
+                
                 # Tentative de réinitialisation du spot client
                 self.spot_client = BinanceClient(
                     api_key=os.getenv('BINANCE_API_KEY'),
@@ -1622,9 +1693,9 @@ Take Profit: {take_profit}"""
             # Info session
             st.info(f"""
             **Session Info**
-            User: {self.current_user}
-            Date: {self.current_date}
-            Status: {'Active' if self.initialized else 'Inactive'}
+            👤 User: {bot.current_user}
+            📅 Date: {bot.current_date}
+            🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
             """)
 
             # Tabs pour organiser l'information
@@ -1636,18 +1707,18 @@ Take Profit: {take_profit}"""
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
                     st.metric(
-                        "Total Value", 
+                        "Total Value",
                         f"${portfolio['total_value']:,.2f}",
                         delta=f"{portfolio.get('daily_pnl', 0):+.2f}%"
                     )
                 with col2:
                     st.metric(
-                        "Available USDC", 
+                        "Available USDC",
                         f"${portfolio['free']:,.2f}"
                     )
                 with col3:
                     st.metric(
-                        "Locked USDC", 
+                        "Locked USDC",
                         f"${portfolio['used']:,.2f}"
                     )
                 with col4:
@@ -1715,7 +1786,7 @@ Take Profit: {take_profit}"""
                 st.subheader("Market Overview")
                 latest_data = self.buffer.get_latest_data() if hasattr(self, 'buffer') else None
                 if latest_data:
-                    st.metric("BTC/USDC", f"${latest_data.get('price', 0):,.2f}", 
+                    st.metric("BTC/USDC", f"${latest_data.get('price', 0):,.2f}",
                             f"{latest_data.get('change', 0):+.2f}%")
 
         except Exception as e:
@@ -3191,7 +3262,7 @@ def _calculate_supertrend(self, data):
 def main():
     st.title("Trading Bot Ultimate v4 🤖")
     
-    # Initialisation de l'état
+   # Initialisation de l'état
     if 'portfolio' not in st.session_state:
         st.session_state.portfolio = None
     if 'latest_data' not in st.session_state:
@@ -3202,6 +3273,8 @@ def main():
         st.session_state.bot_running = False
     if 'refresh_count' not in st.session_state:
         st.session_state.refresh_count = 0
+    if 'trading_thread' not in st.session_state:
+        st.session_state.trading_thread = None
         
     try:
         # Get or create bot instance
@@ -3250,40 +3323,34 @@ def main():
                             # Initialisation si pas déjà fait
                             if not bot.initialized:
                                 asyncio.run(bot.initialize())
-                
-                            # Mise à jour de la date et de l'utilisateur
-                            bot.current_date = "2025-06-14 05:19:10"
-                            bot.current_user = "Patmoorea"
+
+                            # Définition de la variable running pour le thread
+                            running = True
                 
                             # Démarrage du trading dans un thread séparé
                             def trading_loop():
-                                while st.session_state.bot_running:
+                                running = True  # Variable locale pour contrôler le thread
+                                while running:  # Utiliser la variable locale au lieu de st.session_state
                                     try:
-                                        # Création d'un nouveau loop pour le thread
+                                        logger.info("🔄 Trading loop iteration started")  # Nouveau log
                                         loop = asyncio.new_event_loop()
-                                        syncio.set_event_loop(loop)
-                            
-                                        # Récupération et mise à jour des données
+                                        asyncio.set_event_loop(loop)
+            
                                         market_data = loop.run_until_complete(bot.get_latest_data())
                                         if market_data:
                                             indicators = loop.run_until_complete(
                                                 bot.calculate_indicators('BTC/USDC')
                                             )
+                                            logger.info(f"📈 Indicators calculated: {indicators}")
                                             portfolio = loop.run_until_complete(bot.get_real_portfolio())
-                                
-                                            # Mise à jour de l'état
-                                            if portfolio:
-                                                st.session_state.portfolio = portfolio
-                                                st.session_state.latest_data = market_data
-                                                st.session_state.indicators = indicators
-                                    
-                                                # Incrémenter le compteur de mises à jour
-                                                if 'refresh_count' not in st.session_state:
-                                                    st.session_state.refresh_count = 0
-                                                st.session_state.refresh_count += 1
-                            
+                
+                                            # Mise à jour directe sur l'objet bot plutôt que session_state
+                                            bot.latest_data = market_data
+                                            bot.indicators = indicators
+                                            bot.portfolio = portfolio
+                
                                         time.sleep(1)
-                            
+            
                                     except Exception as loop_error:
                                         logger.error(f"Loop error: {loop_error}")
                                         time.sleep(5)
@@ -3291,7 +3358,6 @@ def main():
                                         loop.close()
                 
                             # Démarrage du thread de trading
-                            import threading
                             trading_thread = threading.Thread(target=trading_loop)
                             trading_thread.daemon = True
                             st.session_state.trading_thread = trading_thread
@@ -3307,15 +3373,13 @@ def main():
                 if st.button("🔴 Stop Trading", use_container_width=True):
                     try:
                         with st.spinner("Stopping trading bot..."):
-                            # Arrêt du thread de trading
-                            st.session_state.bot_running = False
+                            bot.running = False  # Utilisez une propriété du bot
                             if 'trading_thread' in st.session_state:
                                 st.session_state.trading_thread.join(timeout=5)
-                
-                            # Nettoyage
-                            asyncio.run(bot._cleanup())
-                            st.success("✅ Bot stopped successfully!")
-                            st.rerun()
+                        asyncio.run(bot._cleanup())
+                        st.session_state.bot_running = False
+                        st.success("✅ Bot stopped successfully!")
+                        st.rerun()
                     except Exception as e:
                         st.error(f"❌ Failed to stop bot: {str(e)}")
 
@@ -3329,6 +3393,14 @@ def main():
             # Portfolio tab
             with tabs[0]:
                 if st.session_state.bot_running:
+                    # Debug info
+                    st.info(f"""
+                    **Debug Information**
+                    WebSocket: {bot.ws_connection.get('status', 'Unknown')}
+                    Last Data Update: {bot.current_date}
+                    Data Available: {bool(bot.latest_data)}
+                    Indicators Available: {bool(bot.indicators)}
+                    """)
                     try:
                         # Utiliser les données en cache plutôt que de refaire un appel
                         portfolio = st.session_state.get('portfolio')
@@ -3374,6 +3446,20 @@ def main():
             # Trading tab
             with tabs[1]:
                 if st.session_state.bot_running:
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric(
+                            "BTC/USDC Price",
+                            f"{bot.latest_data.get('price', 0):.2f}",
+                            f"{bot.latest_data.get('price_change', 0):+.2f}%"
+                        )
+                    with col2:
+                        st.metric(
+                            "Trading Volume",
+                            f"{bot.latest_data.get('volume', 0):.2f}",
+                             f"{bot.latest_data.get('volume_change', 0):+.2f}%"
+                        )
+                        
                     # Utiliser les données en cache
                     indicators = st.session_state.get('indicators')
                     if indicators:
