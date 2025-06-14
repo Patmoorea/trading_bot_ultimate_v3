@@ -1070,39 +1070,60 @@ class TradingBotM4:
                 data[pair] = {}
             
                 try:
-                    # 1. Prix en temps réel via WebSocket
-                    if hasattr(self.binance_ws, 'get_symbol_ticker'):
-                        ticker = await self.binance_ws.get_symbol_ticker(symbol=pair.replace('/', ''))
-                        if ticker:
-                            data[pair]['price'] = float(ticker['price'])
-                            data[pair]['timestamp'] = self.current_date
-                            logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
+                    async def fetch_async():
+                        result = {
+                            'orderbook': None,
+                            'balance': None,
+                            'ticker_24h': None,
+                            'ticker': None
+                        }
+                        
+                        # 1. Prix en temps réel via WebSocket
+                        if hasattr(self.binance_ws, 'get_symbol_ticker'):
+                            result['ticker'] = await self.binance_ws.get_symbol_ticker(symbol=pair.replace('/', ''))
+                        
+                        # 2. & 3. Orderbook et Balance
+                        if hasattr(self, 'spot_client'):
+                            result['orderbook'] = await self.spot_client.get_order_book(pair)
+                            result['balance'] = await self.spot_client.get_balance()
+                            
+                        # 4. Volume 24h
+                        if hasattr(self.binance_ws, 'get_24h_ticker'):
+                            result['ticker_24h'] = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
+                            
+                        return result
 
-                    # 2. Carnet d'ordres
-                    if hasattr(self, 'spot_client'):
-                        orderbook = await self.spot_client.get_order_book(pair)
-                        if orderbook:
-                            data[pair]['orderbook'] = {
-                                'bids': orderbook['bids'][:5],  # 5 meilleurs prix d'achat
-                                'asks': orderbook['asks'][:5]   # 5 meilleurs prix de vente
-                            }
-                            logger.info(f"📚 Orderbook mis à jour pour {pair}")
+                    # Execution avec timeout correct
+                    async with asyncio.timeout(5.0):
+                        result = await fetch_async()
+                    
+                    # Traitement des résultats
+                    if result['ticker']:
+                        data[pair]['price'] = float(result['ticker']['price'])
+                        data[pair]['timestamp'] = self.current_date
+                        logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
+                    
+                    if result['orderbook']:
+                        data[pair]['orderbook'] = {
+                            'bids': result['orderbook']['bids'][:5],
+                            'asks': result['orderbook']['asks'][:5]
+                        }
+                        logger.info(f"📚 Orderbook mis à jour pour {pair}")
+                        
+                    if result['balance']:
+                        data[pair]['account'] = result['balance']
+                        logger.info(f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC")
+                        
+                    if result['ticker_24h']:
+                        data[pair].update({
+                            'volume': float(result['ticker_24h']['volume']),
+                            'price_change': float(result['ticker_24h']['priceChangePercent'])
+                        })
+                        logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
 
-                    # 3. Données du compte
-                    if hasattr(self, 'spot_client'):
-                        balance = await self.spot_client.get_balance()
-                        if balance:
-                            data[pair]['account'] = balance
-                            logger.info(f"💼 Balance mise à jour: {balance.get('total', 0)} USDC")
-
-                    # 4. Volume 24h
-                    if hasattr(self.binance_ws, 'get_24h_ticker'):
-                        ticker_24h = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
-                        if ticker_24h:
-                            data[pair]['volume'] = float(ticker_24h['volume'])
-                            data[pair]['price_change'] = float(ticker_24h['priceChangePercent'])
-                            logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
-
+                except asyncio.TimeoutError:
+                    logger.warning(f"⏱️ Timeout pour {pair}")
+                    continue
                 except Exception as inner_e:
                     logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
                     continue
