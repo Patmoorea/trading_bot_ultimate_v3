@@ -558,6 +558,24 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"❌ Erreur nettoyage: {e}")
 
+    def check_ws_connection(bot):
+        """Check WebSocket connection and reconnect if needed"""
+        try:
+            if not bot.ws_connection['enabled']:
+                if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
+                    logger.info("Attempting WebSocket reconnection...")
+                    if initialize_websocket(bot):
+                        bot.ws_connection['reconnect_count'] = 0
+                        return True
+                    bot.ws_connection['reconnect_count'] += 1
+                else:
+                    logger.error("Max WebSocket reconnection attempts reached")
+                    return False
+            return True
+        except Exception as e:
+            logger.error(f"WebSocket check error: {e}")
+            return False
+    
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
         if not self.initialized:
@@ -2952,18 +2970,108 @@ async def run_trading_bot():
             logger.error(f"Erreur calcul PnL: {e}")
             return None
 
-    # 1. Déplacer get_bot() avant main() et le mettre au bon niveau d'indentation
-@st.cache_resource
-def get_bot():
-    """Create or get the bot instance"""
-    try:
-        bot = TradingBotM4()
-        bot.current_date = "2025-06-12 05:51:27"  # Date mise à jour
-        bot.current_user = "Patmoorea"
-        return bot
-    except Exception as e:
-        logger.error(f"Error creating bot instance: {e}")
-        raise
+    @st.cache_resource
+    def get_bot():
+        """Create or get the bot instance"""
+        try:
+            from trading_bot import TradingBotM4  # Assurez-vous que c'est le bon chemin
+            bot = TradingBotM4()
+            bot.current_date = "2025-06-14 00:25:31"
+            bot.current_user = "Patmoorea"
+        
+            # Configuration du WebSocket
+            bot.ws_connection = {
+                'enabled': False,
+                'reconnect_count': 0,
+                'max_reconnects': 3,
+                'last_connection': None
+            }
+        
+            return bot
+        except Exception as e:
+            # Log l'erreur mais ne pas crasher
+            logger.error(f"Error creating bot instance: {e}")
+            return None
+
+    def initialize_websocket(bot):
+        """Initialize WebSocket connection"""
+        try:
+            if not bot.ws_connection['enabled']:
+                async def connect_ws():
+                    bot.binance_ws = await AsyncClient.create(
+                        api_key=os.getenv('BINANCE_API_KEY'),
+                        api_secret=os.getenv('BINANCE_API_SECRET')
+                    )
+                    bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+                
+                    # Démarrer les streams nécessaires
+                    streams = []
+                
+                    # Stream de ticker
+                    ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
+                    streams.append(ticker_socket)
+                
+                    # Stream d'orderbook
+                    depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
+                    streams.append(depth_socket)
+                
+                    # Stream de klines
+                    kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
+                    streams.append(kline_socket)
+                
+                    # Démarrer tous les streams
+                    for stream in streams:
+                        asyncio.create_task(handle_socket_message(bot, stream))
+                
+                    bot.ws_connection['enabled'] = True
+                    bot.ws_connection['last_connection'] = time.time()
+                
+                # Exécuter la connexion WebSocket
+                asyncio.run(connect_ws())
+                return True
+        except Exception as e:
+            logger.error(f"WebSocket initialization error: {e}")
+            return False
+
+    async def handle_socket_message(bot, socket):
+        """Handle incoming WebSocket messages"""
+        try:
+            async with socket as ts:
+                while True:
+                    msg = await ts.recv()
+                    if msg:
+                        await process_ws_message(bot, msg)
+        except Exception as e:
+            logger.error(f"Socket error: {e}")
+            bot.ws_connection['enabled'] = False
+
+    async def process_ws_message(bot, msg):
+        """Process WebSocket messages"""
+        try:
+            if msg.get('e') == 'ticker':
+                # Mise à jour du prix
+                bot.latest_data['price'] = float(msg['c'])
+                bot.latest_data['volume'] = float(msg['v'])
+            
+            elif msg.get('e') == 'depth':
+                # Mise à jour de l'orderbook
+                bot.latest_data['orderbook'] = {
+                    'bids': msg['b'][:5],
+                    'asks': msg['a'][:5]
+                }
+            
+            elif msg.get('e') == 'kline':
+                # Mise à jour des klines
+                k = msg['k']
+                bot.latest_data['klines'] = {
+                    'open': float(k['o']),
+                    'high': float(k['h']),
+                    'low': float(k['l']),
+                    'close': float(k['c']),
+                    'volume': float(k['v'])
+                }
+        except Exception as e:
+            logger.error(f"Message processing error: {e}")
 
 def _calculate_supertrend(self, data):
     """Calcule l'indicateur Supertrend"""
@@ -3032,6 +3140,17 @@ def main():
     try:
         # Get or create bot instance
         bot = get_bot()
+        if bot is None:
+            st.error("❌ Failed to initialize bot")
+            return
+
+        # Initialize WebSocket if not already done
+        if not bot.ws_connection['enabled']:
+            with st.spinner("Connecting to WebSocket..."):
+                if not initialize_websocket(bot):
+                    st.error("❌ Failed to establish WebSocket connection")
+                    return
+                st.success("✅ WebSocket connected!")
 
         # État global du bot
         if 'bot_running' not in st.session_state:
