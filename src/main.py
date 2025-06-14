@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import re
 import time
 import threading
-from datetime import timezone
+from datetime import datetime, timezone
 
 # Ajout du chemin racine au PYTHONPATH
 import sys
@@ -252,49 +252,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def initialize_websocket(bot):
+async def initialize_websocket(bot):
         """Initialize WebSocket connection"""
         try:
             if not bot.ws_connection['enabled']:
-                async def connect_ws():
-                    bot.binance_ws = await AsyncClient.create(
-                        api_key=os.getenv('BINANCE_API_KEY'),
-                        api_secret=os.getenv('BINANCE_API_SECRET')
-                    )
-                    bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+                bot.binance_ws = await AsyncClient.create(
+                    api_key=os.getenv('BINANCE_API_KEY'),
+                    api_secret=os.getenv('BINANCE_API_SECRET')
+                )
+                bot.socket_manager = BinanceSocketManager(bot.binance_ws)
                 
-                    # Démarrer les streams nécessaires
-                    streams = []
+                # Démarrer les streams nécessaires
+                streams = []
                 
-                    # Stream de ticker
-                    ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
-                    streams.append(ticker_socket)
+                # Stream de ticker
+                ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
+                streams.append(ticker_socket)
                 
-                    # Stream d'orderbook
-                    depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
-                    streams.append(depth_socket)
+                # Stream d'orderbook
+                depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
+                streams.append(depth_socket)
                 
-                    # Stream de klines
-                    kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
-                    streams.append(kline_socket)
+                # Stream de klines
+                kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
+                streams.append(kline_socket)
                 
-                    # Démarrer tous les streams
-                    for stream in streams:
-                        asyncio.create_task(handle_socket_message(bot, stream))
+                # Démarrer tous les streams
+                for stream in streams:
+                    asyncio.create_task(handle_socket_message(bot, stream))
                 
-                    bot.ws_connection['enabled'] = True
-                    bot.ws_connection['last_connection'] = time.time()
-                
-                # Exécuter la connexion WebSocket
-                loop = asyncio.new_event_loop()
-                try:
-                    loop.run_until_complete(connect_ws())
-                finally:
-                    loop.close()
+                bot.ws_connection['enabled'] = True
+                bot.ws_connection['last_connection'] = time.time()
                 return True
+            
         except Exception as e:
             logger.error(f"WebSocket initialization error: {e}")
             return False
+    
 async def handle_socket_message(self, socket):
     """Handle incoming WebSocket messages"""
     try:
@@ -303,7 +297,7 @@ async def handle_socket_message(self, socket):
                 async with asyncio.timeout(5.0):  # Ajout du timeout
                     msg = await ts.recv()
                     if msg:
-                        await self.process_ws_message(msg)
+                        await process_ws_message(bot, msg)
     except asyncio.TimeoutError:
         logger.warning("WebSocket timeout - attempting reconnect")
         self.ws_connection['enabled'] = False
@@ -1680,15 +1674,7 @@ Take Profit: {take_profit}"""
 
             # En-tête
             st.title("Trading Bot Ultimate v4 🤖")
-        
-            # Info session
-            st.info(f"""
-            **Session Info**
-            👤 User: {bot.current_user}
-            📅 Date: {bot.current_date}
-            🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
-            """)
-
+    
             # Tabs pour organiser l'information
             tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
 
@@ -3455,12 +3441,19 @@ async def main_async():
                 st.sidebar.text(f"Last Update: {bot.current_date}")
     
                 # Attendre avant la prochaine mise à jour
-                time.sleep(0.5)  # Réduit à 0.5 seconde pour des mises à jour plus fréquentes
+                await asyncio.sleep(0.5)  # Réduit à 0.5 seconde pour des mises à jour plus fréquentes
                 st.rerun()
 
     except Exception as e:
         st.error(f"❌ Application error: {str(e)}")
         logger.error(f"Main error: {e}")
 
-if __name__ == "__main__":
-    main()
+# Ajoutez cette fonction main() ici
+def main():
+    if 'asyncio_loop' not in st.session_state:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        st.session_state.asyncio_loop = loop
+    
+    # Exécution de la version asynchrone
+    st.session_state.asyncio_loop.run_until_complete(main_async())
