@@ -220,7 +220,6 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        from trading_bot import TradingBotM4  # Assurez-vous que c'est le bon chemin
         bot = TradingBotM4()
         bot.current_date = "2025-06-14 00:25:31"
         bot.current_user = "Patmoorea"
@@ -1535,22 +1534,23 @@ Take Profit: {take_profit}"""
                     # Récupération des données
                     market_data = await self.get_latest_data()
                     if market_data:
-                     # Calcul des indicateurs
+                        # Calcul des indicateurs
                         indicators = await self.calculate_indicators('BTC/USDC')
-                    
-                    # Analyse des signaux avec les deux paramètres
+                
+                        # Analyse des signaux avec les deux paramètres
                         decision = await self.analyze_signals(market_data, indicators)
-                    
+                
                         if decision and decision.get('should_trade', False):
                             trade_result = await self.execute_real_trade(decision)
                             if trade_result:
                                 logger.info(f"Trade exécuté: {trade_result['id']}")
-                            
-                        # Mise à jour du portfolio
+                        
+                        # Mise à jour du portfolio et du dashboard
                         await self.get_real_portfolio()
-                    
-                    await asyncio.sleep(1)
+                        await self.update_dashboard()  # Ajoutez cette ligne
                 
+                    await asyncio.sleep(1)
+            
                 except Exception as loop_error:
                     logger.error(f"Erreur dans la boucle: {loop_error}")
                     await asyncio.sleep(5)
@@ -1558,6 +1558,7 @@ Take Profit: {take_profit}"""
                 
         except Exception as e:
             logger.error(f"Erreur fatale: {e}")
+            
             if hasattr(self, 'telegram'):
                 try:
                     await self.telegram.send_message(
@@ -3070,7 +3071,24 @@ async def run_trading_bot():
         except Exception as e:
             logger.error(f"Erreur calcul PnL: {e}")
             return None
-
+        
+async def update_dashboard(self):
+    """Met à jour le dashboard en temps réel"""
+    try:
+        # Récupération du portfolio
+        portfolio = await self.get_real_portfolio()
+        
+        # Mise à jour des métriques
+        st.session_state.portfolio = portfolio
+        st.session_state.latest_data = self.latest_data
+        st.session_state.indicators = self.indicators
+        
+        # Force la mise à jour
+        st.rerun()
+        
+    except Exception as e:
+        logger.error(f"Erreur mise à jour dashboard: {e}")
+        
 def _calculate_supertrend(self, data):
     """Calcule l'indicateur Supertrend"""
     try:
@@ -3135,6 +3153,14 @@ def _calculate_supertrend(self, data):
 def main():
     st.title("Trading Bot Ultimate v4 🤖")
     
+    # Initialisation de l'état
+    if 'portfolio' not in st.session_state:
+        st.session_state.portfolio = None
+    if 'latest_data' not in st.session_state:
+            st.session_state.latest_data = None
+    if 'indicators' not in st.session_state:
+        st.session_state.indicators = None
+        
     try:
         # Get or create bot instance
         bot = get_bot()
