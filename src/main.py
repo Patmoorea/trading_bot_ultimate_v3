@@ -295,17 +295,21 @@ def initialize_websocket(bot):
         except Exception as e:
             logger.error(f"WebSocket initialization error: {e}")
             return False
-async def handle_socket_message(bot, socket):
+async def handle_socket_message(self, socket):
     """Handle incoming WebSocket messages"""
     try:
         async with socket as ts:
             while True:
-                msg = await ts.recv()
-                if msg:
-                    await process_ws_message(bot, msg)
+                async with asyncio.timeout(5.0):  # Ajout du timeout
+                    msg = await ts.recv()
+                    if msg:
+                        await self.process_ws_message(msg)
+    except asyncio.TimeoutError:
+        logger.warning("WebSocket timeout - attempting reconnect")
+        self.ws_connection['enabled'] = False
     except Exception as e:
         logger.error(f"Socket error: {e}")
-        bot.ws_connection['enabled'] = False
+        self.ws_connection['enabled'] = False
 
 async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
@@ -1178,35 +1182,40 @@ class TradingBotM4:
 
     async def trading_loop(self):
         """Boucle principale de trading"""
-        while True:
+        while st.session_state.bot_running:
             try:
-                # Mise à jour des données
-                data = await self.get_latest_data()
-                if data:
-                    for pair in config["TRADING"]["pairs"]:
+                # Création d'un nouveau contexte de tâche pour le timeout
+                async with asyncio.timeout(10):  # 10 secondes de timeout global
+                    # Récupération des données
+                    market_data = await self.get_latest_data()
+                    if market_data:
                         # Calcul des indicateurs pour chaque symbole
-                        indicators = await self.calculate_indicators(pair)
-                        if indicators:
-                            # Analyse des signaux
-                            signals = await self.analyze_signals(data)
-                        
-                            if signals:
-                                # Construction de la décision
-                                decision = await self.analyze_signals(data, indicators)
+                        for pair in config["TRADING"]["pairs"]:
+                            indicators = await self.calculate_indicators(pair)
+                            if indicators:
+                                # Analyse des signaux
+                                signals = await self.analyze_signals(market_data, indicators)
                             
-                                if decision and decision.get('should_trade', False):
-                                    trade_result = await self.execute_real_trade(decision)
+                                if signals and signals.get('should_trade', False):
+                                    trade_result = await self.execute_real_trade(signals)
                                     if trade_result:
-                                        logger.info(f"Trade exécuté: {trade_result['id']}")
-                                    
-                    # Mise à jour du portfolio
-                    await self.get_real_portfolio()
-                
+                                        logger.info(f"✅ Trade exécuté: {trade_result}")
+
+                        # Mise à jour du portfolio
+                        portfolio = await self.get_real_portfolio()
+                        if portfolio:
+                            st.session_state.portfolio = portfolio
+                            st.session_state.latest_data = market_data
+                            st.session_state.indicators = indicators
+
                 # Attente avant la prochaine itération
                 await asyncio.sleep(1)
-            
+
+            except asyncio.TimeoutError:
+                logger.warning("⚠️ Timeout dans la boucle principale")
+                await asyncio.sleep(5)
             except Exception as e:
-                logger.error(f"Erreur dans la boucle: {str(e)}")
+                logger.error(f"❌ Erreur dans la boucle: {str(e)}")
                 await asyncio.sleep(5)
                 
     async def study_market(self, period="7d"):
@@ -1584,14 +1593,14 @@ Take Profit: {take_profit}"""
             # Configuration initiale
             if not await self.setup_real_exchange():
                 raise Exception("Échec configuration exchange")
-        
+    
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
 
             # Mise à jour de la date et de l'utilisateur
-            self.current_date = "2025-06-14 05:11:03"
+            self.current_date = "2025-06-14 18:51:26"  # Mise à jour avec la date actuelle
             self.current_user = "Patmoorea"
-        
+    
             logger.info(f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
@@ -1602,82 +1611,63 @@ Take Profit: {take_profit}"""
 ╚═════════════════════════════════════════════════════════════╝
                 """)
 
-            # Création d'un thread pour la boucle de trading
-            def trading_loop():
-                while st.session_state.bot_running:
-                    try:
-                        # Création d'un nouveau loop pour le thread
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                    
+            # Mise à jour de l'état du bot
+            st.session_state.bot_running = True
+
+            # Boucle de trading asynchrone
+            while st.session_state.bot_running:
+                try:
+                    # Utilisation du context manager timeout
+                    async with asyncio.timeout(10):  # 10 secondes timeout
                         # Récupération des données
-                        market_data = loop.run_until_complete(self.get_latest_data())
+                        market_data = await self.get_latest_data()
                         if market_data:
                             # Calcul des indicateurs
-                            indicators = loop.run_until_complete(
-                                self.calculate_indicators('BTC/USDC')
-                            )
-                        
+                            indicators = await self.calculate_indicators('BTC/USDC')
+                    
                             # Analyse des signaux
-                            decision = loop.run_until_complete(
-                                self.analyze_signals(market_data, indicators)
-                            )
-                        
+                            decision = await self.analyze_signals(market_data, indicators)
+                    
                             if decision and decision.get('should_trade', False):
-                                trade_result = loop.run_until_complete(
-                                    self.execute_real_trade(decision)
-                                )
+                                trade_result = await self.execute_real_trade(decision)
                                 if trade_result:
                                     logger.info(f"Trade exécuté: {trade_result['id']}")
-                        
+                    
                             # Mise à jour du portfolio
-                            portfolio = loop.run_until_complete(self.get_real_portfolio())
-                        
+                            portfolio = await self.get_real_portfolio()
+                    
                             # Mise à jour de l'état
                             if portfolio:
                                 st.session_state.portfolio = portfolio
                                 st.session_state.latest_data = market_data
                                 st.session_state.indicators = indicators
-                            
-                        time.sleep(1)  # Délai entre les itérations
-                    
-                    except Exception as loop_error:
-                        logger.error(f"Erreur dans la boucle: {loop_error}")
-                        time.sleep(5)
-                        continue
-                    finally:
-                        loop.close()
-
-            # Démarrage du thread de trading
-            trading_thread = threading.Thread(target=trading_loop)
-            trading_thread.daemon = True  # Le thread s'arrêtera quand le programme principal s'arrête
-        
-            # Stockage du thread dans la session
-            st.session_state.trading_thread = trading_thread
-        
-            # Démarrage du thread
-            trading_thread.start()
-        
-            # Mise à jour de l'état du bot
-            st.session_state.bot_running = True
-        
-            # Message de confirmation
-            logger.info("✅ Bot de trading démarré avec succès")
                 
+                    # Attente avant la prochaine itération
+                    await asyncio.sleep(1)
+            
+                except asyncio.TimeoutError:
+                    logger.warning("⚠️ Timeout dans la boucle de trading")
+                    await asyncio.sleep(5)
+                except Exception as loop_error:
+                    logger.error(f"Erreur dans la boucle: {loop_error}")
+                    await asyncio.sleep(5)
+
+            logger.info("✅ Bot de trading démarré avec succès")
+            
         except Exception as e:
             logger.error(f"Erreur fatale: {e}")
             st.session_state.bot_running = False
         
-        # Notification Telegram en cas d'erreur
-        if hasattr(self, 'telegram'):
-            try:
-                await self.telegram.send_message(
-                    f"🚨 Erreur critique du bot:\n{str(e)}\n"
-                    f"Trader: {self.current_user}"
-                )
-            except:
-                pass
-        raise
+            # Notification Telegram en cas d'erreur
+            if hasattr(self, 'telegram'):
+                try:
+                    await self.telegram.send_message(
+                        f"🚨 Erreur critique du bot:\n{str(e)}\n"
+                        f"Trader: {self.current_user}"
+                    )
+                except Exception as telegram_error:
+                    logger.error(f"Erreur envoi Telegram: {telegram_error}")
+            raise
 
     async def create_dashboard(self):
         """Crée le dashboard Streamlit"""
