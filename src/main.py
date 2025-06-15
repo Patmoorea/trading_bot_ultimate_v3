@@ -276,6 +276,44 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Variables globales de contrôle du nettoyage
+cleanup_lock = asyncio.Lock()
+cleanup_in_progress = False
+last_cleanup_time = 0
+CLEANUP_COOLDOWN = 5  # Secondes minimum entre les nettoyages
+
+async def setup_streams(bot):
+    """Configure and setup WebSocket streams"""
+    try:
+        tasks = []
+        
+        # Configuration du ticker
+        logger.info("Setting up ticker stream...")
+        ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
+        tasks.append(asyncio.create_task(
+            handle_socket_message(bot, ticker_socket, 'ticker')
+        ))
+        
+        # Configuration de l'orderbook
+        logger.info("Setting up orderbook stream...")
+        depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
+        tasks.append(asyncio.create_task(
+            handle_socket_message(bot, depth_socket, 'depth')
+        ))
+        
+        # Configuration des klines
+        logger.info("Setting up klines stream...")
+        kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
+        tasks.append(asyncio.create_task(
+            handle_socket_message(bot, kline_socket, 'kline')
+        ))
+        
+        return tasks
+        
+    except Exception as e:
+        logger.error(f"❌ Stream setup error: {e}")
+        return None
+    
 async def initialize_websocket(bot):
     """Initialize WebSocket connection"""
     try:
@@ -466,7 +504,7 @@ async def close_websocket(bot):
         return False
 
 async def handle_socket_message(bot, socket, socket_type):
-    """Gestion des messages WebSocket"""
+    """Gestion des messages WebSocket avec date mise à jour"""
     try:
         async with socket as tscm:
             while True:
@@ -476,8 +514,10 @@ async def handle_socket_message(bot, socket, socket_type):
                     if msg is None:
                         continue
                         
-                    # Mise à jour du timestamp
-                    bot.ws_connection['last_message'] = time.time()
+                    # Mise à jour des timestamps
+                    current_time = time.time()
+                    bot.ws_connection['last_message'] = current_time
+                    bot.current_date = "2025-06-15 07:09:57"
                     
                     # Traitement selon le type
                     if socket_type == 'ticker' and 'e' in msg and msg['e'] == '24hrTicker':
@@ -488,7 +528,6 @@ async def handle_socket_message(bot, socket, socket_type):
                         await handle_kline_message(bot, msg)
                         
                 except asyncio.TimeoutError:
-                    # Vérification de la connexion
                     if time.time() - bot.ws_connection['last_message'] > 60:
                         raise Exception("Connection lost - no messages received")
                     continue
@@ -499,15 +538,33 @@ async def handle_socket_message(bot, socket, socket_type):
                     
     except Exception as e:
         logger.error(f"❌ Socket error: {e}")
-        
-        if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
+        if not cleanup_in_progress and bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
             bot.ws_connection['reconnect_count'] += 1
             logger.info(f"🔄 Attempting reconnection {bot.ws_connection['reconnect_count']}/{bot.ws_connection['max_reconnects']}")
             await reset_websocket(bot)
         else:
             logger.error("❌ Max reconnection attempts reached")
-            # Réinitialisation du compteur pour permettre de futures tentatives
             bot.ws_connection['reconnect_count'] = 0
+
+async def update_trading_data(bot):
+    """Mise à jour des données de trading"""
+    try:
+        logger.info(f"📅 Mise à jour données à {bot.current_date}")
+        
+        # Récupération des données BTC/USDC
+        logger.info("📊 Récupération données pour BTC/USDC")
+        btc_data = await fetch_market_data(bot, "BTCUSDC")
+        if btc_data:
+            bot.latest_data["BTCUSDC"] = btc_data
+            
+        # Récupération des données ETH/USDC
+        logger.info("📊 Récupération données pour ETH/USDC")
+        eth_data = await fetch_market_data(bot, "ETHUSDC")
+        if eth_data:
+            bot.latest_data["ETHUSDC"] = eth_data
+            
+    except Exception as e:
+        logger.error(f"❌ Erreur mise à jour données: {e}")
 
 async def handle_ticker_message(bot, msg):
     """Gestion des messages de ticker"""
@@ -664,75 +721,61 @@ async def process_market_data(bot, symbol):
         logger.error(f"❌ Erreur traitement données {symbol}: {e}")
             
 async def cleanup_session(bot):
-    """Nettoyage d'une session"""
+    """Nettoyage d'une session avec verrou et cooldown"""
+    global cleanup_in_progress, last_cleanup_time
+    
     try:
-        # Éviter le nettoyage si déjà en cours
-        if hasattr(bot, '_cleaning') and bot._cleaning:
+        # Vérification du cooldown
+        current_time = time.time()
+        if current_time - last_cleanup_time < CLEANUP_COOLDOWN:
             return
             
-        bot._cleaning = True
-        
-        # Nettoyage des ressources
-        await cleanup_resources(bot)
-        
-        logger.info("✅ Session cleaned successfully")
-        
+        # Utilisation d'un verrou pour éviter les nettoyages simultanés
+        async with cleanup_lock:
+            if cleanup_in_progress:
+                return
+                
+            cleanup_in_progress = True
+            last_cleanup_time = current_time
+            
+            try:
+                # Nettoyage des ressources
+                await cleanup_resources(bot)
+                
+                # Un seul message de log
+                logger.info("✅ Session cleaned successfully")
+                logger.info("""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ All resources cleaned successfully              ║
+╚═════════════════════════════════════════════════╝
+                """)
+                
+            finally:
+                cleanup_in_progress = False
+                
     except Exception as e:
-        logger.error(f"❌ Session cleanup error: {e}")
-    finally:
-        bot._cleaning = False
+        logger.error(f"❌ Cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """Nettoyage des ressources"""
+    """Nettoyage des ressources avec vérification"""
     try:
-        # Fermeture du WebSocket si actif
-        if bot.ws_connection and bot.ws_connection.get('enabled'):
+        # Mise à jour de la date
+        bot.current_date = "2025-06-15 07:09:57"
+        bot.current_user = "Patmoorea"
+        
+        # Fermeture des WebSockets si actifs
+        if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
             await close_websocket(bot)
             
-        # Nettoyage des données
+        # Réinitialisation des données
         bot.latest_data = {}
         bot.indicators = {}
         
-        # Une seule notification de nettoyage
-        logger.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned successfully              ║
-╚═════════════════════════════════════════════════╝
-        """)
-        
     except Exception as e:
         logger.error(f"❌ Resource cleanup error: {e}")
-                
-async def cleanup_resources(bot):
-    """Nettoie toutes les ressources"""
-    try:
-        # Nettoyage des sessions
-        await cleanup_session(bot)
-        
-        # Nettoyage des buffers
-        if hasattr(bot, 'buffer'):
-            bot.buffer = None
-        
-        # Nettoyage des données
-        if hasattr(bot, 'latest_data'):
-            bot.latest_data = {}
-        
-        # Nettoyage des indicateurs
-        if hasattr(bot, 'indicators'):
-            bot.indicators = {}
-        
-        logger.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned successfully              ║
-╚═════════════════════════════════════════════════╝
-        """)
-        
-    except Exception as e:
-        logger.error(f"❌ Cleanup error: {e}")
+        raise
         
 async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
@@ -1351,38 +1394,6 @@ class TradingBotM4:
         
         except Exception as e:
             logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            return None
-
-    async def setup_streams(bot):
-        """Configure and setup WebSocket streams"""
-        try:
-            tasks = []
-        
-            # Configuration du ticker
-            logger.info("Setting up ticker stream...")
-            ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
-            tasks.append(asyncio.create_task(
-                handle_socket_message(bot, ticker_socket, 'ticker')
-            ))
-        
-            # Configuration de l'orderbook
-            logger.info("Setting up orderbook stream...")
-            depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
-            tasks.append(asyncio.create_task(
-                handle_socket_message(bot, depth_socket, 'depth')
-            ))
-        
-            # Configuration des klines
-            logger.info("Setting up klines stream...")
-            kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
-            tasks.append(asyncio.create_task(
-                handle_socket_message(bot, kline_socket, 'kline')
-            ))
-        
-            return tasks
-        
-        except Exception as e:
-            logger.error(f"❌ Stream setup error: {e}")
             return None
 
     async def _handle_stream(self, stream):
