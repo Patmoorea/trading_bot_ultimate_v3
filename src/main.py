@@ -112,6 +112,7 @@ WS_RECONNECT_DELAY = 1.0  # délai entre les tentatives de reconnexion
 WS_MESSAGE_TIMEOUT = 30.0  # timeout pour les messages websocket
 WS_MAX_RETRIES = 2        # nombre maximum de tentatives de reconnexion
 
+# Définition de la classe SessionManager
 class SessionManager:
     def __init__(self):
         self.sessions = set()
@@ -141,6 +142,54 @@ class SessionManager:
             """)
         except Exception as e:
             logging.error(f"❌ Session cleanup error: {e}")
+
+# Instance globale du SessionManager
+session_manager = SessionManager()
+
+class RegimeDetector:
+    """Détecteur de régimes de marché"""
+    def __init__(self):
+        self.current_regime = None
+        self.logger = logging.getLogger(__name__)
+
+    def predict(self, indicators_analysis):
+        try:
+            regime = "Unknown"
+            if indicators_analysis:
+                trend_strength = 0
+                volatility = 0
+                volume = 0
+                
+                for timeframe_data in indicators_analysis.values():
+                    if 'trend' in timeframe_data:
+                        trend_strength += timeframe_data['trend'].get('trend_strength', 0)
+                    if 'volatility' in timeframe_data:
+                        volatility += timeframe_data['volatility'].get('current_volatility', 0)
+                    if 'volume' in timeframe_data:
+                        volume += float(timeframe_data['volume'].get('volume_profile', {}).get('strength', 0))
+
+                if trend_strength > 0.7:
+                    regime = "Trending"
+                elif volatility > 0.7:
+                    regime = "Volatile"
+                elif volume > 0.7:
+                    regime = "High Volume"
+                else:
+                    regime = "Ranging"
+
+            self.current_regime = regime
+            self.logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           MARKET REGIME DETECTION                ║
+╠═════════════════════════════════════════════════╣
+║ Régime: {regime}
+╚═════════════════════════════════════════════════╝
+            """)
+            return regime
+
+        except Exception as e:
+            self.logger.error(f"❌ Erreur détection régime: {e}")
+            return "Error"
 
 def setup_event_loop() -> AbstractEventLoop:
     """Configure l'event loop pour Streamlit"""
@@ -263,6 +312,11 @@ def get_bot():
                 'last_message': time.time(),
                 'tasks': []
             }
+            
+            # Initialisation des composants
+            bot.regime_detector = RegimeDetector()
+            bot.latest_data = {}
+            bot.indicators = {}
             
             logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
             st.session_state.bot_instance = bot
@@ -432,6 +486,10 @@ async def initialize_websocket(bot):
 async def cleanup_resources(bot):
     """Nettoyage des ressources"""
     try:
+        if bot is None:
+            logger.warning("Bot instance is None, skipping cleanup")
+            return
+
         # Fermeture des WebSockets
         if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
             await close_websocket(bot)
@@ -444,23 +502,18 @@ async def cleanup_resources(bot):
             bot.client_session = None
         
         # Nettoyage des autres ressources du bot
-        bot.latest_data = {}
-        bot.indicators = {}
+        if hasattr(bot, 'latest_data'):
+            bot.latest_data = {}
+        if hasattr(bot, 'indicators'):
+            bot.indicators = {}
         
         # Nettoyage global des sessions
         await session_manager.cleanup()
         
-        logger.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned successfully              ║
-╚═════════════════════════════════════════════════╝
-        """)
+        logger.info("✅ Resources cleaned successfully")
         
     except Exception as e:
         logger.error(f"❌ Resource cleanup error: {e}")
-        raise
  
 async def cleanup_client_session(bot):
     """Nettoyage spécifique de la session client"""
@@ -4115,83 +4168,39 @@ async def shutdown():
 
 def main():
     """Point d'entrée principal de l'application"""
-    # Initialisation de l'état de session
-    init_session_state()
-    
     try:
-        # Création et configuration de la boucle événementielle
+        # Initialisation de l'état de session
+        init_session_state()
+        
+        # Configuration de la boucle événementielle
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
         try:
-            # Exécution de la coroutine principale avec un timeout augmenté
-            loop.run_until_complete(
-                asyncio.wait_for(main_async(), timeout=180)  # Augmenté à 180 secondes
-            )
-                
-        except asyncio.TimeoutError:
-            logger.error("Main execution timed out")
-            st.error("Application timed out. Please refresh the page.")
-            
+            # Exécution de la coroutine principale
+            loop.run_until_complete(main_async())
         except Exception as e:
             logger.error(f"Error in main_async: {e}")
             st.error(f"An error occurred: {str(e)}")
-            
         finally:
-            # Nettoyage des ressources
             try:
-                # S'assurer de la fermeture de toutes les sessions
+                # Nettoyage des ressources
                 if 'bot_instance' in st.session_state:
-                    bot = st.session_state.bot_instance
-                    if hasattr(bot, 'client_session') and bot.client_session:
-                        loop.run_until_complete(bot.client_session.close())
-                    loop.run_until_complete(cleanup_resources(bot))
-                
-                # Récupération des tâches actives
-                pending = asyncio.all_tasks(loop)
-                
-                # Annulation des tâches en cours
-                for task in pending:
-                    task.cancel()
-                    
-                # Attente de la fin des tâches
-                if pending:
-                    loop.run_until_complete(
-                        asyncio.gather(*pending, return_exceptions=True)
-                    )
-                    
+                    loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
             except Exception as cleanup_error:
-                logger.error(f"Error during cleanup: {cleanup_error}")
-                
+                logger.error(f"Cleanup error: {cleanup_error}")
             finally:
                 loop.close()
-
+                
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        sys.exit(1)
+        
 if __name__ == "__main__":
     try:
-        # Configuration initiale
-        setup_event_loop()
-        init_session_state()
-        
-        # Création du bot
-        bot = get_bot()
-        if not bot:
-            logger.error("❌ Échec de l'initialisation du bot")
-            sys.exit(1)
-            
-        # Démarrage de la boucle principale
-        loop = asyncio.get_event_loop()
-        try:
-            loop.run_until_complete(main_async())
-        except KeyboardInterrupt:
-            logger.info("👋 Arrêt manuel demandé")
-        except Exception as e:
-            logger.error(f"❌ Erreur dans la boucle principale: {e}")
-        finally:
-            # Nettoyage final
-            if 'bot' in locals():
-                loop.run_until_complete(cleanup_resources(bot))
-            loop.close()
-            
+        main()
+    except KeyboardInterrupt:
+        logger.info("👋 Arrêt manuel demandé")
     except Exception as e:
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
