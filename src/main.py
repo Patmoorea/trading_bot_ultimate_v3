@@ -426,20 +426,72 @@ def get_bot():
     """Create or get the bot instance"""
     try:
         if 'bot_instance' not in st.session_state:
+            # Création du bot
             bot = TradingBotM4()
             
-            # Initialisation asynchrone du bot
-            loop = asyncio.get_event_loop()
-            if not loop.run_until_complete(bot.start()):
-                raise Exception("Failed to start bot")
+            # Configuration de l'event loop
+            if not st.session_state.get('loop'):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                st.session_state.loop = loop
             
-            logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
+            # Démarrage du bot de manière asynchrone
+            async def initialize_bot():
+                if not await bot.start():
+                    raise Exception("Failed to start bot")
+                return bot
+
+            # Exécution de l'initialisation
+            try:
+                bot = st.session_state.loop.run_until_complete(initialize_bot())
+            except RuntimeError as e:
+                if "This event loop is already running" in str(e):
+                    # Utiliser nest_asyncio si l'event loop est déjà en cours
+                    nest_asyncio.apply()
+                    bot = st.session_state.loop.run_until_complete(initialize_bot())
+                else:
+                    raise
+            
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║             BOT INSTANCE CREATED                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: {bot.ws_connection['status']}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """)
+            
             st.session_state.bot_instance = bot
             
         return st.session_state.bot_instance
         
     except Exception as e:
-        logger.error(f"Error creating bot instance: {e}")
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║             BOT CREATION ERROR                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """)
+        if 'bot_instance' in st.session_state:
+            del st.session_state.bot_instance
+        return None
+
+# Ajouter cette fonction d'initialisation de l'event loop
+def setup_asyncio():
+    """Configure l'environnement asyncio pour Streamlit"""
+    try:
+        if not st.session_state.get('loop'):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            st.session_state.loop = loop
+            nest_asyncio.apply()
+        return st.session_state.loop
+    except Exception as e:
+        logger.error(f"Error setting up asyncio: {e}")
         return None
 
 async def setup_streams(bot):
