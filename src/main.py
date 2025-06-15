@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import re
 import time
 import threading
+import signal
 from datetime import datetime, timezone
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError
@@ -327,11 +328,18 @@ async def initialize_websocket(bot):
         try:
             logger.info("🔄 Initializing WebSocket connection...")
             
-            # Fermeture propre de toute connexion existante
+            # Fermeture silencieuse de toute connexion existante
             if hasattr(bot, 'binance_ws') and bot.binance_ws:
                 try:
-                    # Fermeture silencieuse de la connexion existante
+                    # Fermeture silencieuse sans afficher de messages de cleanup
                     await bot.binance_ws.close_connection()
+                    if bot.socket_manager:
+                        await bot.socket_manager.close()
+                    bot.ws_connection = {
+                        'enabled': False,
+                        'status': 'disconnected',
+                        'tasks': []
+                    }
                 except Exception as close_error:
                     logger.warning(f"⚠️ Error closing existing connection: {close_error}")
                 finally:
@@ -362,7 +370,7 @@ async def initialize_websocket(bot):
                 )
                 
                 # Mise à jour des dates avec la nouvelle valeur
-                bot.current_date = "2025-06-15 07:26:23"
+                bot.current_date = "2025-06-15 07:29:36"
                 bot.current_user = "Patmoorea"
                 
             except asyncio.TimeoutError:
@@ -382,9 +390,6 @@ async def initialize_websocket(bot):
                     streams = await setup_streams(bot)
                     if not streams:
                         raise Exception("Failed to setup streams")
-                    
-                    # Vérification de la connexion
-                    await asyncio.sleep(1)
                     
                     # Mise à jour du statut final
                     bot.ws_connection.update({
@@ -468,14 +473,17 @@ async def close_websocket(bot):
                 try:
                     if not task.done():
                         task.cancel()
-                    await task
+                        try:
+                            await asyncio.wait_for(task, timeout=5.0)
+                        except (asyncio.TimeoutError, asyncio.CancelledError):
+                            pass
                 except:
                     pass
                     
         # Fermeture du socket manager
         if hasattr(bot, 'socket_manager') and bot.socket_manager:
             try:
-                await bot.socket_manager.close()
+                await asyncio.wait_for(bot.socket_manager.close(), timeout=5.0)
             except:
                 pass
             finally:
@@ -484,7 +492,7 @@ async def close_websocket(bot):
         # Fermeture du client
         if hasattr(bot, 'binance_ws') and bot.binance_ws:
             try:
-                await bot.binance_ws.close_connection()
+                await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=5.0)
             except:
                 pass
             finally:
@@ -506,46 +514,37 @@ async def close_websocket(bot):
 
 async def handle_socket_message(bot, socket, socket_type):
     """Gestion des messages WebSocket avec date mise à jour"""
-    try:
-        async with socket as tscm:
-            while True:
+    while not asyncio.current_task().cancelled():
+        try:
+            async with socket as tscm:
                 try:
                     msg = await asyncio.wait_for(tscm.recv(), timeout=30)
-                    
                     if msg is None:
                         continue
                         
                     # Mise à jour des timestamps
-                    current_time = time.time()
-                    bot.ws_connection['last_message'] = current_time
-                    bot.current_date = "2025-06-15 07:09:57"
+                    bot.ws_connection['last_message'] = time.time()
+                    bot.current_date = "2025-06-15 07:35:32"
                     
                     # Traitement selon le type
-                    if socket_type == 'ticker' and 'e' in msg and msg['e'] == '24hrTicker':
-                        await handle_ticker_message(bot, msg)
-                    elif socket_type == 'depth' and 'e' in msg and msg['e'] == 'depthUpdate':
-                        await handle_depth_message(bot, msg)
-                    elif socket_type == 'kline' and 'e' in msg and msg['e'] == 'kline':
-                        await handle_kline_message(bot, msg)
+                    await process_socket_message(bot, msg, socket_type)
                         
+                except asyncio.CancelledError:
+                    logger.debug(f"Socket {socket_type} cancelled")
+                    return
+                    
                 except asyncio.TimeoutError:
-                    if time.time() - bot.ws_connection['last_message'] > 60:
-                        raise Exception("Connection lost - no messages received")
                     continue
                     
-                except Exception as e:
-                    logger.error(f"❌ Message processing error: {e}")
-                    raise
-                    
-    except Exception as e:
-        logger.error(f"❌ Socket error: {e}")
-        if not cleanup_in_progress and bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
-            bot.ws_connection['reconnect_count'] += 1
-            logger.info(f"🔄 Attempting reconnection {bot.ws_connection['reconnect_count']}/{bot.ws_connection['max_reconnects']}")
-            await reset_websocket(bot)
-        else:
-            logger.error("❌ Max reconnection attempts reached")
-            bot.ws_connection['reconnect_count'] = 0
+        except Exception as e:
+            if "shutdown" in str(e).lower() or "closed" in str(e).lower():
+                return
+            
+            logger.error(f"❌ Socket error: {e}")
+            if not bot.cleanup_in_progress:
+                await asyncio.sleep(1)
+                continue
+            return
 
 async def update_trading_data(bot):
     """Mise à jour des données de trading"""
@@ -969,6 +968,9 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4 - Version unifiée et mise à jour le 2025-06-10 18:48:29"""
     def __init__(self):
+        self.cleanup_in_progress = False
+        self.shutdown_requested = False
+        
         self.logger = logging.getLogger(__name__)
         
         # Initialisation du client Binance
@@ -3987,6 +3989,21 @@ async def main_async():
             except Exception as cleanup_error:
                 logger.error(f"Cleanup error: {cleanup_error}")
 
+async def shutdown():
+    """Arrêt propre de l'application"""
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    [task.cancel() for task in tasks]
+    
+    logger.info("🔄 Shutting down...")
+    try:
+        await asyncio.gather(*tasks, return_exceptions=True)
+    except Exception as e:
+        logger.error(f"Shutdown error: {e}")
+    
+    loop = asyncio.get_event_loop()
+    loop.stop()
+    loop.close()
+    
 def main():
     if 'asyncio_loop' not in st.session_state:
         loop = asyncio.new_event_loop()
@@ -3994,18 +4011,29 @@ def main():
         st.session_state.asyncio_loop = loop
     
     try:
+        # Gestionnaire de signaux pour Ctrl+C
+        loop = st.session_state.asyncio_loop
+        signals = (signal.SIGTERM, signal.SIGINT)
+        for s in signals:
+            loop.add_signal_handler(
+                s, lambda s=s: asyncio.create_task(shutdown())
+            )
+            
         # S'assurer que l'event loop est en cours d'exécution
-        if st.session_state.asyncio_loop.is_closed():
-            st.session_state.asyncio_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(st.session_state.asyncio_loop)
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            st.session_state.asyncio_loop = loop
+        
+        # Configuration du timeout global
+        loop.slow_callback_duration = 0.25  # 250ms warning pour les callbacks lents
         
         # Exécuter main_async
-        st.session_state.asyncio_loop.run_until_complete(main_async())
+        loop.run_until_complete(main_async())
         
     except Exception as e:
         logger.error(f"Main loop error: {e}")
     finally:
-        # Nettoyage propre
         try:
             loop = st.session_state.asyncio_loop
             if not loop.is_closed():
@@ -4014,8 +4042,17 @@ def main():
                 for task in pending:
                     task.cancel()
                 
-                # Attendre que toutes les tâches soient terminées
-                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                # Attendre la fin des tâches avec timeout
+                try:
+                    loop.run_until_complete(
+                        asyncio.wait_for(
+                            asyncio.gather(*pending, return_exceptions=True),
+                            timeout=5.0
+                        )
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("Timeout waiting for tasks to complete")
+                
                 loop.close()
         except Exception as cleanup_error:
             logger.error(f"Cleanup error: {cleanup_error}")
