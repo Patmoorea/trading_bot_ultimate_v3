@@ -428,21 +428,10 @@ def get_bot():
         if 'bot_instance' not in st.session_state:
             bot = TradingBotM4()
             
-            bot.ws_connection = {
-                'enabled': False,
-                'reconnect_count': 0,
-                'max_reconnects': 3,
-                'last_connection': time.time(),
-                'status': 'disconnected',
-                'last_message': time.time(),
-                'tasks': []
-            }
-            
-            # Initialisation des composants
-            bot.regime_detector = RegimeDetector()
-            bot.latest_data = {}
-            bot.indicators = {}
-            bot.qsvm = QuantumSVM(n_qubits=4)  # Initialisation avec 4 qubits
+            # Initialisation asynchrone du bot
+            loop = asyncio.get_event_loop()
+            if not loop.run_until_complete(bot.start()):
+                raise Exception("Failed to start bot")
             
             logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
             st.session_state.bot_instance = bot
@@ -1232,6 +1221,8 @@ class TradingBotM4:
             logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
         
+        self.ws_manager = WebSocketManager(self)
+         
         # Configuration du WebSocket - AJOUTEZ CE CODE ICI
         self.ws_connection = {
             'enabled': False,
@@ -1243,6 +1234,29 @@ class TradingBotM4:
             'last_error': None
         }
         
+    async def start(self):
+        """Démarre le bot"""
+        try:
+            logger.info("Starting bot initialization...")
+        
+            # Démarrage du WebSocket Manager
+            if not await self.ws_manager.start():
+                raise Exception("Failed to start WebSocket manager")
+            
+            # Configuration des composants
+            if not await self._setup_components():
+                raise Exception("Failed to setup components")
+            
+            # Mise à jour du statut
+            self.initialized = True
+            logger.info("✅ Bot initialized successfully")
+            return True
+        
+        except Exception as e:
+            logger.error(f"❌ Bot initialization error: {e}")
+            await self._cleanup()
+            return False
+    
         """Initialisation du bot de trading"""
         self.buffer = CircularBuffer(maxlen=1000)
         self.indicators = {}
@@ -1591,19 +1605,16 @@ class TradingBotM4:
     async def _setup_components(self):
         """Configure les composants du bot"""
         try:
-            # Initialisation du MultiStreamManager
-            self.ws_manager = WebSocketManager(self)
-            
-            # Configuration de l'exchange
-            self.websocket.setup_exchange("binance")
-            self.buffer = CircularBuffer()
-            
+            # Mettre à jour l'initialisation du WebSocket Manager
+            if not hasattr(self, 'ws_manager'):
+                self.ws_manager = WebSocketManager(self)
+        
             # Interface et monitoring
             self.dashboard = TradingDashboard()
-            
+        
             # News Analyzer
             self.news_analyzer = NewsAnalyzer()
-            
+        
             # Composants principaux
             self.arbitrage_engine = ArbitrageEngine(
                 exchanges=config["ARBITRAGE"]["exchanges"],
@@ -1615,14 +1626,16 @@ class TradingBotM4:
                 price_check=config["ARBITRAGE"]["price_check"],
                 max_slippage=config["ARBITRAGE"]["max_slippage"]
             )
-            
+        
             # Configuration des analyseurs et modèles
             await self._initialize_analyzers()
             await self._initialize_models()
-            
+        
+            return True
+        
         except Exception as e:
             logger.error(f"Setup components error: {e}")
-            raise
+            return False
 
     async def _initialize_analyzers(self):
         """Initialize all analysis components"""
