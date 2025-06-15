@@ -626,7 +626,8 @@ async def setup_streams(bot):
         return None
     
 async def initialize_websocket(bot):
-    """Initialize WebSocket connection
+    """
+    Initialize WebSocket connection with proper error handling and cleanup
     
     Args:
         bot: Instance du bot de trading
@@ -634,92 +635,54 @@ async def initialize_websocket(bot):
     Returns:
         bool: True si l'initialisation est réussie, False sinon
     """
+    # Log de début d'initialisation
+    logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET INITIALIZATION                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+    """)
+    
     # Vérification de l'état d'initialisation
     if hasattr(bot, '_initializing') and bot._initializing:
         logger.warning("⚠️ WebSocket initialization already in progress")
         return False
         
     bot._initializing = True
+    success = False
     
     try:
-        # Fermeture propre des connexions existantes si présentes
-        if hasattr(bot, 'socket_manager') and bot.socket_manager:
-            try:
-                await bot.socket_manager.close()
-            except Exception as close_error:
-                logger.warning(f"⚠️ Error closing existing socket manager: {close_error}")
-            finally:
-                bot.socket_manager = None
-                
-        if hasattr(bot, 'binance_ws') and bot.binance_ws:
-            try:
-                await bot.binance_ws.close_connection()
-            except Exception as close_error:
-                logger.warning(f"⚠️ Error closing existing Binance client: {close_error}")
-            finally:
-                bot.binance_ws = None
-
-        # Création du client Binance avec timeout
-        try:
-            async with asyncio.timeout(30):  # 30 secondes timeout
-                bot.binance_ws = await AsyncClient.create(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET'),
-                    testnet=False,
-                    tld='com'  # Utilisation du domaine principal
-                )
-        except asyncio.TimeoutError:
-            logger.error("❌ Timeout creating Binance client")
-            return False
-            
-        # Configuration du socket manager
-        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+        # Fermeture propre des connexions existantes
+        await cleanup_existing_connections(bot)
         
-        # Configuration des streams avec timeout
-        try:
-            async with asyncio.timeout(30):  # 30 secondes timeout
-                streams = await setup_streams(bot)
-                
-                if not streams:
-                    raise Exception("Failed to setup streams")
-                    
-                # Mise à jour du statut de connexion
-                bot.ws_connection.update({
-                    'enabled': True,
-                    'status': 'connected',
-                    'tasks': streams,
-                    'last_connection': time.time(),
-                    'last_message': time.time(),
-                    'reconnect_count': 0,  # Réinitialisation du compteur
-                    'error_count': 0  # Réinitialisation des erreurs
-                })
-                return True
-                
-        except asyncio.TimeoutError:
-            logger.error("❌ Timeout setting up streams")
+        # Création du client Binance
+        if not await create_binance_client(bot):
             return False
             
+        # Configuration des streams
+        if not await setup_websocket_streams(bot):
+            return False
+            
+        success = True
+        return True
+        
     except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET INITIALIZATION ERROR           ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+        """)
         return False
         
     finally:
         bot._initializing = False
-        
-        # Nettoyage en cas d'échec
-        if not bot.ws_connection.get('enabled', False):
-            if hasattr(bot, 'socket_manager') and bot.socket_manager:
-                try:
-                    await bot.socket_manager.close()
-                except:
-                    pass
-                bot.socket_manager = None
-                
-            if hasattr(bot, 'binance_ws') and bot.binance_ws:
-                try:
-                    await bot.binance_ws.close_connection()
-                except:
-                    pass
-                bot.binance_ws = None
+        if not success:
+            await cleanup_resources(bot)
 
 async def cleanup_resources(bot):
     """Nettoyage des ressources"""
@@ -1346,6 +1309,9 @@ class TradingBotM4:
                 'max_slippage': 0.001
             }
         }
+        
+        # Initialisation du WebSocket Manager (AJOUT ICI)
+        self.ws_manager = WebSocketManager(self)
         
         # Initialisation des buffers et données
         self.buffer = CircularBuffer(maxlen=1000)
@@ -4614,41 +4580,140 @@ async def shutdown():
 
 def main():
     """Point d'entrée principal de l'application"""
+    loop = None
     try:
-        # Affichage du banner de démarrage
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              STARTING APPLICATION                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """)
         
         # Initialisation de l'état de session
         init_session_state()
         
         # Configuration de la boucle événementielle
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
         nest_asyncio.apply()
+        
+        # Stockage de la boucle dans l'état de session
+        st.session_state.loop = loop
         
         try:
             # Exécution de la coroutine principale
             loop.run_until_complete(main_async())
             
+        except asyncio.CancelledError:
+            logger.info("Application cancelled")
         except Exception as e:
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              RUNTIME ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+            """)
             st.error(f"An error occurred: {str(e)}")
             
-        finally:
-            try:
-                # Nettoyage des ressources
-                if 'bot_instance' in st.session_state:
-                    loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
-            except Exception as cleanup_error:
-            finally:
-                loop.close()
-                
     except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              FATAL ERROR                         ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+        """)
         sys.exit(1)
+        
+    finally:
+        try:
+            # Nettoyage propre des ressources
+            if 'bot_instance' in st.session_state and loop and not loop.is_closed():
+                loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
+                
+            # Fermeture propre de la boucle
+            if loop and not loop.is_closed():
+                pending = asyncio.all_tasks(loop)
+                for task in pending:
+                    task.cancel()
+                
+                # Attendre que toutes les tâches soient annulées
+                if pending:
+                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                loop.close()
+            
+        except Exception as cleanup_error:
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(cleanup_error)}
+╚═════════════════════════════════════════════════╝
+            """)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
         logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              KEYBOARD INTERRUPT                  ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Status: Graceful shutdown initiated
+╚═════════════════════════════════════════════════╝
         """)
     except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              CRITICAL ERROR                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
         sys.exit(1)
+    finally:
+        try:
+            # Nettoyage final des ressources
+            if 'bot_instance' in st.session_state:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
+                else:
+                    asyncio.run(cleanup_resources(st.session_state.bot_instance))
+            
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              FINAL CLEANUP                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Status: All resources cleaned
+╚═════════════════════════════════════════════════╝
+            """)
+        except Exception as cleanup_error:
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Error: {str(cleanup_error)}
+╚═════════════════════════════════════════════════╝
+            """)
