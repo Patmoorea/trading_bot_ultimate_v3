@@ -257,7 +257,7 @@ async def setup_streams(bot):
     try:
         tasks = []
         
-        async def setup_single_stream(stream_type, setup_func, symbol='BTCUSDC', interval='1m'):
+        async def setup_single_stream(stream_type, setup_func, symbol='BTCUSDT', interval='1m'):
             """Configure un stream individuel avec retry"""
             retry_count = 0
             while retry_count < MAX_RETRIES:
@@ -376,92 +376,106 @@ async def initialize_websocket(bot):
             
         bot._initializing = True
         
-        async with aiohttp.ClientSession() as session:
-            try:
-                while retry_count < max_retries:
-                    try:
-                        logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
-                        
-                        # Fermeture propre des connexions existantes
-                        if hasattr(bot, 'binance_ws') and bot.binance_ws:
-                            try:
-                                await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=10.0)
-                                if bot.socket_manager:
-                                    await asyncio.wait_for(bot.socket_manager.close(), timeout=10.0)
-                                bot.binance_ws = None
-                                bot.socket_manager = None
-                            except Exception as close_error:
-                                logger.warning(f"⚠️ Error closing existing connection: {close_error}")
-                        
-                        # Configuration de base du WebSocket avec timeout augmenté
-                        bot.ws_connection = {
-                            'enabled': False,
-                            'status': 'initializing',
-                            'last_connection': time.time(),
-                            'last_message': time.time(),
-                            'reconnect_count': retry_count,
-                            'max_reconnects': max_retries,
-                            'tasks': []
-                        }
-                        
-                        # Configuration du client avec timeout augmenté
-                        bot.binance_ws = await asyncio.wait_for(
-                            AsyncClient.create(
-                                api_key=os.getenv('BINANCE_API_KEY'),
-                                api_secret=os.getenv('BINANCE_API_SECRET'),
-                                testnet=False,
-                                tld='com'
-                            ),
-                            timeout=60.0
-                        )
-                        
-                        # Configuration du socket manager
-                        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
-                        
-                        # Configuration des streams avec timeout augmenté
-                        streams = await asyncio.wait_for(
-                            setup_streams(bot),
-                            timeout=60.0
-                        )
-                        
-                        if not streams:
-                            raise Exception("Failed to setup streams")
-                        
-                        bot.ws_connection.update({
-                            'enabled': True,
-                            'status': 'connected',
-                            'tasks': streams,
-                            'last_connection': time.time(),
-                            'last_message': time.time()
-                        })
-                        
-                        logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
-                        return True
-                        
-                    except asyncio.TimeoutError:
-                        retry_count += 1
-                        logger.error(f"❌ Connection timeout (attempt {retry_count})")
-                        if retry_count < max_retries:
-                            await asyncio.sleep(retry_delay)
-                        continue
-                        
-                    except Exception as conn_error:
-                        retry_count += 1
-                        logger.error(f"❌ Connection error (attempt {retry_count}): {conn_error}")
-                        if retry_count < max_retries:
-                            await asyncio.sleep(retry_delay)
-                        continue
-                        
-                logger.error(f"❌ Failed to initialize WebSocket after {max_retries} attempts")
-                return False
+        # Si une ancienne session existe, on la ferme
+        if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
+            await bot.client_session.close()
+        
+        # Création de la nouvelle session
+        bot.client_session = aiohttp.ClientSession()
+            
+        try:
+            logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
+            
+            # Fermeture propre des connexions existantes
+            if hasattr(bot, 'binance_ws') and bot.binance_ws:
+                try:
+                    await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=10.0)
+                    if bot.socket_manager:
+                        await asyncio.wait_for(bot.socket_manager.close(), timeout=10.0)
+                    bot.binance_ws = None
+                    bot.socket_manager = None
+                except Exception as close_error:
+                    logger.warning(f"⚠️ Error closing existing connection: {close_error}")
+            
+            # Configuration du client avec timeout augmenté
+            bot.binance_ws = await AsyncClient.create(
+                api_key=os.getenv('BINANCE_API_KEY'),
+                api_secret=os.getenv('BINANCE_API_SECRET'),
+                testnet=False,
+                tld='com',
+                requests_params={
+        '           timeout': 20  # ⬅️ augmente le délai (default: 10)
+                }
+            )
+            
+            # Configuration du socket manager
+            bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+            
+            # Configuration des streams avec timeout augmenté
+            streams = await asyncio.wait_for(
+                setup_streams(bot),
+                timeout=60.0
+            )
+            
+            if not streams:
+                raise Exception("Failed to setup streams")
+            
+            bot.ws_connection.update({
+                'enabled': True,
+                'status': 'connected',
+                'tasks': streams,
+                'last_connection': time.time(),
+                'last_message': time.time()
+            })
+            
+            logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
+            return True
                 
-            finally:
-                bot._initializing = False
-                    
-    except Exception as e:
-        logger.error(f"❌ Fatal WebSocket initialization error: {e}")
-        return False
+        except Exception as e:
+            # En cas d'erreur, on s'assure de fermer la session
+            if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
+                await bot.client_session.close()
+            bot.client_session = None
+            logger.error(f"❌ WebSocket initialization error: {e}")
+            return False
+            
+    finally:
+        bot._initializing = False
 
+async def cleanup_resources(bot):
+    """Nettoyage des ressources avec vérification"""
+    try:
+        # Fermeture des WebSockets si actifs
+        if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
+            await close_websocket(bot)
+        
+        # Fermeture explicite de la session client
+        if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
+            await bot.client_session.close()
+            await asyncio.sleep(0.25)  # Délai pour assurer la fermeture
+            bot.client_session = None
+            
+        # Réinitialisation des données
+        bot.latest_data = {}
+        bot.indicators = {}
+        
+        logger.info("✅ Resources cleaned successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ Resource cleanup error: {e}")
+        raise
+ 
+async def cleanup_client_session(bot):
+    """Nettoyage spécifique de la session client"""
+    try:
+        if hasattr(bot, 'client_session') and bot.client_session:
+            if not bot.client_session.closed:
+                await bot.client_session.close()
+                await asyncio.sleep(0.25)  # Délai pour assurer la fermeture
+            bot.client_session = None
+    except Exception as e:
+        logger.error(f"Client session cleanup error: {e}")
+               
 async def reset_websocket(bot):
     """Réinitialise la connexion WebSocket"""
     try:
@@ -535,7 +549,7 @@ async def close_websocket(bot):
             finally:
                 bot.socket_manager = None
                 
-        # Fermeture du client
+        # Fermeture du client websocket
         if hasattr(bot, 'binance_ws') and bot.binance_ws:
             try:
                 await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=5.0)
@@ -543,6 +557,13 @@ async def close_websocket(bot):
                 pass
             finally:
                 bot.binance_ws = None
+                
+        # Fermeture explicite de la session client
+        if hasattr(bot, 'client_session') and bot.client_session:
+            if not bot.client_session.closed:
+                await bot.client_session.close()
+                await asyncio.sleep(0.1)  # Petit délai pour assurer la fermeture
+            bot.client_session = None
                 
         # Réinitialisation de l'état
         bot.ws_connection = {
@@ -602,15 +623,15 @@ async def update_trading_data(bot):
         
         # Récupération des données BTC/USDC
         logger.info("📊 Récupération données pour BTC/USDC")
-        btc_data = await fetch_market_data(bot, "BTCUSDC")
+        btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
-            bot.latest_data["BTCUSDC"] = btc_data
+            bot.latest_data["BTCUSDT"] = btc_data
             
         # Récupération des données ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
-        eth_data = await fetch_market_data(bot, "ETHUSDC")
+        eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
-            bot.latest_data["ETHUSDC"] = eth_data
+            bot.latest_data["ETHUSDT"] = eth_data
             
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
@@ -714,16 +735,16 @@ async def update_market_data(bot):
         
         # Récupération BTC/USDC
         logger.info("📊 Récupération données pour BTC/USDC")
-        btc_data = await fetch_market_data(bot, 'BTCUSDC')
+        btc_data = await fetch_market_data(bot, 'BTCUSDT')
         if btc_data:
-            bot.latest_data['BTCUSDC'] = btc_data
+            bot.latest_data['BTCUSDT'] = btc_data
             data_received = True
             
         # Récupération ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
-        eth_data = await fetch_market_data(bot, 'ETHUSDC')
+        eth_data = await fetch_market_data(bot, 'ETHUSDT')
         if eth_data:
-            bot.latest_data['ETHUSDC'] = eth_data
+            bot.latest_data['ETHUSDT'] = eth_data
             data_received = True
             
         if not data_received:
@@ -2274,7 +2295,7 @@ Take Profit: {take_profit}"""
                     # Ordres en cours
                     st.subheader("📋 Open Orders")
                     if hasattr(self, 'spot_client'):
-                        orders = self.spot_client.get_open_orders('BTCUSDC')
+                        orders = self.spot_client.get_open_orders('BTCUSDT')
                         if orders:
                             st.dataframe(pd.DataFrame(orders), use_container_width=True)
 
@@ -3886,7 +3907,7 @@ async def main_async():
             with tabs[1]:
                 if st.session_state.bot_running:
                     try:
-                        latest_data = bot.latest_data.get('BTCUSDC', {})
+                        latest_data = bot.latest_data.get('BTCUSDT', {})
                         if latest_data:
                             col1, col2 = st.columns(2)
                             with col1:
@@ -4012,6 +4033,7 @@ def main():
     """Point d'entrée principal de l'application"""
     # Initialisation de l'état de session
     init_session_state()
+    loop = None
     
     try:
         # Création et configuration de la boucle événementielle
@@ -4066,7 +4088,6 @@ def main():
     except RuntimeError as e:
         if "Event loop is closed" in str(e):
             logger.error("Event loop was closed. Creating new loop.")
-            # Recréer une nouvelle boucle
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
@@ -4074,10 +4095,11 @@ def main():
             except Exception as retry_error:
                 logger.error(f"Error in retry execution: {retry_error}")
             finally:
-                try:
-                    loop.close()
-                except:
-                    pass
+                if loop and not loop.is_closed():
+                    try:
+                        loop.close()
+                    except:
+                        pass
                     
     except Exception as e:
         logger.error(f"Fatal error in main: {e}")
@@ -4085,10 +4107,9 @@ def main():
         
     finally:
         # Nettoyage final de la session state
-        if 'bot_instance' in st.session_state:
+        if 'bot_instance' in st.session_state and loop and not loop.is_closed():
             try:
-                if loop and not loop.is_closed():
-                    loop.run_until_complete(shutdown())
+                loop.run_until_complete(shutdown())
             except Exception as final_error:
                 logger.error(f"Final cleanup error: {final_error}")
 
