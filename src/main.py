@@ -330,7 +330,8 @@ async def initialize_websocket(bot):
             # Fermeture propre de toute connexion existante
             if hasattr(bot, 'binance_ws') and bot.binance_ws:
                 try:
-                    await close_websocket(bot)
+                    # Fermeture silencieuse de la connexion existante
+                    await bot.binance_ws.close_connection()
                 except Exception as close_error:
                     logger.warning(f"⚠️ Error closing existing connection: {close_error}")
                 finally:
@@ -360,8 +361,8 @@ async def initialize_websocket(bot):
                     timeout=60
                 )
                 
-                # Mise à jour des dates
-                bot.current_date = "2025-06-15 06:48:56"
+                # Mise à jour des dates avec la nouvelle valeur
+                bot.current_date = "2025-06-15 07:26:23"
                 bot.current_user = "Patmoorea"
                 
             except asyncio.TimeoutError:
