@@ -1,26 +1,117 @@
-# 1. Imports système (DOIVENT ÊTRE EN PREMIER)
+# 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
+import streamlit as st
+st.set_page_config(
+    page_title="Trading Bot Ultimate v4",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# 2. Imports système
 import os
 import sys
 import logging
 import json
-import plotly.graph_objects as go
 import re
 import time
-import threading
 import signal
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from typing import Dict, List, Optional, Union
+from dataclasses import dataclass
 from contextlib import AsyncExitStack
-from asyncio import TimeoutError
-from contextlib import AsyncExitStack
+from asyncio import TimeoutError, AbstractEventLoop
 
-# Ajout du chemin racine au PYTHONPATH
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 3. Configuration des chemins
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.extend([parent_dir, current_dir])
 
-# 3. Configuration asyncio et event loop
+# 4. Configuration asyncio et event loop
 import asyncio
 import nest_asyncio
-from asyncio import AbstractEventLoop
+
+# 5. Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('trading_bot.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# 6. Imports des bibliothèques externes
+import plotly.graph_objects as go
+import numpy as np
+import pandas as pd
+import torch
+import telegram
+import ccxt
+import ta
+from dotenv import load_dotenv
+import gymnasium as gym
+from gymnasium import spaces
+from binance import AsyncClient, BinanceSocketManager
+
+# 7. Imports des modules locaux
+# Imports des modules d'échange
+from src.exchanges.binance_exchange import BinanceExchange
+from src.exchanges.binance.binance_client import BinanceClient
+from src.core.exchange import ExchangeInterface as Exchange
+
+# Imports des modules core
+from src.core.buffer.circular_buffer import CircularBuffer
+from src.connectors.binance import BinanceConnector
+
+# Imports des modules de portfolio et régime
+from src.portfolio.real_portfolio import RealPortfolio
+from src.regime_detection.hmm_kmeans import MarketRegimeDetector
+
+# Imports des modules de monitoring et websocket
+from src.monitoring.streamlit_ui import TradingDashboard
+from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
+
+# Imports des modules d'analyse technique
+from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
+from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+from src.analysis.indicators.momentum.momentum import MomentumIndicators
+from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
+from src.analysis.indicators.trend.indicators import TrendIndicators
+from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
+from src.analysis.indicators.volatility.volatility import VolatilityIndicators
+
+# Imports des modules d'IA
+from src.ai.cnn_lstm import CNNLSTM
+from src.ai.ppo_gtrxl import PPOGTrXL
+from src.ai.hybrid_model import HybridAI
+
+# Imports des modules de gestion des risques
+from src.risk_management.circuit_breakers import CircuitBreaker
+from src.risk_management.position_manager import PositionManager
+
+# Imports des modules de notification et news
+from src.notifications.telegram_bot import TelegramBot
+from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
+
+# Imports des modules de stratégie et visualisation
+from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
+from src.liquidity_heatmap.visualization import generate_heatmap
+
+# 8. Constants et Variables Globales
+CURRENT_DATE = "2025-06-15 08:13:14"  # Mise à jour avec la nouvelle date
+CURRENT_USER = "Patmoorea"
+
+# Constantes de nettoyage
+cleanup_lock = asyncio.Lock()
+cleanup_in_progress = False
+last_cleanup_time = 0
+CLEANUP_COOLDOWN = 5
+
+# Constantes WebSocket
+WS_RECONNECT_DELAY = 1.0  # délai entre les tentatives de reconnexion
+WS_MESSAGE_TIMEOUT = 30.0  # timeout pour les messages websocket
+WS_MAX_RETRIES = 3        # nombre maximum de tentatives de reconnexion
 
 def setup_event_loop() -> AbstractEventLoop:
     """Configure l'event loop pour Streamlit"""
@@ -32,97 +123,27 @@ def setup_event_loop() -> AbstractEventLoop:
     nest_asyncio.apply()
     return loop
 
-# 4. Configuration Streamlit
-import streamlit as st
-st.set_page_config(
-    page_title="Trading Bot Ultimate v4",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# 5. Imports standards
-from typing import Dict, List, Optional, Union
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from asyncio import TimeoutError
-import telegram
-from src.exchanges.binance_exchange import BinanceExchange
-from src.portfolio.real_portfolio import RealPortfolio
-import numpy as np
-import ccxt
-from dotenv import load_dotenv
-
-# 6. Setup de l'event loop avant les imports PyTorch
-setup_event_loop()
-
-import ta
-
-# 7. Imports ML/AI
-import gymnasium as gym
-from gymnasium import spaces
-import torch
-import pandas as pd
-
-# 8. Configuration des chemins
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-sys.path.append(current_dir)
-
-# Imports des modules existants
-from src.regime_detection.hmm_kmeans import MarketRegimeDetector
-from src.monitoring.streamlit_ui import TradingDashboard
-from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
-from src.core.buffer.circular_buffer import CircularBuffer
-from src.core.data import CircularBuffer
-from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
-from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
-from src.analysis.indicators.volatility.volatility import VolatilityIndicators
-from src.ai.cnn_lstm import CNNLSTM
-from src.ai.ppo_gtrxl import PPOGTrXL
-from src.ai.hybrid_model import HybridAI
-from src.risk_management.circuit_breakers import CircuitBreaker
-from src.risk_management.position_manager import PositionManager
-from src.core.exchange import ExchangeInterface as Exchange
-from src.notifications.telegram_bot import TelegramBot
-from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
-from src.liquidity_heatmap.visualization import generate_heatmap
-
-# Imports des indicateurs
-from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
-from src.analysis.indicators.momentum.momentum import MomentumIndicators
-from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
-from src.analysis.indicators.trend.indicators import TrendIndicators
-
-# Dans les imports, ajoutons les composants existants
-from src.binance.binance_ws import AsyncClient, BinanceSocketManager
-from src.connectors.binance import BinanceConnector
-from src.exchanges.binance.binance_client import BinanceClient
-from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
-from binance import AsyncClient, BinanceSocketManager
-
-# Configuration du logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Ajoutez la fonction ici, après les imports et avant les autres fonctions
 def init_session_state():
     """Initialize session state variables"""
-    if 'initialized' not in st.session_state:
-        st.session_state.initialized = False
-    if 'bot_running' not in st.session_state:
-        st.session_state.bot_running = False
-    if 'portfolio' not in st.session_state:
-        st.session_state.portfolio = None
-    if 'latest_data' not in st.session_state:
-        st.session_state.latest_data = None
-    if 'indicators' not in st.session_state:
-        st.session_state.indicators = None
-    if 'refresh_count' not in st.session_state:
-        st.session_state.refresh_count = 0
-        
-# Configuration
+    session_vars = {
+        'initialized': False,
+        'bot_running': False,
+        'portfolio': None,
+        'latest_data': None,
+        'indicators': None,
+        'refresh_count': 0,
+        'loop': None,
+        'last_update': CURRENT_DATE,
+        'current_user': CURRENT_USER,
+        'ws_status': 'disconnected',
+        'error_count': 0
+    }
+    
+    for var, default in session_vars.items():
+        if var not in st.session_state:
+            st.session_state[var] = default
+
+# Configuration du bot
 load_dotenv()
 config = {
     'NEWS': {
@@ -172,68 +193,29 @@ config = {
     },
     "INDICATORS": {
         "trend": {
-            "supertrend": {
-                "period": 10,
-                "multiplier": 3
-            },
-            "ichimoku": {
-                "tenkan": 9,
-                "kijun": 26,
-                "senkou": 52
-            },
+            "supertrend": {"period": 10, "multiplier": 3},
+            "ichimoku": {"tenkan": 9, "kijun": 26, "senkou": 52},
             "ema_ribbon": [5, 10, 20, 50, 100, 200]
         },
         "momentum": {
-            "rsi": {
-                "period": 14,
-                "overbought": 70,
-                "oversold": 30
-            },
-            "stoch_rsi": {
-                "period": 14,
-                "k": 3,
-                "d": 3
-            },
-            "macd": {
-                "fast": 12,
-                "slow": 26,
-                "signal": 9
-            }
+            "rsi": {"period": 14, "overbought": 70, "oversold": 30},
+            "stoch_rsi": {"period": 14, "k": 3, "d": 3},
+            "macd": {"fast": 12, "slow": 26, "signal": 9}
         },
         "volatility": {
-            "bbands": {
-                "period": 20,
-                "std_dev": 2
-            },
-            "keltner": {
-                "period": 20,
-                "atr_mult": 2
-            },
-            "atr": {
-                "period": 14
-            }
+            "bbands": {"period": 20, "std_dev": 2},
+            "keltner": {"period": 20, "atr_mult": 2},
+            "atr": {"period": 14}
         },
         "volume": {
-            "vwap": {
-                "anchor": "session"
-            },
-            "obv": {
-                "signal": 20
-            },
-            "volume_profile": {
-                "price_levels": 100
-            }
+            "vwap": {"anchor": "session"},
+            "obv": {"signal": 20},
+            "volume_profile": {"price_levels": 100}
         },
         "orderflow": {
-            "delta": {
-                "window": 100
-            },
-            "cvd": {
-                "smoothing": 20
-            },
-            "imbalance": {
-                "threshold": 0.2
-            }
+            "delta": {"window": 100},
+            "cvd": {"smoothing": 20},
+            "imbalance": {"threshold": 0.2}
         }
     }
 }
@@ -244,20 +226,20 @@ def get_bot():
     try:
         if 'bot_instance' not in st.session_state:
             bot = TradingBotM4()
-            bot.current_date = "2025-06-15 02:43:38"
-            bot.current_user = "Patmoorea"
+            bot.current_date = CURRENT_DATE
+            bot.current_user = CURRENT_USER
             
-            # Configuration du WebSocket
             bot.ws_connection = {
                 'enabled': False,
                 'reconnect_count': 0,
                 'max_reconnects': 3,
-                'last_connection': None,
+                'last_connection': time.time(),
                 'status': 'disconnected',
-                'last_message': None
+                'last_message': time.time(),
+                'tasks': []
             }
-            logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
             
+            logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
             st.session_state.bot_instance = bot
             
         return st.session_state.bot_instance
@@ -265,23 +247,10 @@ def get_bot():
     except Exception as e:
         logger.error(f"Error creating bot instance: {e}")
         return None
-        
-# Initialisation du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('trading_bot.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
 
-# Variables globales de contrôle du nettoyage
-cleanup_lock = asyncio.Lock()
-cleanup_in_progress = False
-last_cleanup_time = 0
-CLEANUP_COOLDOWN = 5  # Secondes minimum entre les nettoyages
+# Setup initial
+setup_event_loop()
+init_session_state()
 
 async def setup_streams(bot):
     """Configure and setup WebSocket streams"""
@@ -492,7 +461,7 @@ async def close_websocket(bot):
         return False
 
 async def handle_socket_message(bot, socket, socket_type):
-    """Gestion des messages WebSocket avec date mise à jour"""
+    """Gestion des messages WebSocket avec gestion des erreurs"""
     while not asyncio.current_task().cancelled():
         try:
             async with socket as tscm:
@@ -503,10 +472,15 @@ async def handle_socket_message(bot, socket, socket_type):
                         
                     # Mise à jour des timestamps
                     bot.ws_connection['last_message'] = time.time()
-                    bot.current_date = "2025-06-15 07:35:32"
+                    bot.current_date = CURRENT_DATE
                     
                     # Traitement selon le type
-                    await process_socket_message(bot, msg, socket_type)
+                    if socket_type == 'ticker':
+                        await handle_ticker_message(bot, msg)
+                    elif socket_type == 'depth':
+                        await handle_depth_message(bot, msg)
+                    elif socket_type == 'kline':
+                        await handle_kline_message(bot, msg)
                         
                 except asyncio.CancelledError:
                     logger.debug(f"Socket {socket_type} cancelled")
@@ -569,7 +543,6 @@ async def handle_kline_message(bot, msg):
         if 'k' in msg:
             kline = msg['k']
             if all(k in kline for k in ['t', 'o', 'h', 'l', 'c', 'v']):
-                # Création de la structure de données
                 candle = {
                     'timestamp': kline['t'],
                     'open': float(kline['o']),
@@ -579,17 +552,12 @@ async def handle_kline_message(bot, msg):
                     'volume': float(kline['v'])
                 }
                 
-                # Mise à jour des données
                 if not hasattr(bot, 'latest_klines'):
                     bot.latest_klines = []
                 bot.latest_klines.append(candle)
                 
-                # Limitation de la taille
                 if len(bot.latest_klines) > 1000:
                     bot.latest_klines.pop(0)
-                
-                # Mise à jour du timestamp
-                bot.ws_connection['last_message'] = time.time()
                 
     except Exception as e:
         logger.error(f"❌ Kline message error: {e}")
@@ -597,20 +565,16 @@ async def handle_kline_message(bot, msg):
 async def handle_depth_message(bot, msg):
     """Gestion des messages d'orderbook"""
     try:
-        if 'a' in msg and 'b' in msg:  # asks et bids
+        if 'a' in msg and 'b' in msg:
             orderbook = {
                 'asks': [[float(price), float(qty)] for price, qty in msg['a']],
                 'bids': [[float(price), float(qty)] for price, qty in msg['b']],
                 'timestamp': time.time()
             }
             
-            # Mise à jour des données
             if not hasattr(bot, 'latest_orderbook'):
                 bot.latest_orderbook = {}
             bot.latest_orderbook = orderbook
-            
-            # Mise à jour du timestamp
-            bot.ws_connection['last_message'] = time.time()
             
     except Exception as e:
         logger.error(f"❌ Depth message error: {e}")
@@ -4037,14 +4001,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        # Configuration de Streamlit
-        st.set_page_config(
-            page_title="Trading Bot Ultimate v4",
-            page_icon="📈",
-            layout="wide",
-            initial_sidebar_state="expanded"
-        )
-        
         # Application des patches asyncio nécessaires
         import nest_asyncio
         nest_asyncio.apply()
