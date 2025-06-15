@@ -1363,7 +1363,8 @@ class TradingBotM4:
             self.spot_client = None
 
         # Configuration du WebSocket
-        self.websocket = WebSocket(self)  # Ajout de cette ligne
+        self.websocket = MultiStreamManager(config["TRADING"]["pairs"], 
+        self.stream_config)
         self.ws_manager = WebSocketManager(self)
         self.ws_connection = {
             'enabled': False,
@@ -1376,7 +1377,7 @@ class TradingBotM4:
         }
 
         # Configuration de l'exchange
-        self.websocket.setup_exchange("binance")
+        self.ws_manager = WebSocketManager(self)
         
         # Mode de trading et composants
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
@@ -1475,11 +1476,7 @@ class TradingBotM4:
             self.logger.error(f"❌ Bot initialization error: {e}")
             await self._cleanup()
             return False
-    
-        """Initialisation du bot de trading"""
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
+
         self.config = {
             'NEWS': {
                 'enabled': True,
