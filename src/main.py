@@ -98,9 +98,7 @@ from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.liquidity_heatmap.visualization import generate_heatmap
 
-# 8. Constants et Variables Globales
-CURRENT_DATE = "2025-06-15 08:13:14"  # Mise à jour avec la nouvelle date
-CURRENT_USER = "Patmoorea"
+from src.core.buffer.circular_buffer import CircularBuffer
 
 # Constantes de nettoyage
 cleanup_lock = asyncio.Lock()
@@ -330,10 +328,6 @@ async def initialize_websocket(bot):
                     ),
                     timeout=60.0  # Timeout plus long pour l'initialisation
                 )
-                
-                # Mise à jour des dates
-                bot.current_date = "2025-06-15 07:44:38"
-                bot.current_user = "Patmoorea"
                 
             except asyncio.TimeoutError:
                 logger.error("❌ Connection timeout")
@@ -704,10 +698,6 @@ async def cleanup_session(bot):
 async def cleanup_resources(bot):
     """Nettoyage des ressources avec vérification"""
     try:
-        # Mise à jour de la date
-        bot.current_date = "2025-06-15 07:09:57"
-        bot.current_user = "Patmoorea"
-        
         # Fermeture des WebSockets si actifs
         if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
             await close_websocket(bot)
@@ -715,6 +705,8 @@ async def cleanup_resources(bot):
         # Réinitialisation des données
         bot.latest_data = {}
         bot.indicators = {}
+        
+        logger.info("✅ Resources cleaned successfully")
         
     except Exception as e:
         logger.error(f"❌ Resource cleanup error: {e}")
@@ -939,7 +931,7 @@ class TradingBotM4:
         }
         
         """Initialisation du bot de trading"""
-        self.buffer = CircularBuffer(maxlen=1000, compress=True)
+        self.buffer = CircularBuffer(maxlen=1000)
         self.indicators = {}
         self.latest_data = {}
         self.config = {
@@ -955,9 +947,6 @@ class TradingBotM4:
         self.spot_client = None
         self.ws_manager = None
         
-        # Configuration utilisateur et date
-        self.current_date = "2025-06-10 18:48:29"
-        self.current_user = "Patmoorea"
         self.news_analyzer = None
         self.initialized = False
         
@@ -1101,10 +1090,6 @@ class TradingBotM4:
             if hasattr(self, 'indicators'):
                 self.indicators = {}
         
-            # Mise à jour des dates
-            self.current_date = "2025-06-15 02:38:21"  # Date mise à jour
-            self.current_user = "Patmoorea"
-        
             # Désactivation du mode trading
             if hasattr(st.session_state, 'bot_running'):
                 st.session_state.bot_running = False
@@ -1125,8 +1110,6 @@ class TradingBotM4:
 ║              CLEANUP ERROR                       ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
-║ Date: {self.current_date}
-║ User: {self.current_user}
 ╚═════════════════════════════════════════════════╝
             """)
             return False
@@ -1495,10 +1478,6 @@ class TradingBotM4:
                 if not self.initialized:
                     await self.initialize()
                 return None
-
-            # Mise à jour de la date
-            self.current_date = "2025-06-14 17:09:42"
-            logger.info(f"📅 Mise à jour données à {self.current_date}")
 
             # Récupération des données pour chaque paire
             for pair in config["TRADING"]["pairs"]:
@@ -2073,10 +2052,6 @@ Take Profit: {take_profit}"""
     
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
-
-            # Mise à jour de la date et de l'utilisateur
-            self.current_date = "2025-06-14 18:51:26"  # Mise à jour avec la date actuelle
-            self.current_user = "Patmoorea"
     
             logger.info(f"""
 ╔═════════════════════════════════════════════════════════════╗
@@ -3713,10 +3688,6 @@ async def main_async():
                 st.error("❌ Failed to initialize bot")
                 return
 
-            # Mise à jour des dates
-            bot.current_date = "2025-06-15 06:33:06"
-            bot.current_user = "Patmoorea"
-
             # Vérification et initialisation du WebSocket
             if not bot.ws_connection['enabled']:
                 with st.spinner("Connecting to WebSocket..."):
@@ -3759,8 +3730,6 @@ async def main_async():
                             with st.spinner("Starting trading bot..."):
                                 if not bot.initialized:
                                     await bot.initialize()
-                                bot.current_date = "2025-06-15 06:34:25"
-                                bot.current_user = "Patmoorea"
                                 st.session_state.bot_running = True
                                 # Mise à jour des données de marché
                                 await update_market_data(bot)
@@ -3972,11 +3941,6 @@ def main():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             st.session_state.loop = loop
-        
-        # Mise à jour des dates
-        if 'bot_instance' in st.session_state:
-            st.session_state.bot_instance.current_date = "2025-06-15 07:48:36"
-            st.session_state.bot_instance.current_user = "Patmoorea"
         
         # Exécution de la boucle principale
         st.session_state.loop.run_until_complete(main_async())
