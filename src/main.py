@@ -112,6 +112,8 @@ CLEANUP_COOLDOWN = 5
 WS_RECONNECT_DELAY = 1.0  # délai entre les tentatives de reconnexion
 WS_MESSAGE_TIMEOUT = 30.0  # timeout pour les messages websocket
 WS_MAX_RETRIES = 2        # nombre maximum de tentatives de reconnexion
+MAX_RETRIES = 3          # nombre maximum de tentatives pour setup_streams
+RETRY_DELAY = 5          # délai en secondes entre les tentatives
 
 # Définition de la classe SessionManager
 class SessionManager:
@@ -331,17 +333,6 @@ def get_bot():
 
 async def setup_streams(bot):
     """Configure and setup WebSocket streams"""
-    # Configuration des timeouts et paramètres
-    STREAM_TIMEOUT = 60.0  # Augmenté de 30 à 60 secondes
-    MAX_RETRIES = 3
-    RETRY_DELAY = 5
-    WEBSOCKET_OPTIONS = {
-        'ping_timeout': 30,
-        'ping_interval': 15,
-        'ws_timeout': 60,
-        'heartbeat': True
-    }
-    
     try:
         tasks = []
         
@@ -351,15 +342,14 @@ async def setup_streams(bot):
                 try:
                     logger.info(f"Setting up {stream_type} stream (attempt {retry_count + 1}/{MAX_RETRIES})...")
                     
-                    # Configuration du stream avec options WebSocket
+                    # Création du socket sans les options WebSocket
                     if stream_type == 'ticker':
-                        socket = await setup_func(symbol, **WEBSOCKET_OPTIONS)
+                        socket = await setup_func(symbol)
                     elif stream_type == 'depth':
-                        socket = await setup_func(symbol, **WEBSOCKET_OPTIONS)
+                        socket = await setup_func(symbol)
                     elif stream_type == 'kline':
-                        socket = await setup_func(symbol, interval, **WEBSOCKET_OPTIONS)
+                        socket = await setup_func(symbol, interval)
                     
-                    # Création de la tâche
                     task = asyncio.create_task(
                         handle_socket_message(bot, socket, stream_type)
                     )
@@ -393,10 +383,8 @@ async def setup_streams(bot):
         # Collecte des tâches réussies
         tasks = [t for t in [ticker_task, depth_task, kline_task] if t is not None]
         
-        # Vérification du succès
-        streams_setup = len(tasks)
-        if streams_setup > 0:
-            logger.info(f"✅ Successfully setup {streams_setup}/3 streams")
+        if len(tasks) > 0:
+            logger.info(f"✅ Successfully setup {len(tasks)}/3 streams")
             return tasks
         else:
             logger.error("❌ Failed to setup any streams")
