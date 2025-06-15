@@ -258,70 +258,109 @@ async def initialize_websocket(bot):
     """Initialize WebSocket connection"""
     try:
         if not bot.ws_connection['enabled']:
+            logger.info("🔄 Initializing WebSocket connection...")
+            
+            # Configuration du WebSocket
             bot.binance_ws = await AsyncClient.create(
                 api_key=os.getenv('BINANCE_API_KEY'),
                 api_secret=os.getenv('BINANCE_API_SECRET')
             )
             bot.socket_manager = BinanceSocketManager(bot.binance_ws)
-                
+            
             # Démarrer les streams nécessaires
             streams = []
-                
-            # Stream de ticker
+            
+            # Stream de ticker pour BTC/USDC
+            logger.info("Setting up ticker stream...")
             ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
             streams.append(ticker_socket)
-                
+            
             # Stream d'orderbook
+            logger.info("Setting up orderbook stream...")
             depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
             streams.append(depth_socket)
-                
+            
             # Stream de klines
+            logger.info("Setting up klines stream...")
             kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
             streams.append(kline_socket)
-                
-            # Démarrer tous les streams
+            
+            # Démarrer tous les streams dans des tâches séparées
             for stream in streams:
-                await handle_socket_message(bot, stream)  # Ajout du await ici
-                
-            bot.ws_connection['enabled'] = True
-            bot.ws_connection['last_connection'] = time.time()
-        return True
+                asyncio.create_task(handle_socket_message(bot, stream))
+            
+            # Mise à jour du statut
+            bot.ws_connection = {
+                'enabled': True,
+                'reconnect_count': 0,
+                'max_reconnects': 3,
+                'last_connection': time.time(),
+                'status': 'connected'
+            }
+            
+            logger.info("✅ WebSocket initialized successfully")
+            return True
+            
     except Exception as e:
-        logger.error(f"WebSocket initialization error: {e}")
+        logger.error(f"❌ WebSocket initialization error: {e}")
+        bot.ws_connection = {
+            'enabled': False,
+            'status': 'error',
+            'last_error': str(e)
+        }
         return False
-    
+
 async def handle_socket_message(bot, socket):
     """Handle incoming WebSocket messages"""
     try:
         async with socket as ts:
             while True:
-                async with asyncio.timeout(5.0):  # Ajout du timeout
-                    msg = await ts.recv()
-                    if msg:
-                        await process_ws_message(bot, msg)
-    except asyncio.TimeoutError:
-        logger.warning("WebSocket timeout - attempting reconnect")
-        self.ws_connection['enabled'] = False
+                try:
+                    async with asyncio.timeout(5.0):
+                        msg = await ts.recv()
+                        if msg:
+                            await process_ws_message(bot, msg)
+                except asyncio.TimeoutError:
+                    logger.warning("⚠️ WebSocket timeout - attempting reconnect")
+                    bot.ws_connection['status'] = 'reconnecting'
+                    if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
+                        bot.ws_connection['reconnect_count'] += 1
+                        await initialize_websocket(bot)
+                    else:
+                        logger.error("❌ Max reconnection attempts reached")
+                        bot.ws_connection['status'] = 'failed'
+                        break
     except Exception as e:
-        logger.error(f"Socket error: {e}")
-        self.ws_connection['enabled'] = False
+        logger.error(f"❌ Socket error: {e}")
+        bot.ws_connection['status'] = 'error'
+        bot.ws_connection['enabled'] = False
 
 async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
     try:
-        if msg.get('e') == 'ticker':
+        if not msg:
+            logger.warning("Empty message received")
+            return
+
+        if 'e' not in msg:
+            logger.warning(f"Invalid message format: {msg}")
+            return
+
+        if msg['e'] == 'ticker':
             # Mise à jour du prix
             bot.latest_data['price'] = float(msg['c'])
             bot.latest_data['volume'] = float(msg['v'])
+            logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
             
-        elif msg.get('e') == 'depth':
+        elif msg['e'] == 'depth':
             # Mise à jour de l'orderbook
             bot.latest_data['orderbook'] = {
                 'bids': msg['b'][:5],
                 'asks': msg['a'][:5]
             }
+            logger.debug("📚 Orderbook updated")
             
-        elif msg.get('e') == 'kline':
+        elif msg['e'] == 'kline':
             # Mise à jour des klines
             k = msg['k']
             bot.latest_data['klines'] = {
@@ -331,8 +370,15 @@ async def process_ws_message(bot, msg):
                 'close': float(k['c']),
                 'volume': float(k['v'])
             }
+            logger.debug("📊 Klines updated")
+            
+        # Mise à jour du timestamp
+        bot.latest_data['timestamp'] = msg.get('E', int(time.time() * 1000))
+        bot.ws_connection['last_message'] = time.time()
+        
     except Exception as e:
-        logger.error(f"Message processing error: {e}")
+        logger.error(f"❌ Message processing error: {e}")
+        
 class TradingEnv(gym.Env):
     """Environment d'apprentissage par renforcement pour le trading"""
 
@@ -492,6 +538,17 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
+        
+        # Configuration du WebSocket - AJOUTEZ CE CODE ICI
+        self.ws_connection = {
+            'enabled': False,
+            'reconnect_count': 0,
+            'max_reconnects': 3,
+            'last_connection': None,
+            'status': 'disconnected',
+            'last_message': None,
+            'last_error': None
+        }
         
         """Initialisation du bot de trading"""
         self.buffer = CircularBuffer(maxlen=1000, compress=True)
@@ -667,13 +724,13 @@ class TradingBotM4:
     async def check_ws_connection(bot):
         """Check WebSocket connection and reconnect if needed"""
         try:
-            if not self.ws_connection['enabled']:
-                if self.ws_connection['reconnect_count'] < self.ws_connection['max_reconnects']:
+            if not bot.ws_connection['enabled']:
+                if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
                     logger.info("Attempting WebSocket reconnection...")
-                    if await initialize_websocket(self):  # Ajout du await ici
-                        self.ws_connection['reconnect_count'] = 0
+                    if await initialize_websocket(bot):  # Ajout du await ici
+                        bot.ws_connection['reconnect_count'] = 0
                         return True
-                    self.ws_connection['reconnect_count'] += 1
+                    bot.ws_connection['reconnect_count'] += 1
                 else:
                     logger.error("Max WebSocket reconnection attempts reached")
                     return False
@@ -3272,14 +3329,18 @@ async def main_async():
                 st.error("❌ Failed to initialize bot")
                 return
 
-            # Initialize WebSocket
+            # Dans main_async()
             if not bot.ws_connection['enabled']:
                 with st.spinner("Connecting to WebSocket..."):
-                    if not await initialize_websocket(bot):
+                    logger.info("Attempting WebSocket connection...")
+                    if await initialize_websocket(bot):
+                        st.success("✅ WebSocket connected!")
+                        logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
+                    else:
                         st.error("❌ Failed to establish WebSocket connection")
+                        logger.error(f"WebSocket Status: {bot.ws_connection['status']}")
                         return
-                    st.success("✅ WebSocket connected!")
-
+        
             # Colonne d'état
             status_col1, status_col2 = st.columns([2, 1])
             
@@ -3447,38 +3508,6 @@ async def main_async():
             await bot._cleanup()
 
 def main():
-    if 'asyncio_loop' not in st.session_state:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        st.session_state.asyncio_loop = loop
-    
-    try:
-        st.session_state.asyncio_loop.run_until_complete(main_async())
-    except Exception as e:
-        logger.error(f"Main loop error: {e}")
-    finally:
-        if hasattr(st.session_state, 'asyncio_loop'):
-            loop = st.session_state.asyncio_loop
-            try:
-                pending = asyncio.all_tasks(loop)
-                for task in pending:
-                    task.cancel()
-                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-            except Exception as cleanup_error:
-                logger.error(f"Cleanup error: {cleanup_error}")
-            finally:
-                loop.close()
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        logger.info("Bot stopped by user")
-    except Exception as e:
-        logger.error(f"Fatal error: {e}")
-
-def main():
-    # Initialisation de l'event loop si nécessaire
     if 'asyncio_loop' not in st.session_state:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
