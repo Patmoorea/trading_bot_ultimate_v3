@@ -110,7 +110,29 @@ CLEANUP_COOLDOWN = 5
 # Constantes WebSocket
 WS_RECONNECT_DELAY = 1.0  # délai entre les tentatives de reconnexion
 WS_MESSAGE_TIMEOUT = 30.0  # timeout pour les messages websocket
-WS_MAX_RETRIES = 3        # nombre maximum de tentatives de reconnexion
+WS_MAX_RETRIES = 2        # nombre maximum de tentatives de reconnexion
+
+class SessionManager:
+    def __init__(self):
+        self.sessions = set()
+    
+    def register(self, session):
+        self.sessions.add(session)
+        logger.info(f"New session registered (active: {len(self.sessions)})")
+    
+    def unregister(self, session):
+        self.sessions.discard(session)
+        logger.info(f"Session unregistered (remaining: {len(self.sessions)})")
+    
+    async def cleanup(self):
+        for session in self.sessions:
+            if not session.closed:
+                await session.close()
+        self.sessions.clear()
+        logger.info("All sessions cleaned")
+
+# Créer une instance globale
+session_manager = SessionManager()
 
 def setup_event_loop() -> AbstractEventLoop:
     """Configure l'event loop pour Streamlit"""
@@ -250,42 +272,38 @@ init_session_state()
 async def setup_streams(bot):
     """Configure and setup WebSocket streams"""
     # Configuration des timeouts et paramètres
-    STREAM_TIMEOUT = 30.0
+    STREAM_TIMEOUT = 60.0  # Augmenté de 30 à 60 secondes
     MAX_RETRIES = 3
     RETRY_DELAY = 5
+    WEBSOCKET_OPTIONS = {
+        'ping_timeout': 30,
+        'ping_interval': 15,
+        'ws_timeout': 60,
+        'heartbeat': True
+    }
     
     try:
         tasks = []
         
-        async def setup_single_stream(stream_type, setup_func, symbol='BTCUSDT', interval='1m'):
-            """Configure un stream individuel avec retry"""
+        async def setup_single_stream(stream_type, setup_func, symbol='BTCUSDC', interval='1m'):
             retry_count = 0
             while retry_count < MAX_RETRIES:
                 try:
                     logger.info(f"Setting up {stream_type} stream (attempt {retry_count + 1}/{MAX_RETRIES})...")
                     
-                    # Configuration du stream
+                    # Configuration du stream avec options WebSocket
                     if stream_type == 'ticker':
-                        socket = setup_func(symbol)
+                        socket = await setup_func(symbol, **WEBSOCKET_OPTIONS)
                     elif stream_type == 'depth':
-                        socket = setup_func(symbol)
+                        socket = await setup_func(symbol, **WEBSOCKET_OPTIONS)
                     elif stream_type == 'kline':
-                        socket = setup_func(symbol, interval)
+                        socket = await setup_func(symbol, interval, **WEBSOCKET_OPTIONS)
                     
-                    # Création de la tâche avec métadonnées
+                    # Création de la tâche
                     task = asyncio.create_task(
                         handle_socket_message(bot, socket, stream_type)
                     )
                     task.set_name(f"{stream_type}_stream_{symbol}")
-                    
-                    # Ajout des métadonnées
-                    task.metadata = {
-                        'type': stream_type,
-                        'symbol': symbol,
-                        'created_at': "2025-06-15 17:39:09",  # CURRENT_DATE
-                        'created_by': "Patmoorea",            # CURRENT_USER
-                        'last_activity': time.time()
-                    }
                     
                     return task
                     
@@ -306,62 +324,27 @@ async def setup_streams(bot):
                     else:
                         logger.error(f"Failed to setup {stream_type} stream after {MAX_RETRIES} attempts")
                         return None
+
+        # Setup des différents streams
+        ticker_task = await setup_single_stream('ticker', bot.socket_manager.trade_socket)
+        depth_task = await setup_single_stream('depth', bot.socket_manager.depth_socket)
+        kline_task = await setup_single_stream('kline', bot.socket_manager.kline_socket)
         
-        # Configuration des streams en parallèle
-        stream_configs = [
-            ('ticker', bot.socket_manager.symbol_ticker_socket),
-            ('depth', bot.socket_manager.depth_socket),
-            ('kline', bot.socket_manager.kline_socket)
-        ]
+        # Collecte des tâches réussies
+        tasks = [t for t in [ticker_task, depth_task, kline_task] if t is not None]
         
-        # Création des streams de manière asynchrone
-        setup_tasks = []
-        for stream_type, setup_func in stream_configs:
-            setup_tasks.append(setup_single_stream(stream_type, setup_func))
-            
-        # Attente de tous les streams avec timeout
-        completed_tasks = await asyncio.gather(*setup_tasks, return_exceptions=True)
-        
-        # Vérification des résultats
-        for task, (stream_type, _) in zip(completed_tasks, stream_configs):
-            if isinstance(task, Exception):
-                logger.error(f"Failed to setup {stream_type} stream: {task}")
-                continue
-            if task is not None:
-                tasks.append(task)
-                logger.info(f"✅ {stream_type.capitalize()} stream setup successfully")
-            
-        # Vérification finale
-        if not tasks:
-            logger.error("❌ No streams were successfully setup")
+        # Vérification du succès
+        streams_setup = len(tasks)
+        if streams_setup > 0:
+            logger.info(f"✅ Successfully setup {streams_setup}/3 streams")
+            return tasks
+        else:
+            logger.error("❌ Failed to setup any streams")
             return None
             
-        logger.info(f"✅ Successfully setup {len(tasks)}/{len(stream_configs)} streams")
-        
-        # Ajout des informations de monitoring
-        bot.stream_status = {
-            'active_streams': len(tasks),
-            'stream_details': [{
-                'type': task.get_name().split('_')[0],
-                'status': 'active',
-                'last_activity': task.metadata.get('last_activity')
-            } for task in tasks]
-        }
-        
-        return tasks
-        
     except Exception as e:
-        logger.error(f"❌ Fatal stream setup error: {e}")
+        logger.error(f"❌ Stream setup error: {e}")
         return None
-    finally:
-        # Nettoyage en cas d'échec
-        if 'tasks' in locals() and not tasks:
-            try:
-                for task in tasks:
-                    if not task.done():
-                        task.cancel()
-            except Exception as cleanup_error:
-                logger.error(f"Error during stream cleanup: {cleanup_error}")
     
 async def initialize_websocket(bot):
     """Initialize WebSocket connection"""
@@ -369,97 +352,103 @@ async def initialize_websocket(bot):
     max_retries = 3
     retry_delay = 5
     
-    try:
-        if hasattr(bot, '_initializing') and bot._initializing:
-            logger.warning("⚠️ WebSocket initialization already in progress")
-            return False
-            
-        bot._initializing = True
+    if hasattr(bot, '_initializing') and bot._initializing:
+        logger.warning("⚠️ WebSocket initialization already in progress")
+        return False
         
+    bot._initializing = True
+    
+    try:
         # Si une ancienne session existe, on la ferme
         if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
+            session_manager.unregister(bot.client_session)
             await bot.client_session.close()
         
         # Création de la nouvelle session
         bot.client_session = aiohttp.ClientSession()
-            
-        try:
-            logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
-            
-            # Fermeture propre des connexions existantes
-            if hasattr(bot, 'binance_ws') and bot.binance_ws:
-                try:
-                    await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=10.0)
-                    if bot.socket_manager:
-                        await asyncio.wait_for(bot.socket_manager.close(), timeout=10.0)
-                    bot.binance_ws = None
-                    bot.socket_manager = None
-                except Exception as close_error:
-                    logger.warning(f"⚠️ Error closing existing connection: {close_error}")
-            
-            # Configuration du client avec timeout augmenté
-            bot.binance_ws = await AsyncClient.create(
-                api_key=os.getenv('BINANCE_API_KEY'),
-                api_secret=os.getenv('BINANCE_API_SECRET'),
-                testnet=False,
-                tld='com',
-                requests_params={
-                    'timeout': 20  # ⬅️ augmente le délai (default: 10)
-                }
-            )
-            
-            # Configuration du socket manager
-            bot.socket_manager = BinanceSocketManager(bot.binance_ws)
-            
-            # Configuration des streams avec timeout augmenté
-            streams = await asyncio.wait_for(
-                setup_streams(bot),
-                timeout=60.0
-            )
-            
-            if not streams:
-                raise Exception("Failed to setup streams")
-            
-            bot.ws_connection.update({
-                'enabled': True,
-                'status': 'connected',
-                'tasks': streams,
-                'last_connection': time.time(),
-                'last_message': time.time()
-            })
-            
-            logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
-            return True
-                
-        except Exception as e:
-            # En cas d'erreur, on s'assure de fermer la session
-            if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
-                await bot.client_session.close()
-            bot.client_session = None
-            logger.error(f"❌ WebSocket initialization error: {e}")
-            return False
-            
+        session_manager.register(bot.client_session)
+        
+        logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
+        
+        # Fermeture propre des connexions existantes
+        if hasattr(bot, 'binance_ws') and bot.binance_ws:
+            try:
+                await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=10.0)
+                if bot.socket_manager:
+                    await asyncio.wait_for(bot.socket_manager.close(), timeout=10.0)
+                bot.binance_ws = None
+                bot.socket_manager = None
+            except Exception as close_error:
+                logger.warning(f"⚠️ Error closing existing connection: {close_error}")
+        
+        # Configuration du client
+        bot.binance_ws = await AsyncClient.create(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET'),
+            testnet=False,
+            tld='com',
+            requests_params={'timeout': 20}
+        )
+        
+        # Configuration du socket manager
+        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+        
+        # Configuration des streams
+        streams = await asyncio.wait_for(setup_streams(bot), timeout=60.0)
+        
+        if not streams:
+            raise Exception("Failed to setup streams")
+        
+        bot.ws_connection.update({
+            'enabled': True,
+            'status': 'connected',
+            'tasks': streams,
+            'last_connection': time.time(),
+            'last_message': time.time()
+        })
+        
+        logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ WebSocket initialization error: {e}")
+        if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
+            session_manager.unregister(bot.client_session)
+            await bot.client_session.close()
+        bot.client_session = None
+        return False
+        
     finally:
         bot._initializing = False
 
 async def cleanup_resources(bot):
-    """Nettoyage des ressources avec vérification"""
+    """Nettoyage des ressources"""
     try:
-        # Fermeture des WebSockets si actifs
+        # Fermeture des WebSockets
         if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
             await close_websocket(bot)
         
-        # Fermeture explicite de la session client
-        if hasattr(bot, 'client_session') and bot.client_session and not bot.client_session.closed:
-            await bot.client_session.close()
-            await asyncio.sleep(0.25)  # Délai pour assurer la fermeture
+        # Nettoyage des sessions via le gestionnaire
+        if hasattr(bot, 'client_session') and bot.client_session:
+            session_manager.unregister(bot.client_session)
+            if not bot.client_session.closed:
+                await bot.client_session.close()
             bot.client_session = None
-            
-        # Réinitialisation des données
+        
+        # Nettoyage des autres ressources du bot
         bot.latest_data = {}
         bot.indicators = {}
         
-        logger.info("✅ Resources cleaned successfully")
+        # Nettoyage global des sessions
+        await session_manager.cleanup()
+        
+        logger.info("""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ All resources cleaned successfully              ║
+╚═════════════════════════════════════════════════╝
+        """)
         
     except Exception as e:
         logger.error(f"❌ Resource cleanup error: {e}")
@@ -4019,12 +4008,21 @@ async def shutdown():
             except asyncio.TimeoutError:
                 logger.warning("Timeout during tasks cancellation")
         
+        # Nettoyage via le gestionnaire de sessions
+        await session_manager.cleanup()
+        
         # Nettoyage des ressources du bot
         if 'bot_instance' in st.session_state:
             bot = st.session_state.bot_instance
             await cleanup_resources(bot)
-            
-        logger.info("🔄 Shutdown completed")
+        
+        logger.info("""
+╔═════════════════════════════════════════════════╗
+║              SHUTDOWN COMPLETED                  ║
+╠═════════════════════════════════════════════════╣
+║ All resources cleaned and sessions closed       ║
+╚═════════════════════════════════════════════════╝
+        """)
         
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
@@ -4033,7 +4031,6 @@ def main():
     """Point d'entrée principal de l'application"""
     # Initialisation de l'état de session
     init_session_state()
-    loop = None
     
     try:
         # Création et configuration de la boucle événementielle
@@ -4041,9 +4038,9 @@ def main():
         asyncio.set_event_loop(loop)
         
         try:
-            # Exécution de la coroutine principale avec un timeout
+            # Exécution de la coroutine principale avec un timeout augmenté
             loop.run_until_complete(
-                asyncio.wait_for(main_async(), timeout=30)  # 30 secondes timeout
+                asyncio.wait_for(main_async(), timeout=180)  # Augmenté à 180 secondes
             )
                 
         except asyncio.TimeoutError:
@@ -4057,6 +4054,13 @@ def main():
         finally:
             # Nettoyage des ressources
             try:
+                # S'assurer de la fermeture de toutes les sessions
+                if 'bot_instance' in st.session_state:
+                    bot = st.session_state.bot_instance
+                    if hasattr(bot, 'client_session') and bot.client_session:
+                        loop.run_until_complete(bot.client_session.close())
+                    loop.run_until_complete(cleanup_resources(bot))
+                
                 # Récupération des tâches actives
                 pending = asyncio.all_tasks(loop)
                 
@@ -4070,48 +4074,11 @@ def main():
                         asyncio.gather(*pending, return_exceptions=True)
                     )
                     
-                # Nettoyage final
-                if hasattr(st.session_state, 'bot_instance'):
-                    loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
-                    
             except Exception as cleanup_error:
                 logger.error(f"Error during cleanup: {cleanup_error}")
                 
             finally:
-                # Fermeture de la boucle
-                try:
-                    loop.run_until_complete(loop.shutdown_asyncgens())
-                    loop.close()
-                except Exception as close_error:
-                    logger.error(f"Error closing event loop: {close_error}")
-                    
-    except RuntimeError as e:
-        if "Event loop is closed" in str(e):
-            logger.error("Event loop was closed. Creating new loop.")
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(main_async())
-            except Exception as retry_error:
-                logger.error(f"Error in retry execution: {retry_error}")
-            finally:
-                if loop and not loop.is_closed():
-                    try:
-                        loop.close()
-                    except:
-                        pass
-                    
-    except Exception as e:
-        logger.error(f"Fatal error in main: {e}")
-        st.error(f"A fatal error occurred: {str(e)}")
-        
-    finally:
-        # Nettoyage final de la session state
-        if 'bot_instance' in st.session_state and loop and not loop.is_closed():
-            try:
-                loop.run_until_complete(shutdown())
-            except Exception as final_error:
-                logger.error(f"Final cleanup error: {final_error}")
+                loop.close()
 
 if __name__ == "__main__":
     try:
