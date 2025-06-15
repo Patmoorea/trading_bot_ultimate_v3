@@ -699,18 +699,6 @@ async def initialize_websocket(bot):
                     'reconnect_count': 0,  # Réinitialisation du compteur
                     'error_count': 0  # Réinitialisation des erreurs
                 })
-                
-                logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║         WEBSOCKET INITIALIZATION SUCCESS         ║
-╠═════════════════════════════════════════════════╣
-║ Status: Connected                               ║
-║ Streams: {len(streams)} active                  ║
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC    ║
-║ User: {os.getenv('USER', 'Unknown')}           ║
-╚═════════════════════════════════════════════════╝
-                """)
-                
                 return True
                 
         except asyncio.TimeoutError:
@@ -718,15 +706,6 @@ async def initialize_websocket(bot):
             return False
             
     except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║         WEBSOCKET INITIALIZATION ERROR          ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Unknown')}
-╚═════════════════════════════════════════════════╝
-        """)
         return False
         
     finally:
@@ -1334,27 +1313,58 @@ class MultiStreamManager:
         self.exchange = Exchange(exchange_id=exchange_id)
 
 class TradingBotM4:
-    """Classe principale du bot de trading v4 - Version unifiée et mise à jour le 2025-06-10 18:48:29"""
+    """Classe principale du bot de trading v4"""
     def __init__(self):
         self.cleanup_in_progress = False
         self.shutdown_requested = False
-        
+        self.initialized = False
         self.logger = logging.getLogger(__name__)
+
+        # Configuration principale
+        self.config = {
+            'NEWS': {
+                'enabled': True,
+                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
+            },
+            'BINANCE': {
+                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
+                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
+            },
+            'TRADING': {
+                'pairs': ["BTC/USDT", "ETH/USDT"],
+                'timeframes': ["1m", "5m", "15m", "1h", "4h", "1d"]
+            },
+            'ARBITRAGE': {
+                'exchanges': ["binance", "bitfinex", "kraken"],
+                'pairs': ["BTC/USDT", "ETH/USDT"],
+                'min_profit': 0.002,
+                'max_trade_size': 1000,
+                'timeout': 5,
+                'volume_filter': 100000,
+                'price_check': True,
+                'max_slippage': 0.001
+            }
+        }
+        
+        # Initialisation des buffers et données
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
         
         # Initialisation du client Binance
         try:
             self.spot_client = BinanceClient(
-                api_key=os.getenv('BINANCE_API_KEY'),
-                api_secret=os.getenv('BINANCE_API_SECRET')
+                api_key=self.config['BINANCE']['API_KEY'],
+                api_secret=self.config['BINANCE']['API_SECRET']
             )
-            logger.info("✅ Spot client initialisé avec succès")
+            self.logger.info("✅ Spot client initialisé avec succès")
         except Exception as e:
-            logger.error(f"❌ Erreur initialisation spot client: {e}")
+            self.logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
-        
+
+        # Configuration du WebSocket
+        self.websocket = WebSocket(self)  # Ajout de cette ligne
         self.ws_manager = WebSocketManager(self)
-         
-        # Configuration du WebSocket - AJOUTEZ CE CODE ICI
         self.ws_connection = {
             'enabled': False,
             'reconnect_count': 0,
@@ -1364,11 +1374,89 @@ class TradingBotM4:
             'last_message': None,
             'last_error': None
         }
+
+        # Configuration de l'exchange
+        self.websocket.setup_exchange("binance")
         
+        # Mode de trading et composants
+        self.trading_mode = os.getenv('TRADING_MODE', 'production')
+        self.testnet = False
+        self.news_enabled = True
+        self.arbitrage_enabled = True
+        self.telegram_enabled = True
+
+        # Configuration risque
+        self.max_drawdown = 0.05  # 5% max
+        self.daily_stop_loss = 0.02  # 2% par jour
+        self.max_position_size = 1000  # USDC
+
+        # Configuration des streams
+        self.stream_config = StreamConfig(
+            max_connections=12,
+            reconnect_delay=1.0,
+            buffer_size=10000
+        )
+
+        # Interface et monitoring
+        self.dashboard = TradingDashboard()
+
+        # Composants principaux
+        self.arbitrage_engine = ArbitrageEngine(
+            exchanges=self.config["ARBITRAGE"]["exchanges"],
+            pairs=self.config["ARBITRAGE"]["pairs"],
+            min_profit=self.config["ARBITRAGE"]["min_profit"],
+            max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
+            timeout=self.config["ARBITRAGE"]["timeout"],
+            volume_filter=self.config["ARBITRAGE"]["volume_filter"],
+            price_check=self.config["ARBITRAGE"]["price_check"],
+            max_slippage=self.config["ARBITRAGE"]["max_slippage"]
+        )
+
+        # Configuration Telegram
+        self.telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
+        self.telegram = TelegramBot()
+
+        # IA et analyse
+        self.hybrid_model = HybridAI()
+        self.env = TradingEnv(
+            trading_pairs=self.config["TRADING"]["pairs"],
+            timeframes=self.config["TRADING"]["timeframes"]
+        )
+
+        # Gestionnaires de trading
+        self.position_manager = PositionManager(
+            account_balance=10000,
+            max_positions=5,
+            max_leverage=3.0,
+            min_position_size=0.001
+        )
+        
+        self.circuit_breaker = CircuitBreaker(
+            crash_threshold=0.1,
+            liquidity_threshold=0.5,
+            volatility_threshold=0.3
+        )
+
+        # Configuration timeframes
+        self.timeframe_config = TimeframeConfig(
+            timeframes=self.config["TRADING"]["timeframes"],
+            weights={
+                "1m": 0.1, "5m": 0.15, "15m": 0.2,
+                "1h": 0.25, "4h": 0.15, "1d": 0.15
+            }
+        )
+
+        # Composants d'analyse
+        self.news_analyzer = NewsAnalyzer()
+        self.regime_detector = RegimeDetector()
+        self.qsvm = QuantumSVM()
+        self.client_session = None
+
     async def start(self):
         """Démarre le bot"""
         try:
-            logger.info("Starting bot initialization...")
+            self.logger.info("Starting bot initialization...")
         
             # Démarrage du WebSocket Manager
             if not await self.ws_manager.start():
@@ -1380,11 +1468,11 @@ class TradingBotM4:
             
             # Mise à jour du statut
             self.initialized = True
-            logger.info("✅ Bot initialized successfully")
+            self.logger.info("✅ Bot initialized successfully")
             return True
         
         except Exception as e:
-            logger.error(f"❌ Bot initialization error: {e}")
+            self.logger.error(f"❌ Bot initialization error: {e}")
             await self._cleanup()
             return False
     
@@ -1550,9 +1638,7 @@ class TradingBotM4:
             report = f"""
 ╔═════════════════════════════════════════════════╗
 ║           RAPPORT D'ANALYSE DE MARCHÉ           ║
-╠═════════════════════════════════════════════════╣
-║ Date: 2025-06-15 19:52:45                      ║
-║ Analyste: Patmoorea                            ║
+╠═════════════════════════════════════════════════╣    
 ║ Régime: {regime}                               ║
 ╚═════════════════════════════════════════════════╝
 
