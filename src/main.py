@@ -8,6 +8,8 @@ import re
 import time
 import threading
 from datetime import datetime, timezone
+from contextlib import AsyncExitStack
+from asyncio import TimeoutError
 
 # Ajout du chemin racine au PYTHONPATH
 import sys
@@ -279,17 +281,16 @@ async def initialize_websocket(bot):
                 
                 # Démarrer tous les streams
                 for stream in streams:
-                    asyncio.create_task(handle_socket_message(bot, stream))
+                    await handle_socket_message(bot, stream)  # Ajout du await ici
                 
                 bot.ws_connection['enabled'] = True
                 bot.ws_connection['last_connection'] = time.time()
-                return True
-            
+            return True
         except Exception as e:
             logger.error(f"WebSocket initialization error: {e}")
             return False
     
-async def handle_socket_message(self, socket):
+async def handle_socket_message(bot, socket):
     """Handle incoming WebSocket messages"""
     try:
         async with socket as ts:
@@ -663,16 +664,16 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"❌ Erreur nettoyage: {e}")
 
-    def check_ws_connection(bot):
+    async def check_ws_connection(bot):
         """Check WebSocket connection and reconnect if needed"""
         try:
-            if not bot.ws_connection['enabled']:
-                if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
+            if not self.ws_connection['enabled']:
+                if self.ws_connection['reconnect_count'] < self.ws_connection['max_reconnects']:
                     logger.info("Attempting WebSocket reconnection...")
-                    if initialize_websocket(bot):
-                        bot.ws_connection['reconnect_count'] = 0
+                    if await initialize_websocket(self):  # Ajout du await ici
+                        self.ws_connection['reconnect_count'] = 0
                         return True
-                    bot.ws_connection['reconnect_count'] += 1
+                    self.ws_connection['reconnect_count'] += 1
                 else:
                     logger.error("Max WebSocket reconnection attempts reached")
                     return False
@@ -1419,6 +1420,16 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"Erreur configuration Telegram: {e}")
             return False
+    
+    def _get_portfolio_value(self):
+        """Récupère la valeur actuelle du portfolio"""
+        try:
+            if hasattr(self, 'position_manager') and hasattr(self.position_manager, 'positions'):
+                return sum(self.position_manager.positions.values())
+            return 0.0
+        except Exception as e:
+            logger.error(f"Erreur calcul portfolio: {e}")
+            return None
 
     async def get_real_portfolio(self):
         """
@@ -3118,36 +3129,18 @@ async def run_trading_bot():
         # Bouton de démarrage
         if st.button("Start Trading Bot", type="primary"):
             try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-                with st.spinner("Initialisation du bot de trading..."):
+                async with asyncio.timeout(30):  # Ajouter un timeout de 30 secondes
+                    # Démarrer le bot de façon asynchrone
                     bot = TradingBotM4()
-                    asyncio.run(bot.async_init())
-                    loop.run_until_complete(bot.run())
+                    await bot.initialize()  # Utiliser await au lieu de asyncio.run
+                    await bot.run()  # Utiliser await ici aussi
+            
+            except asyncio.TimeoutError:
+                st.error("❌ Bot initialization timed out")
+                logger.error("Bot initialization timed out")
             except Exception as e:
-                logger.error(f"Erreur du bot: {e}")
-                st.error(f"Bot error: {str(e)}")
-                logging.error("Bot error", exc_info=True)
-            finally:
-                loop.close()
-
-    except Exception as e:
-        logger.error(f"Erreur critique: {e}")
-        st.error(f"Critical error: {str(e)}")
-        logging.error("Fatal error", exc_info=True)
-
-
-
-    def _get_portfolio_value(self):
-        """Récupère la valeur actuelle du portfolio"""
-        try:
-            if hasattr(self, 'position_manager') and hasattr(self.position_manager, 'positions'):
-                return sum(self.position_manager.positions.values())
-            return 0.0
-        except Exception as e:
-            logger.error(f"Erreur calcul portfolio: {e}")
-            return None
+                st.error(f"❌ Bot error: {str(e)}")
+                logger.error(f"Bot error: {e}")
 
     def _calculate_total_pnl(self):
         """Calcule le PnL total"""
@@ -3250,23 +3243,21 @@ async def main_async():
         st.session_state.bot_running = False
     if 'refresh_count' not in st.session_state:
         st.session_state.refresh_count = 0
-    if 'trading_thread' not in st.session_state:
-        st.session_state.trading_thread = None
-        
-    try:
-        # Get or create bot instance
-        bot = get_bot()
-        if bot is None:
-            st.error("❌ Failed to initialize bot")
-            return
+    
+    async with AsyncExitStack() as stack:
+        try:
+            bot = get_bot()
+            if bot is None:
+                st.error("❌ Failed to initialize bot")
+                return
 
-        # Initialize WebSocket if not already done
-        if not bot.ws_connection['enabled']:
-            with st.spinner("Connecting to WebSocket..."):
-                if not initialize_websocket(bot):
-                    st.error("❌ Failed to establish WebSocket connection")
-                    return
-                st.success("✅ WebSocket connected!")
+        # Initialize WebSocket avec await
+            if not bot.ws_connection['enabled']:
+                with st.spinner("Connecting to WebSocket..."):
+                    if not await initialize_websocket(bot):  # Ajout du await ici
+                        st.error("❌ Failed to establish WebSocket connection")
+                        return
+                    st.success("✅ WebSocket connected!")
 
         # Colonne d'état
         status_col1, status_col2 = st.columns([2, 1])
@@ -3435,25 +3426,43 @@ async def main_async():
 
             # Auto-refresh si le bot est en marche
             if st.session_state.bot_running:
-                # Update footer avec timestamp
-                st.sidebar.markdown("---")
-                st.sidebar.text(f"Updates: {st.session_state.get('refresh_count', 0)}")
-                st.sidebar.text(f"Last Update: {bot.current_date}")
-    
-                # Attendre avant la prochaine mise à jour
-                await asyncio.sleep(0.5)  # Réduit à 0.5 seconde pour des mises à jour plus fréquentes
+                st.session_state.refresh_count += 1
+                await asyncio.sleep(0.5)
                 st.rerun()
 
-    except Exception as e:
-        st.error(f"❌ Application error: {str(e)}")
-        logger.error(f"Main error: {e}")
+        except Exception as e:
+            st.error(f"❌ Application error: {str(e)}")
+            logger.error(f"Main error: {e}")
+            raise
+        finally:
+            if 'bot' in locals() and hasattr(bot, '_cleanup'):
+                await bot._cleanup()
 
-# Ajoutez cette fonction main() ici
 def main():
     if 'asyncio_loop' not in st.session_state:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         st.session_state.asyncio_loop = loop
     
-    # Exécution de la version asynchrone
-    st.session_state.asyncio_loop.run_until_complete(main_async())
+    try:
+        st.session_state.asyncio_loop.run_until_complete(main_async())
+    except Exception as e:
+        logger.error(f"Main loop error: {e}")
+    finally:
+        if hasattr(st.session_state, 'asyncio_loop'):
+            loop = st.session_state.asyncio_loop
+            try:
+                pending = asyncio.all_tasks(loop)
+                for task in pending:
+                    task.cancel()
+                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            finally:
+                loop.close()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
