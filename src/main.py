@@ -20,6 +20,7 @@ from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
+import aiohttp
 
 # 3. Configuration des chemins
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -263,22 +264,13 @@ async def setup_streams(bot):
                 try:
                     logger.info(f"Setting up {stream_type} stream (attempt {retry_count + 1}/{MAX_RETRIES})...")
                     
-                    # Configuration du stream avec timeout
+                    # Configuration du stream
                     if stream_type == 'ticker':
-                        socket = await asyncio.wait_for(
-                            setup_func(symbol),
-                            timeout=STREAM_TIMEOUT
-                        )
+                        socket = setup_func(symbol)
                     elif stream_type == 'depth':
-                        socket = await asyncio.wait_for(
-                            setup_func(symbol),
-                            timeout=STREAM_TIMEOUT
-                        )
+                        socket = setup_func(symbol)
                     elif stream_type == 'kline':
-                        socket = await asyncio.wait_for(
-                            setup_func(symbol, interval),
-                            timeout=STREAM_TIMEOUT
-                        )
+                        socket = setup_func(symbol, interval)
                     
                     # Création de la tâche avec métadonnées
                     task = asyncio.create_task(
@@ -290,8 +282,8 @@ async def setup_streams(bot):
                     task.metadata = {
                         'type': stream_type,
                         'symbol': symbol,
-                        'created_at': CURRENT_DATE,
-                        'created_by': CURRENT_USER,
+                        'created_at': "2025-06-15 17:39:09",  # CURRENT_DATE
+                        'created_by': "Patmoorea",            # CURRENT_USER
                         'last_activity': time.time()
                     }
                     
@@ -349,8 +341,6 @@ async def setup_streams(bot):
         # Ajout des informations de monitoring
         bot.stream_status = {
             'active_streams': len(tasks),
-            'last_update': CURRENT_DATE,
-            'updated_by': CURRENT_USER,
             'stream_details': [{
                 'type': task.get_name().split('_')[0],
                 'status': 'active',
@@ -377,118 +367,96 @@ async def initialize_websocket(bot):
     """Initialize WebSocket connection"""
     retry_count = 0
     max_retries = 3
-    retry_delay = 5  # secondes entre les tentatives
-
+    retry_delay = 5
+    
     try:
-        # Vérification si déjà en cours d'initialisation
         if hasattr(bot, '_initializing') and bot._initializing:
             logger.warning("⚠️ WebSocket initialization already in progress")
             return False
             
         bot._initializing = True
         
-        try:
-            while retry_count < max_retries:
-                try:
-                    logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
-                    
-                    # Fermeture propre des connexions existantes
-                    if hasattr(bot, 'binance_ws') and bot.binance_ws:
-                        try:
-                            await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=5.0)
-                            if bot.socket_manager:
-                                await asyncio.wait_for(bot.socket_manager.close(), timeout=5.0)
-                            bot.binance_ws = None
-                            bot.socket_manager = None
-                        except Exception as close_error:
-                            logger.warning(f"⚠️ Error closing existing connection: {close_error}")
-                    
-                    # Configuration de base du WebSocket
-                    bot.ws_connection = {
-                        'enabled': False,
-                        'status': 'initializing',
-                        'last_connection': time.time(),
-                        'last_message': time.time(),
-                        'reconnect_count': retry_count,
-                        'max_reconnects': max_retries,
-                        'tasks': []
-                    }
-                    
-                    # Création de la session avec timeout plus long
-                    async with aiohttp.ClientSession() as session:
-                        try:
-                            # Configuration du client avec timeout augmenté
-                            bot.binance_ws = await asyncio.wait_for(
-                                AsyncClient.create(
-                                    api_key=os.getenv('BINANCE_API_KEY'),
-                                    api_secret=os.getenv('BINANCE_API_SECRET'),
-                                    testnet=False,
-                                    tld='com',
-                                    session=session,
-                                    request_timeout=60,
-                                    connect_timeout=30
-                                ),
-                                timeout=60.0
-                            )
-                            
-                            # Configuration du socket manager avec paramètres optimisés
-                            bot.socket_manager = BinanceSocketManager(
-                                bot.binance_ws,
-                                user_timeout=30,
-                                ping_interval=20,
-                                ping_timeout=10,
-                                close_timeout=10
-                            )
-                            
-                            # Configuration des streams avec timeout
-                            streams = await asyncio.wait_for(
-                                setup_streams(bot),
-                                timeout=30.0
-                            )
-                            
-                            if not streams:
-                                raise Exception("Failed to setup streams")
-                            
-                            # Mise à jour du statut final
-                            bot.ws_connection.update({
-                                'enabled': True,
-                                'status': 'connected',
-                                'tasks': streams,
-                                'last_connection': time.time(),
-                                'last_message': time.time()
-                            })
-                            
-                            logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
-                            return True
-                            
-                        except asyncio.TimeoutError:
-                            logger.error(f"❌ Connection timeout (attempt {retry_count + 1})")
-                            retry_count += 1
-                            if retry_count < max_retries:
-                                logger.info(f"Retrying in {retry_delay} seconds...")
-                                await asyncio.sleep(retry_delay)
-                            continue
-                            
-                        except Exception as conn_error:
-                            logger.error(f"❌ Connection error (attempt {retry_count + 1}): {conn_error}")
-                            retry_count += 1
-                            if retry_count < max_retries:
-                                logger.info(f"Retrying in {retry_delay} seconds...")
-                                await asyncio.sleep(retry_delay)
-                            continue
-                            
-                except Exception as e:
-                    logger.error(f"❌ Attempt {retry_count + 1} failed: {e}")
-                    retry_count += 1
-                    if retry_count < max_retries:
-                        await asyncio.sleep(retry_delay)
-                    continue
-                    
-            logger.error(f"❌ Failed to initialize WebSocket after {max_retries} attempts")
-            return False
-            
-        finally:
-            bot._initializing = False
+        async with aiohttp.ClientSession() as session:
+            try:
+                while retry_count < max_retries:
+                    try:
+                        logger.info(f"🔄 Initializing WebSocket connection (attempt {retry_count + 1}/{max_retries})...")
+                        
+                        # Fermeture propre des connexions existantes
+                        if hasattr(bot, 'binance_ws') and bot.binance_ws:
+                            try:
+                                await asyncio.wait_for(bot.binance_ws.close_connection(), timeout=10.0)
+                                if bot.socket_manager:
+                                    await asyncio.wait_for(bot.socket_manager.close(), timeout=10.0)
+                                bot.binance_ws = None
+                                bot.socket_manager = None
+                            except Exception as close_error:
+                                logger.warning(f"⚠️ Error closing existing connection: {close_error}")
+                        
+                        # Configuration de base du WebSocket avec timeout augmenté
+                        bot.ws_connection = {
+                            'enabled': False,
+                            'status': 'initializing',
+                            'last_connection': time.time(),
+                            'last_message': time.time(),
+                            'reconnect_count': retry_count,
+                            'max_reconnects': max_retries,
+                            'tasks': []
+                        }
+                        
+                        # Configuration du client avec timeout augmenté
+                        bot.binance_ws = await asyncio.wait_for(
+                            AsyncClient.create(
+                                api_key=os.getenv('BINANCE_API_KEY'),
+                                api_secret=os.getenv('BINANCE_API_SECRET'),
+                                testnet=False,
+                                tld='com'
+                            ),
+                            timeout=60.0
+                        )
+                        
+                        # Configuration du socket manager
+                        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+                        
+                        # Configuration des streams avec timeout augmenté
+                        streams = await asyncio.wait_for(
+                            setup_streams(bot),
+                            timeout=60.0
+                        )
+                        
+                        if not streams:
+                            raise Exception("Failed to setup streams")
+                        
+                        bot.ws_connection.update({
+                            'enabled': True,
+                            'status': 'connected',
+                            'tasks': streams,
+                            'last_connection': time.time(),
+                            'last_message': time.time()
+                        })
+                        
+                        logger.info(f"✅ WebSocket initialized successfully (attempt {retry_count + 1})")
+                        return True
+                        
+                    except asyncio.TimeoutError:
+                        retry_count += 1
+                        logger.error(f"❌ Connection timeout (attempt {retry_count})")
+                        if retry_count < max_retries:
+                            await asyncio.sleep(retry_delay)
+                        continue
+                        
+                    except Exception as conn_error:
+                        retry_count += 1
+                        logger.error(f"❌ Connection error (attempt {retry_count}): {conn_error}")
+                        if retry_count < max_retries:
+                            await asyncio.sleep(retry_delay)
+                        continue
+                        
+                logger.error(f"❌ Failed to initialize WebSocket after {max_retries} attempts")
+                return False
+                
+            finally:
+                bot._initializing = False
                     
     except Exception as e:
         logger.error(f"❌ Fatal WebSocket initialization error: {e}")
