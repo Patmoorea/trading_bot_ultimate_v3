@@ -221,10 +221,12 @@ class WebSocketManager:
                         continue
                 return
 
-    async def cleanup(self):
-        """Nettoie les ressources WebSocket"""
-        self.running = False
-        
+    # Dans la méthode cleanup()
+async def cleanup(self):
+    """Nettoie les ressources WebSocket"""
+    self.running = False
+    
+    try:
         # Annulation des tâches
         for stream in self.streams.values():
             if not stream.done():
@@ -233,17 +235,25 @@ class WebSocketManager:
                     await stream
                 except asyncio.CancelledError:
                     pass
-                    
+                
         self.streams.clear()
         
         # Fermeture du socket manager
-        if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
-            await self.bot.socket_manager.close()
-            self.bot.socket_manager = None
-            
+        if hasattr(self.bot, 'socket_manager'):
+            try:
+                # Modification ici pour utiliser stop_socket
+                for socket in self.bot.socket_manager.sockets:
+                    await self.bot.socket_manager.stop_socket(socket)
+                self.bot.socket_manager = None
+            except Exception as e:
+                self.logger.warning(f"Error closing socket manager: {e}")
+        
         # Fermeture du client Binance
-        if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
-            await self.bot.binance_ws.close_connection()
+        if hasattr(self.bot, 'binance_ws'):
+            try:
+                await self.bot.binance_ws.close_connection()
+            except Exception as e:
+                self.logger.warning(f"Error closing Binance client: {e}")
             self.bot.binance_ws = None
             
 # Définition de la classe SessionManager
@@ -1315,17 +1325,17 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
-        self.cleanup_in_progress = False
-        self.shutdown_requested = False
-        self.initialized = False
-        self.logger = logging.getLogger(__name__)
-
         # Configuration des streams (DOIT ÊTRE EN PREMIER)
         self.stream_config = StreamConfig(
             max_connections=12,
             reconnect_delay=1.0,
             buffer_size=10000
         )
+        
+        self.cleanup_in_progress = False
+        self.shutdown_requested = False
+        self.initialized = False
+        self.logger = logging.getLogger(__name__)
 
         # Configuration principale
         self.config = {
@@ -1374,7 +1384,7 @@ class TradingBotM4:
             pairs=self.config["TRADING"]["pairs"],
             config=self.stream_config
         )
-        self.ws_manager = WebSocketManager(self)
+        
         self.ws_connection = {
             'enabled': False,
             'reconnect_count': 0,
@@ -1818,10 +1828,6 @@ class TradingBotM4:
     async def _setup_components(self):
         """Configure les composants du bot"""
         try:
-            # Mettre à jour l'initialisation du WebSocket Manager
-            if not hasattr(self, 'ws_manager'):
-                self.ws_manager = WebSocketManager(self)
-        
             # Interface et monitoring
             self.dashboard = TradingDashboard()
         
