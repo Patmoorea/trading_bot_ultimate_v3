@@ -627,35 +627,59 @@ async def setup_streams(bot):
 
 async def cleanup_existing_connections(bot):
     """
-    Nettoie les connexions WebSocket existantes de manière sûre
+    Nettoie les connexions WebSocket existantes
     
     Args:
         bot: Instance du bot de trading
     """
     try:
-        # Fermeture du socket manager
+        # Fermeture du socket manager existant
         if hasattr(bot, 'socket_manager') and bot.socket_manager:
             try:
-                await bot.socket_manager.close()
-            except Exception as close_error:
-                logger.warning(f"⚠️ Error closing socket manager: {close_error}")
+                for socket in bot.socket_manager.sockets:
+                    await bot.socket_manager.stop_socket(socket)
+            except Exception as e:
+                logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
                 bot.socket_manager = None
-                
-        # Fermeture du client Binance
+        
+        # Fermeture du client WebSocket existant
         if hasattr(bot, 'binance_ws') and bot.binance_ws:
             try:
                 await bot.binance_ws.close_connection()
-            except Exception as close_error:
-                logger.warning(f"⚠️ Error closing Binance client: {close_error}")
+            except Exception as e:
+                logger.warning(f"⚠️ Error closing Binance client: {e}")
             finally:
                 bot.binance_ws = None
                 
+        return True
+        
     except Exception as e:
-        logger.error(f"❌ Error during connection cleanup: {e}")
+        logger.error(f"❌ Error during cleanup: {e}")
         return False
 
-    return True
+async def create_binance_client(bot):
+    """
+    Crée une nouvelle instance du client Binance
+    
+    Args:
+        bot: Instance du bot de trading
+    """
+    try:
+        # Création du client avec les credentials
+        bot.binance_ws = await AsyncClient.create(
+            api_key=os.getenv('BINANCE_API_KEY'),
+            api_secret=os.getenv('BINANCE_API_SECRET')
+        )
+        
+        # Création du socket manager
+        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error creating Binance client: {e}")
+        return False
    
 async def initialize_websocket(bot):
     """
