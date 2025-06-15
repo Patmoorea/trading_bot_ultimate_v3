@@ -118,21 +118,29 @@ class SessionManager:
     
     def register(self, session):
         self.sessions.add(session)
-        logger.info(f"New session registered (active: {len(self.sessions)})")
+        logging.getLogger(__name__).info(f"New session registered (active: {len(self.sessions)})")
     
     def unregister(self, session):
         self.sessions.discard(session)
-        logger.info(f"Session unregistered (remaining: {len(self.sessions)})")
+        logging.getLogger(__name__).info(f"Session unregistered (remaining: {len(self.sessions)})")
     
     async def cleanup(self):
-        for session in self.sessions:
-            if not session.closed:
-                await session.close()
-        self.sessions.clear()
-        logger.info("All sessions cleaned")
-
-# Créer une instance globale
-session_manager = SessionManager()
+        """Nettoyage des sessions"""
+        try:
+            for session in self.sessions:
+                if not session.closed:
+                    await session.close()
+            self.sessions.clear()
+            
+            logging.info("""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ All sessions cleaned successfully               ║
+╚═════════════════════════════════════════════════╝
+            """)
+        except Exception as e:
+            logging.error(f"❌ Session cleanup error: {e}")
 
 def setup_event_loop() -> AbstractEventLoop:
     """Configure l'event loop pour Streamlit"""
@@ -1139,6 +1147,107 @@ class TradingBotM4:
                 "1h": 0.25, "4h": 0.15, "1d": 0.15
             }
         )
+        self.news_analyzer = NewsAnalyzer()
+        self.regime_detector = RegimeDetector()
+        self.qsvm = QuantumSVM()
+        self.client_session = None
+        self.ws_connection = {
+            'enabled': False,
+            'status': 'disconnected',
+            'tasks': []
+        }
+    def _generate_recommendation(self, trend, momentum, volatility, volume):
+        """Génère une recommandation basée sur l'analyse des signaux"""
+        try:
+            # Compteurs pour les signaux
+            buy_signals = 0
+            sell_signals = 0
+        
+            # Analyse de la tendance
+            if trend['primary_trend'] == 'bullish':
+                buy_signals += 1
+            elif trend['primary_trend'] == 'bearish':
+                sell_signals += 1
+            
+            # Analyse du momentum
+            if momentum['rsi_signal'] == 'oversold':
+                buy_signals += 1
+            elif momentum['rsi_signal'] == 'overbought':
+                sell_signals += 1
+            
+            # Analyse de la volatilité
+            if volatility['bb_signal'] == 'oversold':
+                buy_signals += 1
+            elif volatility['bb_signal'] == 'overbought':
+                sell_signals += 1
+            
+            # Analyse du volume
+            if volume['mfi_signal'] == 'buy':
+                buy_signals += 1
+            elif volume['mfi_signal'] == 'sell':
+                sell_signals += 1
+            
+            # Génération de la recommandation finale
+            recommendation = {
+                'action': 'hold',
+                'strength': 0,
+                'signals': {
+                    'buy': buy_signals,
+                    'sell': sell_signals
+                }
+            }
+        
+            if buy_signals > sell_signals:
+                recommendation['action'] = 'buy'
+                recommendation['strength'] = buy_signals - sell_signals
+            elif sell_signals > buy_signals:
+                recommendation['action'] = 'sell'
+                recommendation['strength'] = sell_signals - buy_signals
+            
+            logger.info(f"✅ Recommandation générée: {recommendation}")
+            return recommendation
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur génération recommandation: {e}")
+            return {'action': 'error', 'strength': 0, 'error': str(e)}
+
+    def _generate_analysis_report(self, indicators_analysis, regime):
+        """Génère un rapport d'analyse du marché"""
+        try:
+            report = f"""
+╔═════════════════════════════════════════════════╗
+║           RAPPORT D'ANALYSE DE MARCHÉ           ║
+╠═════════════════════════════════════════════════╣
+║ Date: 2025-06-15 19:52:45                      ║
+║ Analyste: Patmoorea                            ║
+║ Régime: {regime}                               ║
+╚═════════════════════════════════════════════════╝
+
+    📊 Analyse par Timeframe:
+    """
+            for timeframe, analysis in indicators_analysis.items():
+                report += f"""
+🕒 {timeframe}:
+├─ 📈 Tendance: {analysis['trend']['trend_strength']}
+├─ 📊 Volatilité: {analysis['volatility']['current_volatility']}
+├─ 📉 Volume: {analysis['volume']['volume_profile']['strength']}
+└─ 🎯 Signal dominant: {analysis['dominant_signal']}
+    """
+        
+            logger.info("✅ Rapport d'analyse généré avec succès")
+            return report
+        
+        except Exception as e:
+            error_msg = f"""
+╔═════════════════════════════════════════════════╗
+║                ERREUR RAPPORT                    ║
+╠═════════════════════════════════════════════════╣
+║ {str(e)}
+╚═════════════════════════════════════════════════╝
+    """
+            logger.error(f"❌ Erreur génération rapport: {e}")
+            return error_msg
+        
     async def _initialize_models(self):
         """Initialise les modèles d'IA"""
         try:
@@ -1244,52 +1353,32 @@ class TradingBotM4:
     
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
-        if not self.initialized:
-            try:
-                # Configuration Binance
-                self.binance_ws = await AsyncClient.create(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET')
-                )
-                self.socket_manager = BinanceSocketManager(self.binance_ws)
-                
-                # Client Binance standard (non async)
-                self.spot_client = BinanceClient(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET')
-                )
-                
-                # Configuration de l'exchange ccxt pour le portfolio
-                self.exchange = ccxt.binance({
-                    'apiKey': os.getenv('BINANCE_API_KEY'),
-                    'secret': os.getenv('BINANCE_API_SECRET'),
-                    'enableRateLimit': True,
-                    'options': {
-                        'defaultType': 'future',
-                        'adjustForTimeDifference': True
-                    }
-                })
-                
-                # Configuration des streams
-                self.stream_config = StreamConfig(
-                    max_connections=12,
-                    reconnect_delay=1.0,
-                    buffer_size=10000
-                )
+        try:
+            # Vérification si déjà initialisé
+            if hasattr(self, 'client_session') and self.client_session and not self.client_session.closed:
+                logging.info("Session already initialized")
+                return True
 
-                # Initialisation des composants
-                await self._setup_components()
-                
-                # Test de récupération du portfolio
-                portfolio = await self.get_real_portfolio()
-                if not portfolio:
-                    logger.warning("Unable to fetch initial portfolio data")
-                
-                self.initialized = True
-                logger.info("Bot initialized successfully")
-            except Exception as e:
-                self.logger.error(f"Initialization error: {e}")
-                raise
+            # Création de la nouvelle session
+            self.client_session = aiohttp.ClientSession()
+            session_manager.register(self.client_session)
+        
+            # Mise à jour du statut
+            self.ws_connection.update({
+                'enabled': True,
+                'status': 'initialized',
+                'last_connection': time.time()
+            })
+        
+            logging.info("✅ Session initialized successfully")
+            return True
+        
+        except aiohttp.ClientError as ce:
+            logging.error(f"❌ Client session error: {ce}")
+            return False
+        except Exception as e:
+            logging.error(f"❌ Initialization error: {e}")
+            return False
             
     async def _setup_components(self):
         """Configure les composants du bot"""
@@ -3753,23 +3842,25 @@ def _calculate_supertrend(self, data):
         return None
                     
 async def main_async():
+    """Fonction principale asynchrone pour l'interface Streamlit"""
     try:
-        # Initialisation de l'état de session au tout début
+        # Initialisation de l'état de session
         init_session_state()
         
         st.title("Trading Bot Ultimate v4 🤖")
         
-        # Initialisation de l'état
-        if 'portfolio' not in st.session_state:
-            st.session_state.portfolio = None
-        if 'latest_data' not in st.session_state:
-            st.session_state.latest_data = None
-        if 'indicators' not in st.session_state:
-            st.session_state.indicators = None
-        if 'bot_running' not in st.session_state:
-            st.session_state.bot_running = False
-        if 'refresh_count' not in st.session_state:
-            st.session_state.refresh_count = 0
+        # Initialisation des états de session
+        session_vars = {
+            'portfolio': None,
+            'latest_data': None,
+            'indicators': None,
+            'bot_running': False,
+            'refresh_count': 0
+        }
+        
+        for key, default in session_vars.items():
+            if key not in st.session_state:
+                st.session_state[key] = default
         
         async with AsyncExitStack() as stack:
             bot = get_bot()
@@ -3777,7 +3868,7 @@ async def main_async():
                 st.error("❌ Failed to initialize bot")
                 return
 
-            # Vérification et initialisation du WebSocket
+            # Gestion WebSocket
             if not bot.ws_connection['enabled']:
                 with st.spinner("Connecting to WebSocket..."):
                     if await initialize_websocket(bot):
@@ -3785,23 +3876,21 @@ async def main_async():
                     else:
                         st.error("❌ WebSocket connection failed")
                         return
-            # Vérification périodique du WebSocket
+
             await check_websocket_health(bot)
             
-            # Colonne d'état
+            # Interface - État
             status_col1, status_col2 = st.columns([2, 1])
-            
             with status_col1:
                 st.info(f"""
                 **Session Info**
                 🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
                 """)
 
-            # Sidebar Configuration
+            # Sidebar
             with st.sidebar:
                 st.header("🛠️ Bot Controls")
                 
-                # Risk Level
                 risk_level = st.select_slider(
                     "Risk Level",
                     options=["Low", "Medium", "High"],
@@ -3810,7 +3899,7 @@ async def main_async():
                 
                 st.divider()
                 
-                # Control Buttons
+                # Boutons de contrôle
                 if not st.session_state.bot_running:
                     if st.button("🟢 Start Trading", use_container_width=True):
                         try:
@@ -3818,7 +3907,6 @@ async def main_async():
                                 if not bot.initialized:
                                     await bot.initialize()
                                 st.session_state.bot_running = True
-                                # Mise à jour des données de marché
                                 await update_market_data(bot)
                                 st.success("✅ Bot is now trading!")
                         except Exception as e:
@@ -3836,14 +3924,13 @@ async def main_async():
                         except Exception as e:
                             st.error(f"❌ Failed to stop bot: {str(e)}")
 
-                # Status indicator
                 st.markdown("---")
                 st.markdown(f"**Bot Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-            # Main Content - Using tabs
+            # Onglets principaux
             tabs = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
 
-            # Portfolio tab
+            # Onglet Portfolio
             with tabs[0]:
                 if st.session_state.bot_running:
                     st.info(f"""
@@ -3877,6 +3964,7 @@ async def main_async():
                                     str(positions_count),
                                     f"{positions_count} active"
                                 )
+                            
                             st.subheader("Active Positions")
                             if positions:
                                 st.dataframe(
@@ -3892,7 +3980,7 @@ async def main_async():
                 else:
                     st.warning("⚠️ Bot is not running. Click 'Start Trading' to begin.")
 
-            # Trading tab
+            # Onglet Trading
             with tabs[1]:
                 if st.session_state.bot_running:
                     try:
@@ -3932,14 +4020,14 @@ async def main_async():
                         st.error(f"❌ Error updating trading data: {str(e)}")
                 else:
                     st.warning("⚠️ Start the bot to see trading signals")
-            # Analysis tab
+
+            # Onglet Analysis
             with tabs[2]:
                 if st.session_state.bot_running:
                     try:
                         if bot.latest_data and bot.indicators:
                             st.subheader("Technical Analysis")
                             
-                            # Traitement des données pour chaque symbole
                             for symbol in bot.latest_data:
                                 await process_market_data(bot, symbol)
                             
@@ -3959,11 +4047,10 @@ async def main_async():
             if st.session_state.bot_running:
                 try:
                     st.session_state.refresh_count += 1
-                    if st.session_state.refresh_count >= 100:  # Reset après 100 refreshs
+                    if st.session_state.refresh_count >= 100:
                         st.session_state.refresh_count = 0
-                        # Nettoyage périodique
                         await cleanup_session(bot)
-                    await asyncio.sleep(1)  # Délai augmenté pour réduire la charge
+                    await asyncio.sleep(1)
                     st.rerun()
                 except Exception as refresh_error:
                     logger.error(f"Refresh error: {refresh_error}")
@@ -3973,7 +4060,6 @@ async def main_async():
         logger.error(f"Main error: {e}")
         
     finally:
-        # Nettoyage final
         if 'bot' in locals():
             try:
                 await cleanup_resources(bot)
@@ -4082,31 +4168,36 @@ def main():
 
 if __name__ == "__main__":
     try:
-        # Configuration du logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.StreamHandler()
-            ]
-        )
+        # Configuration initiale
+        setup_event_loop()
+        init_session_state()
         
-        # Application des patches asyncio nécessaires
-        import nest_asyncio
-        nest_asyncio.apply()
-        
-        # Démarrage de l'application
-        main()
-        
-    except KeyboardInterrupt:
-        logger.info("Application stopped by user")
-    except Exception as e:
-        logger.error(f"Application startup error: {e}")
-    finally:
-        # S'assurer que toutes les ressources sont libérées
+        # Création du bot
+        bot = get_bot()
+        if not bot:
+            logger.error("❌ Échec de l'initialisation du bot")
+            sys.exit(1)
+            
+        # Démarrage de la boucle principale
+        loop = asyncio.get_event_loop()
         try:
-            if 'loop' in locals() and not loop.is_closed():
-                loop.run_until_complete(shutdown())
-                loop.close()
+            loop.run_until_complete(main_async())
+        except KeyboardInterrupt:
+            logger.info("👋 Arrêt manuel demandé")
         except Exception as e:
-            logger.error(f"Final application cleanup error: {e}")
+            logger.error(f"❌ Erreur dans la boucle principale: {e}")
+        finally:
+            # Nettoyage final
+            if 'bot' in locals():
+                loop.run_until_complete(cleanup_resources(bot))
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              ERREUR CRITIQUE                     ║
+╠═════════════════════════════════════════════════╣
+║ {str(e)}
+╚═════════════════════════════════════════════════╝
+        """)
+        sys.exit(1)
