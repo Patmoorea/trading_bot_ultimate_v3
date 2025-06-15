@@ -255,40 +255,40 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 async def initialize_websocket(bot):
-        """Initialize WebSocket connection"""
-        try:
-            if not bot.ws_connection['enabled']:
-                bot.binance_ws = await AsyncClient.create(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET')
-                )
-                bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+    """Initialize WebSocket connection"""
+    try:
+        if not bot.ws_connection['enabled']:
+            bot.binance_ws = await AsyncClient.create(
+                api_key=os.getenv('BINANCE_API_KEY'),
+                api_secret=os.getenv('BINANCE_API_SECRET')
+            )
+            bot.socket_manager = BinanceSocketManager(bot.binance_ws)
                 
-                # Démarrer les streams nécessaires
-                streams = []
+            # Démarrer les streams nécessaires
+            streams = []
                 
-                # Stream de ticker
-                ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
-                streams.append(ticker_socket)
+            # Stream de ticker
+            ticker_socket = bot.socket_manager.symbol_ticker_socket('BTCUSDC')
+            streams.append(ticker_socket)
                 
-                # Stream d'orderbook
-                depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
-                streams.append(depth_socket)
+            # Stream d'orderbook
+            depth_socket = bot.socket_manager.depth_socket('BTCUSDC')
+            streams.append(depth_socket)
                 
-                # Stream de klines
-                kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
-                streams.append(kline_socket)
+            # Stream de klines
+            kline_socket = bot.socket_manager.kline_socket('BTCUSDC', '1m')
+            streams.append(kline_socket)
                 
-                # Démarrer tous les streams
-                for stream in streams:
-                    await handle_socket_message(bot, stream)  # Ajout du await ici
+            # Démarrer tous les streams
+            for stream in streams:
+                await handle_socket_message(bot, stream)  # Ajout du await ici
                 
-                bot.ws_connection['enabled'] = True
-                bot.ws_connection['last_connection'] = time.time()
-            return True
-        except Exception as e:
-            logger.error(f"WebSocket initialization error: {e}")
-            return False
+            bot.ws_connection['enabled'] = True
+            bot.ws_connection['last_connection'] = time.time()
+        return True
+    except Exception as e:
+        logger.error(f"WebSocket initialization error: {e}")
+        return False
     
 async def handle_socket_message(bot, socket):
     """Handle incoming WebSocket messages"""
@@ -3176,7 +3176,18 @@ async def run_trading_bot():
             except Exception as e:
                 st.error(f"❌ Bot error: {str(e)}")
                 logger.error(f"Bot error: {e}")
-        
+    
+    except Exception as e:
+        logger.error(f"Trading bot runtime error: {e}")
+        st.error(f"❌ Runtime error: {str(e)}")
+    finally:
+        # Nettoyage des ressources
+        if 'bot' in locals():
+            try:
+                await bot._cleanup()
+            except Exception as cleanup_error:
+                logger.error(f"Cleanup error: {cleanup_error}")
+                    
 def _calculate_supertrend(self, data):
     """Calcule l'indicateur Supertrend"""
     try:
@@ -3254,84 +3265,75 @@ async def main_async():
     if 'refresh_count' not in st.session_state:
         st.session_state.refresh_count = 0
     
-    async with AsyncExitStack() as stack:
-        try:
+    try:
+        async with AsyncExitStack() as stack:
             bot = get_bot()
             if bot is None:
                 st.error("❌ Failed to initialize bot")
                 return
 
-        # Initialize WebSocket avec await
+            # Initialize WebSocket
             if not bot.ws_connection['enabled']:
                 with st.spinner("Connecting to WebSocket..."):
-                    if not await initialize_websocket(bot):  # Ajout du await ici
+                    if not await initialize_websocket(bot):
                         st.error("❌ Failed to establish WebSocket connection")
                         return
                     st.success("✅ WebSocket connected!")
 
-        # Colonne d'état
-        status_col1, status_col2 = st.columns([2, 1])
-        
-        with status_col1:
-            st.info(f"""
-            **Session Info**
-            👤 User: {bot.current_user}
-            📅 Date: 2025-06-14 00:24:20 UTC
-            🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
-            """)
+            # Colonne d'état
+            status_col1, status_col2 = st.columns([2, 1])
+            
+            with status_col1:
+                st.info(f"""
+                **Session Info**
+                👤 User: {bot.current_user}
+                📅 Date: 2025-06-15 02:08:18 UTC
+                🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
+                """)
 
-        # Sidebar Configuration
-        with st.sidebar:
-            st.header("🛠️ Bot Controls")
-            
-            # Risk Level
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low"
-            )
-            
-            st.divider()
-            
-            # Control Buttons dans une seule colonne
-            if not st.session_state.bot_running:
-                if st.button("🟢 Start Trading", use_container_width=True):
-                    try:
-                        with st.spinner("Starting trading bot..."):
-                            # Initialisation si pas déjà fait
-                            if not bot.initialized:
-                                await bot.initialize()  # Notez le await ici au lieu de asyncio.run
+            # Sidebar Configuration
+            with st.sidebar:
+                st.header("🛠️ Bot Controls")
                 
-                            # Mise à jour de la date et de l'utilisateur
-                            bot.current_date = "2025-06-14 22:57:19"
-                            bot.current_user = "Patmoorea"
+                # Risk Level
+                risk_level = st.select_slider(
+                    "Risk Level",
+                    options=["Low", "Medium", "High"],
+                    value="Low"
+                )
                 
-                            # Activation du mode trading
-                            st.session_state.bot_running = True
+                st.divider()
                 
-                            # Démarrage du trading en mode asynchrone
-                            await bot.run_real_trading()  # Notez le await ici
-                
-                            st.success("✅ Bot is now trading!")
-                
-                    except Exception as e:
-                        st.error(f"❌ Failed to start bot: {str(e)}")
-                        logger.error(f"Start error: {e}")
-                        st.session_state.bot_running = False
-            else:
-                if st.button("🔴 Stop Trading", use_container_width=True):
-                    try:
-                        with st.spinner("Stopping trading bot..."):
+                # Control Buttons
+                if not st.session_state.bot_running:
+                    if st.button("🟢 Start Trading", use_container_width=True):
+                        try:
+                            with st.spinner("Starting trading bot..."):
+                                if not bot.initialized:
+                                    await bot.initialize()
+                                bot.current_date = "2025-06-15 02:08:18"
+                                bot.current_user = "Patmoorea"
+                                st.session_state.bot_running = True
+                                await bot.run_real_trading()
+                                st.success("✅ Bot is now trading!")
+                        except Exception as e:
+                            st.error(f"❌ Failed to start bot: {str(e)}")
+                            logger.error(f"Start error: {e}")
                             st.session_state.bot_running = False
-                            await bot._cleanup()  # Notez le await ici
-                            st.success("✅ Bot stopped successfully!")
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Failed to stop bot: {str(e)}")
+                else:
+                    if st.button("🔴 Stop Trading", use_container_width=True):
+                        try:
+                            with st.spinner("Stopping trading bot..."):
+                                st.session_state.bot_running = False
+                                await bot._cleanup()
+                                st.success("✅ Bot stopped successfully!")
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Failed to stop bot: {str(e)}")
 
-            # Status indicator
-            st.markdown("---")
-            st.markdown(f"**Bot Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
+                # Status indicator
+                st.markdown("---")
+                st.markdown(f"**Bot Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # Main Content - Using tabs
             tabs = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
@@ -3339,7 +3341,6 @@ async def main_async():
             # Portfolio tab
             with tabs[0]:
                 if st.session_state.bot_running:
-                    # Debug info
                     st.info(f"""
                     **Debug Information**
                     WebSocket: {bot.ws_connection.get('status', 'Unknown')}
@@ -3347,11 +3348,10 @@ async def main_async():
                     Data Available: {bool(bot.latest_data)}
                     Indicators Available: {bool(bot.indicators)}
                     """)
+                    
                     try:
-                        # Utiliser les données en cache plutôt que de refaire un appel
                         portfolio = st.session_state.get('portfolio')
                         if portfolio:
-                            # Portfolio Metrics
                             col1, col2, col3 = st.columns(3)
                             with col1:
                                 st.metric(
@@ -3373,7 +3373,6 @@ async def main_async():
                                     f"{positions_count} active"
                                 )
 
-                         # Active Positions
                             st.subheader("Active Positions")
                             if portfolio.get('positions'):
                                 st.dataframe(
@@ -3403,10 +3402,9 @@ async def main_async():
                         st.metric(
                             "Trading Volume",
                             f"{bot.latest_data.get('volume', 0):.2f}",
-                             f"{bot.latest_data.get('volume_change', 0):+.2f}%"
+                            f"{bot.latest_data.get('volume_change', 0):+.2f}%"
                         )
-                        
-                    # Utiliser les données en cache
+                    
                     indicators = st.session_state.get('indicators')
                     if indicators:
                         st.subheader("Trading Signals")
@@ -3419,7 +3417,7 @@ async def main_async():
                 else:
                     st.warning("⚠️ Start the bot to see trading signals")
 
-            #  Analysis tab
+            # Analysis tab
             with tabs[2]:
                 if st.session_state.bot_running:
                     if hasattr(bot, 'advanced_indicators'):
@@ -3434,19 +3432,19 @@ async def main_async():
                 else:
                     st.warning("⚠️ Start the bot to see technical analysis")
 
-            # Auto-refresh si le bot est en marche
+            # Auto-refresh
             if st.session_state.bot_running:
                 st.session_state.refresh_count += 1
                 await asyncio.sleep(0.5)
                 st.rerun()
 
-        except Exception as e:
-            st.error(f"❌ Application error: {str(e)}")
-            logger.error(f"Main error: {e}")
-            raise
-        finally:
-            if 'bot' in locals() and hasattr(bot, '_cleanup'):
-                await bot._cleanup()
+    except Exception as e:
+        st.error(f"❌ Application error: {str(e)}")
+        logger.error(f"Main error: {e}")
+        raise
+    finally:
+        if 'bot' in locals() and hasattr(bot, '_cleanup'):
+            await bot._cleanup()
 
 def main():
     if 'asyncio_loop' not in st.session_state:
@@ -3466,6 +3464,40 @@ def main():
                 for task in pending:
                     task.cancel()
                 loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            except Exception as cleanup_error:
+                logger.error(f"Cleanup error: {cleanup_error}")
+            finally:
+                loop.close()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+
+def main():
+    # Initialisation de l'event loop si nécessaire
+    if 'asyncio_loop' not in st.session_state:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        st.session_state.asyncio_loop = loop
+    
+    try:
+        st.session_state.asyncio_loop.run_until_complete(main_async())
+    except Exception as e:
+        logger.error(f"Main loop error: {e}")
+    finally:
+        if hasattr(st.session_state, 'asyncio_loop'):
+            loop = st.session_state.asyncio_loop
+            try:
+                pending = asyncio.all_tasks(loop)
+                for task in pending:
+                    task.cancel()
+                loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            except Exception as cleanup_error:
+                logger.error(f"Cleanup error: {cleanup_error}")
             finally:
                 loop.close()
 
