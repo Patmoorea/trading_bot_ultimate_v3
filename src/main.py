@@ -404,7 +404,7 @@ async def initialize_websocket(bot):
                 testnet=False,
                 tld='com',
                 requests_params={
-        '           timeout': 20  # ⬅️ augmente le délai (default: 10)
+                    'timeout': 20  # ⬅️ augmente le délai (default: 10)
                 }
             )
             
