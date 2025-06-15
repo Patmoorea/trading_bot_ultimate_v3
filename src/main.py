@@ -117,20 +117,29 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+def setup_asyncio():
+    """Configure l'environnement asyncio"""
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        nest_asyncio.apply()
+        return loop
+    except Exception as e:
+        logger.error(f"Error setting up asyncio: {e}")
+        return None
+    
 class WebSocketManager:
     def __init__(self, bot):
         self.bot = bot
         self.streams = {}
         self.running = False
         self.lock = asyncio.Lock()
-        # Supprimez ces lignes car config n'est pas encore défini
-        # self.pairs = config["TRADING"]["pairs"]
-        # self.timeframes = config["TRADING"]["timeframes"]
-        self.pairs = ["BTC/USDT", "ETH/USDT"]  # Valeurs par défaut
-        self.timeframes = ["1m", "5m", "15m", "1h", "4h", "1d"]
+        # Correction des valeurs par défaut
+        self.pairs = bot.config.get("TRADING", {}).get("pairs", ["BTC/USDT", "ETH/USDT"])
+        self.timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m", "5m", "15m", "1h", "4h", "1d"])
         self.retry_count = 0
-        self.max_retries = 3
-        self.retry_delay = 5
+        self.max_retries = WEBSOCKET_CONFIG['MAX_RETRIES']
+        self.retry_delay = WEBSOCKET_CONFIG['RETRY_DELAY']
 
     async def start(self):
         """Démarre les WebSockets"""
@@ -426,47 +435,105 @@ def get_bot():
     """Create or get the bot instance"""
     try:
         if 'bot_instance' not in st.session_state:
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║             CREATING BOT INSTANCE                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """)
+            
             # Création du bot
             bot = TradingBotM4()
             
             # Configuration de l'event loop
             if not st.session_state.get('loop'):
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                st.session_state.loop = loop
-            
-            # Démarrage du bot de manière asynchrone
-            async def initialize_bot():
-                if not await bot.start():
-                    raise Exception("Failed to start bot")
-                return bot
-
-            # Exécution de l'initialisation
-            try:
-                bot = st.session_state.loop.run_until_complete(initialize_bot())
-            except RuntimeError as e:
-                if "This event loop is already running" in str(e):
-                    # Utiliser nest_asyncio si l'event loop est déjà en cours
+                try:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
                     nest_asyncio.apply()
-                    bot = st.session_state.loop.run_until_complete(initialize_bot())
-                else:
+                    st.session_state.loop = loop
+                    logger.info("✅ Event loop configured successfully")
+                except Exception as loop_error:
+                    logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║             EVENT LOOP ERROR                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(loop_error)}
+╚═════════════════════════════════════════════════╝
+                    """)
                     raise
             
-            logger.info(f"""
+            # Fonction d'initialisation asynchrone
+            async def initialize_bot():
+                try:
+                    if not await bot.start():
+                        raise Exception("Bot initialization failed")
+                    logger.info("✅ Bot initialization successful")
+                    return bot
+                except Exception as init_error:
+                    logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║             INITIALIZATION ERROR                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(init_error)}
+╚═════════════════════════════════════════════════╝
+                    """)
+                    raise
+
+            # Exécution de l'initialisation avec gestion des erreurs
+            try:
+                try:
+                    bot = st.session_state.loop.run_until_complete(initialize_bot())
+                except RuntimeError as e:
+                    if "This event loop is already running" in str(e):
+                        logger.warning("⚠️ Event loop already running, applying nest_asyncio")
+                        nest_asyncio.apply()
+                        bot = st.session_state.loop.run_until_complete(initialize_bot())
+                    else:
+                        raise
+                
+                # Vérification du statut après initialisation
+                if not bot or not bot.initialized:
+                    raise Exception("Bot initialization incomplete")
+                
+                # Log de succès
+                logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║             BOT INSTANCE CREATED                 ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: {bot.ws_connection['status']}
+║ Trading Mode: {bot.trading_mode}
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
-            """)
-            
-            st.session_state.bot_instance = bot
-            
+                """)
+                
+                # Sauvegarde de l'instance dans la session
+                st.session_state.bot_instance = bot
+                
+            except Exception as run_error:
+                logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║             RUNTIME ERROR                        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(run_error)}
+╚═════════════════════════════════════════════════╝
+                """)
+                # Nettoyage en cas d'erreur
+                if hasattr(bot, '_cleanup'):
+                    st.session_state.loop.run_until_complete(bot._cleanup())
+                raise
+        
+        # Retourne l'instance existante
         return st.session_state.bot_instance
         
     except Exception as e:
+        # Log d'erreur final
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║             BOT CREATION ERROR                   ║
@@ -476,11 +543,16 @@ def get_bot():
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """)
+        
+        # Nettoyage de la session
         if 'bot_instance' in st.session_state:
             del st.session_state.bot_instance
+        if 'loop' in st.session_state:
+            del st.session_state.loop
+            
         return None
 
-# Ajouter cette fonction d'initialisation de l'event loop
+# Fonction d'aide pour la configuration asyncio
 def setup_asyncio():
     """Configure l'environnement asyncio pour Streamlit"""
     try:
@@ -491,7 +563,14 @@ def setup_asyncio():
             nest_asyncio.apply()
         return st.session_state.loop
     except Exception as e:
-        logger.error(f"Error setting up asyncio: {e}")
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║             ASYNCIO SETUP ERROR                  ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+        """)
         return None
 
 async def setup_streams(bot):
@@ -4386,44 +4465,49 @@ async def shutdown():
 def main():
     """Point d'entrée principal de l'application"""
     try:
+        # Affichage du banner de démarrage
+        
         # Initialisation de l'état de session
         init_session_state()
         
         # Configuration de la boucle événementielle
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        nest_asyncio.apply()
         
         try:
             # Exécution de la coroutine principale
             loop.run_until_complete(main_async())
+            
         except Exception as e:
-            logger.error(f"Error in main_async: {e}")
+            logger.error(f"""
+
+            """)
             st.error(f"An error occurred: {str(e)}")
+            
         finally:
             try:
                 # Nettoyage des ressources
                 if 'bot_instance' in st.session_state:
                     loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
             except Exception as cleanup_error:
-                logger.error(f"Cleanup error: {cleanup_error}")
+                logger.error(f"""
+                """)
             finally:
                 loop.close()
                 
     except Exception as e:
-        logger.error(f"Fatal error: {e}")
+        logger.error(f"""
+        """)
         sys.exit(1)
-        
+
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        logger.info("👋 Arrêt manuel demandé")
+        logger.info(f"""
+        """)
     except Exception as e:
         logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              ERREUR CRITIQUE                     ║
-╠═════════════════════════════════════════════════╣
-║ {str(e)}
-╚═════════════════════════════════════════════════╝
         """)
         sys.exit(1)
