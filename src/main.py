@@ -1320,6 +1320,13 @@ class TradingBotM4:
         self.initialized = False
         self.logger = logging.getLogger(__name__)
 
+        # Configuration des streams (DOIT ÊTRE EN PREMIER)
+        self.stream_config = StreamConfig(
+            max_connections=12,
+            reconnect_delay=1.0,
+            buffer_size=10000
+        )
+
         # Configuration principale
         self.config = {
             'NEWS': {
@@ -1363,8 +1370,10 @@ class TradingBotM4:
             self.spot_client = None
 
         # Configuration du WebSocket
-        self.websocket = MultiStreamManager(config["TRADING"]["pairs"], 
-        self.stream_config)
+        self.websocket = MultiStreamManager(
+            pairs=self.config["TRADING"]["pairs"],
+            config=self.stream_config
+        )
         self.ws_manager = WebSocketManager(self)
         self.ws_connection = {
             'enabled': False,
@@ -1375,9 +1384,6 @@ class TradingBotM4:
             'last_message': None,
             'last_error': None
         }
-
-        # Configuration de l'exchange
-        self.ws_manager = WebSocketManager(self)
         
         # Mode de trading et composants
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
@@ -1390,13 +1396,6 @@ class TradingBotM4:
         self.max_drawdown = 0.05  # 5% max
         self.daily_stop_loss = 0.02  # 2% par jour
         self.max_position_size = 1000  # USDC
-
-        # Configuration des streams
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
 
         # Interface et monitoring
         self.dashboard = TradingDashboard()
