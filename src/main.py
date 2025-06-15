@@ -4135,14 +4135,6 @@ if __name__ == "__main__":
             ]
         )
         
-        # Configuration de Streamlit
-        st.set_page_config(
-            page_title="Trading Bot Ultimate v4",
-            page_icon="📈",
-            layout="wide",
-            initial_sidebar_state="expanded"
-        )
-        
         # Application des patches asyncio nécessaires
         import nest_asyncio
         nest_asyncio.apply()
