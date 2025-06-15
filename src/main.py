@@ -224,9 +224,9 @@ class WebSocketManager:
     # Dans la méthode cleanup()
 async def cleanup(self):
     """Nettoie les ressources WebSocket"""
-    self.running = False
-    
     try:
+        self.running = False
+        
         # Annulation des tâches
         for stream in self.streams.values():
             if not stream.done():
@@ -235,13 +235,13 @@ async def cleanup(self):
                     await stream
                 except asyncio.CancelledError:
                     pass
-                
+                    
         self.streams.clear()
         
         # Fermeture du socket manager
-        if hasattr(self.bot, 'socket_manager'):
+        if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
             try:
-                # Modification ici pour utiliser stop_socket
+                # Modification pour utiliser stop_socket
                 for socket in self.bot.socket_manager.sockets:
                     await self.bot.socket_manager.stop_socket(socket)
                 self.bot.socket_manager = None
@@ -249,12 +249,14 @@ async def cleanup(self):
                 self.logger.warning(f"Error closing socket manager: {e}")
         
         # Fermeture du client Binance
-        if hasattr(self.bot, 'binance_ws'):
+        if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
             try:
                 await self.bot.binance_ws.close_connection()
             except Exception as e:
                 self.logger.warning(f"Error closing Binance client: {e}")
             self.bot.binance_ws = None
+    except Exception as e:
+        self.logger.error(f"Cleanup error: {e}")
             
 # Définition de la classe SessionManager
 class SessionManager:
@@ -268,24 +270,6 @@ class SessionManager:
     def unregister(self, session):
         self.sessions.discard(session)
         logging.getLogger(__name__).info(f"Session unregistered (remaining: {len(self.sessions)})")
-    
-    async def cleanup(self):
-        """Nettoyage des sessions"""
-        try:
-            for session in self.sessions:
-                if not session.closed:
-                    await session.close()
-            self.sessions.clear()
-            
-            logging.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All sessions cleaned successfully               ║
-╚═════════════════════════════════════════════════╝
-            """)
-        except Exception as e:
-            logging.error(f"❌ Session cleanup error: {e}")
 
 # Instance globale du SessionManager
 session_manager = SessionManager()
@@ -1749,13 +1733,6 @@ class TradingBotM4:
             return True
         
         except Exception as e:
-            logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-╚═════════════════════════════════════════════════╝
-            """)
             return False
 
     async def start(self):
@@ -4217,66 +4194,151 @@ async def run_trading_bot():
                 logger.error(f"Cleanup error: {cleanup_error}")
                     
 def _calculate_supertrend(self, data):
-    """Calcule l'indicateur Supertrend"""
+    """
+    Calcule l'indicateur Supertrend avec gestion des erreurs et logging.
+    
+    Args:
+        data (pd.DataFrame): DataFrame contenant les données OHLCV
+
+    Returns:
+        dict: Dictionnaire contenant les valeurs du Supertrend, la direction et la force
+              ou None en cas d'erreur
+    """
     try:
-        # Vérifie si toute la configuration nécessaire est présente
+        # Log de début de calcul
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CALCULATING SUPERTREND                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """)
+
+        # Vérification de la configuration
         if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
+            logger.warning("Missing Supertrend configuration")
             self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
             return None
-        
-        # Récupère les paramètres de configuration
+
+        # Récupération des paramètres
         try:
             period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
             multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
-        except KeyError:
+            
+            logger.info(f"Using parameters: period={period}, multiplier={multiplier}")
+            
+        except KeyError as ke:
+            logger.error(f"Missing parameter: {ke}")
             self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
             return None
-        
+
+        # Vérification des données d'entrée
+        if data is None or data.empty:
+            logger.error("No input data provided")
+            self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
+            return None
+
+        required_columns = ['high', 'low', 'close']
+        if not all(col in data.columns for col in required_columns):
+            logger.error(f"Missing required columns: {required_columns}")
+            self.dashboard.update_indicator_status("Supertrend", "ERROR - Missing columns")
+            return None
+
+        # Extraction des séries de prix
         high = data['high']
         low = data['low']
         close = data['close']
-        
-        # Calcul de l'ATR
+
+        # Calcul du True Range (TR)
         tr = pd.DataFrame()
         tr['h-l'] = high - low
         tr['h-pc'] = abs(high - close.shift(1))
         tr['l-pc'] = abs(low - close.shift(1))
         tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
-        atr = tr['tr'].rolling(period).mean()
         
+        # Calcul de l'ATR
+        atr = tr['tr'].rolling(window=period, min_periods=1).mean()
+
         # Calcul des bandes
         hl2 = (high + low) / 2
         final_upperband = hl2 + (multiplier * atr)
         final_lowerband = hl2 - (multiplier * atr)
-        
+
+        # Initialisation des séries Supertrend
+        supertrend = pd.Series(index=data.index, dtype=float)
+        direction = pd.Series(index=data.index, dtype=float)
+
         # Calcul du Supertrend
-        supertrend = pd.Series(index=data.index)
-        direction = pd.Series(index=data.index)
-        
         for i in range(period, len(data)):
-            if close[i] > final_upperband[i-1]:
-                supertrend[i] = final_lowerband[i]
-                direction[i] = 1
-            elif close[i] < final_lowerband[i-1]:
-                supertrend[i] = final_upperband[i]
-                direction[i] = -1
-            else:
-                supertrend[i] = supertrend[i-1]
-                direction[i] = direction[i-1]
-        
-        # Si on arrive ici, l'indicateur est calculé avec succès
+            try:
+                if close[i] > final_upperband[i-1]:
+                    supertrend[i] = final_lowerband[i]
+                    direction[i] = 1
+                elif close[i] < final_lowerband[i-1]:
+                    supertrend[i] = final_upperband[i]
+                    direction[i] = -1
+                else:
+                    supertrend[i] = supertrend[i-1]
+                    direction[i] = direction[i-1]
+            except IndexError as idx_error:
+                logger.error(f"Index error at position {i}: {idx_error}")
+                continue
+
+        # Calcul de la force du signal
+        strength = abs(close - supertrend) / close
+
+        # Mise à jour du statut
         self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
         
+        # Log de succès
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SUPERTREND CALCULATED                  ║
+╠═════════════════════════════════════════════════╣
+║ Status: Success
+║ Direction: {'Bullish' if direction.iloc[-1] == 1 else 'Bearish'}
+║ Strength: {strength.iloc[-1]:.4f}
+╚═════════════════════════════════════════════════╝
+        """)
+
         return {
             "value": supertrend,
             "direction": direction,
-            "strength": abs(close - supertrend) / close
+            "strength": strength,
+            "parameters": {
+                "period": period,
+                "multiplier": multiplier
+            },
+            "metadata": {
+                "calculation_time": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                "status": "SUCCESS"
+            }
         }
-        
+
     except Exception as e:
-        logger.error(f"Erreur: {e}")
-        self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
+        # Log d'erreur détaillé
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           SUPERTREND ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        # Mise à jour du statut dans le dashboard
+        self.dashboard.update_indicator_status("Supertrend", f"ERROR - {type(e).__name__}")
+        
         return None
+
+    finally:
+        # Nettoyage et libération des ressources si nécessaire
+        try:
+            del tr
+        except:
+            pass
                     
 async def main_async():
     """Fonction principale asynchrone pour l'interface Streamlit"""
@@ -4568,9 +4630,6 @@ def main():
             loop.run_until_complete(main_async())
             
         except Exception as e:
-            logger.error(f"""
-
-            """)
             st.error(f"An error occurred: {str(e)}")
             
         finally:
@@ -4579,14 +4638,10 @@ def main():
                 if 'bot_instance' in st.session_state:
                     loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
             except Exception as cleanup_error:
-                logger.error(f"""
-                """)
             finally:
                 loop.close()
                 
     except Exception as e:
-        logger.error(f"""
-        """)
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -4596,6 +4651,4 @@ if __name__ == "__main__":
         logger.info(f"""
         """)
     except Exception as e:
-        logger.error(f"""
-        """)
         sys.exit(1)
