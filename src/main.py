@@ -1441,25 +1441,26 @@ class TradingBotM4:
             return 0.0
         
     async def update_dashboard(self):
+        """Met à jour le dashboard en temps réel"""
         try:
             # Mise à jour des données
             portfolio_value = self._get_portfolio_value()
             total_pnl = self._calculate_total_pnl()
-            
+        
             # Mise à jour de l'état de session
             st.session_state.portfolio = {
                 'total_value': portfolio_value,
                 'daily_pnl': total_pnl,
                 'positions': self.position_manager.get_positions() if hasattr(self, 'position_manager') else []
             }
-            
+        
             st.session_state.latest_data = {
                 'price': self.current_price if hasattr(self, 'current_price') else 0,
                 'volume': self.current_volume if hasattr(self, 'current_volume') else 0
             }
-            
+        
             st.session_state.indicators = self.get_indicators() if hasattr(self, 'get_indicators') else None
-            
+        
             return True
         except Exception as e:
             logger.error(f"Dashboard update error: {e}")
@@ -3232,6 +3233,7 @@ def _calculate_supertrend(self, data):
             "direction": direction,
             "strength": abs(close - supertrend) / close
         }
+        
     except Exception as e:
         logger.error(f"Erreur: {e}")
         self.dashboard.update_indicator_status("Supertrend", "ERROR - Calculation failed")
