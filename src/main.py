@@ -86,6 +86,7 @@ from src.analysis.indicators.volatility.volatility import VolatilityIndicators
 from src.ai.cnn_lstm import CNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
 from src.ai.hybrid_model import HybridAI
+from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
 
 # Imports des modules de gestion des risques
 from src.risk_management.circuit_breakers import CircuitBreaker
@@ -317,6 +318,7 @@ def get_bot():
             bot.regime_detector = RegimeDetector()
             bot.latest_data = {}
             bot.indicators = {}
+            bot.qsvm = QuantumSVM(n_qubits=4)  # Initialisation avec 4 qubits
             
             logger.info(f"WebSocket Status: {bot.ws_connection['status']}")
             st.session_state.bot_instance = bot
@@ -326,10 +328,6 @@ def get_bot():
     except Exception as e:
         logger.error(f"Error creating bot instance: {e}")
         return None
-
-# Setup initial
-setup_event_loop()
-init_session_state()
 
 async def setup_streams(bot):
     """Configure and setup WebSocket streams"""
