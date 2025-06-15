@@ -131,8 +131,6 @@ def init_session_state():
         'indicators': None,
         'refresh_count': 0,
         'loop': None,
-        'last_update': CURRENT_DATE,
-        'current_user': CURRENT_USER,
         'ws_status': 'disconnected',
         'error_count': 0
     }
@@ -224,8 +222,6 @@ def get_bot():
     try:
         if 'bot_instance' not in st.session_state:
             bot = TradingBotM4()
-            bot.current_date = CURRENT_DATE
-            bot.current_user = CURRENT_USER
             
             bot.ws_connection = {
                 'enabled': False,
@@ -466,7 +462,6 @@ async def handle_socket_message(bot, socket, socket_type):
                         
                     # Mise à jour des timestamps
                     bot.ws_connection['last_message'] = time.time()
-                    bot.current_date = CURRENT_DATE
                     
                     # Traitement selon le type
                     if socket_type == 'ticker':
@@ -496,7 +491,6 @@ async def handle_socket_message(bot, socket, socket_type):
 async def update_trading_data(bot):
     """Mise à jour des données de trading"""
     try:
-        logger.info(f"📅 Mise à jour données à {bot.current_date}")
         
         # Récupération des données BTC/USDC
         logger.info("📊 Récupération données pour BTC/USDC")
@@ -608,8 +602,6 @@ async def fetch_market_data(bot, symbol):
 async def update_market_data(bot):
     """Met à jour les données de marché"""
     try:
-        logger.info(f"📅 Mise à jour données à {bot.current_date}")
-        
         data_received = False
         
         # Récupération BTC/USDC
@@ -1515,7 +1507,6 @@ class TradingBotM4:
                     # Traitement des résultats
                     if result['ticker']:
                         data[pair]['price'] = float(result['ticker']['price'])
-                        data[pair]['timestamp'] = self.current_date
                         logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
                     
                     if result['orderbook']:
@@ -1936,8 +1927,6 @@ class TradingBotM4:
                 'free': usdc_balance['free'],
                 'used': usdc_balance['locked'],
                 'positions': [],
-                'timestamp': self.current_date,
-                'update_user': self.current_user,
                 'daily_pnl': 0.0,
                 'volume_24h': 0.0,
                 'volume_change': 0.0
@@ -1983,8 +1972,6 @@ class TradingBotM4:
                 'free': 100.59,
                 'used': 0.0,
                 'positions': [],
-                'timestamp': self.current_date,
-                'update_user': self.current_user,
                 'daily_pnl': 0.0,
                 'volume_24h': 0.0,
                 'volume_change': 0.0
@@ -2056,8 +2043,7 @@ Take Profit: {take_profit}"""
             logger.info(f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
-╠═════════════════════════════════════════════════════════════╣
-║ User: {self.current_user}                                  ║
+╠═════════════════════════════════════════════════════════════╣                                
 ║ Mode: REAL TRADING                                         ║
 ║ Status: RUNNING                                            ║
 ╚═════════════════════════════════════════════════════════════╝
@@ -2115,7 +2101,6 @@ Take Profit: {take_profit}"""
                 try:
                     await self.telegram.send_message(
                         f"🚨 Erreur critique du bot:\n{str(e)}\n"
-                        f"Trader: {self.current_user}"
                     )
                 except Exception as telegram_error:
                     logger.error(f"Erreur envoi Telegram: {telegram_error}")
@@ -2351,7 +2336,6 @@ Take Profit: {take_profit}"""
         if await self.circuit_breaker.should_stop_trading():
             await self.telegram.send_message(
                 "⚠️ Trading suspendu: Circuit breaker activé\n"
-                f"Trader: {self.current_user}"
             )
             return
 
@@ -2362,7 +2346,6 @@ Take Profit: {take_profit}"""
                 if arb_ops:
                     await self.telegram.send_message(
                         f"💰 Opportunité d'arbitrage détectée:\n"
-                        f"Trader: {self.current_user}\n"
                         f"Details: {arb_ops}"
                     )
 
@@ -2402,7 +2385,6 @@ Take Profit: {take_profit}"""
                 # Notification Telegram détaillée
                 await self.telegram.send_message(
                     f"📄 Ordre placé:\n"
-                    f"Trader: {self.current_user}\n"
                     f"Symbol: {order['symbol']}\n"
                     f"Type: {order['type']}\n"
                     f"Prix: {order['price']}\n"
@@ -2422,7 +2404,6 @@ Take Profit: {take_profit}"""
                 logger.error(f"Erreur: {e}")
                 await self.telegram.send_message(
                     f"⚠️ Erreur d'exécution: {str(e)}\n"
-                    f"Trader: {self.current_user}"
                 )
 
     def _validate_trade(self, decision, position_size):
@@ -2653,9 +2634,6 @@ Take Profit: {take_profit}"""
     async def run(self):
         """Point d'entrée principal du bot"""
         try:
-            logger.info(f"🚀 Démarrage du bot - {self.current_date}")
-            logger.info(f"👤 Trader: {self.current_user}")
-
             # Configuration initiale
             await self.setup_streams()
             
@@ -2713,7 +2691,6 @@ Take Profit: {take_profit}"""
             logger.error(f"Erreur fatale: {e}")
             await self.telegram.send_message(
                 f"🚨 Erreur critique du bot:\n{str(e)}\n"
-                f"Trader: {self.current_user}"
             )
             raise
 
@@ -3252,7 +3229,6 @@ Take Profit: {take_profit}"""
 
             # Sauvegarde des métadonnées
             metadata = {
-                "user": self.current_user,
                 "model_versions": {
                     "hybrid": self.hybrid_model.version,
                     "ppo_gtrxl": self.models["ppo_gtrxl"].version,
@@ -3705,7 +3681,6 @@ async def main_async():
             with status_col1:
                 st.info(f"""
                 **Session Info**
-                👤 User: {bot.current_user}
                 📅 Date: 2025-06-15 06:34:25 UTC
                 🚦 Status: {'🟢 Trading' if st.session_state.bot_running else '🔴 Stopped'}
                 """)
@@ -3762,7 +3737,6 @@ async def main_async():
                     st.info(f"""
                     **Debug Information**
                     WebSocket: {bot.ws_connection.get('status', 'Unknown')}
-                    Last Data Update: {bot.current_date}
                     Data Available: {bool(bot.latest_data)}
                     Indicators Available: {bool(bot.indicators)}
                     """)
