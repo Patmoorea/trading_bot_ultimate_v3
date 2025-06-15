@@ -1431,6 +1431,40 @@ class TradingBotM4:
             logger.error(f"Erreur calcul portfolio: {e}")
             return None
 
+    def _calculate_total_pnl(self):
+        try:
+            if hasattr(self, 'position_history'):
+                return sum(trade.get('pnl', 0) for trade in self.position_history)
+            return 0.0
+        except Exception as e:
+            logger.error(f"Error calculating PnL: {e}")
+            return 0.0
+        
+    async def update_dashboard(self):
+        try:
+            # Mise à jour des données
+            portfolio_value = self._get_portfolio_value()
+            total_pnl = self._calculate_total_pnl()
+            
+            # Mise à jour de l'état de session
+            st.session_state.portfolio = {
+                'total_value': portfolio_value,
+                'daily_pnl': total_pnl,
+                'positions': self.position_manager.get_positions() if hasattr(self, 'position_manager') else []
+            }
+            
+            st.session_state.latest_data = {
+                'price': self.current_price if hasattr(self, 'current_price') else 0,
+                'volume': self.current_volume if hasattr(self, 'current_volume') else 0
+            }
+            
+            st.session_state.indicators = self.get_indicators() if hasattr(self, 'get_indicators') else None
+            
+            return True
+        except Exception as e:
+            logger.error(f"Dashboard update error: {e}")
+            return False
+           
     async def get_real_portfolio(self):
         """
         Récupère le portfolio en temps réel avec les balances et positions.
@@ -3141,32 +3175,6 @@ async def run_trading_bot():
             except Exception as e:
                 st.error(f"❌ Bot error: {str(e)}")
                 logger.error(f"Bot error: {e}")
-
-    def _calculate_total_pnl(self):
-        """Calcule le PnL total"""
-        try:
-            if hasattr(self, 'position_history'):
-                return sum(trade.get('pnl', 0) for trade in self.position_history)
-        except Exception as e:
-            logger.error(f"Erreur calcul PnL: {e}")
-            return None
-        
-async def update_dashboard(self):
-    """Met à jour le dashboard en temps réel"""
-    try:
-        # Récupération du portfolio
-        portfolio = await self.get_real_portfolio()
-        
-        # Mise à jour des métriques
-        st.session_state.portfolio = portfolio
-        st.session_state.latest_data = self.latest_data
-        st.session_state.indicators = self.indicators
-        
-        # Force la mise à jour
-        st.rerun()
-        
-    except Exception as e:
-        logger.error(f"Erreur mise à jour dashboard: {e}")
         
 def _calculate_supertrend(self, data):
     """Calcule l'indicateur Supertrend"""
