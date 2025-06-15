@@ -624,7 +624,39 @@ async def setup_streams(bot):
     except Exception as e:
         logger.error(f"❌ Stream setup error: {e}")
         return None
+
+async def cleanup_existing_connections(bot):
+    """
+    Nettoie les connexions WebSocket existantes de manière sûre
     
+    Args:
+        bot: Instance du bot de trading
+    """
+    try:
+        # Fermeture du socket manager
+        if hasattr(bot, 'socket_manager') and bot.socket_manager:
+            try:
+                await bot.socket_manager.close()
+            except Exception as close_error:
+                logger.warning(f"⚠️ Error closing socket manager: {close_error}")
+            finally:
+                bot.socket_manager = None
+                
+        # Fermeture du client Binance
+        if hasattr(bot, 'binance_ws') and bot.binance_ws:
+            try:
+                await bot.binance_ws.close_connection()
+            except Exception as close_error:
+                logger.warning(f"⚠️ Error closing Binance client: {close_error}")
+            finally:
+                bot.binance_ws = None
+                
+    except Exception as e:
+        logger.error(f"❌ Error during connection cleanup: {e}")
+        return False
+
+    return True
+   
 async def initialize_websocket(bot):
     """
     Initialize WebSocket connection with proper error handling and cleanup
