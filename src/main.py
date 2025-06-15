@@ -117,7 +117,126 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+class WebSocketManager:
+    def __init__(self, bot):
+        self.bot = bot
+        self.streams = {}
+        self.running = False
+        self.lock = asyncio.Lock()
+        # Supprimez ces lignes car config n'est pas encore défini
+        # self.pairs = config["TRADING"]["pairs"]
+        # self.timeframes = config["TRADING"]["timeframes"]
+        self.pairs = ["BTC/USDT", "ETH/USDT"]  # Valeurs par défaut
+        self.timeframes = ["1m", "5m", "15m", "1h", "4h", "1d"]
+        self.retry_count = 0
+        self.max_retries = 3
+        self.retry_delay = 5
 
+    async def start(self):
+        """Démarre les WebSockets"""
+        async with self.lock:
+            if self.running:
+                return True
+                
+            try:
+                # Initialisation du client Binance
+                self.bot.binance_ws = await AsyncClient.create(
+                    api_key=os.getenv('BINANCE_API_KEY'),
+                    api_secret=os.getenv('BINANCE_API_SECRET')
+                )
+                
+                # Initialisation du socket manager
+                self.bot.socket_manager = BinanceSocketManager(self.bot.binance_ws)
+                
+                # Configuration des streams
+                if not await self._setup_streams():
+                    raise Exception("Failed to setup streams")
+                    
+                self.running = True
+                return True
+                
+            except Exception as e:
+                logger.error(f"WebSocket start error: {e}")
+                await self.cleanup()
+                return False
+
+    async def _setup_streams(self):
+        """Configure les streams"""
+        try:
+            for pair in self.pairs:
+                # Stream de trades
+                ts = self.bot.socket_manager.trade_socket(pair)
+                self.streams[f"{pair}_trades"] = asyncio.create_task(
+                    self._handle_stream(ts, "trade", pair)
+                )
+                
+                # Stream d'orderbook
+                ds = self.bot.socket_manager.depth_socket(pair)
+                self.streams[f"{pair}_depth"] = asyncio.create_task(
+                    self._handle_stream(ds, "depth", pair)
+                )
+                
+                # Stream de klines
+                for tf in self.timeframes:
+                    ks = self.bot.socket_manager.kline_socket(pair, tf)
+                    self.streams[f"{pair}_kline_{tf}"] = asyncio.create_task(
+                        self._handle_stream(ks, "kline", pair, tf)
+                    )
+                    
+            return True
+            
+        except Exception as e:
+            logger.error(f"Stream setup error: {e}")
+            return False
+
+    async def _handle_stream(self, socket, stream_type, pair, timeframe=None):
+        """Gère un stream WebSocket"""
+        while self.running:
+            try:
+                async with socket as sock:
+                    msg = await sock.recv()
+                    if msg:
+                        # Traitement selon le type
+                        if stream_type == "trade":
+                            await self.bot._handle_trade(msg)
+                        elif stream_type == "depth":
+                            await self.bot._handle_orderbook(msg)
+                        elif stream_type == "kline":
+                            await self.bot._handle_kline(msg)
+                            
+            except Exception as e:
+                if "shutdown" not in str(e).lower() and "closed" not in str(e).lower():
+                    logger.error(f"Stream error ({stream_type}-{pair}): {e}")
+                    if self.running:
+                        await asyncio.sleep(self.retry_delay)
+                        continue
+                return
+
+    async def cleanup(self):
+        """Nettoie les ressources WebSocket"""
+        self.running = False
+        
+        # Annulation des tâches
+        for stream in self.streams.values():
+            if not stream.done():
+                stream.cancel()
+                try:
+                    await stream
+                except asyncio.CancelledError:
+                    pass
+                    
+        self.streams.clear()
+        
+        # Fermeture du socket manager
+        if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
+            await self.bot.socket_manager.close()
+            self.bot.socket_manager = None
+            
+        # Fermeture du client Binance
+        if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
+            await self.bot.binance_ws.close_connection()
+            self.bot.binance_ws = None
+            
 # Définition de la classe SessionManager
 class SessionManager:
     def __init__(self):
@@ -393,7 +512,15 @@ async def setup_streams(bot):
         return None
     
 async def initialize_websocket(bot):
-    """Initialize WebSocket connection"""
+    """Initialize WebSocket connection
+    
+    Args:
+        bot: Instance du bot de trading
+        
+    Returns:
+        bool: True si l'initialisation est réussie, False sinon
+    """
+    # Vérification de l'état d'initialisation
     if hasattr(bot, '_initializing') and bot._initializing:
         logger.warning("⚠️ WebSocket initialization already in progress")
         return False
@@ -401,36 +528,105 @@ async def initialize_websocket(bot):
     bot._initializing = True
     
     try:
-        # Création du client Binance
-        bot.binance_ws = await AsyncClient.create(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET'),
-            testnet=False
-        )
-        
+        # Fermeture propre des connexions existantes si présentes
+        if hasattr(bot, 'socket_manager') and bot.socket_manager:
+            try:
+                await bot.socket_manager.close()
+            except Exception as close_error:
+                logger.warning(f"⚠️ Error closing existing socket manager: {close_error}")
+            finally:
+                bot.socket_manager = None
+                
+        if hasattr(bot, 'binance_ws') and bot.binance_ws:
+            try:
+                await bot.binance_ws.close_connection()
+            except Exception as close_error:
+                logger.warning(f"⚠️ Error closing existing Binance client: {close_error}")
+            finally:
+                bot.binance_ws = None
+
+        # Création du client Binance avec timeout
+        try:
+            async with asyncio.timeout(30):  # 30 secondes timeout
+                bot.binance_ws = await AsyncClient.create(
+                    api_key=os.getenv('BINANCE_API_KEY'),
+                    api_secret=os.getenv('BINANCE_API_SECRET'),
+                    testnet=False,
+                    tld='com'  # Utilisation du domaine principal
+                )
+        except asyncio.TimeoutError:
+            logger.error("❌ Timeout creating Binance client")
+            return False
+            
         # Configuration du socket manager
         bot.socket_manager = BinanceSocketManager(bot.binance_ws)
         
-        # Configuration des streams
-        streams = await setup_streams(bot)
-        
-        if streams:
-            bot.ws_connection.update({
-                'enabled': True,
-                'status': 'connected',
-                'tasks': streams,
-                'last_connection': time.time(),
-                'last_message': time.time()
-            })
-            logger.info("✅ WebSocket initialized successfully")
-            return True
+        # Configuration des streams avec timeout
+        try:
+            async with asyncio.timeout(30):  # 30 secondes timeout
+                streams = await setup_streams(bot)
+                
+                if not streams:
+                    raise Exception("Failed to setup streams")
+                    
+                # Mise à jour du statut de connexion
+                bot.ws_connection.update({
+                    'enabled': True,
+                    'status': 'connected',
+                    'tasks': streams,
+                    'last_connection': time.time(),
+                    'last_message': time.time(),
+                    'reconnect_count': 0,  # Réinitialisation du compteur
+                    'error_count': 0  # Réinitialisation des erreurs
+                })
+                
+                logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET INITIALIZATION SUCCESS         ║
+╠═════════════════════════════════════════════════╣
+║ Status: Connected                               ║
+║ Streams: {len(streams)} active                  ║
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC    ║
+║ User: {os.getenv('USER', 'Unknown')}           ║
+╚═════════════════════════════════════════════════╝
+                """)
+                
+                return True
+                
+        except asyncio.TimeoutError:
+            logger.error("❌ Timeout setting up streams")
+            return False
             
     except Exception as e:
-        logger.error(f"❌ WebSocket initialization error: {e}")
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET INITIALIZATION ERROR          ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Unknown')}
+╚═════════════════════════════════════════════════╝
+        """)
         return False
         
     finally:
         bot._initializing = False
+        
+        # Nettoyage en cas d'échec
+        if not bot.ws_connection.get('enabled', False):
+            if hasattr(bot, 'socket_manager') and bot.socket_manager:
+                try:
+                    await bot.socket_manager.close()
+                except:
+                    pass
+                bot.socket_manager = None
+                
+            if hasattr(bot, 'binance_ws') and bot.binance_ws:
+                try:
+                    await bot.binance_ws.close_connection()
+                except:
+                    pass
+                bot.binance_ws = None
 
 async def cleanup_resources(bot):
     """Nettoyage des ressources"""
@@ -439,25 +635,22 @@ async def cleanup_resources(bot):
             logger.warning("Bot instance is None, skipping cleanup")
             return
 
-        # Fermeture des WebSockets
-        if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
-            await close_websocket(bot)
+        # Nettoyage du WebSocket Manager
+        if hasattr(bot, 'ws_manager'):
+            await bot.ws_manager.cleanup()
         
-        # Nettoyage des sessions via le gestionnaire
+        # Nettoyage des sessions
         if hasattr(bot, 'client_session') and bot.client_session:
             session_manager.unregister(bot.client_session)
             if not bot.client_session.closed:
                 await bot.client_session.close()
             bot.client_session = None
         
-        # Nettoyage des autres ressources du bot
+        # Nettoyage des données
         if hasattr(bot, 'latest_data'):
             bot.latest_data = {}
         if hasattr(bot, 'indicators'):
             bot.indicators = {}
-        
-        # Nettoyage global des sessions
-        await session_manager.cleanup()
         
         logger.info("✅ Resources cleaned successfully")
         
@@ -1092,10 +1285,7 @@ class TradingBotM4:
         )
 
         # Initialisation du MultiStreamManager
-        self.websocket = MultiStreamManager(
-            pairs=config["TRADING"]["pairs"],
-            config=self.stream_config
-        )
+        self.ws_manager = WebSocketManager(self)
 
         # Configuration de l'exchange
         self.websocket.setup_exchange("binance")
@@ -1153,11 +1343,7 @@ class TradingBotM4:
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
-        self.ws_connection = {
-            'enabled': False,
-            'status': 'disconnected',
-            'tasks': []
-        }
+        
     def _generate_recommendation(self, trend, momentum, volatility, volume):
         """Génère une recommandation basée sur l'analyse des signaux"""
         try:
@@ -1335,16 +1521,36 @@ class TradingBotM4:
             """)
             return False
 
-    async def check_ws_connection(bot):
+    async def start(self):
+        """Démarre le bot"""
+        try:
+            # Initialisation des WebSockets
+            if not await self.ws_manager.start():
+                raise Exception("Failed to start WebSocket manager")
+                
+            # Initialisation des composants
+            await self._setup_components()
+            
+            # Mise à jour du statut
+            self.initialized = True
+            logger.info("✅ Bot started successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Bot start error: {e}")
+            await self._cleanup()
+            return False
+        
+    async def check_ws_connection(self):  # Changé de statique à méthode d'instance
         """Check WebSocket connection and reconnect if needed"""
         try:
-            if not bot.ws_connection['enabled']:
-                if bot.ws_connection['reconnect_count'] < bot.ws_connection['max_reconnects']:
+            if not self.ws_connection['enabled']:
+                if self.ws_connection['reconnect_count'] < self.ws_connection['max_reconnects']:
                     logger.info("Attempting WebSocket reconnection...")
-                    if await initialize_websocket(bot):  # Ajout du await ici
-                        bot.ws_connection['reconnect_count'] = 0
+                    if await initialize_websocket(self):
+                        self.ws_connection['reconnect_count'] = 0
                         return True
-                    bot.ws_connection['reconnect_count'] += 1
+                    self.ws_connection['reconnect_count'] += 1
                 else:
                     logger.error("Max WebSocket reconnection attempts reached")
                     return False
@@ -1386,10 +1592,7 @@ class TradingBotM4:
         """Configure les composants du bot"""
         try:
             # Initialisation du MultiStreamManager
-            self.websocket = MultiStreamManager(
-                pairs=config["TRADING"]["pairs"],
-                config=self.stream_config
-            )
+            self.ws_manager = WebSocketManager(self)
             
             # Configuration de l'exchange
             self.websocket.setup_exchange("binance")
