@@ -626,13 +626,28 @@ async def setup_streams(bot):
         return None
 
 async def cleanup_existing_connections(bot):
+    """
+    Nettoie les connexions WebSocket existantes
+    
+    Args:
+        bot: Instance du bot de trading
+    """
     try:
         # Fermeture du socket manager
         if hasattr(bot, 'socket_manager') and bot.socket_manager:
             try:
-                socket_manager = bot.socket_manager.get_socket_manager()
-                for k in socket_manager.keys():
-                    await bot.socket_manager.stop_socket(k)
+                # Arrêt de tous les sockets existants
+                if hasattr(bot.socket_manager, '_conns'):
+                    for conn_key in bot.socket_manager._conns.copy():
+                        try:
+                            await bot.socket_manager.stop_socket(conn_key)
+                        except Exception as socket_error:
+                            logger.warning(f"⚠️ Error stopping socket {conn_key}: {socket_error}")
+                
+                # Nettoyage des connexions
+                if hasattr(bot.socket_manager, '_conns'):
+                    bot.socket_manager._conns.clear()
+                    
             except Exception as e:
                 logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
@@ -852,22 +867,36 @@ async def reset_websocket(bot):
         return False
     
 async def check_websocket_health(bot):
+    """Vérifie l'état du WebSocket et le réinitialise si nécessaire"""
     try:
-        if not hasattr(bot, 'ws_connection') or not bot.ws_connection:
-            logger.warning("⚠️ WebSocket connection not initialized")
-            return await initialize_websocket(bot)
+        # Vérification de l'existence de la connexion
+        if not hasattr(bot, 'ws_connection'):
+            bot.ws_connection = {
+                'enabled': False,
+                'status': 'disconnected',
+                'last_message': time.time(),  # Initialisation du timestamp
+                'tasks': []
+            }
             
+        # Vérification de l'état de la connexion
         if not bot.ws_connection['enabled'] or bot.ws_connection['status'] != 'connected':
-            logger.warning("⚠️ WebSocket health check failed")
+            logger.warning("⚠️ WebSocket connection lost")
             return await reset_websocket(bot)
             
         # Vérification du timeout des messages
         current_time = time.time()
-        last_message = bot.ws_connection.get('last_message')
+        last_message = bot.ws_connection.get('last_message', current_time)
         
-        if last_message is None or (current_time - last_message) > 300:  # 5 minutes timeout
+        if (current_time - last_message) > 30:  # Réduire le timeout à 30 secondes
             logger.warning("⚠️ WebSocket message timeout")
             return await reset_websocket(bot)
+            
+        # Vérification des tâches actives
+        if bot.ws_connection.get('tasks'):
+            active_tasks = [t for t in bot.ws_connection['tasks'] if not t.done()]
+            if not active_tasks:
+                logger.warning("⚠️ No active WebSocket tasks")
+                return await reset_websocket(bot)
             
         return True
         
