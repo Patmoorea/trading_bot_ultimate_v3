@@ -428,7 +428,7 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        if 'bot_instance' not in st.session_state:
+        if 'bot_instance' not in st.session_state or not st.session_state.bot_instance.initialized:
             logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║             CREATING BOT INSTANCE                ║
@@ -782,8 +782,7 @@ async def initialize_websocket(bot):
             bot.binance_ws = await AsyncClient.create(
                 api_key=api_key,
                 api_secret=api_secret,
-                request_timeout=30,  # Timeout augmenté
-                tld='com'           # Spécification explicite du TLD
+                tld='com'
             )
             logger.info("✅ Client Binance initialisé")
         except Exception as client_error:
@@ -794,9 +793,6 @@ async def initialize_websocket(bot):
         try:
             bot.socket_manager = BinanceSocketManager(
                 bot.binance_ws,
-                user_timeout=60,    # Timeout utilisateur augmenté
-                ping_interval=20,   # Interval de ping réduit
-                ping_timeout=10     # Timeout de ping réduit
             )
             logger.info("✅ Socket Manager configuré")
         except Exception as manager_error:
@@ -988,10 +984,9 @@ async def cleanup_websocket(bot):
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """
-    Nettoyage des ressources avec vérification et gestion d'état.
-    Ne nettoie que si nécessaire pour éviter les déconnexions intempestives.
-    """
+    if st.session_state.get('bot_running', False):
+        return  # Ne pas nettoyer si le bot est en cours d'exécution
+        
     try:
         # Vérification si le nettoyage est nécessaire
         if hasattr(bot, 'cleanup_in_progress') and bot.cleanup_in_progress:
@@ -1617,6 +1612,45 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
+        """Initialisation du bot avec gestion améliorée des états"""
+        # Flags de contrôle
+        self._ws_initializing = False
+        self._cleanup_requested = False
+        self._initialized = False
+        self._reconnecting = False
+    
+        # Configuration de la session
+        self.session_config = {
+            'keep_alive': True,
+            'timeout': 60,
+            'ping_interval': 20,
+            'ping_timeout': 10,
+            'reconnect_on_error': True,
+            'max_reconnect_attempts': 3
+        }
+
+        # Configuration des streams
+        self.stream_config = StreamConfig(
+            max_connections=12,
+            reconnect_delay=1.0,
+            buffer_size=10000
+        )
+
+        # État du WebSocket
+        self.ws_connection = {
+            'enabled': False,
+            'status': 'disconnected',
+            'reconnect_count': 0,
+            'last_message': None,
+            'last_heartbeat': None,
+            'tasks': []
+        }
+
+        # Initialisation des composants
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
+    
         # Configuration des streams (DOIT ÊTRE EN PREMIER)
         self.stream_config = StreamConfig(
             max_connections=12,
