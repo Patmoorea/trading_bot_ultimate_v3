@@ -147,84 +147,78 @@ class StreamlitSessionManager:
         self.init_time = datetime.now(timezone.utc)
         self.user = os.getenv('USER', 'Patmoorea')
         self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
+        self.logger = logging.getLogger(__name__)
         
         # Initialisation immédiate de la session
         if 'session_initialized' not in st.session_state:
-            self._initialize_session_state()
-            self._log_initialization()
-            
-    def _initialize_session_state(self):  # Notez l'indentation ici
-        """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
-        current_time = datetime.now(timezone.utc)
-        current_user = os.getenv('USER', 'Patmoorea')
-        session_id = f"{current_user}_{int(current_time.timestamp())}"
-
-        try:
-            # États par défaut avec horodatage
-            default_state = {
-                # États de base
-                'session_id': session_id,
-                'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'user': current_user,
-                'initialized': True,
-                
-                # États du bot
-                'bot_running': False,
-                'portfolio': None,
-                'latest_data': None,
-                'indicators': None,
-                'refresh_count': 0,
-                
-                # États de la boucle événementielle
-                'loop': None,
-                'error_count': 0,
-                
-                # États WebSocket
-                'ws_status': 'disconnected',
-                'ws_initialized': False,
-                'ws_connection_status': 'disconnected',
-                'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                
-                # Protections
-                'keep_alive': True,
-                'prevent_cleanup': True,
-                'force_cleanup': False,
-                'cleanup_allowed': False
-            }
-
-            # Initialisation des états manquants uniquement
-            for key, value in default_state.items():
-                if key not in st.session_state:
-                    st.session_state[key] = value
-
-            # Log de succès
-            logger.info(f"""
+            if self._initialize_session_state():
+                self._log_initialization()
+    
+    def _log_initialization(self):
+        """Log de l'initialisation de la session"""
+        self.logger.info(f"""
 ╔═════════════════════════════════════════════════╗
-║           SESSION STATE INITIALIZED              ║
+║           SESSION INITIALIZED                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-║ Session ID: {session_id}
+║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {self.user}
+║ Session ID: {self.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
-            """)
-
-            return True
-
-        except Exception as e:
-            # Log d'erreur
-            logger.error(f"""
+        """)
+    
+    def _log_error(self, message, error):
+        """Log unifié des erreurs"""
+        self.logger.error(f"""
 ╔═════════════════════════════════════════════════╗
-║           SESSION STATE ERROR                    ║
+║           SESSION ERROR                          ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {message}
+║ Details: {str(error)}
+║ Type: {type(error).__name__}
+║ Session ID: {self.session_id}
 ╚═════════════════════════════════════════════════╝
-            """)
+        """)
+        
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
+
+    def protect_session(self):
+        """Protection renforcée de la session"""
+        try:
+            # Vérification et réinitialisation si nécessaire
+            if not st.session_state.get('session_initialized'):
+                self._initialize_session_state()
+                
+            # Mise à jour du timestamp
+            current_time = datetime.now(timezone.utc)
+            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Activation des protections
+            st.session_state.prevent_cleanup = True
+            st.session_state.keep_alive = True
+            st.session_state.force_cleanup = False
+            st.session_state.cleanup_allowed = False
+            
+            self._log_protection()
+            return True
+            
+        except Exception as e:
+            self._log_error("Session protection error", e)
             return False
+    
+    def _log_protection(self):
+        """Log de la protection de session"""
+        self.logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION PROTECTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session ID: {self.session_id}
+║ Last Action: {st.session_state.get('last_action_time')}
+╚═════════════════════════════════════════════════╝
+        """)
 
 def _setup_and_verify_event_loop():
     """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
