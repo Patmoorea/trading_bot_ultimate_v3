@@ -984,8 +984,10 @@ async def cleanup_websocket(bot):
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
 async def cleanup_resources(bot):
+    """Nettoyage des ressources avec vérification"""
+    # Ne pas nettoyer si le bot est en cours d'exécution
     if st.session_state.get('bot_running', False):
-        return  # Ne pas nettoyer si le bot est en cours d'exécution
+        return
         
     try:
         # Vérification si le nettoyage est nécessaire
