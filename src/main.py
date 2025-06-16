@@ -1941,7 +1941,8 @@ class TradingBotM4:
         
         self.cleanup_in_progress = False
         self.shutdown_requested = False
-        self.initialized = False
+        self._initialized = False
+        self._ws_initializing = False
         self.logger = logging.getLogger(__name__)
 
         # Configuration principale
@@ -2103,8 +2104,14 @@ class TradingBotM4:
     async def start(self):
         """Démarre le bot"""
         try:
+            if self._initialized:
+                return True
+
             self.logger.info("Starting bot initialization...")
-        
+            
+            # Initialisation asynchrone du news analyzer
+            await self.initialize_news_analyzer()
+            
             # Démarrage du WebSocket Manager
             if not await self.ws_manager.start():
                 raise Exception("Failed to start WebSocket manager")
@@ -2113,14 +2120,19 @@ class TradingBotM4:
             if not await self._setup_components():
                 raise Exception("Failed to setup components")
             
-            # Mise à jour du statut
-            self.initialized = True
+            # Mise à jour des états
+            self._initialized = True
+            st.session_state.bot_running = True
+            
+            # Protection de la session
+            st.session_state.prevent_cleanup = True
+            st.session_state.keep_alive = True
+            
             self.logger.info("✅ Bot initialized successfully")
             return True
         
         except Exception as e:
             self.logger.error(f"❌ Bot initialization error: {e}")
-            await self._cleanup()
             return False
 
         self.config = {
