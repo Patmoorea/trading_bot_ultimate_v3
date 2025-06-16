@@ -2011,16 +2011,6 @@ class TradingBotM4:
         self.dashboard = TradingDashboard()
         self.telegram = TelegramBot()
         self.hybrid_model = HybridAI()
-        self.arbitrage_engine = ArbitrageEngine(
-            exchanges=self.config["ARBITRAGE"]["exchanges"],
-            pairs=self.config["ARBITRAGE"]["pairs"],
-            min_profit=self.config["ARBITRAGE"]["min_profit"],
-            max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
-            timeout=self.config["ARBITRAGE"]["timeout"],
-            volume_filter=self.config["ARBITRAGE"]["volume_filter"],
-            price_check=self.config["ARBITRAGE"]["price_check"],
-            max_slippage=self.config["ARBITRAGE"]["max_slippage"]
-        )
         
         # Initialisation du WebSocket Manager (AJOUT ICI)
         self.ws_manager = WebSocketManager(self)
@@ -2229,18 +2219,6 @@ class TradingBotM4:
 
         # Interface et monitoring
         self.dashboard = TradingDashboard()
-
-        # Composants principaux
-        self.arbitrage_engine = ArbitrageEngine(
-            exchanges=config["ARBITRAGE"]["exchanges"],
-            pairs=config["ARBITRAGE"]["pairs"],
-            min_profit=config["ARBITRAGE"]["min_profit"],
-            max_trade_size=config["ARBITRAGE"]["max_trade_size"],
-            timeout=config["ARBITRAGE"]["timeout"],
-            volume_filter=config["ARBITRAGE"]["volume_filter"],
-            price_check=config["ARBITRAGE"]["price_check"],
-            max_slippage=config["ARBITRAGE"]["max_slippage"]
-        )
 
          # Configuration Telegram
         self.telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -2523,18 +2501,6 @@ class TradingBotM4:
         
             # News Analyzer
             self.news_analyzer = NewsAnalyzer()
-        
-            # Composants principaux
-            self.arbitrage_engine = ArbitrageEngine(
-                exchanges=config["ARBITRAGE"]["exchanges"],
-                pairs=config["ARBITRAGE"]["pairs"],
-                min_profit=config["ARBITRAGE"]["min_profit"],
-                max_trade_size=config["ARBITRAGE"]["max_trade_size"],
-                timeout=config["ARBITRAGE"]["timeout"],
-                volume_filter=config["ARBITRAGE"]["volume_filter"],
-                price_check=config["ARBITRAGE"]["price_check"],
-                max_slippage=config["ARBITRAGE"]["max_slippage"]
-            )
         
             # Configuration des analyseurs et modèles
             await self._initialize_analyzers()
