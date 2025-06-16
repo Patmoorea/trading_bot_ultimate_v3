@@ -428,10 +428,17 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        # Vérification de l'instance existante
+        # Vérification de l'instance existante et validation de son état
         if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
             if getattr(st.session_state.bot_instance, '_initialized', False):
-                return st.session_state.bot_instance
+                # Si le bot est initialisé et en cours d'exécution, on le retourne
+                if st.session_state.get('bot_running', False):
+                    return st.session_state.bot_instance
+            else:
+                # Si le bot existe mais n'est pas initialisé et n'est pas en cours d'exécution,
+                # on le supprime pour en créer un nouveau
+                if not st.session_state.get('bot_running', False):
+                    st.session_state.bot_instance = None
 
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -1411,21 +1418,37 @@ async def cleanup_session(bot):
         logger.error(f"❌ Cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """Nettoyage des ressources avec vérification"""
+    """Nettoyage sécurisé des ressources avec gestion d'état"""
+    # Empêcher le nettoyage si le bot est en cours d'exécution
+    if any([
+        st.session_state.get('bot_running', False),
+        getattr(bot, '_ws_initializing', False),
+        getattr(bot, '_initialized', False),
+        getattr(bot, 'cleanup_in_progress', False),
+        st.session_state.get('portfolio') is not None
+    ]):
+        return
+
     try:
-        # Fermeture des WebSockets si actifs
+        bot.cleanup_in_progress = True
+
+        # Nettoyage WebSocket uniquement si nécessaire
         if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
-            await close_websocket(bot)
-            
-        # Réinitialisation des données
-        bot.latest_data = {}
-        bot.indicators = {}
-        
+            try:
+                await close_websocket(bot)
+            except Exception as ws_error:
+                logger.warning(f"WebSocket cleanup warning: {ws_error}")
+
+        # Maintenir l'état du portfolio
+        if st.session_state.get('portfolio'):
+            return
+
         logger.info("✅ Resources cleaned successfully")
-        
+
     except Exception as e:
-        logger.error(f"❌ Resource cleanup error: {e}")
-        raise
+        logger.error(f"Cleanup error: {e}")
+    finally:
+        bot.cleanup_in_progress = False
         
 async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
