@@ -4453,27 +4453,6 @@ Take Profit: {take_profit}"""
 async def run_trading_bot():
     """Point d'entrée synchrone pour le bot de trading"""
     try:
-        # Interface Streamlit
-        st.title("Trading Bot Ultimate v4 🤖")
-
-        # Initialisation des valeurs par défaut
-        portfolio_value = 0.0
-        pnl = 0.0
-        
-        # Configuration trading
-        with st.sidebar:
-            st.header("Trading Configuration")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Medium"
-            )
-            pairs = st.multiselect(
-                "Trading Pairs",
-                options=config["TRADING"]["pairs"],
-                default=config["TRADING"]["pairs"]
-            )
-
         # Stats en temps réel
         col1, col2, col3 = st.columns(3)
         with col1:
