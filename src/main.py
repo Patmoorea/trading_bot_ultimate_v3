@@ -428,8 +428,11 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        if 'bot_instance' not in st.session_state or not getattr(st.session_state.bot_instance, '_initialized', False):
-            logger.info(f"""
+        # Vérification de l'instance existante avec état
+        if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
+            return st.session_state.bot_instance
+
+        logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║             CREATING BOT INSTANCE                ║
 ╠═════════════════════════════════════════════════╣
