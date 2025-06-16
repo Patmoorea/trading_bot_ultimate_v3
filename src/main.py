@@ -141,24 +141,54 @@ def setup_asyncio():
 
 class StreamlitSessionManager:
     def __init__(self):
+        self.init_time = datetime.now(timezone.utc)
+        self.user = os.getenv('USER', 'Patmoorea')
+        
         if 'session_initialized' not in st.session_state:
-            st.session_state.session_initialized = False
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
+            self._initialize_session_state()
+            
+    def _initialize_session_state(self):
+        """Initialise l'état de la session Streamlit avec toutes les variables nécessaires"""
+        session_vars = {
+            'session_initialized': True,
+            'session_id': f"{self.user}_{int(self.init_time.timestamp())}",
+            'prevent_cleanup': True,
+            'keep_alive': True,
+            'force_cleanup': False,
+            'cleanup_allowed': False,
+            'bot_running': False,
+            'ws_initialized': False,
+            'last_action_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        for key, value in session_vars.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
 
     def protect_session(self):
+        """Protection de la session"""
+        if not st.session_state.get('session_initialized'):
+            self._initialize_session_state()
         st.session_state.prevent_cleanup = True
         st.session_state.keep_alive = True
         st.session_state.force_cleanup = False
         st.session_state.cleanup_allowed = False
 
     def allow_cleanup(self):
+        """Autorise le nettoyage de la session"""
         st.session_state.cleanup_allowed = True
         st.session_state.force_cleanup = True
         st.session_state.prevent_cleanup = False
         st.session_state.keep_alive = False
+
+    def get_session_info(self):
+        """Retourne les informations de la session"""
+        return {
+            'user': self.user,
+            'init_time': self.init_time,
+            'session_id': st.session_state.get('session_id'),
+            'session_initialized': st.session_state.get('session_initialized')
+        }
 
 # Créer l'instance globale
 session_manager = StreamlitSessionManager()
@@ -4775,32 +4805,32 @@ async def main_async():
             
             # Start/Stop Buttons avec gestion d'état améliorée
             if not st.session_state.bot_running:
-        if st.button("🟢 Start Trading", key="start_button"):
-            try:
-                with st.spinner("Starting trading bot..."):
-                    # Forcer la protection
-                    session_manager.protect_session()
+                if st.button("🟢 Start Trading", key="start_button"):
+                    try:
+                        with st.spinner("Starting trading bot..."):
+                            # Forcer la protection
+                            session_manager.protect_session()
                     
-                    if not st.session_state.ws_initialized:
-                        if await initialize_websocket(bot):
-                            st.session_state.ws_initialized = True
-                            st.session_state.bot_running = True
-                            await update_market_data(bot)
-                            st.success("✅ Bot started successfully!")
-                        else:
-                            st.error("❌ WebSocket initialization failed")
-            except Exception as e:
-                st.error(f"❌ Failed to start bot: {str(e)}")
-                st.session_state.bot_running = False
-    else:
-        if st.button("🔴 Stop Trading", key="stop_button"):
-            try:
-                with st.spinner("Stopping trading bot..."):
-                    st.session_state.bot_running = False
-                    session_manager.protect_session()
-                    st.success("✅ Bot stopped successfully!")
-            except Exception as e:
-                st.error(f"❌ Failed to stop bot: {str(e)}")
+                            if not st.session_state.ws_initialized:
+                                if await initialize_websocket(bot):
+                                    st.session_state.ws_initialized = True
+                                    st.session_state.bot_running = True
+                                    await update_market_data(bot)
+                                    st.success("✅ Bot started successfully!")
+                                else:
+                                    st.error("❌ WebSocket initialization failed")
+                    except Exception as e:
+                        st.error(f"❌ Failed to start bot: {str(e)}")
+                        st.session_state.bot_running = False
+            else:
+                if st.button("🔴 Stop Trading", key="stop_button"):
+                    try:
+                        with st.spinner("Stopping trading bot..."):
+                            st.session_state.bot_running = False
+                            session_manager.protect_session()
+                            st.success("✅ Bot stopped successfully!")
+                    except Exception as e:
+                        st.error(f"❌ Failed to stop bot: {str(e)}")
 
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
