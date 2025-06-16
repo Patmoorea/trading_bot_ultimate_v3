@@ -480,32 +480,30 @@ class WebSocketManager:
         self.retry_delay = WEBSOCKET_CONFIG['RETRY_DELAY']
 
     async def start(self):
-        """Démarre les WebSockets"""
-        async with self.lock:
-            if self.running:
-                return True
-                
-            try:
-                # Initialisation du client Binance
-                self.bot.binance_ws = await AsyncClient.create(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET')
-                )
-                
-                # Initialisation du socket manager
-                self.bot.socket_manager = BinanceSocketManager(self.bot.binance_ws)
-                
-                # Configuration des streams
-                if not await self._setup_streams():
-                    raise Exception("Failed to setup streams")
-                    
-                self.running = True
-                return True
-                
-            except Exception as e:
-                logger.error(f"WebSocket start error: {e}")
-                await self.cleanup()
-                return False
+        """Démarre le bot"""
+        try:
+            self.logger.info("Starting bot initialization...")
+        
+            # Initialisation asynchrone du news analyzer
+            await self.initialize_news_analyzer()
+        
+            # Démarrage du WebSocket Manager
+            if not await self.ws_manager.start():
+                raise Exception("Failed to start WebSocket manager")
+        
+            # Configuration des composants
+            if not await self._setup_components():
+                raise Exception("Failed to setup components")
+        
+            # Mise à jour du statut
+            self.initialized = True
+            self.logger.info("✅ Bot initialized successfully")
+            return True
+        
+        except Exception as e:
+            self.logger.error(f"❌ Bot initialization error: {e}")
+            await self._cleanup()
+            return False
 
     async def _setup_streams(self):
         """Configure les streams"""
@@ -2070,10 +2068,37 @@ class TradingBotM4:
         )
 
         # Composants d'analyse
-        self.news_analyzer = NewsAnalyzer()
+        self.news_analyzer = None
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
+    
+    async def initialize_news_analyzer(self):
+        """Initialise l'analyseur de news de manière asynchrone avec retry"""
+        MAX_RETRIES = 3
+        RETRY_DELAY = 2
+    
+        for attempt in range(MAX_RETRIES):
+            try:
+                    # Initialisation avec timeout
+                async with asyncio.timeout(30):
+                    self.news_analyzer = NewsAnalyzer()
+                    await self.news_analyzer.initialize()  # Méthode async d'initialisation
+                    logger.info("✅ News analyzer initialized successfully")
+                    return True
+                
+            except asyncio.TimeoutError:
+                logger.warning(f"Timeout initializing news analyzer (attempt {attempt + 1}/{MAX_RETRIES})")
+            
+            except Exception as e:
+                logger.error(f"Error initializing news analyzer (attempt {attempt + 1}/{MAX_RETRIES}): {e}")
+            
+            if attempt < MAX_RETRIES - 1:
+                await asyncio.sleep(RETRY_DELAY * (attempt + 1))
+            
+        logger.error("Failed to initialize news analyzer after maximum retries")
+        self.news_analyzer = None  # Désactive l'analyseur de news en cas d'échec
+        return False
 
     async def start(self):
         """Démarre le bot"""
