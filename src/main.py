@@ -626,33 +626,27 @@ async def setup_streams(bot):
         return None
 
 async def cleanup_existing_connections(bot):
-    """
-    Nettoie les connexions WebSocket existantes
-    
-    Args:
-        bot: Instance du bot de trading
-    """
+    """Nettoie les connexions WebSocket existantes"""
     try:
         # Fermeture du socket manager
         if hasattr(bot, 'socket_manager') and bot.socket_manager:
             try:
-                # Arrêt de tous les sockets existants
-                if hasattr(bot.socket_manager, '_conns'):
-                    for conn_key in bot.socket_manager._conns.copy():
-                        try:
-                            await bot.socket_manager.stop_socket(conn_key)
-                        except Exception as socket_error:
-                            logger.warning(f"⚠️ Error stopping socket {conn_key}: {socket_error}")
+                # Fermeture des connexions WebSocket individuelles
+                for socket_name in dir(bot.socket_manager):
+                    if socket_name.startswith('_socket_'):
+                        socket = getattr(bot.socket_manager, socket_name)
+                        if hasattr(socket, 'close'):
+                            await socket.close()
                 
-                # Nettoyage des connexions
-                if hasattr(bot.socket_manager, '_conns'):
-                    bot.socket_manager._conns.clear()
-                    
+                # Fermeture du socket manager lui-même
+                if hasattr(bot.socket_manager, 'close_connection'):
+                    await bot.socket_manager.close_connection()
+                
             except Exception as e:
                 logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
                 bot.socket_manager = None
-                
+
         # Fermeture du client WebSocket
         if hasattr(bot, 'binance_ws') and bot.binance_ws:
             try:
@@ -2595,108 +2589,174 @@ class TradingBotM4:
             return False
            
     async def get_real_portfolio(self):
-        """
-        Récupère le portfolio en temps réel avec les balances et positions.
-        """
-        try:
-            if not hasattr(self, 'spot_client') or self.spot_client is None:
-                logger.error("❌ Spot client non initialisé")
-                 # Log de debug
-                logger.info("Récupération du portfolio...")
-        
-                # Récupération de la balance
-                balance = self.spot_client.get_balance()
-                logger.info(f"Balance reçue: {balance}")
-                
-                # Tentative de réinitialisation du spot client
-                self.spot_client = BinanceClient(
-                    api_key=os.getenv('BINANCE_API_KEY'),
-                    api_secret=os.getenv('BINANCE_API_SECRET')
-                )
-                if not self.spot_client:
-                    raise Exception("Impossible d'initialiser le spot client")
+    """
+    Récupère le portfolio en temps réel avec les balances et positions.
+    """
+    try:
+        # Vérification et initialisation du spot client
+        if not hasattr(self, 'spot_client') or self.spot_client is None:
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║         INITIALIZING SPOT CLIENT                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """)
+            
+            self.spot_client = BinanceClient(
+                api_key=os.getenv('BINANCE_API_KEY'),
+                api_secret=os.getenv('BINANCE_API_SECRET')
+            )
+            
+            if not self.spot_client:
+                raise Exception("Failed to initialize spot client")
 
-            # Récupération de la balance
-            balance = self.spot_client.get_balance()
-            if not balance or 'balances' not in balance:
-                raise Exception("Balance non disponible ou vide")
+        # Récupération des balances de manière asynchrone
+        balance = await self.spot_client.get_account()
+        if not balance or 'balances' not in balance:
+            raise Exception("No balance data available")
 
-            self.logger.info("💰 Balance reçue")
+        logger.info("💰 Balance data received")
 
-            # Extraction des USDC
-            usdc_balance = None
-            for asset_balance in balance['balances']:
-                if asset_balance['asset'] == 'USDC':
-                    usdc_balance = {
-                        'free': float(asset_balance['free']),
-                        'locked': float(asset_balance['locked'])
-                    }
-                    break
+        # Traitement des balances
+        portfolio = {
+            'total_value': 0.0,
+            'free': 0.0,
+            'used': 0.0,
+            'positions': [],
+            'daily_pnl': 0.0,
+            'volume_24h': 0.0,
+            'volume_change': 0.0,
+            'timestamp': int(time.time() * 1000)
+        }
 
-            if not usdc_balance:
-                # Si pas d'USDC, on utilise des valeurs par défaut pour le test
-                usdc_balance = {
-                    'free': 100.59,
-                    'locked': 0.0
-                }
-
-            total_usdc = usdc_balance['free'] + usdc_balance['locked']
-
-            # Construction du portfolio
-            portfolio = {
-                'total_value': total_usdc,
-                'free': usdc_balance['free'],
-                'used': usdc_balance['locked'],
-                'positions': [],
-                'daily_pnl': 0.0,
-                'volume_24h': 0.0,
-                'volume_change': 0.0
-            }
-
-            # Récupération des positions réelles
+        # Traitement de chaque asset
+        for asset_balance in balance['balances']:
             try:
-                open_orders = self.spot_client.get_open_orders('BTC/USDC')
+                asset = asset_balance['asset']
+                free = float(asset_balance['free'])
+                locked = float(asset_balance['locked'])
+                
+                if free > 0 or locked > 0:
+                    # Traitement spécial pour USDC
+                    if asset == 'USDC':
+                        portfolio['free'] += free
+                        portfolio['used'] += locked
+                        portfolio['total_value'] += (free + locked)
+                    else:
+                        # Conversion en USDC pour les autres assets
+                        try:
+                            price = await self.get_latest_price(f"{asset}USDC")
+                            value = (free + locked) * price
+                            
+                            if value > 0:
+                                portfolio['total_value'] += value
+                                portfolio['positions'].append({
+                                    'symbol': f"{asset}/USDC",
+                                    'size': free + locked,
+                                    'value': value,
+                                    'price': price,
+                                    'free': free,
+                                    'locked': locked,
+                                    'timestamp': portfolio['timestamp']
+                                })
+                        except Exception as price_error:
+                            logger.warning(f"⚠️ Cannot get price for {asset}: {price_error}")
+                            continue
+                            
+            except Exception as asset_error:
+                logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
+                continue
+
+        # Récupération des ordres ouverts
+        try:
+            for pair in self.config['TRADING']['pairs']:
+                open_orders = await self.spot_client.get_open_orders(pair)
+                
                 if open_orders:
-                    positions = []
                     for order in open_orders:
-                        if float(order['amount']) > 0:
-                            positions.append({
-                                'symbol': order['symbol'],
-                                'size': float(order['amount']),
-                                'value': float(order['price']) * float(order['amount']),
-                                'price': float(order['price']),
-                                'side': order['side'].upper(),
-                                'timestamp': portfolio['timestamp']
-                            })
-                    portfolio['positions'] = positions
+                        try:
+                            amount = float(order['amount'])
+                            price = float(order['price'])
+                            
+                            if amount > 0:
+                                portfolio['positions'].append({
+                                    'symbol': order['symbol'],
+                                    'size': amount,
+                                    'value': price * amount,
+                                    'price': price,
+                                    'side': order['side'].upper(),
+                                    'type': order['type'],
+                                    'timestamp': portfolio['timestamp'],
+                                    'order_id': order['id']
+                                })
+                        except Exception as order_error:
+                            logger.warning(f"⚠️ Error processing order: {order_error}")
+                            continue
+                            
+        except Exception as orders_error:
+            logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
 
-                self.logger.info(f"📊 {len(portfolio.get('positions', []))} positions réelles récupérées")
+        # Calcul des métriques finales
+        portfolio.update({
+            'position_count': len(portfolio['positions']),
+            'total_position_value': sum(pos['value'] for pos in portfolio['positions']),
+            'available_margin': portfolio['free'] - sum(pos.get('value', 0) for pos in portfolio['positions'])
+        })
 
-            except Exception as e:
-                self.logger.warning(f"⚠️ Impossible de récupérer les positions: {e}")
+        # Récupération des données de volume sur 24h
+        try:
+            for pair in self.config['TRADING']['pairs']:
+                ticker_24h = await self.spot_client.get_24h_ticker(pair)
+                if ticker_24h:
+                    portfolio['volume_24h'] += float(ticker_24h['volume'])
+                    portfolio['volume_change'] += float(ticker_24h['priceChangePercent'])
+            
+            # Moyenne du changement de volume
+            if len(self.config['TRADING']['pairs']) > 0:
+                portfolio['volume_change'] /= len(self.config['TRADING']['pairs'])
+                
+        except Exception as volume_error:
+            logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
 
-            # Mise à jour des métriques
-            portfolio.update({
-                'position_count': len(portfolio['positions']),
-                'total_position_value': sum(pos['value'] for pos in portfolio['positions']),
-                'available_margin': portfolio['free'] - sum(pos['value'] for pos in portfolio['positions'])
-            })
+        # Log de succès
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║         PORTFOLIO UPDATE SUCCESS                 ║
+╠═════════════════════════════════════════════════╣
+║ Total Value: {portfolio['total_value']:.2f} USDC
+║ Positions: {portfolio['position_count']}
+║ Time: {datetime.fromtimestamp(portfolio['timestamp']/1000).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        return portfolio
 
-            self.logger.info(f"✅ Portfolio mis à jour avec succès: {portfolio['total_value']:.2f} USDC")
-            return portfolio
-
-        except Exception as e:
-            self.logger.error(f"❌ Erreur critique portfolio: {e}")
-            # Retourner un portfolio par défaut en cas d'erreur
-            return {
-                'total_value': 100.59,
-                'free': 100.59,
-                'used': 0.0,
-                'positions': [],
-                'daily_pnl': 0.0,
-                'volume_24h': 0.0,
-                'volume_change': 0.0
-            }
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         PORTFOLIO UPDATE ERROR                   ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        # Retourner un portfolio par défaut en cas d'erreur
+        return {
+            'total_value': 100.59,
+            'free': 100.59,
+            'used': 0.0,
+            'positions': [],
+            'position_count': 0,
+            'daily_pnl': 0.0,
+            'volume_24h': 0.0,
+            'volume_change': 0.0,
+            'timestamp': int(time.time() * 1000),
+            'available_margin': 100.59,
+            'total_position_value': 0.0
+        }
 
     async def execute_real_trade(self, signal):
         """Exécution sécurisée des trades"""
