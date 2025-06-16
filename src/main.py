@@ -4946,26 +4946,36 @@ def main():
         # Initialisation de l'état de session
         init_session_state()
         
-        # Configuration de la boucle d'événements
-        if 'loop' not in st.session_state:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            st.session_state.loop = loop
+        # Configuration de la boucle d'événements - CORRIGÉ
+        try:
+            if not st.session_state.get('loop'):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                nest_asyncio.apply()
+                st.session_state.loop = loop
+            
+            # Vérification explicite que la boucle existe
+            if not st.session_state.get('loop'):
+                raise RuntimeError("Event loop initialization failed")
+                
             logger.info("✅ Event loop configured successfully")
-
-        # Exécution de la coroutine principale
-        st.session_state.loop.run_until_complete(main_async())
-
-    except asyncio.CancelledError:
-        logger.info("""
+            
+            # Exécution de la coroutine principale avec la boucle vérifiée
+            st.session_state.loop.run_until_complete(main_async())
+            
+        except Exception as loop_error:
+            logger.error(f"""
 ╔═════════════════════════════════════════════════╗
-║              GRACEFUL SHUTDOWN                   ║
+║              LOOP ERROR                          ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: Application cancelled gracefully
+║ Error: {str(loop_error)}
 ╚═════════════════════════════════════════════════╝
-        """)
+            """)
+            raise
+
+    except asyncio.CancelledError:
+        logger.info("Application cancelled gracefully")
 
     except Exception as e:
         logger.error(f"""
@@ -4984,31 +4994,20 @@ def main():
             # Protection FORTE contre le nettoyage automatique
             session_manager.protect_session()
 
-            # Ne nettoyer que si explicitement demandé
-            if st.session_state.get('force_cleanup', False) and st.session_state.get('cleanup_allowed', False):
-                if 'bot_instance' in st.session_state:
-                    try:
-                        if 'loop' in st.session_state and not st.session_state.loop.is_closed():
-                            st.session_state.loop.run_until_complete(
-                                cleanup_resources(st.session_state.bot_instance)
-                            )
-                    except Exception as cleanup_error:
-                        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(cleanup_error)}
-╚═════════════════════════════════════════════════╝
-                        """)
-                    finally:
-                        # Restaurer la protection après le nettoyage
-                        session_manager.protect_session()
-
-            # Fermeture propre de la boucle d'événements
-            if 'loop' in st.session_state and not st.session_state.loop.is_closed():
-                st.session_state.loop.close()
-                logger.info("✅ Event loop closed successfully")
+            # Nettoyage sécurisé de la boucle - CORRIGÉ
+            if st.session_state.get('loop'):
+                try:
+                    loop = st.session_state.loop
+                    if not loop.is_closed():
+                        # Ne nettoyer que si explicitement demandé
+                        if st.session_state.get('force_cleanup', False) and st.session_state.get('cleanup_allowed', False):
+                            if 'bot_instance' in st.session_state:
+                                loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
+                        loop.close()
+                except Exception as cleanup_error:
+                    logger.error(f"Loop cleanup error: {cleanup_error}")
+                finally:
+                    st.session_state.loop = None  # Réinitialisation explicite
 
         except Exception as final_error:
             logger.error(f"""
@@ -5022,6 +5021,37 @@ def main():
         finally:
             # Protection finale ABSOLUE
             session_manager.protect_session()
+
+# Ajout d'une fonction de vérification de la boucle
+def ensure_event_loop():
+    """S'assure qu'une boucle d'événements valide existe"""
+    if not st.session_state.get('loop'):
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+            st.session_state.loop = loop
+            return loop
+        except Exception as e:
+            logger.error(f"Failed to create event loop: {e}")
+            return None
+    return st.session_state.loop
+
+if __name__ == "__main__":
+    try:
+        # Vérification de la boucle avant le démarrage
+        if ensure_event_loop():
+            main()
+        else:
+            logger.error("Failed to initialize event loop")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        logger.info("Keyboard interrupt received")
+        
+    except Exception as e:
+        logger.error(f"Critical error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     try:
