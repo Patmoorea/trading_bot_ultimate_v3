@@ -139,59 +139,7 @@ def setup_asyncio():
         logger.error(f"Error setting up asyncio: {e}")
         return None
 
-class StreamlitSessionManager:
-    def __init__(self):
-        self.init_time = datetime.now(timezone.utc)
-        self.user = os.getenv('USER', 'Patmoorea')
-        
-        if 'session_initialized' not in st.session_state:
-            self._initialize_session_state()
-            
-    def _initialize_session_state(self):
-        """Initialise l'état de la session Streamlit avec toutes les variables nécessaires"""
-        session_vars = {
-            'session_initialized': True,
-            'session_id': f"{self.user}_{int(self.init_time.timestamp())}",
-            'prevent_cleanup': True,
-            'keep_alive': True,
-            'force_cleanup': False,
-            'cleanup_allowed': False,
-            'bot_running': False,
-            'ws_initialized': False,
-            'last_action_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        for key, value in session_vars.items():
-            if key not in st.session_state:
-                st.session_state[key] = value
-
-    def protect_session(self):
-        """Protection de la session"""
-        if not st.session_state.get('session_initialized'):
-            self._initialize_session_state()
-        st.session_state.prevent_cleanup = True
-        st.session_state.keep_alive = True
-        st.session_state.force_cleanup = False
-        st.session_state.cleanup_allowed = False
-
-    def allow_cleanup(self):
-        """Autorise le nettoyage de la session"""
-        st.session_state.cleanup_allowed = True
-        st.session_state.force_cleanup = True
-        st.session_state.prevent_cleanup = False
-        st.session_state.keep_alive = False
-
-    def get_session_info(self):
-        """Retourne les informations de la session"""
-        return {
-            'user': self.user,
-            'init_time': self.init_time,
-            'session_id': st.session_state.get('session_id'),
-            'session_initialized': st.session_state.get('session_initialized')
-        }
-
-# Créer l'instance globale
-session_manager = StreamlitSessionManager()
+StreamlitSessionManager
             
 class WebSocketManager:
     def __init__(self, bot):
@@ -5003,54 +4951,47 @@ async def shutdown():
         logger.error(f"Shutdown error: {e}")
 
 def main():
-    """Point d'entrée principal avec protection renforcée"""
+    """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv('USER', 'Patmoorea')
+
     try:
-        # Protection et initialisation
-        session_manager.initialize_session()
-        
-        # Log du démarrage de l'application
+        # 1. Initialisation et protection de la session
+        global session_manager
+        session_manager = StreamlitSessionManager()
+        session_manager.protect_session()
+
+        # 2. Log de démarrage
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Session: {session_manager.session_id}
 ╚═════════════════════════════════════════════════╝
         """)
 
-        # Initialisation de l'état de session
-        init_session_state()
-        
-        # Configuration de la boucle d'événements - CORRIGÉ
-        try:
-            if not st.session_state.get('loop'):
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                nest_asyncio.apply()
-                st.session_state.loop = loop
-            
-            # Vérification explicite que la boucle existe
-            if not st.session_state.get('loop'):
-                raise RuntimeError("Event loop initialization failed")
-                
-            logger.info("✅ Event loop configured successfully")
-            
-            # Exécution de la coroutine principale avec la boucle vérifiée
-            st.session_state.loop.run_until_complete(main_async())
-            
-        except Exception as loop_error:
-            logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              LOOP ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(loop_error)}
-╚═════════════════════════════════════════════════╝
-            """)
-            raise
+        # 3. Initialisation de l'état de session
+        _initialize_session_state()
+
+        # 4. Configuration et vérification de la boucle d'événements
+        event_loop = _setup_and_verify_event_loop()
+        if not event_loop:
+            raise RuntimeError("Failed to initialize event loop")
+
+        # 5. Exécution de la coroutine principale
+        event_loop.run_until_complete(main_async())
 
     except asyncio.CancelledError:
-        logger.info("Application cancelled gracefully")
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              GRACEFUL SHUTDOWN                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+╚═════════════════════════════════════════════════╝
+        """)
 
     except Exception as e:
         logger.error(f"""
@@ -5060,57 +5001,139 @@ def main():
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
+║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
         """)
         st.error(f"❌ Application error: {str(e)}")
 
     finally:
-        try:
-            # Protection FORTE contre le nettoyage automatique
-            session_manager.protect_session()
+        _perform_cleanup()
 
-            # Nettoyage sécurisé de la boucle - CORRIGÉ
-            if st.session_state.get('loop'):
-                try:
-                    loop = st.session_state.loop
-                    if not loop.is_closed():
-                        # Ne nettoyer que si explicitement demandé
-                        if st.session_state.get('force_cleanup', False) and st.session_state.get('cleanup_allowed', False):
-                            if 'bot_instance' in st.session_state:
-                                loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
-                        loop.close()
-                except Exception as cleanup_error:
-                    logger.error(f"Loop cleanup error: {cleanup_error}")
-                finally:
-                    st.session_state.loop = None  # Réinitialisation explicite
+def _initialize_session_state():
+    """Initialise l'état de la session avec des valeurs sûres"""
+    default_state = {
+        'initialized': False,
+        'bot_running': False,
+        'portfolio': None,
+        'latest_data': None,
+        'indicators': None,
+        'refresh_count': 0,
+        'loop': None,
+        'ws_status': 'disconnected',
+        'error_count': 0,
+        'keep_alive': True,
+        'prevent_cleanup': True,
+        'force_cleanup': False,
+        'ws_initialized': False,
+        'cleanup_allowed': False,
+        'initialization_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+    }
 
-        except Exception as final_error:
-            logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              FINAL ERROR                         ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(final_error)}
-╚═════════════════════════════════════════════════╝
-            """)
-        finally:
-            # Protection finale ABSOLUE
-            session_manager.protect_session()
+    for key, value in default_state.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
-# Ajout d'une fonction de vérification de la boucle
-def ensure_event_loop():
-    """S'assure qu'une boucle d'événements valide existe"""
-    if not st.session_state.get('loop'):
-        try:
+def _setup_and_verify_event_loop():
+    """Configure et vérifie la boucle d'événements"""
+    try:
+        if not st.session_state.get('loop'):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             nest_asyncio.apply()
             st.session_state.loop = loop
+            
+            logger.info("""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Status: Successfully configured
+╚═════════════════════════════════════════════════╝
+            """)
+            
             return loop
-        except Exception as e:
-            logger.error(f"Failed to create event loop: {e}")
-            return None
-    return st.session_state.loop
+
+        return st.session_state.loop
+
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+        return None
+
+def _perform_cleanup():
+    """Effectue le nettoyage final de l'application"""
+    try:
+        # 1. Protection de la session
+        session_manager.protect_session()
+
+        # 2. Nettoyage de la boucle d'événements
+        if st.session_state.get('loop'):
+            loop = st.session_state.loop
+            if not loop.is_closed():
+                try:
+                    # Nettoyage conditionnel des ressources
+                    if (st.session_state.get('force_cleanup', False) and 
+                        st.session_state.get('cleanup_allowed', False)):
+                        if 'bot_instance' in st.session_state:
+                            loop.run_until_complete(
+                                cleanup_resources(st.session_state.bot_instance)
+                            )
+                    loop.close()
+                except Exception as e:
+                    logger.error(f"Loop cleanup error: {e}")
+                finally:
+                    st.session_state.loop = None
+
+        logger.info("""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ Status: All resources cleaned
+╚═════════════════════════════════════════════════╝
+        """)
+
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+    finally:
+        # Protection finale absolue
+        session_manager.protect_session()
+
+def ensure_event_loop():
+    """Vérifie et assure l'existence d'une boucle d'événements valide"""
+    try:
+        if not st.session_state.get('loop'):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+            st.session_state.loop = loop
+            
+            logger.info("✅ New event loop created and configured")
+            return loop
+            
+        return st.session_state.loop
+        
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+        return None
 
 if __name__ == "__main__":
     try:
