@@ -680,7 +680,62 @@ async def create_binance_client(bot):
     except Exception as e:
         logger.error(f"❌ Error creating Binance client: {e}")
         return False
-   
+
+async def setup_websocket_streams(bot):
+    """
+    Configure les streams WebSocket pour le bot
+    
+    Args:
+        bot: Instance du bot de trading
+    """
+    try:
+        # Configuration des paires et timeframes
+        pairs = bot.config.get("TRADING", {}).get("pairs", ["BTC/USDT", "ETH/USDT"])
+        timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m", "5m", "15m", "1h", "4h", "1d"])
+        
+        # Création des tâches pour chaque stream
+        tasks = []
+        
+        for pair in pairs:
+            # Configuration du stream de trades
+            trade_socket = bot.socket_manager.trade_socket(pair)
+            tasks.append(
+                asyncio.create_task(
+                    handle_socket_message(bot, trade_socket, "trade")
+                )
+            )
+            
+            # Configuration du stream d'orderbook
+            depth_socket = bot.socket_manager.depth_socket(pair)
+            tasks.append(
+                asyncio.create_task(
+                    handle_socket_message(bot, depth_socket, "depth")
+                )
+            )
+            
+            # Configuration des streams de klines
+            for timeframe in timeframes:
+                kline_socket = bot.socket_manager.kline_socket(pair, timeframe)
+                tasks.append(
+                    asyncio.create_task(
+                        handle_socket_message(bot, kline_socket, "kline")
+                    )
+                )
+        
+        # Mise à jour du statut des connexions
+        bot.ws_connection.update({
+            'enabled': True,
+            'status': 'connected',
+            'tasks': tasks,
+            'last_connection': time.time()
+        })
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error setting up WebSocket streams: {e}")
+        return False
+       
 async def initialize_websocket(bot):
     """
     Initialize WebSocket connection with proper error handling and cleanup
