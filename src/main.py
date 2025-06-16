@@ -1028,20 +1028,19 @@ async def cleanup_websocket(bot):
 async def cleanup_resources(bot):
     """Nettoyage sécurisé avec protection de session"""
     
-    # Double vérification avec le gestionnaire de session
-    if not st.session_state.get('cleanup_allowed', False) or st.session_state.get('prevent_cleanup', True):
-        logger.info("🔒 Cleanup prevented by session manager")
-        session_manager.protect_session()  # Renforcer la protection
-        return False
-
-    # Vérification des états du bot
+    # Protection ABSOLUE contre le nettoyage automatique
     if any([
+        st.session_state.get('prevent_cleanup', True),
+        st.session_state.get('keep_alive', True),
+        st.session_state.get('bot_running', False),
         getattr(bot, '_ws_initializing', False),
+        getattr(bot, '_initialized', False),
         getattr(bot, 'cleanup_in_progress', False),
-        bot.ws_connection.get('enabled', False),
-        bot.ws_connection.get('status') == 'connected'
+        not st.session_state.get('force_cleanup', False),
+        not st.session_state.get('cleanup_allowed', False)
     ]):
-        logger.info("🔒 Cleanup prevented - Bot is active")
+        logger.info("🔒 Cleanup prevented by session manager")
+        session_manager.protect_session()
         return False
 
     try:
@@ -5002,26 +5001,32 @@ async def shutdown():
         logger.error(f"Shutdown error: {e}")
 
 def main():
-    """Point d'entrée principal avec protection de session"""
+    """Point d'entrée principal"""
     try:
-        # Protection de la session
+        # Protection initiale FORTE
         session_manager.protect_session()
         
-        # Configuration de la nouvelle boucle d'événements
+        # Configuration de la boucle
         if 'loop' not in st.session_state:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             nest_asyncio.apply()
             st.session_state.loop = loop
+
+        # Log de démarrage
+        logger.info("Starting application...")
         
-        # Exécution de la coroutine principale
+        # Initialisation
+        init_session_state()
+        
+        # Exécution principale
         st.session_state.loop.run_until_complete(main_async())
 
     except Exception as e:
         logger.error(f"Application error: {e}")
         
     finally:
-        # Ne JAMAIS nettoyer sauf demande explicite
+        # Protection contre le nettoyage automatique
         if not st.session_state.get('force_cleanup', False):
             session_manager.protect_session()
         
