@@ -1009,44 +1009,116 @@ async def cleanup_websocket(bot):
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """Nettoyage sécurisé avec protection de session"""
+    """
+    Nettoyage sécurisé des ressources avec protection de session et logging détaillé.
     
-    # Protection ABSOLUE contre le nettoyage automatique
-    if any([
-        st.session_state.get('prevent_cleanup', True),
-        st.session_state.get('keep_alive', True),
-        st.session_state.get('bot_running', False),
-        getattr(bot, '_ws_initializing', False),
-        getattr(bot, '_initialized', False),
-        getattr(bot, 'cleanup_in_progress', False),
-        not st.session_state.get('force_cleanup', False),
-        not st.session_state.get('cleanup_allowed', False)
-    ]):
-        logger.info("🔒 Cleanup prevented by session manager")
+    Args:
+        bot: Instance du bot de trading à nettoyer
+        
+    Returns:
+        bool: True si le nettoyage a réussi, False sinon
+    """
+    current_time = datetime.now(timezone.utc)
+    
+    # Log de début de tentative de nettoyage
+    logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP ATTEMPT STARTED                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
+╚═════════════════════════════════════════════════╝
+    """)
+
+    # Vérification des conditions de protection
+    protection_conditions = {
+        'prevent_cleanup': st.session_state.get('prevent_cleanup', True),
+        'keep_alive': st.session_state.get('keep_alive', True),
+        'bot_running': st.session_state.get('bot_running', False),
+        'ws_initializing': getattr(bot, '_ws_initializing', False),
+        'bot_initialized': getattr(bot, '_initialized', False),
+        'cleanup_in_progress': getattr(bot, 'cleanup_in_progress', False),
+        'force_cleanup': not st.session_state.get('force_cleanup', False),
+        'cleanup_allowed': not st.session_state.get('cleanup_allowed', False)
+    }
+
+    # Si une condition de protection est active
+    if any(protection_conditions.values()):
+        # Log détaillé des conditions qui empêchent le nettoyage
+        active_protections = [k for k, v in protection_conditions.items() if v]
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP PREVENTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Active Protections: {', '.join(active_protections)}
+║ Session ID: {st.session_state.get('session_id', 'Unknown')}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        # Renforcer la protection
         session_manager.protect_session()
         return False
 
     try:
+        # Marquer le début du nettoyage
         bot.cleanup_in_progress = True
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP STARTED                        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ WebSocket Status: {bot.ws_connection.get('status', 'unknown')}
+╚═════════════════════════════════════════════════╝
+        """)
+
+        # Fermeture du WebSocket
         await close_websocket(bot)
+        
+        # Log de succès
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP SUCCESSFUL                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Resources Cleaned: WebSocket, Buffer, Data
+╚═════════════════════════════════════════════════╝
+        """)
         return True
+
     except Exception as e:
-        logger.error(f"Cleanup error: {e}")
+        # Log d'erreur détaillé
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP ERROR                          ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
         return False
+
     finally:
-        bot.cleanup_in_progress = False
-        session_manager.protect_session()  # Restaurer la protection
- 
-async def cleanup_client_session(bot):
-    """Nettoyage spécifique de la session client"""
-    try:
-        if hasattr(bot, 'client_session') and bot.client_session:
-            if not bot.client_session.closed:
-                await bot.client_session.close()
-                await asyncio.sleep(0.25)  # Délai pour assurer la fermeture
-            bot.client_session = None
-    except Exception as e:
-        logger.error(f"Client session cleanup error: {e}")
+        # Nettoyage final et restauration de la protection
+        try:
+            bot.cleanup_in_progress = False
+            session_manager.protect_session()
+            
+            # Log final
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP FINALIZED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Protection Restored: True
+║ Session Status: Protected
+╚═════════════════════════════════════════════════╝
+            """)
+            
+        except Exception as final_error:
+            logger.error(f"Final cleanup error: {final_error}")
     
 async def check_websocket_health(bot):
     """Vérifie l'état du WebSocket et le réinitialise si nécessaire"""
@@ -4703,43 +4775,32 @@ async def main_async():
             
             # Start/Stop Buttons avec gestion d'état améliorée
             if not st.session_state.bot_running:
-                if st.button("🟢 Start Trading", use_container_width=True):
-                    try:
-                        with st.spinner("Starting trading bot..."):
-                            # Bloquer TOUT nettoyage
-                            st.session_state['prevent_cleanup'] = True
-                            st.session_state['keep_alive'] = True
-                            st.session_state['force_cleanup'] = False
-                            st.session_state['cleanup_allowed'] = False
-            
-                            # Initialisation normale...
-                            if not st.session_state.ws_initialized:
-                                if await initialize_websocket(bot):
-                                    st.session_state.ws_initialized = True
-                                else:
-                                    st.error("❌ WebSocket initialization failed")
-                                    return
-            
+        if st.button("🟢 Start Trading", key="start_button"):
+            try:
+                with st.spinner("Starting trading bot..."):
+                    # Forcer la protection
+                    session_manager.protect_session()
+                    
+                    if not st.session_state.ws_initialized:
+                        if await initialize_websocket(bot):
+                            st.session_state.ws_initialized = True
                             st.session_state.bot_running = True
                             await update_market_data(bot)
-                            st.success("✅ Bot is now trading!")
-            
-                    except Exception as e:
-                        st.error(f"❌ Failed to start bot: {str(e)}")
-                        st.session_state.bot_running = False
-
-                # Pour le bouton Stop
-                if st.button("🔴 Stop Trading", use_container_width=True):
-                    try:
-                        with st.spinner("Stopping trading bot..."):
-                            # Ne pas nettoyer, juste arrêter le trading
-                            st.session_state.bot_running = False
-                            # Garder la protection
-                            st.session_state['prevent_cleanup'] = True
-                            st.session_state['keep_alive'] = True
-                            st.success("✅ Bot stopped successfully!")
-                    except Exception as e:
-                        st.error(f"❌ Failed to stop bot: {str(e)}")
+                            st.success("✅ Bot started successfully!")
+                        else:
+                            st.error("❌ WebSocket initialization failed")
+            except Exception as e:
+                st.error(f"❌ Failed to start bot: {str(e)}")
+                st.session_state.bot_running = False
+    else:
+        if st.button("🔴 Stop Trading", key="stop_button"):
+            try:
+                with st.spinner("Stopping trading bot..."):
+                    st.session_state.bot_running = False
+                    session_manager.protect_session()
+                    st.success("✅ Bot stopped successfully!")
+            except Exception as e:
+                st.error(f"❌ Failed to stop bot: {str(e)}")
 
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
@@ -4914,8 +4975,8 @@ async def shutdown():
 def main():
     """Point d'entrée principal avec protection renforcée"""
     try:
-        # Protection initiale FORTE
-        session_manager.protect_session()
+        # Protection et initialisation
+        session_manager.initialize_session()
         
         # Log du démarrage de l'application
         logger.info(f"""
