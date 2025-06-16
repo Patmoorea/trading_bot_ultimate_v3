@@ -340,7 +340,9 @@ def init_session_state():
         'refresh_count': 0,
         'loop': None,
         'ws_status': 'disconnected',
-        'error_count': 0
+        'error_count': 0,
+        'keep_alive': False,  # Nouveau flag à ajouter
+        'ws_initialized': False  # Nouveau flag à ajouter
     }
     
     for var, default in session_vars.items():
@@ -428,10 +430,9 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        # Vérification de l'instance existante et validation de son état
+        # Vérification plus stricte de l'instance existante
         if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
             if getattr(st.session_state.bot_instance, '_initialized', False):
-                # Si le bot est initialisé et en cours d'exécution, on le retourne
                 if st.session_state.get('bot_running', False):
                     return st.session_state.bot_instance
             else:
@@ -995,9 +996,17 @@ async def cleanup_websocket(bot):
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """Nettoyage des ressources avec vérification"""
-    # Ne pas nettoyer si le bot est en cours d'exécution
-    if st.session_state.get('bot_running', False):
+    """Nettoyage sécurisé des ressources avec vérifications strictes"""
+    # Empêcher le nettoyage si le bot est actif
+    if any([
+        st.session_state.get('bot_running', False),
+        st.session_state.get('keep_alive', False),
+        getattr(bot, '_ws_initializing', False),
+        getattr(bot, '_initialized', False),
+        getattr(bot, 'cleanup_in_progress', False),
+        bot.ws_connection.get('status') == 'connected',
+        st.session_state.get('portfolio') is not None
+    ]):
         return
         
     try:
