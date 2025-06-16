@@ -1894,12 +1894,15 @@ class MultiStreamManager:
     def setup_exchange(self, exchange_id="binance"):
         """Configure l'exchange"""
         self.exchange = Exchange(exchange_id=exchange_id)
-
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
-        # 1. FLAGS DE CONTRÔLE (DOIVENT ÊTRE EN PREMIER) - SUPPRIMER LES DOUBLONS
+        # Date et utilisateur courant
+        self.CURRENT_UTC = "2025-06-16 19:38:12"
+        self.CURRENT_USER = "Patmoorea"
+
+        # Flags de contrôle
         self._ws_initializing = False 
         self._cleanup_requested = False
         self._initialized = False
@@ -1908,57 +1911,11 @@ class TradingBotM4:
         self.shutdown_requested = False
         self.logger = logging.getLogger(__name__)
 
-        # 2. PROTECTION DE SESSION (NOUVEAU - À AJOUTER)
+        # Protection de session
         st.session_state.prevent_cleanup = True
         st.session_state.force_cleanup = False
         st.session_state.cleanup_allowed = False
         st.session_state.keep_alive = True
-
-        # 3. CONFIGS (GARDER UNE SEULE VERSION)
-        self.session_config = {
-            'keep_alive': True,
-            'timeout': 60,
-            'ping_interval': 20,
-            'ping_timeout': 10,
-            'reconnect_on_error': True,
-            'max_reconnect_attempts': 3
-        }
-
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-
-        # 4. ÉTAT WEBSOCKET (GARDER UNE SEULE VERSION)
-        self.ws_connection = {
-            'enabled': False,
-            'status': 'disconnected',
-            'reconnect_count': 0,
-            'max_reconnects': 3,
-            'last_message': None,
-            'last_heartbeat': None,
-            'last_error': None,
-            'tasks': []
-        }
-
-        # 5. BUFFERS ET DONNÉES (GARDER UNE SEULE VERSION)
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
-    
-        # Configuration des streams (DOIT ÊTRE EN PREMIER)
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-        
-        self.cleanup_in_progress = False
-        self.shutdown_requested = False
-        self._initialized = False
-        self._ws_initializing = False
-        self.logger = logging.getLogger(__name__)
 
         # Configuration principale
         self.config = {
@@ -1985,6 +1942,86 @@ class TradingBotM4:
                 'max_slippage': 0.001
             }
         }
+
+        # Configurations des composants
+        self.session_config = {
+            'keep_alive': True,
+            'timeout': 60,
+            'ping_interval': 20,
+            'ping_timeout': 10,
+            'reconnect_on_error': True,
+            'max_reconnect_attempts': 3
+        }
+
+        self.stream_config = StreamConfig(
+            max_connections=12,
+            reconnect_delay=1.0,
+            buffer_size=10000
+        )
+
+        # Initialisation des composants
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
+        self.news_analyzer = None
+        self.regime_detector = RegimeDetector()
+        self.qsvm = QuantumSVM()
+        self.client_session = None
+
+        # WebSocket et clients
+        self.ws_connection = {
+            'enabled': False,
+            'status': 'disconnected',
+            'reconnect_count': 0,
+            'max_reconnects': 3,
+            'last_message': None,
+            'last_heartbeat': None,
+            'last_error': None,
+            'tasks': []
+        }
+
+        self.ws_manager = WebSocketManager(self)
+        self.websocket = MultiStreamManager(
+            pairs=self.config["TRADING"]["pairs"],
+            config=self.stream_config
+        )
+
+        try:
+            self.spot_client = BinanceClient(
+                api_key=self.config['BINANCE']['API_KEY'],
+                api_secret=self.config['BINANCE']['API_SECRET']
+            )
+            self.logger.info("✅ Spot client initialisé avec succès")
+        except Exception as e:
+            self.logger.error(f"❌ Erreur initialisation spot client: {e}")
+            self.spot_client = None
+
+        # Configuration des composants de trading
+        self.trading_mode = os.getenv('TRADING_MODE', 'production')
+        self.testnet = False
+        self.news_enabled = True
+        self.arbitrage_enabled = True
+        self.telegram_enabled = True
+
+        # Configuration risque et portfolio
+        self.max_drawdown = 0.05
+        self.daily_stop_loss = 0.02
+        self.max_position_size = 1000
+
+        # Initialisation des managers
+        self.dashboard = TradingDashboard()
+        self.telegram = TelegramBot()
+        self.hybrid_model = HybridAI()
+        self.arbitrage_engine = ArbitrageEngine(
+            exchanges=self.config["ARBITRAGE"]["exchanges"],
+            pairs=self.config["ARBITRAGE"]["pairs"],
+            min_profit=self.config["ARBITRAGE"]["min_profit"],
+            max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
+            timeout=self.config["ARBITRAGE"]["timeout"],
+            volume_filter=self.config["ARBITRAGE"]["volume_filter"],
+            price_check=self.config["ARBITRAGE"]["price_check"],
+            max_slippage=self.config["ARBITRAGE"]["max_slippage"]
+        )
         
         # Initialisation du WebSocket Manager (AJOUT ICI)
         self.ws_manager = WebSocketManager(self)
