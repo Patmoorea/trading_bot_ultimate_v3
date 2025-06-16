@@ -437,9 +437,7 @@ def get_bot():
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
             """)
-            st.session_state.bot_instance = bot
-        return st.session_state.bot_instance
-    
+            
             # Création du bot
             bot = TradingBotM4()
             
@@ -524,7 +522,7 @@ def get_bot():
                 if hasattr(bot, '_cleanup'):
                     st.session_state.loop.run_until_complete(bot._cleanup())
                 raise
-        
+
         # Retourne l'instance existante
         return st.session_state.bot_instance
         
