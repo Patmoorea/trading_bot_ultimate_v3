@@ -26,7 +26,6 @@ import json
 import re
 import time
 import signal
-from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
@@ -153,9 +152,7 @@ class StreamlitSessionManager:
     def __init__(self):
         """Initialisation unique du gestionnaire"""
         if not self._initialized:
-            self.init_time = datetime.now(timezone.utc)
             self.user = os.getenv('USER', 'Patmoorea')
-            self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
             self.logger = logging.getLogger(__name__)
             self._initialized = True
             
@@ -170,8 +167,6 @@ class StreamlitSessionManager:
             try:
                 default_state = {
                     'session_id': self.session_id,
-                    'initialization_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'last_update_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
                     'user': self.user,
                     'initialized': True,
                     'session_initialized': True,
@@ -185,7 +180,6 @@ class StreamlitSessionManager:
                     'ws_status': 'disconnected',
                     'ws_initialized': False,
                     'ws_connection_status': 'disconnected',
-                    'ws_last_heartbeat': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
                     'keep_alive': True,
                     'prevent_cleanup': True,
                     'force_cleanup': False,
@@ -209,7 +203,6 @@ class StreamlitSessionManager:
 ╔═════════════════════════════════════════════════╗
 ║           SESSION INITIALIZED                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {self.user}
 ║ Session ID: {self.session_id}
 ║ Status: Active
@@ -222,7 +215,6 @@ class StreamlitSessionManager:
 ╔═════════════════════════════════════════════════╗
 ║           SESSION ERROR                          ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {message}
 ║ Details: {str(error)}
 ║ Type: {type(error).__name__}
@@ -249,7 +241,6 @@ class StreamlitSessionManager:
 ╔═════════════════════════════════════════════════╗
 ║           SESSION PROTECTED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Session ID: {self.session_id}
 ║ Last Action: {st.session_state.get('last_action_time')}
 ╚═════════════════════════════════════════════════╝
@@ -257,7 +248,6 @@ class StreamlitSessionManager:
 
 def _setup_and_verify_event_loop():
     """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-    current_time = datetime.now(timezone.utc)
     current_user = os.getenv('USER', 'Patmoorea')
 
     try:
@@ -276,7 +266,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {current_user}
 ║ Status: Successfully configured
 ║ Loop ID: {id(loop)}
@@ -292,7 +281,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP CLOSED                   ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: Creating new loop
 ║ Previous Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
@@ -310,7 +298,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP VERIFIED                 ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: Using existing loop
 ║ Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
@@ -324,7 +311,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ║ User: {current_user}
@@ -338,8 +324,6 @@ def _setup_and_verify_event_loop():
         return None
 
     finally:
-        # Mise à jour du timestamp
-        st.session_state.last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     
     def protect_session(self):
         """Protection renforcée de la session"""
@@ -348,9 +332,6 @@ def _setup_and_verify_event_loop():
             if not st.session_state.get('session_initialized'):
                 self._initialize_session_state()
                 
-            # Mise à jour du timestamp
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
             
             # Activation des protections
             st.session_state.prevent_cleanup = True
@@ -392,7 +373,6 @@ def _setup_and_verify_event_loop():
             info = {
                 'user': self.user,
                 'session_id': self.session_id,
-                'init_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'last_action': st.session_state.get('last_action_time'),
                 'session_initialized': st.session_state.get('session_initialized', False),
                 'bot_running': st.session_state.get('bot_running', False),
@@ -411,7 +391,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION INITIALIZED                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {self.user}
 ║ Session ID: {self.session_id}
 ║ Status: Active
@@ -424,7 +403,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION PROTECTED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Session ID: {self.session_id}
 ║ Last Action: {st.session_state.get('last_action_time')}
 ╚═════════════════════════════════════════════════╝
@@ -436,7 +414,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP AUTHORIZED                     ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Session ID: {self.session_id}
 ║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
 ╚═════════════════════════════════════════════════╝
@@ -448,7 +425,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION ERROR                          ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {message}
 ║ Details: {str(error)}
 ║ Type: {type(error).__name__}
@@ -799,7 +775,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             CREATING BOT INSTANCE                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """)
@@ -820,7 +795,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             EVENT LOOP ERROR                     ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(loop_error)}
 ╚═════════════════════════════════════════════════╝
                 """)
@@ -839,7 +813,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             INITIALIZATION ERROR                 ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(init_error)}
 ╚═════════════════════════════════════════════════╝
                 """)
@@ -867,7 +840,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             BOT INSTANCE READY                   ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: {bot.ws_connection.get('status', 'initializing')}
 ║ Trading Mode: {getattr(bot, 'trading_mode', 'production')}
 ║ User: {os.getenv('USER', 'Patmoorea')}
@@ -881,7 +853,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             RUNTIME ERROR                        ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(run_error)}
 ╚═════════════════════════════════════════════════╝
             """)
@@ -898,7 +869,6 @@ def get_bot():
 ╔═════════════════════════════════════════════════╗
 ║             BOT CREATION ERROR                   ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
@@ -927,7 +897,6 @@ def setup_asyncio():
 ╔═════════════════════════════════════════════════╗
 ║             ASYNCIO SETUP ERROR                  ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ╚═════════════════════════════════════════════════╝
         """)
@@ -1084,7 +1053,6 @@ async def setup_websocket_streams(bot):
                 )
 
         # Mise à jour du statut de connexion
-        bot.ws_connection.update({
             'enabled': True,
             'status': 'connected',
             'tasks': tasks,
@@ -1116,7 +1084,6 @@ async def initialize_websocket(bot):
 ╔═════════════════════════════════════════════════╗
 ║         INITIALISATION WEBSOCKET                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """)
@@ -1205,10 +1172,8 @@ async def initialize_websocket(bot):
             'enabled': True,
             'status': 'connected',
             'tasks': bot.ws_tasks,
-            'last_heartbeat': datetime.now(timezone.utc),
             'reconnect_count': 0,
             'max_reconnects': 3,
-            'start_time': datetime.now(timezone.utc)
         }
 
         logger.info(f"""
@@ -1218,7 +1183,6 @@ async def initialize_websocket(bot):
 ║ Status: Connected
 ║ Streams: {len(streams)}
 ║ Tasks: {len(bot.ws_tasks)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
         """)
         
@@ -1230,7 +1194,6 @@ async def initialize_websocket(bot):
 ║         ERREUR INITIALISATION                   ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
         """)
         
@@ -1258,8 +1221,6 @@ async def websocket_heartbeat(bot):
             if not bot.ws_connection['enabled']:
                 break
                 
-            # Update heartbeat timestamp
-            bot.ws_connection['last_heartbeat'] = datetime.now(timezone.utc)
             
             await asyncio.sleep(30)  # Heartbeat toutes les 30 secondes
             
@@ -1284,8 +1245,6 @@ async def handle_socket_message(bot, socket, stream_name):
                     
                     bot.latest_data['data'][stream_name] = msg
                     
-                    # Mise à jour du timestamp
-                    bot.ws_connection['last_message'] = datetime.now(timezone.utc)
                     
             except asyncio.TimeoutError:
                 # Au lieu de se déconnecter, on continue
@@ -1332,14 +1291,12 @@ async def cleanup_resources(bot):
     if st.session_state.get('prevent_cleanup', True):
         return False
 
-    current_time = datetime.now(timezone.utc)
     
     # 2. Log de début
     logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
 ╚═════════════════════════════════════════════════╝
@@ -1364,7 +1321,6 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP PREVENTED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Active Protections: {', '.join(active_protections)}
 ║ Session ID: {st.session_state.get('session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
@@ -1378,7 +1334,6 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP STARTED                        ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ WebSocket Status: {bot.ws_connection.get('status', 'unknown')}
 ╚═════════════════════════════════════════════════╝
         """)
@@ -1391,7 +1346,6 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP SUCCESSFUL                     ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Resources Cleaned: WebSocket, Buffer, Data
 ╚═════════════════════════════════════════════════╝
         """)
@@ -1403,7 +1357,6 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ERROR                          ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
@@ -1420,7 +1373,6 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP FINALIZED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Cleanup Status: Completed
 ╚═════════════════════════════════════════════════╝
             """)
@@ -1508,7 +1460,6 @@ async def close_websocket(bot):
         logger.error(f"❌ WebSocket close error: {e}")
         return False
 
-async def update_trading_data(bot):
     """Mise à jour des données de trading"""
     try:
         
@@ -1539,7 +1490,6 @@ async def handle_ticker_message(bot, msg):
                 bot.latest_prices = {}
             bot.latest_prices[symbol] = price
             
-            # Mise à jour du timestamp
             bot.ws_connection['last_message'] = time.time()
             
     except Exception as e:
@@ -1552,7 +1502,6 @@ async def handle_kline_message(bot, msg):
             kline = msg['k']
             if all(k in kline for k in ['t', 'o', 'h', 'l', 'c', 'v']):
                 candle = {
-                    'timestamp': kline['t'],
                     'open': float(kline['o']),
                     'high': float(kline['h']),
                     'low': float(kline['l']),
@@ -1577,7 +1526,6 @@ async def handle_depth_message(bot, msg):
             orderbook = {
                 'asks': [[float(price), float(qty)] for price, qty in msg['a']],
                 'bids': [[float(price), float(qty)] for price, qty in msg['b']],
-                'timestamp': time.time()
             }
             
             if not hasattr(bot, 'latest_orderbook'):
@@ -1604,7 +1552,6 @@ async def fetch_market_data(bot, symbol):
         data = []
         for k in klines:
             candle = {
-                'timestamp': k[0],
                 'open': float(k[1]),
                 'high': float(k[2]),
                 'low': float(k[3]),
@@ -1619,7 +1566,6 @@ async def fetch_market_data(bot, symbol):
         logger.error(f"❌ Erreur récupération données {symbol}: {e}")
         return None
 
-async def update_market_data(bot):
     """Met à jour les données de marché"""
     try:
         data_received = False
@@ -1661,7 +1607,6 @@ async def process_market_data(bot, symbol):
             bot.indicators[symbol] = {}
             
         # Mise à jour des indicateurs
-        await update_indicators(bot, symbol, data)
         
         # Vérification des signaux
         await check_signals(bot, symbol)
@@ -1722,7 +1667,6 @@ async def process_ws_message(bot, msg):
             # Mise à jour du prix
             bot.latest_data['price'] = float(msg['c'])
             bot.latest_data['volume'] = float(msg['v'])
-            logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
             
         elif msg['e'] == 'depth':
             # Mise à jour de l'orderbook
@@ -1730,7 +1674,6 @@ async def process_ws_message(bot, msg):
                 'bids': msg['b'][:5],
                 'asks': msg['a'][:5]
             }
-            logger.debug("📚 Orderbook updated")
             
         elif msg['e'] == 'kline':
             # Mise à jour des klines
@@ -1742,10 +1685,7 @@ async def process_ws_message(bot, msg):
                 'close': float(k['c']),
                 'volume': float(k['v'])
             }
-            logger.debug("📊 Klines updated")
             
-        # Mise à jour du timestamp
-        bot.latest_data['timestamp'] = msg.get('E', int(time.time() * 1000))
         bot.ws_connection['last_message'] = time.time()
         
     except Exception as e:
@@ -1804,14 +1744,12 @@ class TradingEnv(gym.Env):
         reward = self._calculate_reward(action)
 
         # Mise à jour de l'état
-        self._update_state()
 
         # Vérification des conditions de fin
         done = self._check_done()
         truncated = False
 
         # Mise à jour des métriques
-        self._update_metrics(action, reward)
 
         return self.state, reward, done, truncated, self._get_info()
 
@@ -1833,7 +1771,6 @@ class TradingEnv(gym.Env):
             logger.error(f"Erreur calcul reward: {e}")
             return None
 
-    def _update_state(self):
         """Mise à jour de l'état avec les dernières données de marché"""
         try:
             # Mise à jour des features techniques
@@ -1861,7 +1798,6 @@ class TradingEnv(gym.Env):
 
         return False
 
-    def _update_metrics(self, action, reward):
         """Mise à jour des métriques de l'épisode"""
         self.metrics['episode_rewards'].append(reward)
         self.metrics['portfolio_values'].append(self._get_portfolio_value())
@@ -1899,7 +1835,6 @@ class TradingBotM4:
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
         # Date et utilisateur courant
-        self.CURRENT_UTC = "2025-06-16 19:38:12"
         self.CURRENT_USER = "Patmoorea"
 
         # Flags de contrôle
@@ -2481,7 +2416,6 @@ class TradingBotM4:
                 logger.info("✅ Initial portfolio data loaded")
 
             # Mise à jour du statut
-            self.ws_connection.update({
                 'enabled': True,
                 'status': 'connected',
                 'last_message': time.time()
@@ -2637,7 +2571,6 @@ class TradingBotM4:
             
             if msg.get('e') == 'trade':
                 await self._handle_trade(msg)
-            elif msg.get('e') == 'depthUpdate':
                 await self._handle_orderbook(msg)
             elif msg.get('e') == 'kline':
                 await self._handle_kline(msg)
@@ -2659,10 +2592,8 @@ class TradingBotM4:
             }
             
             # Mise à jour du buffer
-            self.buffer.update_trades(trade_data)
             
             # Analyse du volume
-            self.volume_analysis.update(trade_data)
             
             return trade_data
             
@@ -2681,7 +2612,6 @@ class TradingBotM4:
             }
             
             # Mise à jour du buffer
-            self.buffer.update_orderbook(orderbook_data)
             
             # Analyse de la liquidité
             await self._analyze_market_liquidity()
@@ -2709,7 +2639,6 @@ class TradingBotM4:
             }
             
             # Mise à jour du buffer
-            self.buffer.update_klines(kline_data)
             
             # Analyse technique si la bougie est fermée
             if kline_data['closed']:
@@ -2723,16 +2652,13 @@ class TradingBotM4:
             logger.error(f"Erreur traitement kline: {e}")
             return None
 
-    def decision_model(self, features, timestamp=None):
         try:
             policy = self.models["ppo_gtrxl"].get_policy(features)
             value = self.models["ppo_gtrxl"].get_value(features)
             return policy, value
         except Exception as e:
-            logger.error(f"[{timestamp}] Erreur decision_model: {e}")
             return None, None
 
-    def _add_risk_management(self, decision, timestamp=None):
         try:
             # Calcul du stop loss
             stop_loss = self._calculate_stop_loss(decision)
@@ -2746,7 +2672,6 @@ class TradingBotM4:
                 "callback_rate": 0.01
             }
         
-            decision.update({
                 "stop_loss": stop_loss,
                 "take_profit": take_profit,
                 "trailing_stop": trailing_stop
@@ -2755,7 +2680,6 @@ class TradingBotM4:
             return decision
         
         except Exception as e:
-            logger.error(f"[{timestamp}] Erreur risk management: {e}")
             return decision
 
     async def get_latest_data(self):
@@ -2821,7 +2745,6 @@ class TradingBotM4:
                         logger.info(f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC")
                         
                     if result['ticker_24h']:
-                        data[pair].update({
                             'volume': float(result['ticker_24h']['volume']),
                             'price_change': float(result['ticker_24h']['priceChangePercent'])
                         })
@@ -2840,7 +2763,6 @@ class TradingBotM4:
                 for symbol, symbol_data in data.items():
                     if symbol_data:
                         # Mise à jour du buffer circulaire
-                        self.buffer.update_data(symbol, symbol_data)
                     
                         # Mise à jour des données latest
                         self.latest_data[symbol] = symbol_data
@@ -2868,7 +2790,6 @@ class TradingBotM4:
                 'volume': data['volume'],
                 'bid_ask_spread': data['ask'] - data['bid'],
                 'high_low_range': data['high'] - data['low'],
-                'timestamp': data['timestamp']
             }
             # Log des données reçues
             logger.info(f"Calcul indicateurs pour {symbol}: {data}")# Log des données reçues
@@ -2972,7 +2893,6 @@ class TradingBotM4:
 
             # Mise à jour du dashboard
             try:
-                self.dashboard.update_market_analysis(
                     historical_data=historical_data,
                     indicators=indicators_analysis,
                     regime=regime,
@@ -3027,7 +2947,6 @@ class TradingBotM4:
     
             # Décision finale
             signal = {
-                'timestamp': pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                 'trend': trend_analysis,
                 'momentum': momentum_analysis,
                 'volatility': volatility_analysis,
@@ -3147,7 +3066,6 @@ class TradingBotM4:
             logger.error(f"Error calculating PnL: {e}")
             return 0.0
         
-    async def update_dashboard(self):
         """Met à jour le dashboard en temps réel"""
         try:
             # Mise à jour des données
@@ -3170,7 +3088,6 @@ class TradingBotM4:
         
             return True
         except Exception as e:
-            logger.error(f"Dashboard update error: {e}")
             return False
            
     async def get_real_portfolio(self):
@@ -3184,7 +3101,6 @@ class TradingBotM4:
 ╔═════════════════════════════════════════════════╗
 ║         INITIALIZING SPOT CLIENT                 ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
             """)
@@ -3213,7 +3129,6 @@ class TradingBotM4:
                 'daily_pnl': 0.0,
                 'volume_24h': 0.0,
                 'volume_change': 0.0,
-                'timestamp': int(time.time() * 1000)
             }
 
             # Traitement de chaque asset
@@ -3244,7 +3159,6 @@ class TradingBotM4:
                                         'price': price,
                                         'free': free,
                                         'locked': locked,
-                                        'timestamp': portfolio['timestamp']
                                     })
                             except Exception as price_error:
                                 logger.warning(f"⚠️ Cannot get price for {asset}: {price_error}")
@@ -3273,7 +3187,6 @@ class TradingBotM4:
                                         'price': price,
                                         'side': order['side'].upper(),
                                         'type': order['type'],
-                                        'timestamp': portfolio['timestamp'],
                                         'order_id': order['id']
                                     })
                             except Exception as order_error:
@@ -3284,7 +3197,6 @@ class TradingBotM4:
                 logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
 
             # Calcul des métriques finales
-            portfolio.update({
                 'position_count': len(portfolio['positions']),
                 'total_position_value': sum(pos['value'] for pos in portfolio['positions']),
                 'available_margin': portfolio['free'] - sum(pos.get('value', 0) for pos in portfolio['positions'])
@@ -3312,7 +3224,6 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣
 ║ Total Value: {portfolio['total_value']:.2f} USDC
 ║ Positions: {portfolio['position_count']}
-║ Time: {datetime.fromtimestamp(portfolio['timestamp']/1000).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
             """)
         
@@ -3324,7 +3235,6 @@ class TradingBotM4:
 ║         PORTFOLIO UPDATE ERROR                   ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
             """)
         
@@ -3338,7 +3248,6 @@ class TradingBotM4:
                 'daily_pnl': 0.0,
                 'volume_24h': 0.0,
                 'volume_change': 0.0,
-                'timestamp': int(time.time() * 1000),
                 'available_margin': 100.59,
                 'total_position_value': 0.0
             }
@@ -3624,7 +3533,6 @@ Take Profit: {take_profit}"""
                 logger.error(f"❌ Erreur génération recommandation: {e}")
                 return {'action': 'error', 'confidence': 0}
 
-    def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
         try:
             # Conversion policy en numpy pour le traitement
@@ -3648,7 +3556,6 @@ Take Profit: {take_profit}"""
                 "action": "buy" if confidence > config["AI"]["confidence_threshold"] else "wait",
                 "symbol": config["TRADING"]["pairs"][best_pair_idx],
                 "confidence": confidence,
-                "timestamp": timestamp,
                 "regime": regime,
                 "technical_score": technical_score,
                 "news_impact": news_sentiment['sentiment'],
@@ -3659,7 +3566,6 @@ Take Profit: {take_profit}"""
             return decision
 
         except Exception as e:
-            logger.error(f"[{timestamp}] Erreur construction décision: {e}")
             return None
 
     def _combine_features(self, technical_features, news_impact, regime):
@@ -3730,7 +3636,6 @@ Take Profit: {take_profit}"""
                 )
 
                 # Vérification finale avant l'ordre
-                if not self._validate_trade(decision, position_size):
                     return
 
                 # Placement de l'ordre avec stop loss
@@ -3768,7 +3673,6 @@ Take Profit: {take_profit}"""
                 )
 
                 # Mise à jour du dashboard
-                self.dashboard.update_trades(order)
 
             except Exception as e:
                 logger.error(f"Erreur: {e}")
@@ -3776,7 +3680,6 @@ Take Profit: {take_profit}"""
                     f"⚠️ Erreur d'exécution: {str(e)}\n"
                 )
 
-    def _validate_trade(self, decision, position_size):
         """Validation finale avant l'exécution du trade"""
         try:
             # Vérification de la taille minimale
@@ -4041,7 +3944,6 @@ Take Profit: {take_profit}"""
                             technical_score=signals["recommendation"]["confidence"],
                             news_sentiment=news_impact,
                             regime=market_regime,
-                            timestamp=pd.Timestamp.utcnow()
                         )
                         
                         # Ajout gestion des risques
@@ -4051,7 +3953,6 @@ Take Profit: {take_profit}"""
                         await self.execute_trades(decision)
                     
                     # Attente avant la prochaine itération
-                    await asyncio.sleep(config["TRADING"]["update_interval"])
                     
                 except Exception as loop_error:
                     logger.error(f"Erreur dans la boucle principale: {loop_error}")
@@ -4118,7 +4019,6 @@ Take Profit: {take_profit}"""
                 validation_split=0.2
             )
 
-            # Mise à jour du timestamp d'entraînement
 
             # Sauvegarde des modèles
             self._save_models()
@@ -4938,7 +4838,6 @@ def _calculate_supertrend(self, data):
 ╔═════════════════════════════════════════════════╗
 ║           CALCULATING SUPERTREND                 ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """)
@@ -4946,7 +4845,6 @@ def _calculate_supertrend(self, data):
         # Vérification de la configuration
         if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
             logger.warning("Missing Supertrend configuration")
-            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
             return None
 
         # Récupération des paramètres
@@ -4958,19 +4856,16 @@ def _calculate_supertrend(self, data):
             
         except KeyError as ke:
             logger.error(f"Missing parameter: {ke}")
-            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
             return None
 
         # Vérification des données d'entrée
         if data is None or data.empty:
             logger.error("No input data provided")
-            self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
             return None
 
         required_columns = ['high', 'low', 'close']
         if not all(col in data.columns for col in required_columns):
             logger.error(f"Missing required columns: {required_columns}")
-            self.dashboard.update_indicator_status("Supertrend", "ERROR - Missing columns")
             return None
 
         # Extraction des séries de prix
@@ -5017,7 +4912,6 @@ def _calculate_supertrend(self, data):
         strength = abs(close - supertrend) / close
 
         # Mise à jour du statut
-        self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
         
         # Log de succès
         logger.info(f"""
@@ -5039,7 +4933,6 @@ def _calculate_supertrend(self, data):
                 "multiplier": multiplier
             },
             "metadata": {
-                "calculation_time": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
                 "status": "SUCCESS"
             }
         }
@@ -5050,14 +4943,12 @@ def _calculate_supertrend(self, data):
 ╔═════════════════════════════════════════════════╗
 ║           SUPERTREND ERROR                       ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
         """)
         
         # Mise à jour du statut dans le dashboard
-        self.dashboard.update_indicator_status("Supertrend", f"ERROR - {type(e).__name__}")
         
         return None
 
@@ -5087,7 +4978,6 @@ async def main_async():
             'ws_status': 'disconnected',
             'ws_initialized': False,
             'ws_connection_status': 'disconnected',
-            'last_update_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         }
         
         # Mise à jour des états manquants uniquement
@@ -5117,7 +5007,6 @@ async def main_async():
             - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
             - 📡 WebSocket: {ws_icon} {ws_status.title()}
             - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
-            - ⏰ Last Update: {st.session_state.last_update_time}
             """
             st.info(status_info)
 
@@ -5152,7 +5041,6 @@ async def main_async():
                                 st.session_state.ws_initialized = True
                                 st.session_state.ws_connection_status = 'connected'
                                 st.session_state.bot_running = True
-                                await update_market_data(bot)
                                 st.success("✅ Bot started successfully!")
                             else:
                                 st.session_state.ws_connection_status = 'error'
@@ -5193,7 +5081,6 @@ async def main_async():
 
         # 11. Mise à jour périodique si le bot est en cours d'exécution
         if st.session_state.bot_running:
-            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             st.experimental_rerun()
 
     except Exception as e:
@@ -5209,11 +5096,9 @@ async def start_trading_bot(bot):
     try:
         with st.spinner("Starting trading bot..."):
             if await initialize_websocket(bot):
-                st.session_state.global_state.update({
                     'ws_status': 'connected',
                     'bot_running': True
                 })
-                await update_market_data(bot)
                 st.success("✅ Bot started successfully!")
             else:
                 st.session_state.global_state['ws_status'] = 'error'
@@ -5226,7 +5111,6 @@ async def stop_trading_bot(bot):
     try:
         with st.spinner("Stopping trading bot..."):
             await cleanup_websocket(bot)
-            st.session_state.global_state.update({
                 'bot_running': False,
                 'ws_status': 'disconnected'
             })
@@ -5538,17 +5422,13 @@ def main():
 
 def _initialize_session_state():
     """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
-    current_time = datetime.now(timezone.utc)
     current_user = os.getenv('USER', 'Patmoorea')
-    session_id = f"{current_user}_{int(current_time.timestamp())}"
 
     try:
         # États par défaut avec horodatage
         default_state = {
             # États de base
             'session_id': session_id,
-            'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
             'user': current_user,
             'initialized': True,
             
@@ -5567,7 +5447,6 @@ def _initialize_session_state():
             'ws_status': 'disconnected',
             'ws_initialized': False,
             'ws_connection_status': 'disconnected',
-            'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
             
             # Protections
             'keep_alive': True,
@@ -5586,7 +5465,6 @@ def _initialize_session_state():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {current_user}
 ║ Session ID: {session_id}
 ║ Status: Active
@@ -5601,7 +5479,6 @@ def _initialize_session_state():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE ERROR                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ║ User: {current_user}
@@ -5611,7 +5488,6 @@ def _initialize_session_state():
 
 def _setup_and_verify_event_loop():
     """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-    current_time = datetime.now(timezone.utc)
     current_user = os.getenv('USER', 'Patmoorea')
 
     try:
@@ -5630,7 +5506,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {current_user}
 ║ Status: Successfully configured
 ║ Loop ID: {id(loop)}
@@ -5646,7 +5521,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP CLOSED                   ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: Creating new loop
 ║ Previous Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
@@ -5664,7 +5538,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP VERIFIED                 ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Status: Using existing loop
 ║ Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
@@ -5678,7 +5551,6 @@ def _setup_and_verify_event_loop():
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ║ User: {current_user}
@@ -5692,8 +5564,6 @@ def _setup_and_verify_event_loop():
         return None
 
     finally:
-        # Mise à jour du timestamp
-        st.session_state.last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 def _perform_cleanup():
     """Effectue le nettoyage final de l'application"""
@@ -5776,7 +5646,6 @@ if __name__ == "__main__":
 ╔═════════════════════════════════════════════════╗
 ║              KEYBOARD INTERRUPT                  ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: Graceful shutdown initiated
 ╚═════════════════════════════════════════════════╝
@@ -5787,7 +5656,6 @@ if __name__ == "__main__":
 ╔═════════════════════════════════════════════════╗
 ║              CRITICAL ERROR                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
@@ -5814,7 +5682,6 @@ if __name__ == "__main__":
 ╔═════════════════════════════════════════════════╗
 ║              FINAL CLEANUP                       ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: All resources cleaned
 ╚═════════════════════════════════════════════════╝
@@ -5825,7 +5692,6 @@ if __name__ == "__main__":
 ╔═════════════════════════════════════════════════╗
 ║              CLEANUP ERROR                       ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(cleanup_error)}
 ╚═════════════════════════════════════════════════╝
