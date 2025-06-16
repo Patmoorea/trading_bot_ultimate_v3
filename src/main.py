@@ -153,53 +153,53 @@ class StreamlitSessionManager:
             self._initialize_session_state()
             self._log_initialization()
             
-    def _initialize_session_state():
-    """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv('USER', 'Patmoorea')
-    session_id = f"{current_user}_{int(current_time.timestamp())}"
+    def _initialize_session_state(self):  # Notez l'indentation ici
+        """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
+        current_time = datetime.now(timezone.utc)
+        current_user = os.getenv('USER', 'Patmoorea')
+        session_id = f"{current_user}_{int(current_time.timestamp())}"
 
-    try:
-        # États par défaut avec horodatage
-        default_state = {
-            # États de base
-            'session_id': session_id,
-            'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'user': current_user,
-            'initialized': True,
-            
-            # États du bot
-            'bot_running': False,
-            'portfolio': None,
-            'latest_data': None,
-            'indicators': None,
-            'refresh_count': 0,
-            
-            # États de la boucle événementielle
-            'loop': None,
-            'error_count': 0,
-            
-            # États WebSocket
-            'ws_status': 'disconnected',
-            'ws_initialized': False,
-            'ws_connection_status': 'disconnected',
-            'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
-            
-            # Protections
-            'keep_alive': True,
-            'prevent_cleanup': True,
-            'force_cleanup': False,
-            'cleanup_allowed': False
-        }
+        try:
+            # États par défaut avec horodatage
+            default_state = {
+                # États de base
+                'session_id': session_id,
+                'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'user': current_user,
+                'initialized': True,
+                
+                # États du bot
+                'bot_running': False,
+                'portfolio': None,
+                'latest_data': None,
+                'indicators': None,
+                'refresh_count': 0,
+                
+                # États de la boucle événementielle
+                'loop': None,
+                'error_count': 0,
+                
+                # États WebSocket
+                'ws_status': 'disconnected',
+                'ws_initialized': False,
+                'ws_connection_status': 'disconnected',
+                'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+                
+                # Protections
+                'keep_alive': True,
+                'prevent_cleanup': True,
+                'force_cleanup': False,
+                'cleanup_allowed': False
+            }
 
-        # Initialisation des états manquants uniquement
-        for key, value in default_state.items():
-            if key not in st.session_state:
-                st.session_state[key] = value
+            # Initialisation des états manquants uniquement
+            for key, value in default_state.items():
+                if key not in st.session_state:
+                    st.session_state[key] = value
 
-        # Log de succès
-        logger.info(f"""
+            # Log de succès
+            logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
@@ -208,13 +208,13 @@ class StreamlitSessionManager:
 ║ Session ID: {session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
-        """)
+            """)
 
-        return True
+            return True
 
-    except Exception as e:
-        # Log d'erreur
-        logger.error(f"""
+        except Exception as e:
+            # Log d'erreur
+            logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE ERROR                    ║
 ╠═════════════════════════════════════════════════╣
@@ -223,8 +223,8 @@ class StreamlitSessionManager:
 ║ Type: {type(e).__name__}
 ║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
-        """)
-        return False
+            """)
+            return False
 
 def _setup_and_verify_event_loop():
     """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
