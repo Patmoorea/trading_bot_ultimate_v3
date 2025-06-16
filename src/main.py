@@ -3130,13 +3130,17 @@ Take Profit: {take_profit}"""
                     risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
                     max_positions = st.number_input("Max Open Positions", 1, 10, 3)
             
-            # Sidebar avec contrôles rapides
+            # Dans le sidebar
             with st.sidebar:
-                st.header("Quick Controls")
-                if st.button("🟢 Start Bot"):
-                    await self.run()
-                if st.button("🔴 Stop Bot"):
-                    await self._cleanup()
+                st.header("🛠️ Bot Controls")
+            
+                # Ajout d'un identifiant unique pour le slider
+                risk_level = st.select_slider(
+                    "Risk Level",
+                    options=["Low", "Medium", "High"],
+                    value="Low",
+                    key=f"risk_level_slider_{id(self)}"  # Clé unique basée sur l'ID de l'instance
+                )
             
                 st.divider()
             
@@ -4689,9 +4693,10 @@ async def main_async():
             st.header("🛠️ Bot Controls")
             
             risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low"
+            "Risk Level",
+            options=["Low", "Medium", "High"],
+            value="Low",
+            key="risk_level_slider"  # Ajout d'une clé unique
             )
             
             st.divider()
@@ -5015,22 +5020,6 @@ def ensure_event_loop():
             logger.error(f"Failed to create event loop: {e}")
             return None
     return st.session_state.loop
-
-if __name__ == "__main__":
-    try:
-        # Vérification de la boucle avant le démarrage
-        if ensure_event_loop():
-            main()
-        else:
-            logger.error("Failed to initialize event loop")
-            sys.exit(1)
-            
-    except KeyboardInterrupt:
-        logger.info("Keyboard interrupt received")
-        
-    except Exception as e:
-        logger.error(f"Critical error: {e}")
-        sys.exit(1)
 
 if __name__ == "__main__":
     try:
