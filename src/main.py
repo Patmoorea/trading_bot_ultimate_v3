@@ -114,6 +114,7 @@ from src.liquidity_heatmap.visualization import generate_heatmap
 from src.core.buffer.circular_buffer import CircularBuffer
 
 # Constantes de nettoyage
+CLEANUP_COOLDOWN = 5
 cleanup_lock = asyncio.Lock()
 cleanup_in_progress = False
 last_cleanup_time = 0
@@ -482,7 +483,16 @@ class WebSocketManager:
     async def start(self):
         """Démarre le bot"""
         try:
+            # REMPLACER LA MÉTHODE EXISTANTE PAR :
+        
+            if self._initialized:
+                return True
+
             self.logger.info("Starting bot initialization...")
+        
+            # Protection explicite de session
+            st.session_state.prevent_cleanup = True
+            st.session_state.bot_running = True
         
             # Initialisation asynchrone du news analyzer
             await self.initialize_news_analyzer()
@@ -495,8 +505,8 @@ class WebSocketManager:
             if not await self._setup_components():
                 raise Exception("Failed to setup components")
         
-            # Mise à jour du statut
-            self.initialized = True
+            # Mise à jour des états
+            self._initialized = True
             self.logger.info("✅ Bot initialized successfully")
             return True
         
@@ -1314,17 +1324,12 @@ async def cleanup_websocket(bot):
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
 async def cleanup_resources(bot):
-    """
-    Nettoyage sécurisé des ressources avec logging détaillé.
-    
-    Args:
-        bot: Instance du bot de trading à nettoyer
-        
-    Returns:
-        bool: True si le nettoyage a réussi, False sinon
-    """
-    # 1. Vérification si déjà en cours de nettoyage
-    if getattr(bot, 'cleanup_in_progress', False):
+    """Nettoyage sécurisé des ressources"""
+    # Protection contre le nettoyage si le bot est en cours d'exécution
+    if st.session_state.get('bot_running', False):
+        return False
+
+    if st.session_state.get('prevent_cleanup', True):
         return False
 
     current_time = datetime.now(timezone.utc)
@@ -1894,13 +1899,22 @@ class TradingBotM4:
     """Classe principale du bot de trading v4"""
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
-        # Flags de contrôle
-        self._ws_initializing = False
+        # 1. FLAGS DE CONTRÔLE (DOIVENT ÊTRE EN PREMIER) - SUPPRIMER LES DOUBLONS
+        self._ws_initializing = False 
         self._cleanup_requested = False
         self._initialized = False
         self._reconnecting = False
-    
-        # Configuration de la session
+        self.cleanup_in_progress = False
+        self.shutdown_requested = False
+        self.logger = logging.getLogger(__name__)
+
+        # 2. PROTECTION DE SESSION (NOUVEAU - À AJOUTER)
+        st.session_state.prevent_cleanup = True
+        st.session_state.force_cleanup = False
+        st.session_state.cleanup_allowed = False
+        st.session_state.keep_alive = True
+
+        # 3. CONFIGS (GARDER UNE SEULE VERSION)
         self.session_config = {
             'keep_alive': True,
             'timeout': 60,
@@ -1910,24 +1924,25 @@ class TradingBotM4:
             'max_reconnect_attempts': 3
         }
 
-        # Configuration des streams
         self.stream_config = StreamConfig(
             max_connections=12,
             reconnect_delay=1.0,
             buffer_size=10000
         )
 
-        # État du WebSocket
+        # 4. ÉTAT WEBSOCKET (GARDER UNE SEULE VERSION)
         self.ws_connection = {
             'enabled': False,
             'status': 'disconnected',
             'reconnect_count': 0,
+            'max_reconnects': 3,
             'last_message': None,
             'last_heartbeat': None,
+            'last_error': None,
             'tasks': []
         }
 
-        # Initialisation des composants
+        # 5. BUFFERS ET DONNÉES (GARDER UNE SEULE VERSION)
         self.buffer = CircularBuffer(maxlen=1000)
         self.indicators = {}
         self.latest_data = {}
@@ -2106,28 +2121,26 @@ class TradingBotM4:
         try:
             if self._initialized:
                 return True
-
+            
+            # Protection contre le nettoyage pendant le démarrage
+            st.session_state.prevent_cleanup = True
+            st.session_state.force_cleanup = False
+            st.session_state.cleanup_allowed = False
+        
             self.logger.info("Starting bot initialization...")
-            
-            # Initialisation asynchrone du news analyzer
-            await self.initialize_news_analyzer()
-            
+        
             # Démarrage du WebSocket Manager
             if not await self.ws_manager.start():
                 raise Exception("Failed to start WebSocket manager")
-            
+        
             # Configuration des composants
             if not await self._setup_components():
                 raise Exception("Failed to setup components")
-            
+        
             # Mise à jour des états
             self._initialized = True
             st.session_state.bot_running = True
-            
-            # Protection de la session
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            
+        
             self.logger.info("✅ Bot initialized successfully")
             return True
         
@@ -5122,28 +5135,31 @@ async def main_async():
             st.divider()
             
             # Boutons de contrôle avec gestion d'état améliorée
-            if not st.session_state.bot_running:
-                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    try:
-                        with st.spinner("Starting trading bot..."):
-                            session_manager.protect_session()
-                            
-                            # Initialisation du WebSocket si nécessaire
-                            if not st.session_state.ws_initialized:
-                                st.session_state.ws_connection_status = 'initializing'
-                                if await initialize_websocket(bot):
-                                    st.session_state.ws_initialized = True
-                                    st.session_state.ws_connection_status = 'connected'
-                                    st.session_state.bot_running = True
-                                    await update_market_data(bot)
-                                    st.success("✅ Bot started successfully!")
-                                else:
-                                    st.session_state.ws_connection_status = 'error'
-                                    st.error("❌ WebSocket initialization failed")
-                    except Exception as e:
-                        st.session_state.ws_connection_status = 'error'
-                        st.error(f"❌ Failed to start bot: {str(e)}")
-                        st.session_state.bot_running = False
+            if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
+                try:
+                    with st.spinner("Starting trading bot..."):
+                        # Protection explicite avant le démarrage
+                        st.session_state.prevent_cleanup = True
+                        st.session_state.force_cleanup = False
+                        st.session_state.cleanup_allowed = False
+            
+                        session_manager.protect_session()
+            
+                        if not st.session_state.ws_initialized:
+                            st.session_state.ws_connection_status = 'initializing'
+                            if await initialize_websocket(bot):
+                                st.session_state.ws_initialized = True
+                                st.session_state.ws_connection_status = 'connected'
+                                st.session_state.bot_running = True
+                                await update_market_data(bot)
+                                st.success("✅ Bot started successfully!")
+                            else:
+                                st.session_state.ws_connection_status = 'error'
+                                st.error("❌ WebSocket initialization failed")
+                except Exception as e:
+                    st.session_state.ws_connection_status = 'error'
+                    st.error(f"❌ Failed to start bot: {str(e)}")
+                    st.session_state.bot_running = False
             else:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     try:
@@ -5512,8 +5528,10 @@ def main():
         st.error(f"❌ Application error: {str(e)}")
 
     finally:
-        # Ne nettoyer que si l'arrêt est demandé
-        if st.session_state.get('force_cleanup', False):
+        # Ne nettoyer que si explicitement demandé
+        if (st.session_state.get('force_cleanup', False) and 
+            not st.session_state.get('prevent_cleanup', True) and
+            not st.session_state.get('bot_running', False)):
             _perform_cleanup()
         st.session_state.main_running = False
 
@@ -5679,8 +5697,10 @@ def _setup_and_verify_event_loop():
 def _perform_cleanup():
     """Effectue le nettoyage final de l'application"""
     try:
-        # 1. Protection de la session
-        session_manager.protect_session()
+       # Protection contre le nettoyage non autorisé
+        if (st.session_state.get('prevent_cleanup', True) or
+            st.session_state.get('bot_running', False)):
+            return
 
         # 2. Nettoyage de la boucle d'événements
         if st.session_state.get('loop'):
