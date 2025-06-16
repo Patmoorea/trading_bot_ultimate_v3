@@ -626,24 +626,19 @@ async def setup_streams(bot):
         return None
 
 async def cleanup_existing_connections(bot):
-    """
-    Nettoie les connexions WebSocket existantes
-    
-    Args:
-        bot: Instance du bot de trading
-    """
     try:
-        # Fermeture du socket manager existant
+        # Fermeture du socket manager
         if hasattr(bot, 'socket_manager') and bot.socket_manager:
             try:
-                for socket in bot.socket_manager.sockets:
-                    await bot.socket_manager.stop_socket(socket)
+                socket_manager = bot.socket_manager.get_socket_manager()
+                for k in socket_manager.keys():
+                    await bot.socket_manager.stop_socket(k)
             except Exception as e:
                 logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
                 bot.socket_manager = None
-        
-        # Fermeture du client WebSocket existant
+                
+        # Fermeture du client WebSocket
         if hasattr(bot, 'binance_ws') and bot.binance_ws:
             try:
                 await bot.binance_ws.close_connection()
@@ -857,7 +852,6 @@ async def reset_websocket(bot):
         return False
     
 async def check_websocket_health(bot):
-    """Vérifie l'état du WebSocket et le réinitialise si nécessaire"""
     try:
         if not hasattr(bot, 'ws_connection') or not bot.ws_connection:
             logger.warning("⚠️ WebSocket connection not initialized")
@@ -869,9 +863,9 @@ async def check_websocket_health(bot):
             
         # Vérification du timeout des messages
         current_time = time.time()
-        last_message = bot.ws_connection.get('last_message', 0)
+        last_message = bot.ws_connection.get('last_message')
         
-        if current_time - last_message > 300:  # 5 minutes timeout
+        if last_message is None or (current_time - last_message) > 300:  # 5 minutes timeout
             logger.warning("⚠️ WebSocket message timeout")
             return await reset_websocket(bot)
             
@@ -4693,6 +4687,7 @@ def main():
     """Point d'entrée principal de l'application"""
     loop = None
     try:
+        # Log de démarrage
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
@@ -4705,24 +4700,23 @@ def main():
         # Initialisation de l'état de session
         init_session_state()
         
-        # Configuration de la boucle événementielle
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+        # Configuration de la nouvelle boucle d'événements
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         
+        # Application de nest_asyncio pour la compatibilité Streamlit
         nest_asyncio.apply()
         
         # Stockage de la boucle dans l'état de session
         st.session_state.loop = loop
         
+        # Exécution de la coroutine principale avec gestion d'erreurs
         try:
-            # Exécution de la coroutine principale
             loop.run_until_complete(main_async())
             
         except asyncio.CancelledError:
-            logger.info("Application cancelled")
+            logger.info("Application cancelled gracefully")
+            
         except Exception as e:
             logger.error(f"""
 ╔═════════════════════════════════════════════════╗
@@ -4732,7 +4726,8 @@ def main():
 ║ Error: {str(e)}
 ╚═════════════════════════════════════════════════╝
             """)
-            st.error(f"An error occurred: {str(e)}")
+            st.error(f"Application error: {str(e)}")
+            raise
             
     except Exception as e:
         logger.error(f"""
@@ -4747,22 +4742,38 @@ def main():
         
     finally:
         try:
-            # Nettoyage propre des ressources
-            if 'bot_instance' in st.session_state and loop and not loop.is_closed():
-                loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
-                
-            # Fermeture propre de la boucle
+            # Nettoyage des ressources si la boucle existe et n'est pas fermée
             if loop and not loop.is_closed():
-                pending = asyncio.all_tasks(loop)
-                for task in pending:
-                    task.cancel()
-                
-                # Attendre que toutes les tâches soient annulées
-                if pending:
-                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                
-                loop.run_until_complete(loop.shutdown_asyncgens())
-                loop.close()
+                try:
+                    # Nettoyage de l'instance du bot si elle existe
+                    if 'bot_instance' in st.session_state:
+                        loop.run_until_complete(
+                            cleanup_resources(st.session_state.bot_instance)
+                        )
+                    
+                    # Annulation des tâches en attente
+                    pending = asyncio.all_tasks(loop)
+                    for task in pending:
+                        task.cancel()
+                    
+                    # Attente de l'annulation de toutes les tâches
+                    if pending:
+                        loop.run_until_complete(
+                            asyncio.gather(*pending, return_exceptions=True)
+                        )
+                    
+                    # Fermeture des générateurs asynchrones
+                    loop.run_until_complete(loop.shutdown_asyncgens())
+                    
+                except Exception as e:
+                    logger.error(f"Error during resource cleanup: {e}")
+                    
+                finally:
+                    # Fermeture définitive de la boucle
+                    try:
+                        loop.close()
+                    except Exception as e:
+                        logger.error(f"Error closing event loop: {e}")
             
         except Exception as cleanup_error:
             logger.error(f"""
@@ -4777,6 +4788,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        
     except KeyboardInterrupt:
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -4787,6 +4799,7 @@ if __name__ == "__main__":
 ║ Status: Graceful shutdown initiated
 ╚═════════════════════════════════════════════════╝
         """)
+        
     except Exception as e:
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
@@ -4799,15 +4812,21 @@ if __name__ == "__main__":
 ╚═════════════════════════════════════════════════╝
         """)
         sys.exit(1)
+        
     finally:
         try:
-            # Nettoyage final des ressources
+            # Nettoyage final avec nouvelle boucle si nécessaire
             if 'bot_instance' in st.session_state:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    loop.run_until_complete(cleanup_resources(st.session_state.bot_instance))
-                else:
-                    asyncio.run(cleanup_resources(st.session_state.bot_instance))
+                try:
+                    # Création d'une nouvelle boucle pour le nettoyage final
+                    cleanup_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(cleanup_loop)
+                    cleanup_loop.run_until_complete(
+                        cleanup_resources(st.session_state.bot_instance)
+                    )
+                    cleanup_loop.close()
+                except Exception as e:
+                    logger.error(f"Final cleanup error: {e}")
             
             logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -4818,6 +4837,7 @@ if __name__ == "__main__":
 ║ Status: All resources cleaned
 ╚═════════════════════════════════════════════════╝
             """)
+            
         except Exception as cleanup_error:
             logger.error(f"""
 ╔═════════════════════════════════════════════════╗
