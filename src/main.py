@@ -138,9 +138,306 @@ def setup_asyncio():
     except Exception as e:
         logger.error(f"Error setting up asyncio: {e}")
         return None
-
-StreamlitSessionManager
+    
+class StreamlitSessionManager:
+    """Gestionnaire de session Streamlit avec protection et logging améliorés"""
+    
+    def __init__(self):
+        """Initialisation du gestionnaire de session"""
+        self.init_time = datetime.now(timezone.utc)
+        self.user = os.getenv('USER', 'Patmoorea')
+        self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
+        
+        # Initialisation immédiate de la session
+        if 'session_initialized' not in st.session_state:
+            self._initialize_session_state()
+            self._log_initialization()
             
+    def _initialize_session_state():
+    """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv('USER', 'Patmoorea')
+    session_id = f"{current_user}_{int(current_time.timestamp())}"
+
+    try:
+        # États par défaut avec horodatage
+        default_state = {
+            # États de base
+            'session_id': session_id,
+            'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'user': current_user,
+            'initialized': True,
+            
+            # États du bot
+            'bot_running': False,
+            'portfolio': None,
+            'latest_data': None,
+            'indicators': None,
+            'refresh_count': 0,
+            
+            # États de la boucle événementielle
+            'loop': None,
+            'error_count': 0,
+            
+            # États WebSocket
+            'ws_status': 'disconnected',
+            'ws_initialized': False,
+            'ws_connection_status': 'disconnected',
+            'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            
+            # Protections
+            'keep_alive': True,
+            'prevent_cleanup': True,
+            'force_cleanup': False,
+            'cleanup_allowed': False
+        }
+
+        # Initialisation des états manquants uniquement
+        for key, value in default_state.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
+
+        # Log de succès
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION STATE INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Session ID: {session_id}
+║ Status: Active
+╚═════════════════════════════════════════════════╝
+        """)
+
+        return True
+
+    except Exception as e:
+        # Log d'erreur
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION STATE ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ User: {current_user}
+╚═════════════════════════════════════════════════╝
+        """)
+        return False
+
+def _setup_and_verify_event_loop():
+    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv('USER', 'Patmoorea')
+
+    try:
+        # Vérification de l'existence d'une boucle
+        if not st.session_state.get('loop'):
+            # Création et configuration de la nouvelle boucle
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+            
+            # Sauvegarde dans la session
+            st.session_state.loop = loop
+            
+            # Log de succès d'initialisation
+            logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Status: Successfully configured
+║ Loop ID: {id(loop)}
+╚═════════════════════════════════════════════════╝
+            """)
+            
+            return loop
+
+        # Vérification de la boucle existante
+        existing_loop = st.session_state.loop
+        if existing_loop.is_closed():
+            logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP CLOSED                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Creating new loop
+║ Previous Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+            """)
+            
+            # Création d'une nouvelle boucle
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            nest_asyncio.apply()
+            st.session_state.loop = new_loop
+            return new_loop
+
+        # Retour de la boucle existante
+        logger.debug(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP VERIFIED                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Using existing loop
+║ Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        return existing_loop
+
+    except Exception as e:
+        # Log d'erreur détaillé
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ User: {current_user}
+║ Details: {traceback.format_exc()}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
+        
+        return None
+
+    finally:
+        # Mise à jour du timestamp
+        st.session_state.last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+    
+    def protect_session(self):
+        """Protection renforcée de la session"""
+        try:
+            # Vérification et réinitialisation si nécessaire
+            if not st.session_state.get('session_initialized'):
+                self._initialize_session_state()
+                
+            # Mise à jour du timestamp
+            current_time = datetime.now(timezone.utc)
+            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Activation des protections
+            st.session_state.prevent_cleanup = True
+            st.session_state.keep_alive = True
+            st.session_state.force_cleanup = False
+            st.session_state.cleanup_allowed = False
+            
+            self._log_protection()
+            return True
+            
+        except Exception as e:
+            self._log_error("Session protection error", e)
+            return False
+            
+    def allow_cleanup(self):
+        """Autorisation sécurisée du nettoyage"""
+        try:
+            # Vérification de l'état du bot
+            if st.session_state.get('bot_running', False):
+                logger.warning("Cannot allow cleanup while bot is running")
+                return False
+                
+            # Configuration du nettoyage
+            st.session_state.cleanup_allowed = True
+            st.session_state.force_cleanup = True
+            st.session_state.prevent_cleanup = False
+            st.session_state.keep_alive = False
+            
+            self._log_cleanup_authorization()
+            return True
+            
+        except Exception as e:
+            self._log_error("Cleanup authorization error", e)
+            return False
+            
+    def get_session_info(self):
+        """Récupération des informations de session"""
+        try:
+            info = {
+                'user': self.user,
+                'session_id': self.session_id,
+                'init_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'last_action': st.session_state.get('last_action_time'),
+                'session_initialized': st.session_state.get('session_initialized', False),
+                'bot_running': st.session_state.get('bot_running', False),
+                'ws_initialized': st.session_state.get('ws_initialized', False),
+                'error_count': st.session_state.get('error_count', 0)
+            }
+            return info
+            
+        except Exception as e:
+            self._log_error("Session info retrieval error", e)
+            return None
+            
+    def _log_initialization(self):
+        """Log de l'initialisation"""
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION INITIALIZED                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {self.user}
+║ Session ID: {self.session_id}
+║ Status: Active
+╚═════════════════════════════════════════════════╝
+        """)
+        
+    def _log_protection(self):
+        """Log de la protection"""
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION PROTECTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session ID: {self.session_id}
+║ Last Action: {st.session_state.get('last_action_time')}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+    def _log_cleanup_authorization(self):
+        """Log de l'autorisation de nettoyage"""
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP AUTHORIZED                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session ID: {self.session_id}
+║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+    def _log_error(self, message, error):
+        """Log d'erreur unifié"""
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION ERROR                          ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {message}
+║ Details: {str(error)}
+║ Type: {type(error).__name__}
+║ Session ID: {self.session_id}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        # Incrémenter le compteur d'erreurs
+        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
+
+# Création de l'instance globale avec vérification
+try:
+    session_manager = StreamlitSessionManager()
+    logger.info("✅ Session manager initialized successfully")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize session manager: {e}")
+    session_manager = None
+          
 class WebSocketManager:
     def __init__(self, bot):
         self.bot = bot
@@ -4691,90 +4988,102 @@ def _calculate_supertrend(self, data):
             pass
                     
 async def main_async():
+    """Point d'entrée principal de l'application avec gestion améliorée des états"""
     try:
-        # Protection initiale
+        # 1. Protection et initialisation de la session
         session_manager.protect_session()
         
-        # Configuration du hook de déconnexion
-        def on_disconnect():
-            session_manager.protect_session()
-            st.session_state.bot_running = True
-            
-        st.session_state['disconnect_hook'] = on_disconnect
-        
-        # En-tête de l'application
+        # 2. Configuration de l'interface principale
         st.title("Trading Bot Ultimate v4 🤖")
         
-        # Configuration initiale des variables de session
-        session_vars = {
+        # 3. Initialisation des états de session par défaut
+        default_session_state = {
             'portfolio': None,
             'latest_data': None,
             'indicators': None,
             'bot_running': False,
             'refresh_count': 0,
             'ws_status': 'disconnected',
-            'ws_initialized': False
+            'ws_initialized': False,
+            'ws_connection_status': 'disconnected',
+            'last_update_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        # Initialisation des variables de session
-        for key, default in session_vars.items():
+        # Mise à jour des états manquants uniquement
+        for key, value in default_session_state.items():
             if key not in st.session_state:
-                st.session_state[key] = default
-        
-        # Initialisation du bot
+                st.session_state[key] = value
+
+        # 4. Initialisation du bot
         bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
 
-        # Interface - État et Contrôles
+        # 5. Interface principale - État et contrôles
         status_col1, status_col2 = st.columns([2, 1])
         with status_col1:
+            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
+            ws_icon = {
+                'connected': '🟢',
+                'disconnected': '🔴',
+                'initializing': '🔄',
+                'error': '⚠️'
+            }.get(ws_status, '🔴')
+            
             status_info = f"""
             ### Bot Status
             - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
-            - 📡 WebSocket: {'🟢 Connected' if bot.ws_connection['enabled'] else '🔴 Disconnected'}
+            - 📡 WebSocket: {ws_icon} {ws_status.title()}
             - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
+            - ⏰ Last Update: {st.session_state.last_update_time}
             """
             st.info(status_info)
 
-        # Sidebar Controls
+        # 6. Contrôles de la barre latérale
         with st.sidebar:
             st.header("🛠️ Bot Controls")
             
+            # Niveau de risque
             risk_level = st.select_slider(
-            "Risk Level",
-            options=["Low", "Medium", "High"],
-            value="Low",
-            key="risk_level_slider"  # Ajout d'une clé unique
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Low",
+                key="risk_level_slider"
             )
             
             st.divider()
             
-            # Start/Stop Buttons avec gestion d'état améliorée
+            # Boutons de contrôle avec gestion d'état améliorée
             if not st.session_state.bot_running:
-                if st.button("🟢 Start Trading", key="start_button"):
+                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
                     try:
                         with st.spinner("Starting trading bot..."):
-                            # Forcer la protection
                             session_manager.protect_session()
-                    
+                            
+                            # Initialisation du WebSocket si nécessaire
                             if not st.session_state.ws_initialized:
+                                st.session_state.ws_connection_status = 'initializing'
                                 if await initialize_websocket(bot):
                                     st.session_state.ws_initialized = True
+                                    st.session_state.ws_connection_status = 'connected'
                                     st.session_state.bot_running = True
                                     await update_market_data(bot)
                                     st.success("✅ Bot started successfully!")
                                 else:
+                                    st.session_state.ws_connection_status = 'error'
                                     st.error("❌ WebSocket initialization failed")
                     except Exception as e:
+                        st.session_state.ws_connection_status = 'error'
                         st.error(f"❌ Failed to start bot: {str(e)}")
                         st.session_state.bot_running = False
             else:
-                if st.button("🔴 Stop Trading", key="stop_button"):
+                if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     try:
                         with st.spinner("Stopping trading bot..."):
+                            await cleanup_websocket(bot)
                             st.session_state.bot_running = False
+                            st.session_state.ws_connection_status = 'disconnected'
                             session_manager.protect_session()
                             st.success("✅ Bot stopped successfully!")
                     except Exception as e:
@@ -4783,132 +5092,232 @@ async def main_async():
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-        # Onglets principaux
-        tabs = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
+        # 7. Onglets principaux
+        portfolio_tab, trading_tab, analysis_tab = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
 
-        # Onglet Portfolio
-        with tabs[0]:
-            if st.session_state.bot_running:
-                try:
-                    portfolio = st.session_state.get('portfolio')
-                    if portfolio:
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric(
-                                "💰 Total Value",
-                                f"{portfolio.get('total_value', 0):.2f} USDC",
-                                f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                            )
-                        with col2:
-                            st.metric(
-                                "📈 24h Volume",
-                                f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                                f"{portfolio.get('volume_change', 0):+.2f}%"
-                            )
-                        with col3:
-                            positions = portfolio.get('positions', [])
-                            st.metric(
-                                "🔄 Active Positions",
-                                str(len(positions)),
-                                f"{len(positions)} active"
-                            )
-                        
-                        if positions:
-                            st.subheader("Active Positions")
-                            st.dataframe(
-                                pd.DataFrame(positions),
-                                use_container_width=True
-                            )
-                        else:
-                            st.info("💡 No active positions")
-                    else:
-                        st.warning("⚠️ Waiting for portfolio data...")
-                except Exception as e:
-                    st.error(f"❌ Portfolio error: {str(e)}")
-            else:
-                st.warning("⚠️ Start trading to view portfolio")
+        # 8. Onglet Portfolio
+        with portfolio_tab:
+            await _render_portfolio_tab(bot)
 
-        # Onglet Trading
-        with tabs[1]:
-            if st.session_state.bot_running:
-                try:
-                    latest_data = bot.latest_data.get('BTCUSDT', {})
-                    if latest_data:
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            current_price = latest_data[-1]['close']
-                            prev_price = latest_data[-2]['close'] if len(latest_data) > 1 else current_price
-                            price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
-                            
-                            st.metric(
-                                "BTC/USDC Price",
-                                f"{current_price:.2f}",
-                                f"{price_change:+.2f}%"
-                            )
-                        with col2:
-                            current_vol = latest_data[-1]['volume']
-                            prev_vol = latest_data[-2]['volume'] if len(latest_data) > 1 else current_vol
-                            vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                            
-                            st.metric(
-                                "Trading Volume",
-                                f"{current_vol:.2f}",
-                                f"{vol_change:+.2f}%"
-                            )
-                    
-                    if bot.indicators:
-                        st.subheader("Trading Signals")
-                        st.dataframe(
-                            pd.DataFrame(bot.indicators),
-                            use_container_width=True
-                        )
-                    else:
-                        st.info("💡 Waiting for signals...")
-                except Exception as e:
-                    st.error(f"❌ Trading data error: {str(e)}")
-            else:
-                st.warning("⚠️ Start trading to view signals")
+        # 9. Onglet Trading
+        with trading_tab:
+            await _render_trading_tab(bot)
 
-        # Onglet Analysis
-        with tabs[2]:
-            if st.session_state.bot_running:
-                try:
-                    if bot.latest_data and bot.indicators:
-                        st.subheader("Technical Analysis")
-                        
-                        for symbol in bot.latest_data:
-                            await process_market_data(bot, symbol)
-                        
-                        if hasattr(bot, 'advanced_indicators'):
-                            analysis = bot.advanced_indicators.get_all_signals()
-                            st.dataframe(
-                                pd.DataFrame(analysis),
-                                use_container_width=True
-                            )
-                        else:
-                            st.info("💡 Processing analysis...")
-                    else:
-                        st.info("💡 Waiting for market data...")
-                except Exception as e:
-                    st.error(f"❌ Analysis error: {str(e)}")
-            else:
-                st.warning("⚠️ Start trading to view analysis")
+        # 10. Onglet Analysis
+        with analysis_tab:
+            await _render_analysis_tab(bot)
+
+        # 11. Mise à jour périodique si le bot est en cours d'exécution
+        if st.session_state.bot_running:
+            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            st.experimental_rerun()
 
     except Exception as e:
+        logger.error(f"❌ Application error: {str(e)}")
         st.error(f"❌ Application error: {str(e)}")
-        logger.error(f"Application error: {e}")
-        
     finally:
-        # Ne nettoyer que si explicitement demandé
-        if st.session_state.get('force_cleanup', False):
-            if 'bot_instance' in st.session_state:
-                try:
-                    st.session_state['prevent_cleanup'] = False
-                    st.session_state['keep_alive'] = False
-                    await cleanup_resources(st.session_state.bot_instance)
-                finally:
-                    st.session_state['prevent_cleanup'] = True
-                    st.session_state['keep_alive'] = True
+        # Protection finale de la session
+        session_manager.protect_session()
+
+# Fonctions auxiliaires pour le rendu des onglets
+async def _render_portfolio_tab(bot):
+    """Rendu de l'onglet Portfolio"""
+    if st.session_state.bot_running:
+        try:
+            portfolio = st.session_state.get('portfolio')
+            if portfolio:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric(
+                        "💰 Total Value",
+                        f"{portfolio.get('total_value', 0):.2f} USDC",
+                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
+                    )
+                with col2:
+                    st.metric(
+                        "📈 24h Volume",
+                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
+                        f"{portfolio.get('volume_change', 0):+.2f}%"
+                    )
+                with col3:
+                    positions = portfolio.get('positions', [])
+                    st.metric(
+                        "🔄 Active Positions",
+                        str(len(positions)),
+                        f"{len(positions)} active"
+                    )
+                
+                if positions:
+                    st.subheader("Active Positions")
+                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
+                else:
+                    st.info("💡 No active positions")
+            else:
+                st.warning("⚠️ Waiting for portfolio data...")
+        except Exception as e:
+            st.error(f"❌ Portfolio error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view portfolio")
+
+async def _render_trading_tab(bot):
+    """Rendu de l'onglet Trading"""
+    if st.session_state.bot_running:
+        try:
+            latest_data = bot.latest_data.get('BTCUSDT', {})
+            if latest_data:
+                col1, col2 = st.columns(2)
+                with col1:
+                    current_price = latest_data[-1]['close']
+                    prev_price = latest_data[-2]['close'] if len(latest_data) > 1 else current_price
+                    price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
+                    
+                    st.metric(
+                        "BTC/USDC Price",
+                        f"{current_price:.2f}",
+                        f"{price_change:+.2f}%"
+                    )
+                with col2:
+                    current_vol = latest_data[-1]['volume']
+                    prev_vol = latest_data[-2]['volume'] if len(latest_data) > 1 else current_vol
+                    vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
+                    
+                    st.metric(
+                        "Trading Volume",
+                        f"{current_vol:.2f}",
+                        f"{vol_change:+.2f}%"
+                    )
+            
+            if bot.indicators:
+                st.subheader("Trading Signals")
+                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
+            else:
+                st.info("💡 Waiting for signals...")
+        except Exception as e:
+            st.error(f"❌ Trading data error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view signals")
+
+async def _render_analysis_tab(bot):
+    """Rendu de l'onglet Analysis"""
+    if st.session_state.bot_running:
+        try:
+            if bot.latest_data and bot.indicators:
+                st.subheader("Technical Analysis")
+                
+                for symbol in bot.latest_data:
+                    await process_market_data(bot, symbol)
+                
+                if hasattr(bot, 'advanced_indicators'):
+                    analysis = bot.advanced_indicators.get_all_signals()
+                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
+                else:
+                    st.info("💡 Processing analysis...")
+            else:
+                st.info("💡 Waiting for market data...")
+        except Exception as e:
+            st.error(f"❌ Analysis error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view analysis")
+
+# Fonctions auxiliaires pour le rendu des onglets
+async def _render_portfolio_tab(bot):
+    """Rendu de l'onglet Portfolio"""
+    if st.session_state.bot_running:
+        try:
+            portfolio = st.session_state.get('portfolio')
+            if portfolio:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric(
+                        "💰 Total Value",
+                        f"{portfolio.get('total_value', 0):.2f} USDC",
+                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
+                    )
+                with col2:
+                    st.metric(
+                        "📈 24h Volume",
+                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
+                        f"{portfolio.get('volume_change', 0):+.2f}%"
+                    )
+                with col3:
+                    positions = portfolio.get('positions', [])
+                    st.metric(
+                        "🔄 Active Positions",
+                        str(len(positions)),
+                        f"{len(positions)} active"
+                    )
+                
+                if positions:
+                    st.subheader("Active Positions")
+                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
+                else:
+                    st.info("💡 No active positions")
+            else:
+                st.warning("⚠️ Waiting for portfolio data...")
+        except Exception as e:
+            st.error(f"❌ Portfolio error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view portfolio")
+
+async def _render_trading_tab(bot):
+    """Rendu de l'onglet Trading"""
+    if st.session_state.bot_running:
+        try:
+            latest_data = bot.latest_data.get('BTCUSDT', {})
+            if latest_data:
+                col1, col2 = st.columns(2)
+                with col1:
+                    current_price = latest_data[-1]['close']
+                    prev_price = latest_data[-2]['close'] if len(latest_data) > 1 else current_price
+                    price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
+                    
+                    st.metric(
+                        "BTC/USDC Price",
+                        f"{current_price:.2f}",
+                        f"{price_change:+.2f}%"
+                    )
+                with col2:
+                    current_vol = latest_data[-1]['volume']
+                    prev_vol = latest_data[-2]['volume'] if len(latest_data) > 1 else current_vol
+                    vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
+                    
+                    st.metric(
+                        "Trading Volume",
+                        f"{current_vol:.2f}",
+                        f"{vol_change:+.2f}%"
+                    )
+            
+            if bot.indicators:
+                st.subheader("Trading Signals")
+                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
+            else:
+                st.info("💡 Waiting for signals...")
+        except Exception as e:
+            st.error(f"❌ Trading data error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view signals")
+
+async def _render_analysis_tab(bot):
+    """Rendu de l'onglet Analysis"""
+    if st.session_state.bot_running:
+        try:
+            if bot.latest_data and bot.indicators:
+                st.subheader("Technical Analysis")
+                
+                for symbol in bot.latest_data:
+                    await process_market_data(bot, symbol)
+                
+                if hasattr(bot, 'advanced_indicators'):
+                    analysis = bot.advanced_indicators.get_all_signals()
+                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
+                else:
+                    st.info("💡 Processing analysis...")
+            else:
+                st.info("💡 Waiting for market data...")
+        except Exception as e:
+            st.error(f"❌ Analysis error: {str(e)}")
+    else:
+        st.warning("⚠️ Start trading to view analysis")
 
 async def shutdown():
     """Arrêt propre de l'application"""
@@ -5010,60 +5419,163 @@ def main():
         _perform_cleanup()
 
 def _initialize_session_state():
-    """Initialise l'état de la session avec des valeurs sûres"""
-    default_state = {
-        'initialized': False,
-        'bot_running': False,
-        'portfolio': None,
-        'latest_data': None,
-        'indicators': None,
-        'refresh_count': 0,
-        'loop': None,
-        'ws_status': 'disconnected',
-        'error_count': 0,
-        'keep_alive': True,
-        'prevent_cleanup': True,
-        'force_cleanup': False,
-        'ws_initialized': False,
-        'cleanup_allowed': False,
-        'initialization_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-    }
+    """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv('USER', 'Patmoorea')
+    session_id = f"{current_user}_{int(current_time.timestamp())}"
 
-    for key, value in default_state.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
+    try:
+        # États par défaut avec horodatage
+        default_state = {
+            # États de base
+            'session_id': session_id,
+            'initialization_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_update_time': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'user': current_user,
+            'initialized': True,
+            
+            # États du bot
+            'bot_running': False,
+            'portfolio': None,
+            'latest_data': None,
+            'indicators': None,
+            'refresh_count': 0,
+            
+            # États de la boucle événementielle
+            'loop': None,
+            'error_count': 0,
+            
+            # États WebSocket
+            'ws_status': 'disconnected',
+            'ws_initialized': False,
+            'ws_connection_status': 'disconnected',
+            'ws_last_heartbeat': current_time.strftime('%Y-%m-%d %H:%M:%S'),
+            
+            # Protections
+            'keep_alive': True,
+            'prevent_cleanup': True,
+            'force_cleanup': False,
+            'cleanup_allowed': False
+        }
+
+        # Initialisation des états manquants uniquement
+        for key, value in default_state.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
+
+        # Log de succès
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION STATE INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Session ID: {session_id}
+║ Status: Active
+╚═════════════════════════════════════════════════╝
+        """)
+
+        return True
+
+    except Exception as e:
+        # Log d'erreur
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION STATE ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ User: {current_user}
+╚═════════════════════════════════════════════════╝
+        """)
+        return False
 
 def _setup_and_verify_event_loop():
-    """Configure et vérifie la boucle d'événements"""
+    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv('USER', 'Patmoorea')
+
     try:
+        # Vérification de l'existence d'une boucle
         if not st.session_state.get('loop'):
+            # Création et configuration de la nouvelle boucle
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             nest_asyncio.apply()
+            
+            # Sauvegarde dans la session
             st.session_state.loop = loop
             
-            logger.info("""
+            # Log de succès d'initialisation
+            logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
 ║ Status: Successfully configured
+║ Loop ID: {id(loop)}
 ╚═════════════════════════════════════════════════╝
             """)
             
             return loop
 
-        return st.session_state.loop
+        # Vérification de la boucle existante
+        existing_loop = st.session_state.loop
+        if existing_loop.is_closed():
+            logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP CLOSED                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Creating new loop
+║ Previous Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+            """)
+            
+            # Création d'une nouvelle boucle
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            nest_asyncio.apply()
+            st.session_state.loop = new_loop
+            return new_loop
+
+        # Retour de la boucle existante
+        logger.debug(f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP VERIFIED                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Using existing loop
+║ Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+        """)
+        
+        return existing_loop
 
     except Exception as e:
+        # Log d'erreur détaillé
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
+║ User: {current_user}
+║ Details: {traceback.format_exc()}
 ╚═════════════════════════════════════════════════╝
         """)
+        
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
+        
         return None
+
+    finally:
+        # Mise à jour du timestamp
+        st.session_state.last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
 def _perform_cleanup():
     """Effectue le nettoyage final de l'application"""
