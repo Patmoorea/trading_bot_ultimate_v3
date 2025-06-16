@@ -163,21 +163,6 @@ class StreamlitSessionManager:
                 self._initialize_session_state()
                 self._log_initialization()
 
-    def protect_session(self):
-        """Protection simplifiée sans réinitialisation"""
-        try:
-            # Uniquement mise à jour du timestamp si la session existe
-            if st.session_state.get('session_initialized'):
-                current_time = datetime.now(timezone.utc)
-                st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                return True
-                
-            return False
-            
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
-
     def _initialize_session_state(self):
         """Initialisation unique de l'état"""
         if not st.session_state.get('session_initialized'):
@@ -248,29 +233,15 @@ class StreamlitSessionManager:
         st.session_state.error_count = st.session_state.get('error_count', 0) + 1
 
     def protect_session(self):
-        """Protection renforcée de la session"""
-        try:
-            # Vérification et réinitialisation si nécessaire
-            if not st.session_state.get('session_initialized'):
-                self._initialize_session_state()
-                
-            # Mise à jour du timestamp
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-            
-            # Activation des protections
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
-            
-            self._log_protection()
-            return True
-            
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
-    
+        """Protection sans déclencher de cleanup"""
+        if not hasattr(self, '_protection_in_progress'):
+            self._protection_in_progress = True
+            try:
+                if not st.session_state.get('session_initialized'):
+                    self._initialize_session_state()
+            finally:
+                self._protection_in_progress = False
+
     def _log_protection(self):
         """Log de la protection de session"""
         self.logger.info(f"""
@@ -1346,7 +1317,7 @@ async def cleanup_websocket(bot):
 
 async def cleanup_resources(bot):
     """
-    Nettoyage sécurisé des ressources avec protection de session et logging détaillé.
+    Nettoyage sécurisé des ressources avec logging détaillé.
     
     Args:
         bot: Instance du bot de trading à nettoyer
@@ -1354,9 +1325,13 @@ async def cleanup_resources(bot):
     Returns:
         bool: True si le nettoyage a réussi, False sinon
     """
+    # 1. Vérification si déjà en cours de nettoyage
+    if getattr(bot, 'cleanup_in_progress', False):
+        return False
+
     current_time = datetime.now(timezone.utc)
     
-    # Log de début de tentative de nettoyage
+    # 2. Log de début
     logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
@@ -1367,7 +1342,7 @@ async def cleanup_resources(bot):
 ╚═════════════════════════════════════════════════╝
     """)
 
-    # Vérification des conditions de protection
+    # 3. Vérification des conditions de protection
     protection_conditions = {
         'prevent_cleanup': st.session_state.get('prevent_cleanup', True),
         'keep_alive': st.session_state.get('keep_alive', True),
@@ -1379,9 +1354,8 @@ async def cleanup_resources(bot):
         'cleanup_allowed': not st.session_state.get('cleanup_allowed', False)
     }
 
-    # Si une condition de protection est active
+    # 4. Si protections actives, on sort
     if any(protection_conditions.values()):
-        # Log détaillé des conditions qui empêchent le nettoyage
         active_protections = [k for k, v in protection_conditions.items() if v]
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -1392,13 +1366,10 @@ async def cleanup_resources(bot):
 ║ Session ID: {st.session_state.get('session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
         """)
-        
-        # Renforcer la protection
-        session_manager.protect_session()
         return False
 
     try:
-        # Marquer le début du nettoyage
+        # 5. Marquer début du nettoyage
         bot.cleanup_in_progress = True
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -1409,10 +1380,10 @@ async def cleanup_resources(bot):
 ╚═════════════════════════════════════════════════╝
         """)
 
-        # Fermeture du WebSocket
+        # 6. Nettoyage du WebSocket
         await close_websocket(bot)
         
-        # Log de succès
+        # 7. Log de succès
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP SUCCESSFUL                     ║
@@ -1424,7 +1395,7 @@ async def cleanup_resources(bot):
         return True
 
     except Exception as e:
-        # Log d'erreur détaillé
+        # 8. Log d'erreur
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ERROR                          ║
@@ -1437,19 +1408,17 @@ async def cleanup_resources(bot):
         return False
 
     finally:
-        # Nettoyage final et restauration de la protection
+        # 9. Réinitialisation du flag de nettoyage
         try:
             bot.cleanup_in_progress = False
-            session_manager.protect_session()
+            # IMPORTANT : Suppression de l'appel à session_manager.protect_session() ici
             
-            # Log final
             logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP FINALIZED                      ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Protection Restored: True
-║ Session Status: Protected
+║ Cleanup Status: Completed
 ╚═════════════════════════════════════════════════╝
             """)
             
@@ -5049,62 +5018,136 @@ def _calculate_supertrend(self, data):
             pass
                     
 async def main_async():
-    """Point d'entrée principal avec contrôle des rechargements"""
+    """Point d'entrée principal de l'application avec gestion améliorée des états"""
     try:
-        # 1. Contrôle des rechargements
-        if 'rerun_state' not in st.session_state:
-            st.session_state.rerun_state = {
-                'last_rerun': time.time(),
-                'count': 0,
-                'min_interval': 1.0  # Intervalle minimum entre les reruns (1 seconde)
-            }
-
-        # 2. Vérification du taux de rechargement
-        current_time = time.time()
-        if (current_time - st.session_state.rerun_state['last_rerun']) < st.session_state.rerun_state['min_interval']:
-            st.session_state.rerun_state['count'] += 1
-            if st.session_state.rerun_state['count'] > 5:  # Limite de rechargements rapides
-                time.sleep(1)  # Force une pause
-                st.session_state.rerun_state['count'] = 0
-                return
-        else:
-            st.session_state.rerun_state['count'] = 0
-            st.session_state.rerun_state['last_rerun'] = current_time
-
-        # Le reste de votre code existant...
+        # 1. Protection et initialisation de la session
+        session_manager.protect_session()
+        
+        # 2. Configuration de l'interface principale
         st.title("Trading Bot Ultimate v4 🤖")
         
-        # Contrôle de l'état du bot
-        if 'bot_state' not in st.session_state:
-            st.session_state.bot_state = {
-                'running': False,
-                'last_update': current_time,
-                'needs_refresh': False
-            }
+        # 3. Initialisation des états de session par défaut
+        default_session_state = {
+            'portfolio': None,
+            'latest_data': None,
+            'indicators': None,
+            'bot_running': False,
+            'refresh_count': 0,
+            'ws_status': 'disconnected',
+            'ws_initialized': False,
+            'ws_connection_status': 'disconnected',
+            'last_update_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Mise à jour des états manquants uniquement
+        for key, value in default_session_state.items():
+            if key not in st.session_state:
+                st.session_state[key] = value
 
-        # Interface et contrôles
-        with st.sidebar:
-            if not st.session_state.bot_state['running']:
-                if st.button("Start Trading"):
-                    st.session_state.bot_state['running'] = True
-                    st.session_state.bot_state['last_update'] = current_time
-            else:
-                if st.button("Stop Trading"):
-                    st.session_state.bot_state['running'] = False
+        # 4. Initialisation du bot
+        bot = get_bot()
+        if bot is None:
+            st.error("❌ Failed to initialize bot")
+            return
 
-        # Mise à jour contrôlée
-        if st.session_state.bot_state['running']:
-            if (current_time - st.session_state.bot_state['last_update']) >= 1.0:  # Update every second
-                st.session_state.bot_state['last_update'] = current_time
-                st.session_state.bot_state['needs_refresh'] = True
+        # 5. Interface principale - État et contrôles
+        status_col1, status_col2 = st.columns([2, 1])
+        with status_col1:
+            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
+            ws_icon = {
+                'connected': '🟢',
+                'disconnected': '🔴',
+                'initializing': '🔄',
+                'error': '⚠️'
+            }.get(ws_status, '🔴')
             
-            if st.session_state.bot_state['needs_refresh']:
-                st.session_state.bot_state['needs_refresh'] = False
-                await asyncio.sleep(1)  # Attente minimum
-                st.rerun()
+            status_info = f"""
+            ### Bot Status
+            - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
+            - 📡 WebSocket: {ws_icon} {ws_status.title()}
+            - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
+            - ⏰ Last Update: {st.session_state.last_update_time}
+            """
+            st.info(status_info)
+
+        # 6. Contrôles de la barre latérale
+        with st.sidebar:
+            st.header("🛠️ Bot Controls")
+            
+            # Niveau de risque
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Low",
+                key="risk_level_slider"
+            )
+            
+            st.divider()
+            
+            # Boutons de contrôle avec gestion d'état améliorée
+            if not st.session_state.bot_running:
+                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
+                    try:
+                        with st.spinner("Starting trading bot..."):
+                            session_manager.protect_session()
+                            
+                            # Initialisation du WebSocket si nécessaire
+                            if not st.session_state.ws_initialized:
+                                st.session_state.ws_connection_status = 'initializing'
+                                if await initialize_websocket(bot):
+                                    st.session_state.ws_initialized = True
+                                    st.session_state.ws_connection_status = 'connected'
+                                    st.session_state.bot_running = True
+                                    await update_market_data(bot)
+                                    st.success("✅ Bot started successfully!")
+                                else:
+                                    st.session_state.ws_connection_status = 'error'
+                                    st.error("❌ WebSocket initialization failed")
+                    except Exception as e:
+                        st.session_state.ws_connection_status = 'error'
+                        st.error(f"❌ Failed to start bot: {str(e)}")
+                        st.session_state.bot_running = False
+            else:
+                if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
+                    try:
+                        with st.spinner("Stopping trading bot..."):
+                            await cleanup_websocket(bot)
+                            st.session_state.bot_running = False
+                            st.session_state.ws_connection_status = 'disconnected'
+                            session_manager.protect_session()
+                            st.success("✅ Bot stopped successfully!")
+                    except Exception as e:
+                        st.error(f"❌ Failed to stop bot: {str(e)}")
+
+            st.divider()
+            st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
+
+        # 7. Onglets principaux
+        portfolio_tab, trading_tab, analysis_tab = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
+
+        # 8. Onglet Portfolio
+        with portfolio_tab:
+            await _render_portfolio_tab(bot)
+
+        # 9. Onglet Trading
+        with trading_tab:
+            await _render_trading_tab(bot)
+
+        # 10. Onglet Analysis
+        with analysis_tab:
+            await _render_analysis_tab(bot)
+
+        # 11. Mise à jour périodique si le bot est en cours d'exécution
+        if st.session_state.bot_running:
+            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            st.experimental_rerun()
 
     except Exception as e:
-        st.error(f"Error: {str(e)}")
+        logger.error(f"❌ Application error: {str(e)}")
+        st.error(f"❌ Application error: {str(e)}")
+    finally:
+        # Protection finale de la session
+        session_manager.protect_session()
         
 # Fonctions de contrôle simplifiées
 async def start_trading_bot(bot):
@@ -5379,35 +5422,36 @@ async def shutdown():
 
 def main():
     """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv('USER', 'Patmoorea')
-
     try:
-        # 1. Initialisation et protection de la session
+        # 1. Vérifier si déjà en cours d'exécution
+        if 'main_running' in st.session_state:
+            return
+        st.session_state.main_running = True
+
+        # 2. Initialisation et protection de la session
         global session_manager
         session_manager = StreamlitSessionManager()
         session_manager.protect_session()
 
-        # 2. Log de démarrage
+        # 3. Log de démarrage
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
 ║ Session: {session_manager.session_id}
+║ Status: Initializing
 ╚═════════════════════════════════════════════════╝
         """)
 
-        # 3. Initialisation de l'état de session
+        # 4. Initialisation de l'état de session
         _initialize_session_state()
 
-        # 4. Configuration et vérification de la boucle d'événements
+        # 5. Configuration et vérification de la boucle d'événements
         event_loop = _setup_and_verify_event_loop()
         if not event_loop:
             raise RuntimeError("Failed to initialize event loop")
 
-        # 5. Exécution de la coroutine principale
+        # 6. Exécution de la coroutine principale
         event_loop.run_until_complete(main_async())
 
     except asyncio.CancelledError:
@@ -5415,8 +5459,7 @@ def main():
 ╔═════════════════════════════════════════════════╗
 ║              GRACEFUL SHUTDOWN                   ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
+║ Status: Shutting down gracefully
 ╚═════════════════════════════════════════════════╝
         """)
 
@@ -5425,16 +5468,17 @@ def main():
 ╔═════════════════════════════════════════════════╗
 ║              RUNTIME ERROR                       ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
-║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
         """)
         st.error(f"❌ Application error: {str(e)}")
 
     finally:
-        _perform_cleanup()
+        # Ne nettoyer que si l'arrêt est demandé
+        if st.session_state.get('force_cleanup', False):
+            _perform_cleanup()
+        st.session_state.main_running = False
 
 def _initialize_session_state():
     """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
