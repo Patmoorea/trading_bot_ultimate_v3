@@ -428,7 +428,7 @@ config = {
 def get_bot():
     """Create or get the bot instance"""
     try:
-        if 'bot_instance' not in st.session_state or not st.session_state.bot_instance.initialized:
+        if 'bot_instance' not in st.session_state or not getattr(st.session_state.bot_instance, '_initialized', False):
             logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║             CREATING BOT INSTANCE                ║
@@ -437,7 +437,9 @@ def get_bot():
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
             """)
-            
+            st.session_state.bot_instance = bot
+        return st.session_state.bot_instance
+    
             # Création du bot
             bot = TradingBotM4()
             
@@ -4834,7 +4836,6 @@ async def main_async():
                             st.session_state.bot_running = False
                             # On ne ferme pas le WebSocket, juste pause du trading
                             st.success("✅ Bot stopped successfully!")
-                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Failed to stop bot: {str(e)}")
 
@@ -4951,18 +4952,6 @@ async def main_async():
                     st.error(f"❌ Analysis error: {str(e)}")
             else:
                 st.warning("⚠️ Start trading to view analysis")
-
-        # Auto-refresh et gestion mémoire
-        if st.session_state.bot_running:
-            try:
-                st.session_state.refresh_count += 1
-                if st.session_state.refresh_count >= 100:
-                    st.session_state.refresh_count = 0
-                    await cleanup_session(bot)
-                await asyncio.sleep(1)
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Refresh error: {str(e)}")
 
     except Exception as e:
         st.error(f"❌ Application error: {str(e)}")
