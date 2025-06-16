@@ -735,72 +735,139 @@ async def setup_websocket_streams(bot):
         return False
        
 async def initialize_websocket(bot):
-    """Initialize WebSocket connection"""
+    """Initialize WebSocket connection with better timeout and heartbeat"""
     try:
-        # Vérification de l'état d'initialisation
         if hasattr(bot, '_initializing') and bot._initializing:
             return False
             
         bot._initializing = True
         
-        # Nettoyage des connexions existantes
-        await cleanup_existing_connections(bot)
-        
-        # Création du client Binance
+        # 1. Configuration du client avec timeout plus long
         bot.binance_ws = await AsyncClient.create(
             api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_API_SECRET')
+            api_secret=os.getenv('BINANCE_API_SECRET'),
+            request_timeout=30  # Augmente le timeout à 30 secondes
         )
         
-        # Configuration du socket manager
-        bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+        # 2. Configuration du socket manager avec keepalive
+        bot.socket_manager = BinanceSocketManager(
+            bot.binance_ws,
+            user_timeout=60  # Augmente le timeout utilisateur
+        )
         
-        # Configuration des streams par paire
-        tasks = []
-        for pair in bot.config['TRADING']['pairs']:
-            # Trade stream
-            trade_socket = bot.socket_manager.trade_socket(pair)
-            tasks.append(
-                asyncio.create_task(
-                    handle_socket_message(bot, trade_socket, "trade")
-                )
+        # 3. Configuration des streams avec heartbeat
+        streams = ['btcusdt@trade', 'btcusdt@depth']
+        bot.ws_tasks = []
+        
+        for stream in streams:
+            socket = bot.socket_manager.multiplex_socket([stream])
+            task = asyncio.create_task(
+                handle_socket_message(bot, socket, stream)
             )
-            
-            # Depth stream
-            depth_socket = bot.socket_manager.depth_socket(pair)
-            tasks.append(
-                asyncio.create_task(
-                    handle_socket_message(bot, depth_socket, "depth")
-                )
-            )
-            
-        # Mise à jour du statut
+            bot.ws_tasks.append(task)
+        
+        # 4. Ajout d'un heartbeat pour maintenir la connexion
+        heartbeat_task = asyncio.create_task(
+            websocket_heartbeat(bot)
+        )
+        bot.ws_tasks.append(heartbeat_task)
+        
         bot.ws_connection = {
             'enabled': True,
             'status': 'connected',
-            'tasks': tasks,
-            'last_message': time.time()
+            'last_heartbeat': datetime.now(timezone.utc),
+            'tasks': bot.ws_tasks
         }
-
+        
         return True
-
+        
     except Exception as e:
-        logger.error(f"WebSocket initialization failed: {e}")
+        logger.error(f"WebSocket initialization error: {e}")
         return False
         
     finally:
         bot._initializing = False
 
+async def websocket_heartbeat(bot):
+    """Maintient la connexion WebSocket active"""
+    while True:
+        try:
+            await asyncio.sleep(30)  # Heartbeat toutes les 30 secondes
+            
+            if not bot.ws_connection['enabled']:
+                break
+                
+            # Ping pour vérifier la connexion
+            await bot.binance_ws.ping()
+            
+            bot.ws_connection['last_heartbeat'] = datetime.now(timezone.utc)
+            
+        except Exception:
+            # Si erreur, on attend avant de réessayer
+            await asyncio.sleep(5)
+            continue
+
+async def handle_socket_message(bot, socket, stream_name):
+    """Gestion des messages avec meilleure gestion des erreurs"""
+    async with socket as tscm:
+        while True:
+            try:
+                msg = await asyncio.wait_for(
+                    tscm.recv(),
+                    timeout=60  # Timeout plus long pour la réception
+                )
+                
+                if msg:
+                    # Mise à jour des données
+                    if 'data' not in bot.latest_data:
+                        bot.latest_data['data'] = {}
+                    
+                    bot.latest_data['data'][stream_name] = msg
+                    
+                    # Mise à jour du timestamp
+                    bot.ws_connection['last_message'] = datetime.now(timezone.utc)
+                    
+            except asyncio.TimeoutError:
+                # Au lieu de se déconnecter, on continue
+                continue
+                
+            except Exception as e:
+                logger.error(f"Socket error ({stream_name}): {e}")
+                await asyncio.sleep(1)
+                continue
+            
+async def cleanup_websocket(bot):
+    """Clean WebSocket resources"""
+    try:
+        logger.info("🔄 Closing WebSocket...")
+        
+        if hasattr(bot, 'ws_tasks'):
+            for task in bot.ws_tasks:
+                task.cancel()
+            bot.ws_tasks = []
+            
+        if hasattr(bot, 'socket_manager'):
+            await bot.socket_manager.close()
+            
+        if hasattr(bot, 'binance_ws'):
+            await bot.binance_ws.close_connection()
+            
+        bot.ws_connection = {
+            'enabled': False,
+            'status': 'disconnected',
+            'tasks': []
+        }
+        
+        logger.info("✅ WebSocket closed successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ WebSocket cleanup error: {e}")
+
 async def cleanup_resources(bot):
     """Nettoyage des ressources"""
     try:
-        if bot is None:
-            logger.warning("Bot instance is None, skipping cleanup")
-            return
-
-        # Nettoyage du WebSocket Manager
-        if hasattr(bot, 'ws_manager'):
-            await bot.ws_manager.cleanup()
+        # D'abord nettoyer le WebSocket
+        await cleanup_websocket(bot)
         
         # Nettoyage des sessions
         if hasattr(bot, 'client_session') and bot.client_session:
@@ -933,17 +1000,27 @@ async def close_websocket(bot):
         return False
 
 async def handle_socket_message(bot, socket, socket_type):
-    """Gestion des messages WebSocket"""
-    try:
-        async with socket as tscm:
-            while True:
+    """Handle WebSocket messages"""
+    async with socket as tscm:
+        while True:
+            try:
                 msg = await tscm.recv()
                 if msg:
-                    bot.latest_data[socket_type] = msg
+                    if socket_type not in bot.latest_data:
+                        bot.latest_data[socket_type] = []
+                    bot.latest_data[socket_type].append(msg)
+                    
+                    # Keep only last N messages
+                    max_messages = 100
+                    if len(bot.latest_data[socket_type]) > max_messages:
+                        bot.latest_data[socket_type] = bot.latest_data[socket_type][-max_messages:]
+                        
                 await asyncio.sleep(0.1)
                 
-    except Exception as e:
-        logger.error(f"Socket error: {e}")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                continue
 
 async def update_trading_data(bot):
     """Mise à jour des données de trading"""
