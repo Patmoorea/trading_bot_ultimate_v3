@@ -1960,7 +1960,6 @@ class TradingBotM4:
         )
 
         # Initialisation des composants
-        self.buffer = CircularBuffer(maxlen=1000)
         self.indicators = {}
         self.latest_data = {}
         self.news_analyzer = None
@@ -2227,7 +2226,6 @@ class TradingBotM4:
 
         # Configuration de l'exchange
         self.websocket.setup_exchange("binance")
-        self.buffer = CircularBuffer()
 
         # Interface et monitoring
         self.dashboard = TradingDashboard()
