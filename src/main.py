@@ -141,18 +141,81 @@ def setup_asyncio():
     
 class StreamlitSessionManager:
     """Gestionnaire de session Streamlit avec protection et logging améliorés"""
+    _instance = None  # Pattern Singleton pour une seule instance
     
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(StreamlitSessionManager, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
-        """Initialisation du gestionnaire de session"""
-        self.init_time = datetime.now(timezone.utc)
-        self.user = os.getenv('USER', 'Patmoorea')
-        self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
-        self.logger = logging.getLogger(__name__)
-        
-        # Initialisation immédiate de la session
-        if 'session_initialized' not in st.session_state:
-            if self._initialize_session_state():
+        """Initialisation unique du gestionnaire"""
+        if not self._initialized:
+            self.init_time = datetime.now(timezone.utc)
+            self.user = os.getenv('USER', 'Patmoorea')
+            self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
+            self.logger = logging.getLogger(__name__)
+            self._initialized = True
+            
+            # Une seule initialisation de session au démarrage
+            if 'session_initialized' not in st.session_state:
+                self._initialize_session_state()
                 self._log_initialization()
+
+    def protect_session(self):
+        """Protection simplifiée sans réinitialisation"""
+        try:
+            # Uniquement mise à jour du timestamp si la session existe
+            if st.session_state.get('session_initialized'):
+                current_time = datetime.now(timezone.utc)
+                st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+                return True
+                
+            return False
+            
+        except Exception as e:
+            self._log_error("Session protection error", e)
+            return False
+
+    def _initialize_session_state(self):
+        """Initialisation unique de l'état"""
+        if not st.session_state.get('session_initialized'):
+            try:
+                default_state = {
+                    'session_id': self.session_id,
+                    'initialization_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'last_update_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'user': self.user,
+                    'initialized': True,
+                    'session_initialized': True,
+                    'bot_running': False,
+                    'portfolio': None,
+                    'latest_data': None,
+                    'indicators': None,
+                    'refresh_count': 0,
+                    'loop': None,
+                    'error_count': 0,
+                    'ws_status': 'disconnected',
+                    'ws_initialized': False,
+                    'ws_connection_status': 'disconnected',
+                    'ws_last_heartbeat': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'keep_alive': True,
+                    'prevent_cleanup': True,
+                    'force_cleanup': False,
+                    'cleanup_allowed': False
+                }
+
+                # Une seule initialisation des états
+                for key, value in default_state.items():
+                    if key not in st.session_state:
+                        st.session_state[key] = value
+
+                return True
+
+            except Exception as e:
+                self._log_error("Session state initialization error", e)
+                return False
     
     def _log_initialization(self):
         """Log de l'initialisation de la session"""
@@ -564,17 +627,21 @@ async def cleanup(self):
             
 # Définition de la classe SessionManager
 class SessionManager:
+    """Gestionnaire de session simplifié"""
     def __init__(self):
-        self.sessions = set()
-    
-    def register(self, session):
-        self.sessions.add(session)
-        logging.getLogger(__name__).info(f"New session registered (active: {len(self.sessions)})")
-    
-    def unregister(self, session):
-        self.sessions.discard(session)
-        logging.getLogger(__name__).info(f"Session unregistered (remaining: {len(self.sessions)})")
+        """Initialisation minimale"""
+        self.init_time = "2025-06-16 17:11:15"
+        self.user = "Patmoorea"
+        self.session_id = f"{self.user}_{int(time.time())}"
 
+    def protect_session(self):
+        """Protection simplifiée"""
+        pass  # Suppression des logs de protection
+
+    def log_event(self, event_type, message=""):
+        """Log minimal des événements critiques uniquement"""
+        if event_type in ['ERROR', 'CRITICAL']:
+            logger.error(f"{event_type}: {message}")
 class RegimeDetector:
     """Détecteur de régimes de marché"""
     def __init__(self):
@@ -4982,136 +5049,93 @@ def _calculate_supertrend(self, data):
             pass
                     
 async def main_async():
-    """Point d'entrée principal de l'application avec gestion améliorée des états"""
+    """Point d'entrée principal avec contrôle des rechargements"""
     try:
-        # 1. Protection et initialisation de la session
-        session_manager.protect_session()
-        
-        # 2. Configuration de l'interface principale
+        # 1. Contrôle des rechargements
+        if 'rerun_state' not in st.session_state:
+            st.session_state.rerun_state = {
+                'last_rerun': time.time(),
+                'count': 0,
+                'min_interval': 1.0  # Intervalle minimum entre les reruns (1 seconde)
+            }
+
+        # 2. Vérification du taux de rechargement
+        current_time = time.time()
+        if (current_time - st.session_state.rerun_state['last_rerun']) < st.session_state.rerun_state['min_interval']:
+            st.session_state.rerun_state['count'] += 1
+            if st.session_state.rerun_state['count'] > 5:  # Limite de rechargements rapides
+                time.sleep(1)  # Force une pause
+                st.session_state.rerun_state['count'] = 0
+                return
+        else:
+            st.session_state.rerun_state['count'] = 0
+            st.session_state.rerun_state['last_rerun'] = current_time
+
+        # Le reste de votre code existant...
         st.title("Trading Bot Ultimate v4 🤖")
         
-        # 3. Initialisation des états de session par défaut
-        default_session_state = {
-            'portfolio': None,
-            'latest_data': None,
-            'indicators': None,
-            'bot_running': False,
-            'refresh_count': 0,
-            'ws_status': 'disconnected',
-            'ws_initialized': False,
-            'ws_connection_status': 'disconnected',
-            'last_update_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        # Mise à jour des états manquants uniquement
-        for key, value in default_session_state.items():
-            if key not in st.session_state:
-                st.session_state[key] = value
+        # Contrôle de l'état du bot
+        if 'bot_state' not in st.session_state:
+            st.session_state.bot_state = {
+                'running': False,
+                'last_update': current_time,
+                'needs_refresh': False
+            }
 
-        # 4. Initialisation du bot
-        bot = get_bot()
-        if bot is None:
-            st.error("❌ Failed to initialize bot")
-            return
-
-        # 5. Interface principale - État et contrôles
-        status_col1, status_col2 = st.columns([2, 1])
-        with status_col1:
-            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
-            ws_icon = {
-                'connected': '🟢',
-                'disconnected': '🔴',
-                'initializing': '🔄',
-                'error': '⚠️'
-            }.get(ws_status, '🔴')
-            
-            status_info = f"""
-            ### Bot Status
-            - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
-            - 📡 WebSocket: {ws_icon} {ws_status.title()}
-            - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
-            - ⏰ Last Update: {st.session_state.last_update_time}
-            """
-            st.info(status_info)
-
-        # 6. Contrôles de la barre latérale
+        # Interface et contrôles
         with st.sidebar:
-            st.header("🛠️ Bot Controls")
-            
-            # Niveau de risque
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low",
-                key="risk_level_slider"
-            )
-            
-            st.divider()
-            
-            # Boutons de contrôle avec gestion d'état améliorée
-            if not st.session_state.bot_running:
-                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    try:
-                        with st.spinner("Starting trading bot..."):
-                            session_manager.protect_session()
-                            
-                            # Initialisation du WebSocket si nécessaire
-                            if not st.session_state.ws_initialized:
-                                st.session_state.ws_connection_status = 'initializing'
-                                if await initialize_websocket(bot):
-                                    st.session_state.ws_initialized = True
-                                    st.session_state.ws_connection_status = 'connected'
-                                    st.session_state.bot_running = True
-                                    await update_market_data(bot)
-                                    st.success("✅ Bot started successfully!")
-                                else:
-                                    st.session_state.ws_connection_status = 'error'
-                                    st.error("❌ WebSocket initialization failed")
-                    except Exception as e:
-                        st.session_state.ws_connection_status = 'error'
-                        st.error(f"❌ Failed to start bot: {str(e)}")
-                        st.session_state.bot_running = False
+            if not st.session_state.bot_state['running']:
+                if st.button("Start Trading"):
+                    st.session_state.bot_state['running'] = True
+                    st.session_state.bot_state['last_update'] = current_time
             else:
-                if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
-                    try:
-                        with st.spinner("Stopping trading bot..."):
-                            await cleanup_websocket(bot)
-                            st.session_state.bot_running = False
-                            st.session_state.ws_connection_status = 'disconnected'
-                            session_manager.protect_session()
-                            st.success("✅ Bot stopped successfully!")
-                    except Exception as e:
-                        st.error(f"❌ Failed to stop bot: {str(e)}")
+                if st.button("Stop Trading"):
+                    st.session_state.bot_state['running'] = False
 
-            st.divider()
-            st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
-
-        # 7. Onglets principaux
-        portfolio_tab, trading_tab, analysis_tab = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
-
-        # 8. Onglet Portfolio
-        with portfolio_tab:
-            await _render_portfolio_tab(bot)
-
-        # 9. Onglet Trading
-        with trading_tab:
-            await _render_trading_tab(bot)
-
-        # 10. Onglet Analysis
-        with analysis_tab:
-            await _render_analysis_tab(bot)
-
-        # 11. Mise à jour périodique si le bot est en cours d'exécution
-        if st.session_state.bot_running:
-            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-            st.experimental_rerun()
+        # Mise à jour contrôlée
+        if st.session_state.bot_state['running']:
+            if (current_time - st.session_state.bot_state['last_update']) >= 1.0:  # Update every second
+                st.session_state.bot_state['last_update'] = current_time
+                st.session_state.bot_state['needs_refresh'] = True
+            
+            if st.session_state.bot_state['needs_refresh']:
+                st.session_state.bot_state['needs_refresh'] = False
+                await asyncio.sleep(1)  # Attente minimum
+                st.rerun()
 
     except Exception as e:
-        logger.error(f"❌ Application error: {str(e)}")
-        st.error(f"❌ Application error: {str(e)}")
-    finally:
-        # Protection finale de la session
-        session_manager.protect_session()
+        st.error(f"Error: {str(e)}")
+        
+# Fonctions de contrôle simplifiées
+async def start_trading_bot(bot):
+    """Démarrage du bot"""
+    try:
+        with st.spinner("Starting trading bot..."):
+            if await initialize_websocket(bot):
+                st.session_state.global_state.update({
+                    'ws_status': 'connected',
+                    'bot_running': True
+                })
+                await update_market_data(bot)
+                st.success("✅ Bot started successfully!")
+            else:
+                st.session_state.global_state['ws_status'] = 'error'
+                st.error("❌ WebSocket initialization failed")
+    except Exception as e:
+        st.error(f"❌ Start error: {str(e)}")
+
+async def stop_trading_bot(bot):
+    """Arrêt du bot"""
+    try:
+        with st.spinner("Stopping trading bot..."):
+            await cleanup_websocket(bot)
+            st.session_state.global_state.update({
+                'bot_running': False,
+                'ws_status': 'disconnected'
+            })
+            st.success("✅ Bot stopped successfully!")
+    except Exception as e:
+        st.error(f"❌ Stop error: {str(e)}")
 
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
