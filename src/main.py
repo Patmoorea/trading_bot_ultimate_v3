@@ -1,5 +1,16 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
+
+# Initialisation des flags de protection
+if 'prevent_cleanup' not in st.session_state:
+    st.session_state.prevent_cleanup = True
+if 'keep_alive' not in st.session_state:
+    st.session_state.keep_alive = True
+if 'force_cleanup' not in st.session_state:
+    st.session_state.force_cleanup = False
+if 'cleanup_allowed' not in st.session_state:
+    st.session_state.cleanup_allowed = False
+    
 st.set_page_config(
     page_title="Trading Bot Ultimate v4",
     page_icon="📈",
@@ -453,19 +464,17 @@ config = {
     }
 }
 
-@st.cache_resource(ttl=None)  # Empêcher toute expiration
+@st.cache_resource(ttl=None)
 def get_bot():
     """Create or get the bot instance with lifecycle protection"""
-    # Protection contre la réinitialisation
     if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
         return st.session_state.bot_instance
 
     try:
+        session_manager.protect_session()  # Protection explicite
         logger.info("Creating new bot instance...")
         bot = TradingBotM4()
         st.session_state.bot_instance = bot
-        st.session_state.prevent_cleanup = True
-        st.session_state.keep_alive = True
         return bot
     except Exception as e:
         logger.error(f"Bot creation error: {e}")
@@ -943,32 +952,6 @@ async def websocket_heartbeat(bot):
             logger.error(f"Heartbeat error: {e}")
             await asyncio.sleep(5)
 
-async def handle_socket_message(bot, socket, stream_type):
-    """Gestion des messages avec retry"""
-    async with socket as tscm:
-        while True:
-            try:
-                msg = await tscm.recv()
-                if msg:
-                    if 'data' not in bot.latest_data:
-                        bot.latest_data['data'] = {}
-                    
-                    # Stockage par type de données
-                    if msg.get('stream'):  # Pour les sockets multiplexés
-                        stream = msg['stream']
-                        data = msg['data']
-                        bot.latest_data['data'][stream] = data
-                    else:
-                        bot.latest_data['data'][stream_type] = msg
-                    
-                    # Update last message timestamp
-                    bot.ws_connection['last_message'] = datetime.now(timezone.utc)
-                    
-            except Exception as e:
-                logger.error(f"Socket error: {e}")
-                await asyncio.sleep(1)
-                continue
-
 async def handle_socket_message(bot, socket, stream_name):
     """Gestion des messages avec meilleure gestion des erreurs"""
     async with socket as tscm:
@@ -1144,29 +1127,6 @@ async def close_websocket(bot):
     except Exception as e:
         logger.error(f"❌ WebSocket close error: {e}")
         return False
-
-async def handle_socket_message(bot, socket, socket_type):
-    """Handle WebSocket messages"""
-    async with socket as tscm:
-        while True:
-            try:
-                msg = await tscm.recv()
-                if msg:
-                    if socket_type not in bot.latest_data:
-                        bot.latest_data[socket_type] = []
-                    bot.latest_data[socket_type].append(msg)
-                    
-                    # Keep only last N messages
-                    max_messages = 100
-                    if len(bot.latest_data[socket_type]) > max_messages:
-                        bot.latest_data[socket_type] = bot.latest_data[socket_type][-max_messages:]
-                        
-                await asyncio.sleep(0.1)
-                
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                continue
 
 async def update_trading_data(bot):
     """Mise à jour des données de trading"""
@@ -1367,39 +1327,6 @@ async def cleanup_session(bot):
     except Exception as e:
         logger.error(f"❌ Cleanup error: {e}")
 
-async def cleanup_resources(bot):
-    """Nettoyage sécurisé des ressources avec gestion d'état"""
-    # Empêcher le nettoyage si le bot est en cours d'exécution
-    if any([
-        st.session_state.get('bot_running', False),
-        getattr(bot, '_ws_initializing', False),
-        getattr(bot, '_initialized', False),
-        getattr(bot, 'cleanup_in_progress', False),
-        st.session_state.get('portfolio') is not None
-    ]):
-        return
-
-    try:
-        bot.cleanup_in_progress = True
-
-        # Nettoyage WebSocket uniquement si nécessaire
-        if hasattr(bot, 'ws_connection') and bot.ws_connection.get('enabled'):
-            try:
-                await close_websocket(bot)
-            except Exception as ws_error:
-                logger.warning(f"WebSocket cleanup warning: {ws_error}")
-
-        # Maintenir l'état du portfolio
-        if st.session_state.get('portfolio'):
-            return
-
-        logger.info("✅ Resources cleaned successfully")
-
-    except Exception as e:
-        logger.error(f"Cleanup error: {e}")
-    finally:
-        bot.cleanup_in_progress = False
-        
 async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
     try:
@@ -5001,36 +4928,12 @@ async def shutdown():
         logger.error(f"Shutdown error: {e}")
 
 def main():
-    """Point d'entrée principal"""
+    """Point d'entrée principal avec protection renforcée"""
     try:
         # Protection initiale FORTE
         session_manager.protect_session()
         
-        # Configuration de la boucle
-        if 'loop' not in st.session_state:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            st.session_state.loop = loop
-
-        # Log de démarrage
-        logger.info("Starting application...")
-        
-        # Initialisation
-        init_session_state()
-        
-        # Exécution principale
-        st.session_state.loop.run_until_complete(main_async())
-
-    except Exception as e:
-        logger.error(f"Application error: {e}")
-        
-    finally:
-        # Protection contre le nettoyage automatique
-        if not st.session_state.get('force_cleanup', False):
-            session_manager.protect_session()
-        
-        # Log de démarrage...
+        # Log du démarrage de l'application
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
@@ -5039,66 +4942,86 @@ def main():
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """)
-        
+
         # Initialisation de l'état de session
         init_session_state()
         
-        # Configuration de la nouvelle boucle d'événements
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-        # Application de nest_asyncio pour la compatibilité Streamlit
-        nest_asyncio.apply()
-        
-        # Stockage de la boucle dans l'état de session
-        st.session_state.loop = loop
-        
-        # Exécution de la coroutine principale avec gestion d'erreurs
-        try:
-            loop.run_until_complete(main_async())
-            
-        except asyncio.CancelledError:
-            logger.info("Application cancelled gracefully")
-            
-        except Exception as e:
-            logger.error(f"""
+        # Configuration de la boucle d'événements
+        if 'loop' not in st.session_state:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+            st.session_state.loop = loop
+            logger.info("✅ Event loop configured successfully")
+
+        # Exécution de la coroutine principale
+        st.session_state.loop.run_until_complete(main_async())
+
+    except asyncio.CancelledError:
+        logger.info("""
+╔═════════════════════════════════════════════════╗
+║              GRACEFUL SHUTDOWN                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Application cancelled gracefully
+╚═════════════════════════════════════════════════╝
+        """)
+
+    except Exception as e:
+        logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║              RUNTIME ERROR                       ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
-╚═════════════════════════════════════════════════╝
-            """)
-            st.error(f"Application error: {str(e)}")
-            raise
-            
-    except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              FATAL ERROR                         ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
+║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
         """)
-        sys.exit(1)
-        
+        st.error(f"❌ Application error: {str(e)}")
+
     finally:
         try:
-            if loop and not loop.is_closed():
-                try:
-                    # Ne nettoyer que si explicitement demandé
-                    if st.session_state.get('force_cleanup', False) and st.session_state.get('cleanup_allowed', False):
-                        if 'bot_instance' in st.session_state:
-                            loop.run_until_complete(
+            # Protection FORTE contre le nettoyage automatique
+            session_manager.protect_session()
+
+            # Ne nettoyer que si explicitement demandé
+            if st.session_state.get('force_cleanup', False) and st.session_state.get('cleanup_allowed', False):
+                if 'bot_instance' in st.session_state:
+                    try:
+                        if 'loop' in st.session_state and not st.session_state.loop.is_closed():
+                            st.session_state.loop.run_until_complete(
                                 cleanup_resources(st.session_state.bot_instance)
                             )
-                except Exception as e:
-                    logger.error(f"Error during resource cleanup: {e}")
-                finally:
-                    loop.close()
-        except Exception as cleanup_error:
-            logger.error(f"Cleanup error: {cleanup_error}")
+                    except Exception as cleanup_error:
+                        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(cleanup_error)}
+╚═════════════════════════════════════════════════╝
+                        """)
+                    finally:
+                        # Restaurer la protection après le nettoyage
+                        session_manager.protect_session()
+
+            # Fermeture propre de la boucle d'événements
+            if 'loop' in st.session_state and not st.session_state.loop.is_closed():
+                st.session_state.loop.close()
+                logger.info("✅ Event loop closed successfully")
+
+        except Exception as final_error:
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              FINAL ERROR                         ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(final_error)}
+╚═════════════════════════════════════════════════╝
+            """)
+        finally:
+            # Protection finale ABSOLUE
+            session_manager.protect_session()
 
 if __name__ == "__main__":
     try:
