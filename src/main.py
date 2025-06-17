@@ -155,6 +155,60 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+def main():
+    """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
+    try:
+        # 1. Vérifier si déjà en cours d'exécution
+        if 'main_running' in st.session_state:
+            return
+        st.session_state.main_running = True
+
+        # 3. Log de démarrage
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              STARTING APPLICATION                ║
+╠═════════════════════════════════════════════════╣
+║ Session: {session_manager.session_id}
+║ Status: Initializing
+╚═════════════════════════════════════════════════╝
+        """)
+
+        # 4. Initialisation de l'état de session
+        _initialize_session_state()
+
+        # 5. Configuration et vérification de la boucle d'événements
+        event_loop = _setup_and_verify_event_loop()
+        if not event_loop:
+            raise RuntimeError("Failed to initialize event loop")
+
+    except asyncio.CancelledError:
+        logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║              GRACEFUL SHUTDOWN                   ║
+╠═════════════════════════════════════════════════╣
+║ Status: Shutting down gracefully
+╚═════════════════════════════════════════════════╝
+        """)
+
+    except Exception as e:
+        logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              RUNTIME ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+        st.error(f"❌ Application error: {str(e)}")
+
+    finally:
+        # Ne nettoyer que si explicitement demandé
+        if (st.session_state.get('force_cleanup', False) and 
+            not st.session_state.get('prevent_cleanup', True) and
+            not st.session_state.get('bot_running', False)):
+            _perform_cleanup()
+        st.session_state.main_running = False
+        
 def setup_asyncio():
     """Configure l'environnement asyncio"""
     try:
@@ -5129,60 +5183,6 @@ async def shutdown():
         
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
-
-def main():
-    """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
-    try:
-        # 1. Vérifier si déjà en cours d'exécution
-        if 'main_running' in st.session_state:
-            return
-        st.session_state.main_running = True
-
-        # 3. Log de démarrage
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║              STARTING APPLICATION                ║
-╠═════════════════════════════════════════════════╣
-║ Session: {session_manager.session_id}
-║ Status: Initializing
-╚═════════════════════════════════════════════════╝
-        """)
-
-        # 4. Initialisation de l'état de session
-        _initialize_session_state()
-
-        # 5. Configuration et vérification de la boucle d'événements
-        event_loop = _setup_and_verify_event_loop()
-        if not event_loop:
-            raise RuntimeError("Failed to initialize event loop")
-
-    except asyncio.CancelledError:
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║              GRACEFUL SHUTDOWN                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: Shutting down gracefully
-╚═════════════════════════════════════════════════╝
-        """)
-
-    except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              RUNTIME ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """)
-        st.error(f"❌ Application error: {str(e)}")
-
-    finally:
-        # Ne nettoyer que si explicitement demandé
-        if (st.session_state.get('force_cleanup', False) and 
-            not st.session_state.get('prevent_cleanup', True) and
-            not st.session_state.get('bot_running', False)):
-            _perform_cleanup()
-        st.session_state.main_running = False
 
 def _initialize_session_state():
     """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
