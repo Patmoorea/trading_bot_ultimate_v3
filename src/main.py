@@ -1,7 +1,18 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
-from streamlit_extras.st_autorefresh import st_autorefresh
 
+# --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
+def auto_refresh(interval_ms=2000, key="js_autorefresh"):
+    """Ajoute un refresh automatique toutes les X ms via JS dans Streamlit (sans st_autorefresh)."""
+    js_code = f"""
+    <script>
+        if (!window.{key}) {{
+            window.{key} = setInterval(function() {{ window.location.reload(); }}, {interval_ms});
+        }}
+    </script>
+    """
+    st.markdown(js_code, unsafe_allow_html=True)
+                
 # Initialisation des flags de protection
 if 'prevent_cleanup' not in st.session_state:
     st.session_state.prevent_cleanup = True
@@ -5030,33 +5041,27 @@ async def main_async():
         # 6. Contrôles de la barre latérale avec gestion améliorée
         with st.sidebar:
             st.header("🛠️ Bot Controls")
-            
-            # Niveau de risque avec clé unique
             risk_level = st.select_slider(
                 "Risk Level",
                 options=["Low", "Medium", "High"],
                 value="Low",
                 key=f"risk_level_slider_{st.session_state.session_id}"
             )
-            
             st.divider()
-            
-            # Gestion des boutons Start/Stop sans boucle infinie!
             if not st.session_state.bot_running:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
                     st.session_state.bot_running = True
             else:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     st.session_state.bot_running = False
-
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-        # 7. Tick du bot + autorefresh à chaque refresh
+         # --- Ajout du refresh automatique JS SANS st_autorefresh ---
         if st.session_state.bot_running:
-            st_autorefresh(interval=2000, key="refresh_bot")  # 2000ms = 2s
+            auto_refresh(interval_ms=2000, key="js_autorefresh")
+            bot = get_bot()
             loop = st.session_state.loop or asyncio.get_event_loop()
-            # Appelle UNE FOIS la logique de trading (1 tick)
             loop.run_until_complete(bot.tick())
 
         # 8. Onglets principaux avec gestion d'erreur
