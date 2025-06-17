@@ -117,7 +117,6 @@ CLEANUP_COOLDOWN = 5
 cleanup_lock = asyncio.Lock()
 cleanup_in_progress = False
 last_cleanup_time = 0
-CLEANUP_COOLDOWN = 5
 
 # Constantes WebSocket globales
 WEBSOCKET_CONFIG = {
@@ -320,10 +319,6 @@ def _setup_and_verify_event_loop():
         
         # Incrément du compteur d'erreurs
         st.session_state.error_count = st.session_state.get('error_count', 0) + 1
-        
-        return None
-
-    finally:
     
     def protect_session(self):
         """Protection renforcée de la session"""
@@ -580,23 +575,6 @@ async def cleanup(self):
     except Exception as e:
         self.logger.error(f"Cleanup error: {e}")
             
-# Définition de la classe SessionManager
-class SessionManager:
-    """Gestionnaire de session simplifié"""
-    def __init__(self):
-        """Initialisation minimale"""
-        self.init_time = "2025-06-16 17:11:15"
-        self.user = "Patmoorea"
-        self.session_id = f"{self.user}_{int(time.time())}"
-
-    def protect_session(self):
-        """Protection simplifiée"""
-        pass  # Suppression des logs de protection
-
-    def log_event(self, event_type, message=""):
-        """Log minimal des événements critiques uniquement"""
-        if event_type in ['ERROR', 'CRITICAL']:
-            logger.error(f"{event_type}: {message}")
 class RegimeDetector:
     """Détecteur de régimes de marché"""
     def __init__(self):
@@ -1052,7 +1030,8 @@ async def setup_websocket_streams(bot):
                     )
                 )
 
-        # Mise à jour du statut de connexion
+         # Mise à jour du statut de connexion
+        bot.ws_connection.update({
             'enabled': True,
             'status': 'connected',
             'tasks': tasks,
@@ -1947,20 +1926,11 @@ class TradingBotM4:
         self.telegram = TelegramBot()
         self.hybrid_model = HybridAI()
         
-        # Initialisation du WebSocket Manager (AJOUT ICI)
-        self.ws_manager = WebSocketManager(self)
-        
         # Initialisation des buffers et données
         self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
         
         # Initialisation du client Binance
         try:
-            self.spot_client = BinanceClient(
-                api_key=self.config['BINANCE']['API_KEY'],
-                api_secret=self.config['BINANCE']['API_SECRET']
-            )
             self.logger.info("✅ Spot client initialisé avec succès")
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation spot client: {e}")
@@ -2192,61 +2162,6 @@ class TradingBotM4:
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
-        
-    def _generate_recommendation(self, trend, momentum, volatility, volume):
-        """Génère une recommandation basée sur l'analyse des signaux"""
-        try:
-            # Compteurs pour les signaux
-            buy_signals = 0
-            sell_signals = 0
-        
-            # Analyse de la tendance
-            if trend['primary_trend'] == 'bullish':
-                buy_signals += 1
-            elif trend['primary_trend'] == 'bearish':
-                sell_signals += 1
-            
-            # Analyse du momentum
-            if momentum['rsi_signal'] == 'oversold':
-                buy_signals += 1
-            elif momentum['rsi_signal'] == 'overbought':
-                sell_signals += 1
-            
-            # Analyse de la volatilité
-            if volatility['bb_signal'] == 'oversold':
-                buy_signals += 1
-            elif volatility['bb_signal'] == 'overbought':
-                sell_signals += 1
-            
-            # Analyse du volume
-            if volume['mfi_signal'] == 'buy':
-                buy_signals += 1
-            elif volume['mfi_signal'] == 'sell':
-                sell_signals += 1
-            
-            # Génération de la recommandation finale
-            recommendation = {
-                'action': 'hold',
-                'strength': 0,
-                'signals': {
-                    'buy': buy_signals,
-                    'sell': sell_signals
-                }
-            }
-        
-            if buy_signals > sell_signals:
-                recommendation['action'] = 'buy'
-                recommendation['strength'] = buy_signals - sell_signals
-            elif sell_signals > buy_signals:
-                recommendation['action'] = 'sell'
-                recommendation['strength'] = sell_signals - buy_signals
-            
-            logger.info(f"✅ Recommandation générée: {recommendation}")
-            return recommendation
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur génération recommandation: {e}")
-            return {'action': 'error', 'strength': 0, 'error': str(e)}
 
     def _generate_analysis_report(self, indicators_analysis, regime):
         """Génère un rapport d'analyse du marché"""
@@ -2416,6 +2331,7 @@ class TradingBotM4:
                 logger.info("✅ Initial portfolio data loaded")
 
             # Mise à jour du statut
+            self.ws_connection.update({
                 'enabled': True,
                 'status': 'connected',
                 'last_message': time.time()
@@ -2672,6 +2588,7 @@ class TradingBotM4:
                 "callback_rate": 0.01
             }
         
+            decision.update({
                 "stop_loss": stop_loss,
                 "take_profit": take_profit,
                 "trailing_stop": trailing_stop
@@ -2745,6 +2662,7 @@ class TradingBotM4:
                         logger.info(f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC")
                         
                     if result['ticker_24h']:
+                        data[pair].update({
                             'volume': float(result['ticker_24h']['volume']),
                             'price_change': float(result['ticker_24h']['priceChangePercent'])
                         })
@@ -2891,8 +2809,9 @@ class TradingBotM4:
             except Exception as report_error:
                 logger.error(f"Erreur génération rapport: {report_error}")
 
-            # Mise à jour du dashboard
+           # Mise à jour du dashboard
             try:
+                self.dashboard.update_market_analysis(
                     historical_data=historical_data,
                     indicators=indicators_analysis,
                     regime=regime,
@@ -3197,6 +3116,7 @@ class TradingBotM4:
                 logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
 
             # Calcul des métriques finales
+            portfolio.update({
                 'position_count': len(portfolio['positions']),
                 'total_position_value': sum(pos['value'] for pos in portfolio['positions']),
                 'available_margin': portfolio['free'] - sum(pos.get('value', 0) for pos in portfolio['positions'])
@@ -3532,7 +3452,8 @@ Take Profit: {take_profit}"""
             except Exception as e:
                 logger.error(f"❌ Erreur génération recommandation: {e}")
                 return {'action': 'error', 'confidence': 0}
-
+            
+    def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
         try:
             # Conversion policy en numpy pour le traitement
@@ -3636,6 +3557,7 @@ Take Profit: {take_profit}"""
                 )
 
                 # Vérification finale avant l'ordre
+                if not self._validate_trade(decision, position_size):
                     return
 
                 # Placement de l'ordre avec stop loss
@@ -5096,9 +5018,11 @@ async def start_trading_bot(bot):
     try:
         with st.spinner("Starting trading bot..."):
             if await initialize_websocket(bot):
+                st.session_state.global_state.update({
                     'ws_status': 'connected',
                     'bot_running': True
                 })
+                await update_market_data(bot)
                 st.success("✅ Bot started successfully!")
             else:
                 st.session_state.global_state['ws_status'] = 'error'
@@ -5111,113 +5035,14 @@ async def stop_trading_bot(bot):
     try:
         with st.spinner("Stopping trading bot..."):
             await cleanup_websocket(bot)
+            st.session_state.global_state.update({
                 'bot_running': False,
                 'ws_status': 'disconnected'
             })
             st.success("✅ Bot stopped successfully!")
     except Exception as e:
         st.error(f"❌ Stop error: {str(e)}")
-
-# Fonctions auxiliaires pour le rendu des onglets
-async def _render_portfolio_tab(bot):
-    """Rendu de l'onglet Portfolio"""
-    if st.session_state.bot_running:
-        try:
-            portfolio = st.session_state.get('portfolio')
-            if portfolio:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "💰 Total Value",
-                        f"{portfolio.get('total_value', 0):.2f} USDC",
-                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                    )
-                with col2:
-                    st.metric(
-                        "📈 24h Volume",
-                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                        f"{portfolio.get('volume_change', 0):+.2f}%"
-                    )
-                with col3:
-                    positions = portfolio.get('positions', [])
-                    st.metric(
-                        "🔄 Active Positions",
-                        str(len(positions)),
-                        f"{len(positions)} active"
-                    )
-                
-                if positions:
-                    st.subheader("Active Positions")
-                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
-                else:
-                    st.info("💡 No active positions")
-            else:
-                st.warning("⚠️ Waiting for portfolio data...")
-        except Exception as e:
-            st.error(f"❌ Portfolio error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view portfolio")
-
-async def _render_trading_tab(bot):
-    """Rendu de l'onglet Trading"""
-    if st.session_state.bot_running:
-        try:
-            latest_data = bot.latest_data.get('BTCUSDT', {})
-            if latest_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    current_price = latest_data[-1]['close']
-                    prev_price = latest_data[-2]['close'] if len(latest_data) > 1 else current_price
-                    price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
-                    
-                    st.metric(
-                        "BTC/USDC Price",
-                        f"{current_price:.2f}",
-                        f"{price_change:+.2f}%"
-                    )
-                with col2:
-                    current_vol = latest_data[-1]['volume']
-                    prev_vol = latest_data[-2]['volume'] if len(latest_data) > 1 else current_vol
-                    vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                    
-                    st.metric(
-                        "Trading Volume",
-                        f"{current_vol:.2f}",
-                        f"{vol_change:+.2f}%"
-                    )
-            
-            if bot.indicators:
-                st.subheader("Trading Signals")
-                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
-            else:
-                st.info("💡 Waiting for signals...")
-        except Exception as e:
-            st.error(f"❌ Trading data error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view signals")
-
-async def _render_analysis_tab(bot):
-    """Rendu de l'onglet Analysis"""
-    if st.session_state.bot_running:
-        try:
-            if bot.latest_data and bot.indicators:
-                st.subheader("Technical Analysis")
-                
-                for symbol in bot.latest_data:
-                    await process_market_data(bot, symbol)
-                
-                if hasattr(bot, 'advanced_indicators'):
-                    analysis = bot.advanced_indicators.get_all_signals()
-                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
-                else:
-                    st.info("💡 Processing analysis...")
-            else:
-                st.info("💡 Waiting for market data...")
-        except Exception as e:
-            st.error(f"❌ Analysis error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view analysis")
-
+        
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
     """Rendu de l'onglet Portfolio"""
@@ -5485,157 +5310,6 @@ def _initialize_session_state():
 ╚═════════════════════════════════════════════════╝
         """)
         return False
-
-def _setup_and_verify_event_loop():
-    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-    current_user = os.getenv('USER', 'Patmoorea')
-
-    try:
-        # Vérification de l'existence d'une boucle
-        if not st.session_state.get('loop'):
-            # Création et configuration de la nouvelle boucle
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            
-            # Sauvegarde dans la session
-            st.session_state.loop = loop
-            
-            # Log de succès d'initialisation
-            logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP INITIALIZED              ║
-╠═════════════════════════════════════════════════╣
-║ User: {current_user}
-║ Status: Successfully configured
-║ Loop ID: {id(loop)}
-╚═════════════════════════════════════════════════╝
-            """)
-            
-            return loop
-
-        # Vérification de la boucle existante
-        existing_loop = st.session_state.loop
-        if existing_loop.is_closed():
-            logger.warning(f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP CLOSED                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: Creating new loop
-║ Previous Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-            """)
-            
-            # Création d'une nouvelle boucle
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            nest_asyncio.apply()
-            st.session_state.loop = new_loop
-            return new_loop
-
-        # Retour de la boucle existante
-        logger.debug(f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP VERIFIED                 ║
-╠═════════════════════════════════════════════════╣
-║ Status: Using existing loop
-║ Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-        """)
-        
-        return existing_loop
-
-    except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
-║ Details: {traceback.format_exc()}
-╚═════════════════════════════════════════════════╝
-        """)
-        
-        # Incrément du compteur d'erreurs
-        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
-        
-        return None
-
-    finally:
-
-def _perform_cleanup():
-    """Effectue le nettoyage final de l'application"""
-    try:
-       # Protection contre le nettoyage non autorisé
-        if (st.session_state.get('prevent_cleanup', True) or
-            st.session_state.get('bot_running', False)):
-            return
-
-        # 2. Nettoyage de la boucle d'événements
-        if st.session_state.get('loop'):
-            loop = st.session_state.loop
-            if not loop.is_closed():
-                try:
-                    # Nettoyage conditionnel des ressources
-                    if (st.session_state.get('force_cleanup', False) and 
-                        st.session_state.get('cleanup_allowed', False)):
-                        if 'bot_instance' in st.session_state:
-                            loop.run_until_complete(
-                                cleanup_resources(st.session_state.bot_instance)
-                            )
-                    loop.close()
-                except Exception as e:
-                    logger.error(f"Loop cleanup error: {e}")
-                finally:
-                    st.session_state.loop = None
-
-        logger.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: All resources cleaned
-╚═════════════════════════════════════════════════╝
-        """)
-
-    except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """)
-    finally:
-        # Protection finale absolue
-        session_manager.protect_session()
-
-def ensure_event_loop():
-    """Vérifie et assure l'existence d'une boucle d'événements valide"""
-    try:
-        if not st.session_state.get('loop'):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            st.session_state.loop = loop
-            
-            logger.info("✅ New event loop created and configured")
-            return loop
-            
-        return st.session_state.loop
-        
-    except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """)
-        return None
 
 if __name__ == "__main__":
     try:
