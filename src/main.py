@@ -166,7 +166,7 @@ class StreamlitSessionManager:
         if not st.session_state.get('session_initialized'):
             try:
                 default_state = {
-                    'session_id': self.session_id,
+                    'session_id': session_manager.session_id,
                     'user': self.user,
                     'initialized': True,
                     'session_initialized': True,
@@ -743,7 +743,7 @@ def get_bot():
     try:
         session_manager.protect_session()  # Protection explicite
         logger.info("Creating new bot instance...")
-        bot = TradingBotM4(CONFIG)
+        bot = TradingBotM4(config)
         st.session_state.bot_instance = bot
         return bot
     except Exception as e:
@@ -1812,7 +1812,7 @@ class MultiStreamManager:
         self.exchange = Exchange(exchange_id=exchange_id)
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
-    def __init__(self):
+    def __init__(self, config):
         """Initialisation du bot avec gestion améliorée des états"""
         # Date et utilisateur courant
         self.config = config
@@ -4687,7 +4687,7 @@ async def run_trading_bot():
             try:
                 async with asyncio.timeout(30):  # Ajouter un timeout de 30 secondes
                     # Démarrer le bot de façon asynchrone
-                    bot = TradingBotM4(CONFIG)
+                    bot = TradingBotM4(config)
                     await bot.initialize()  # Utiliser await au lieu de asyncio.run
                     await bot.run()  # Utiliser await ici aussi
             
@@ -5167,7 +5167,7 @@ def main():
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
 ╠═════════════════════════════════════════════════╣
-║ Session: {session_manager.self.session_id}
+║ Session: {session_manager.session_id}
 ║ Status: Initializing
 ╚═════════════════════════════════════════════════╝
         """)
@@ -5219,7 +5219,7 @@ def _initialize_session_state():
         # États par défaut avec horodatage
         default_state = {
             # États de base
-            'session_id': self.session_id,
+            'session_id': session_manager.session_id,
             'user': current_user,
             'initialized': True,
             
@@ -5257,7 +5257,7 @@ def _initialize_session_state():
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
 ║ User: {current_user}
-║ Session ID: {self.self.session_id}
+║ Session ID: {self.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """)
