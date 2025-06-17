@@ -166,7 +166,7 @@ class StreamlitSessionManager:
         if not st.session_state.get('session_initialized'):
             try:
                 default_state = {
-                    'session_id': session_manager.session_id,
+                    'session_id': self.session_id,
                     'user': self.user,
                     'initialized': True,
                     'session_initialized': True,
