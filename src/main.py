@@ -4911,42 +4911,28 @@ async def main_async():
             
             st.divider()
             
-            # Boutons de contrôle avec gestion d'état améliorée
-            if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                try:
-                    with st.spinner("Starting trading bot..."):
-                        # Protection explicite avant le démarrage
-                        st.session_state.prevent_cleanup = True
-                        st.session_state.force_cleanup = False
-                        st.session_state.cleanup_allowed = False
-            
-                        session_manager.protect_session()
-            
-                        if not st.session_state.ws_initialized:
-                            st.session_state.ws_connection_status = 'initializing'
-                            if await initialize_websocket(bot):
-                                st.session_state.ws_initialized = True
-                                st.session_state.ws_connection_status = 'connected'
-                                st.session_state.bot_running = True
-                                st.success("✅ Bot started successfully!")
-                            else:
-                                st.session_state.ws_connection_status = 'error'
-                                st.error("❌ WebSocket initialization failed")
-                except Exception as e:
-                    st.session_state.ws_connection_status = 'error'
-                    st.error(f"❌ Failed to start bot: {str(e)}")
-                    st.session_state.bot_running = False
-            else:
+            # Affichage des boutons de contrôle côte à côte
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
+                    st.session_state.prevent_cleanup = True
+                    st.session_state.force_cleanup = False
+                    st.session_state.cleanup_allowed = False
+                    session_manager.protect_session()
+                    st.session_state.ws_connection_status = 'initializing'
+                    st.session_state.bot_running = True
+                    # Lancement de la tâche principale asynchrone
+                    asyncio.create_task(main_async())
+                    st.success("✅ Bot started!")
+
+            with col2:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
-                    try:
-                        with st.spinner("Stopping trading bot..."):
-                            await cleanup_websocket(bot)
-                            st.session_state.bot_running = False
-                            st.session_state.ws_connection_status = 'disconnected'
-                            session_manager.protect_session()
-                            st.success("✅ Bot stopped successfully!")
-                    except Exception as e:
-                        st.error(f"❌ Failed to stop bot: {str(e)}")
+                    st.session_state.bot_running = False
+                    st.session_state.ws_connection_status = 'disconnected'
+                    session_manager.protect_session()
+                    asyncio.create_task(cleanup_websocket(bot))  # On lance le cleanup en tâche de fond
+                    st.success("🛑 Bot stopped!")
 
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
@@ -5170,9 +5156,6 @@ def main():
         if not event_loop:
             raise RuntimeError("Failed to initialize event loop")
 
-        # 6. Exécution de la coroutine principale
-        event_loop.run_until_complete(main_async())
-
     except asyncio.CancelledError:
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -5253,63 +5236,3 @@ def _initialize_session_state():
 ╚═════════════════════════════════════════════════╝
         """)
         return False
-
-if __name__ == "__main__":
-    try:
-        main()
-        
-    except KeyboardInterrupt:
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║              KEYBOARD INTERRUPT                  ║
-╠═════════════════════════════════════════════════╣
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Status: Graceful shutdown initiated
-╚═════════════════════════════════════════════════╝
-        """)
-        
-    except Exception as e:
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              CRITICAL ERROR                      ║
-╠═════════════════════════════════════════════════╣
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """)
-        sys.exit(1)
-        
-    finally:
-        try:
-            # Nettoyage final avec nouvelle boucle si nécessaire
-            if 'bot_instance' in st.session_state:
-                try:
-                    # Création d'une nouvelle boucle pour le nettoyage final
-                    cleanup_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(cleanup_loop)
-                    cleanup_loop.run_until_complete(
-                        cleanup_resources(st.session_state.bot_instance)
-                    )
-                    cleanup_loop.close()
-                except Exception as e:
-                    logger.error(f"Final cleanup error: {e}")
-            
-            logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║              FINAL CLEANUP                       ║
-╠═════════════════════════════════════════════════╣
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Status: All resources cleaned
-╚═════════════════════════════════════════════════╝
-            """)
-            
-        except Exception as cleanup_error:
-            logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Error: {str(cleanup_error)}
-╚═════════════════════════════════════════════════╝
-            """)
