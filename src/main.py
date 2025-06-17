@@ -2120,7 +2120,20 @@ class TradingBotM4:
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
-
+    
+    def get_latest_price(self, symbol):
+        """
+        Récupère le dernier prix pour un symbole donné via le spot_client.
+        """
+        if hasattr(self.spot_client, 'get_ticker_price'):
+            return self.spot_client.get_ticker_price(symbol)
+        elif hasattr(self.spot_client, 'fetch_ticker'):
+            # Pour compatibilité avec ccxt
+            ticker = self.spot_client.fetch_ticker(symbol)
+            return ticker['last']
+        else:
+            raise NotImplementedError("No method to get latest price")
+    
     async def start(self):
         """Démarre le bot"""
         try:
@@ -3155,7 +3168,7 @@ class TradingBotM4:
                 raise Exception("Failed to initialize spot client")
 
             # Récupération des balances de manière asynchrone
-            balance = await self.spot_client.get_balance()
+            balance = self.spot_client.get_balance()
             if not balance or 'balances' not in balance:
                 raise Exception("No balance data available")
 
@@ -3189,7 +3202,7 @@ class TradingBotM4:
                         else:
                             # Conversion en USDC pour les autres assets
                             try:
-                                price = await self.get_latest_price(f"{asset}USDC")
+                                price = self.get_latest_price(f"{asset}USDC")
                                 value = (free + locked) * price
                             
                                 if value > 0:
@@ -3214,7 +3227,7 @@ class TradingBotM4:
             # Récupération des ordres ouverts
             try:
                 for pair in self.config['TRADING']['pairs']:
-                    open_orders = await self.spot_client.get_open_orders(pair)
+                    open_orders = self.spot_client.get_open_orders(pair)
                 
                     if open_orders:
                         for order in open_orders:
@@ -3250,7 +3263,7 @@ class TradingBotM4:
             # Récupération des données de volume sur 24h
             try:
                 for pair in self.config['TRADING']['pairs']:
-                    ticker_24h = await self.spot_client.get_24h_ticker(pair)
+                    ticker_24h = self.spot_client.get_24h_ticker(pair)
                     if ticker_24h:
                         portfolio['volume_24h'] += float(ticker_24h['volume'])
                         portfolio['volume_change'] += float(ticker_24h['priceChangePercent'])
