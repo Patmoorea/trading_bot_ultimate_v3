@@ -65,6 +65,34 @@ import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
 
+def init_session_state():
+    """Initialize session state variables with strong defaults"""
+    session_vars = {
+        'initialized': False,
+        'bot_running': False,
+        'portfolio': None,
+        'latest_data': None,
+        'indicators': None,
+        'refresh_count': 0,
+        'loop': None,
+        'ws_status': 'disconnected',
+        'error_count': 0,
+        'keep_alive': True,  # Force à True
+        'prevent_cleanup': True,  # Force à True
+        'force_cleanup': False,  # Force à False
+        'ws_initialized': False,
+        'cleanup_allowed': False  # Nouveau flag
+    }
+    
+    for var, default in session_vars.items():
+        # Ne pas écraser les valeurs existantes pour keep_alive et prevent_cleanup
+        if var in ['keep_alive', 'prevent_cleanup']:
+            st.session_state.setdefault(var, True)
+        else:
+            st.session_state[var] = default
+            
+init_session_state()
+
 # 7. Imports des modules locaux
 # Imports des modules d'échange
 from src.exchanges.binance_exchange import BinanceExchange
@@ -630,32 +658,6 @@ def setup_event_loop() -> AbstractEventLoop:
         asyncio.set_event_loop(loop)
     nest_asyncio.apply()
     return loop
-
-def init_session_state():
-    """Initialize session state variables with strong defaults"""
-    session_vars = {
-        'initialized': False,
-        'bot_running': False,
-        'portfolio': None,
-        'latest_data': None,
-        'indicators': None,
-        'refresh_count': 0,
-        'loop': None,
-        'ws_status': 'disconnected',
-        'error_count': 0,
-        'keep_alive': True,  # Force à True
-        'prevent_cleanup': True,  # Force à True
-        'force_cleanup': False,  # Force à False
-        'ws_initialized': False,
-        'cleanup_allowed': False  # Nouveau flag
-    }
-    
-    for var, default in session_vars.items():
-        # Ne pas écraser les valeurs existantes pour keep_alive et prevent_cleanup
-        if var in ['keep_alive', 'prevent_cleanup']:
-            st.session_state.setdefault(var, True)
-        else:
-            st.session_state[var] = default
 
 # Configuration du bot
 load_dotenv()
@@ -2245,9 +2247,6 @@ class TradingBotM4:
     async def start(self):
         """Démarre le bot"""
         try:
-            # Initialisation des WebSockets
-            if not await self.ws_manager.start():
-                raise Exception("Failed to start WebSocket manager")
                 
             # Initialisation des composants
             await self._setup_components()
