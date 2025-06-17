@@ -1068,7 +1068,7 @@ async def initialize_websocket(bot):
         """)
 
         # 1. Vérification des credentials
-        api_key = os.getenv('BINANCE_API_KEY')
+        api_key = self.config['BINANCE']['API_KEY']
         api_secret = os.getenv('BINANCE_API_SECRET')
         
         if not api_key or not api_secret:
@@ -1831,32 +1831,6 @@ class TradingBotM4:
         st.session_state.cleanup_allowed = False
         st.session_state.keep_alive = True
 
-        # Configuration principale
-        self.config = {
-            'NEWS': {
-                'enabled': True,
-                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-            },
-            'BINANCE': {
-                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
-                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
-            },
-            'TRADING': {
-                'pairs': ["BTC/USDT", "ETH/USDT"],
-                'timeframes': ["1m", "5m", "15m", "1h", "4h", "1d"]
-            },
-            'ARBITRAGE': {
-                'exchanges': ["binance", "bitfinex", "kraken"],
-                'pairs': ["BTC/USDT", "ETH/USDT"],
-                'min_profit': 0.002,
-                'max_trade_size': 1000,
-                'timeout': 5,
-                'volume_filter': 100000,
-                'price_check': True,
-                'max_slippage': 0.001
-            }
-        }
-
         # Configurations des composants
         self.session_config = {
             'keep_alive': True,
@@ -2079,16 +2053,6 @@ class TradingBotM4:
             self.logger.error(f"❌ Bot initialization error: {e}")
             return False
 
-        self.config = {
-            'NEWS': {
-                'enabled': True,
-                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-            },
-            'BINANCE': {
-                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
-                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
-            }
-        }
         self.spot_client = None
         self.ws_manager = None
         
@@ -2883,7 +2847,7 @@ class TradingBotM4:
     async def setup_real_exchange(self):
         """Configuration sécurisée de l'exchange"""
         try:
-            api_key = os.getenv('BINANCE_API_KEY')
+            api_key = self.config['BINANCE']['API_KEY']
             api_secret = os.getenv('BINANCE_API_SECRET')
         
             if not api_key or not api_secret:
