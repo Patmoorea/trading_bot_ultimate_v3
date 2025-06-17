@@ -152,6 +152,7 @@ class StreamlitSessionManager:
         """Initialisation unique du gestionnaire"""
         if not self._initialized:
             self.user = os.getenv('USER', 'Patmoorea')
+            self.session_id = f"{self.user}_{os.getpid()}"
             self.logger = logging.getLogger(__name__)
             self._initialized = True
             
@@ -742,7 +743,7 @@ def get_bot():
     try:
         session_manager.protect_session()  # Protection explicite
         logger.info("Creating new bot instance...")
-        bot = TradingBotM4()
+        bot = TradingBotM4(CONFIG)
         st.session_state.bot_instance = bot
         return bot
     except Exception as e:
@@ -758,7 +759,7 @@ def get_bot():
         """)
 
         # Création du bot
-        bot = TradingBotM4()
+        bot = TradingBotM4(CONFIG)
         
         # Configuration de la boucle d'événements
         if not st.session_state.get('loop'):
@@ -1301,7 +1302,7 @@ async def cleanup_resources(bot):
 ║           CLEANUP PREVENTED                      ║
 ╠═════════════════════════════════════════════════╣
 ║ Active Protections: {', '.join(active_protections)}
-║ Session ID: {st.session_state.get('session_id', 'Unknown')}
+║ Session ID: {st.session_state.get('self.session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
         """)
         return False
@@ -1814,6 +1815,7 @@ class TradingBotM4:
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
         # Date et utilisateur courant
+        self.config = config
         self.CURRENT_USER = "Patmoorea"
 
         # Flags de contrôle
@@ -4685,7 +4687,7 @@ async def run_trading_bot():
             try:
                 async with asyncio.timeout(30):  # Ajouter un timeout de 30 secondes
                     # Démarrer le bot de façon asynchrone
-                    bot = TradingBotM4()
+                    bot = TradingBotM4(CONFIG)
                     await bot.initialize()  # Utiliser await au lieu de asyncio.run
                     await bot.run()  # Utiliser await ici aussi
             
@@ -5165,7 +5167,7 @@ def main():
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
 ╠═════════════════════════════════════════════════╣
-║ Session: {session_manager.session_id}
+║ Session: {session_manager.self.session_id}
 ║ Status: Initializing
 ╚═════════════════════════════════════════════════╝
         """)
@@ -5217,7 +5219,7 @@ def _initialize_session_state():
         # États par défaut avec horodatage
         default_state = {
             # États de base
-            'session_id': session_id,
+            'session_id': self.session_id,
             'user': current_user,
             'initialized': True,
             
@@ -5255,7 +5257,7 @@ def _initialize_session_state():
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
 ║ User: {current_user}
-║ Session ID: {session_id}
+║ Session ID: {self.self.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """)
