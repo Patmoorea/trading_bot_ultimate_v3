@@ -3,11 +3,12 @@ import streamlit as st
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
-    """Ajoute un refresh automatique toutes les X ms via JS dans Streamlit (sans st_autorefresh)."""
     js_code = f"""
     <script>
         if (!window.{key}) {{
-            window.{key} = setInterval(function() {{ window.location.reload(); }}, {interval_ms});
+            window.{key} = setInterval(function() {{
+                window.location.reload();
+            }}, {interval_ms});
         }}
     </script>
     """
@@ -3154,7 +3155,7 @@ class TradingBotM4:
                 raise Exception("Failed to initialize spot client")
 
             # Récupération des balances de manière asynchrone
-            balance = await self.spot_client.get_account()
+            balance = await self.spot_client.get_balance()
             if not balance or 'balances' not in balance:
                 raise Exception("No balance data available")
 
