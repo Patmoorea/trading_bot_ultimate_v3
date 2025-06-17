@@ -1,5 +1,6 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
+from streamlit_extras.st_autorefresh import st_autorefresh
 
 # Initialisation des flags de protection
 if 'prevent_cleanup' not in st.session_state:
@@ -1906,6 +1907,27 @@ class MultiStreamManager:
 
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
+    async def tick(self):
+        """Effectue une itération de trading (une fois par refresh)"""
+        try:
+            # Récupération des données
+            market_data = await self.get_latest_data()
+            if market_data:
+                for pair in self.config["TRADING"]["pairs"]:
+                    indicators = await self.calculate_indicators(pair)
+                    if indicators:
+                        signals = await self.analyze_signals(market_data, indicators)
+                        # Ici tu peux gérer l’exécution réelle du trade si besoin
+                        # if signals and signals.get('should_trade', False):
+                        #     await self.execute_real_trade(signals)
+                portfolio = await self.get_real_portfolio()
+                if portfolio:
+                    st.session_state.portfolio = portfolio
+                    st.session_state.latest_data = market_data
+                    st.session_state.indicators = indicators
+        except Exception as e:
+            logger.error(f"Erreur tick: {e}")
+            
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
         # Flags de contrôle
@@ -2843,44 +2865,6 @@ class TradingBotM4:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
 
-    async def trading_loop(self):
-        """Boucle principale de trading"""
-        while st.session_state.bot_running:
-            try:
-                # Création d'un nouveau contexte de tâche pour le timeout
-                async with asyncio.timeout(10):  # 10 secondes de timeout global
-                    # Récupération des données
-                    market_data = await self.get_latest_data()
-                    if market_data:
-                        # Calcul des indicateurs pour chaque symbole
-                        for pair in config["TRADING"]["pairs"]:
-                            indicators = await self.calculate_indicators(pair)
-                            if indicators:
-                                # Analyse des signaux
-                                signals = await self.analyze_signals(market_data, indicators)
-                            
-                                if signals and signals.get('should_trade', False):
-                                    trade_result = await self.execute_real_trade(signals)
-                                    if trade_result:
-                                        logger.info(f"✅ Trade exécuté: {trade_result}")
-
-                        # Mise à jour du portfolio
-                        portfolio = await self.get_real_portfolio()
-                        if portfolio:
-                            st.session_state.portfolio = portfolio
-                            st.session_state.latest_data = market_data
-                            st.session_state.indicators = indicators
-
-                # Attente avant la prochaine itération
-                await asyncio.sleep(1)
-
-            except asyncio.TimeoutError:
-                logger.warning("⚠️ Timeout dans la boucle principale")
-                await asyncio.sleep(5)
-            except Exception as e:
-                logger.error(f"❌ Erreur dans la boucle: {str(e)}")
-                await asyncio.sleep(5)
-                
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
         logger.info("🔊 Étude du marché en cours...")
@@ -3378,61 +3362,10 @@ Take Profit: {take_profit}"""
 
             # Mise à jour de l'état du bot
             st.session_state.bot_running = True
-
-            # Boucle de trading asynchrone
-            while st.session_state.bot_running:
-                try:
-                    # Utilisation du context manager timeout
-                    async with asyncio.timeout(10):  # 10 secondes timeout
-                        # Récupération des données
-                        market_data = await self.get_latest_data()
-                        if market_data:
-                            # Calcul des indicateurs
-                            indicators = await self.calculate_indicators('BTC/USDC')
-                    
-                            # Analyse des signaux
-                            decision = await self.analyze_signals(market_data, indicators)
-                    
-                            if decision and decision.get('should_trade', False):
-                                trade_result = await self.execute_real_trade(decision)
-                                if trade_result:
-                                    logger.info(f"Trade exécuté: {trade_result['id']}")
-                    
-                            # Mise à jour du portfolio
-                            portfolio = await self.get_real_portfolio()
-                    
-                            # Mise à jour de l'état
-                            if portfolio:
-                                st.session_state.portfolio = portfolio
-                                st.session_state.latest_data = market_data
-                                st.session_state.indicators = indicators
-                
-                    # Attente avant la prochaine itération
-                    await asyncio.sleep(1)
-            
-                except asyncio.TimeoutError:
-                    logger.warning("⚠️ Timeout dans la boucle de trading")
-                    await asyncio.sleep(5)
-                except Exception as loop_error:
-                    logger.error(f"Erreur dans la boucle: {loop_error}")
-                    await asyncio.sleep(5)
-
-            logger.info("✅ Bot de trading démarré avec succès")
-            
-        except Exception as e:
-            logger.error(f"Erreur fatale: {e}")
-            st.session_state.bot_running = False
-        
-            # Notification Telegram en cas d'erreur
-            if hasattr(self, 'telegram'):
-                try:
-                    await self.telegram.send_message(
-                        f"🚨 Erreur critique du bot:\n{str(e)}\n"
-                    )
-                except Exception as telegram_error:
+        except Exception as telegram_error:
                     logger.error(f"Erreur envoi Telegram: {telegram_error}")
-            raise
-
+        raise
+        
     async def create_dashboard(self):
         """Crée le dashboard Streamlit"""
         try:
@@ -5058,7 +4991,7 @@ async def main_async():
             'ws_connection_status': 'disconnected',
             'last_update_time': current_time,
             'needs_update': False,
-            'update_interval': 1.0,  # 1 seconde entre les mises à jour
+            'update_interval': 2.0,  # 2 secondes entre les mises à jour (plus adapté autorefresh)
             'last_refresh': time.time()
         }
         
@@ -5108,72 +5041,42 @@ async def main_async():
             
             st.divider()
             
-            # Gestion des boutons avec protection
+            # Gestion des boutons Start/Stop sans boucle infinie!
             if not st.session_state.bot_running:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    try:
-                        with st.spinner("Starting trading bot..."):
-                            session_manager.protect_session()
-                            
-                            if not st.session_state.ws_initialized:
-                                st.session_state.ws_connection_status = 'initializing'
-                                if await initialize_websocket(bot):
-                                    st.session_state.ws_initialized = True
-                                    st.session_state.ws_connection_status = 'connected'
-                                    st.session_state.bot_running = True
-                                    await update_market_data(bot)
-                                    st.success("✅ Bot started successfully!")
-                                else:
-                                    st.session_state.ws_connection_status = 'error'
-                                    st.error("❌ WebSocket initialization failed")
-                    except Exception as e:
-                        st.session_state.ws_connection_status = 'error'
-                        st.error(f"❌ Failed to start bot: {str(e)}")
-                        st.session_state.bot_running = False
+                    st.session_state.bot_running = True
             else:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
-                    try:
-                        with st.spinner("Stopping trading bot..."):
-                            await cleanup_websocket(bot)
-                            st.session_state.bot_running = False
-                            st.session_state.ws_connection_status = 'disconnected'
-                            st.session_state.ws_initialized = False
-                            session_manager.protect_session()
-                            st.success("✅ Bot stopped successfully!")
-                    except Exception as e:
-                        st.error(f"❌ Failed to stop bot: {str(e)}")
+                    st.session_state.bot_running = False
 
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-        # 7. Onglets principaux avec gestion d'erreur
+        # 7. Tick du bot + autorefresh à chaque refresh
+        if st.session_state.bot_running:
+            st_autorefresh(interval=2000, key="refresh_bot")  # 2000ms = 2s
+            loop = st.session_state.loop or asyncio.get_event_loop()
+            # Appelle UNE FOIS la logique de trading (1 tick)
+            loop.run_until_complete(bot.tick())
+
+        # 8. Onglets principaux avec gestion d'erreur
         try:
             portfolio_tab, trading_tab, analysis_tab = st.tabs(["📈 Portfolio", "🎯 Trading", "📊 Analysis"])
 
-            # 8. Onglet Portfolio
+            # Onglet Portfolio
             with portfolio_tab:
                 await _render_portfolio_tab(bot)
 
-            # 9. Onglet Trading
+            # Onglet Trading
             with trading_tab:
                 await _render_trading_tab(bot)
 
-            # 10. Onglet Analysis
+            # Onglet Analysis
             with analysis_tab:
                 await _render_analysis_tab(bot)
         except Exception as tab_error:
             logger.error(f"Tab rendering error: {tab_error}")
             st.error("Error rendering tabs")
-
-        # 11. Mise à jour périodique contrôlée
-        if st.session_state.bot_running:
-            current_time = time.time()
-            if current_time - st.session_state.last_refresh >= st.session_state.update_interval:
-                st.session_state.last_refresh = current_time
-                st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-                st.session_state.needs_update = True
-                time.sleep(0.1)  # Petit délai pour éviter une surcharge
-                st.rerun()
 
     except Exception as e:
         logger.error(f"❌ Application error: {str(e)}")
