@@ -1302,7 +1302,7 @@ async def cleanup_resources(bot):
 ║           CLEANUP PREVENTED                      ║
 ╠═════════════════════════════════════════════════╣
 ║ Active Protections: {', '.join(active_protections)}
-║ Session ID: {st.session_state.get('self.session_id', 'Unknown')}
+║ Session ID: {st.session_state.get('session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
         """)
         return False
@@ -5157,11 +5157,6 @@ def main():
             return
         st.session_state.main_running = True
 
-        # 2. Initialisation et protection de la session
-        global session_manager
-        session_manager = StreamlitSessionManager()
-        session_manager.protect_session()
-
         # 3. Log de démarrage
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -5216,48 +5211,36 @@ def _initialize_session_state():
     current_user = os.getenv('USER', 'Patmoorea')
 
     try:
-        # États par défaut avec horodatage
         default_state = {
-            # États de base
             'session_id': session_manager.session_id,
             'user': current_user,
             'initialized': True,
-            
-            # États du bot
             'bot_running': False,
             'portfolio': None,
             'latest_data': None,
             'indicators': None,
             'refresh_count': 0,
-            
-            # États de la boucle événementielle
             'loop': None,
             'error_count': 0,
-            
-            # États WebSocket
             'ws_status': 'disconnected',
             'ws_initialized': False,
             'ws_connection_status': 'disconnected',
-            
-            # Protections
             'keep_alive': True,
             'prevent_cleanup': True,
             'force_cleanup': False,
             'cleanup_allowed': False
         }
 
-        # Initialisation des états manquants uniquement
         for key, value in default_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
 
-        # Log de succès
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
 ║ User: {current_user}
-║ Session ID: {self.session_id}
+║ Session ID: {session_manager.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """)
@@ -5265,7 +5248,6 @@ def _initialize_session_state():
         return True
 
     except Exception as e:
-        # Log d'erreur
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE ERROR                    ║
