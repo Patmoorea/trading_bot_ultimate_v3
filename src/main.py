@@ -4966,10 +4966,6 @@ async def main_async():
         with analysis_tab:
             await _render_analysis_tab(bot)
 
-        # 11. Mise à jour périodique si le bot est en cours d'exécution
-        if st.session_state.bot_running:
-            st.experimental_rerun()
-
     except Exception as e:
         logger.error(f"❌ Application error: {str(e)}")
         st.error(f"❌ Application error: {str(e)}")
