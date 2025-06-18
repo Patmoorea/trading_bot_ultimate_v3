@@ -125,6 +125,7 @@ from src.liquidity_heatmap.visualization import generate_heatmap
 from src.core.buffer.circular_buffer import CircularBuffer
 from web_interface.app.services.news_analyzer import NewsAnalyzer
 from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
+from src.backtesting.core.backtest_engine import BacktestEngine
 
 # Constantes de nettoyage
 cleanup_lock = asyncio.Lock()
@@ -3514,12 +3515,26 @@ Take Profit: {take_profit}"""
                         st.subheader("Régime de marché")
                         st.info(f"{st.session_state['regime']}")
 
-                # Bouton backtest si tu as un module
                 if st.button("Lancer Backtest"):
-                    from src.backtest.engine import run_backtest
-                    report = run_backtest(...)  # à adapter
-                    st.write(report)
+                    # Récupère tes données historiques depuis le bot (exemple)
+                    data = bot.latest_data  # ou adapte selon ta logique (doit être un DataFrame avec 'close')
+                    # Définis une fonction de stratégie simple pour tester
+                    def strategy_func(df, **params):
+                        # Ex : signal long si cours > moyenne mobile 5
+                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                    engine = BacktestEngine(initial_capital=10000)
+                    results = engine.run_backtest(data, strategy_func)
+                    st.write("Résultats du backtest :", results)
 
+                if st.button("Lancer Backtest Quantique"):
+                    data = bot.latest_data  # ou autre selon ta logique
+                    def strategy_func(df):
+                        return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
+                    config = BacktestConfig(initial_capital=10000)
+                    backtester = QuantumBacktester(config)
+                    results = backtester.run_quantum_simulation(data, strategy_func)
+                    st.write("Résultats du backtest quantique :", results)
+    
             # TAB 4: SETTINGS
             with tab4:
                 st.subheader("⚙️ Bot Configuration")
