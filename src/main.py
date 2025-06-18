@@ -1295,10 +1295,10 @@ async def handle_socket_message(bot, socket, stream_name):
                 
                 if msg:
                     # Mise à jour des données
-                    if 'data' not in self.latest_data:
-                        self.latest_data['data'] = {}
+                    if 'data' not in bot.latest_data:
+                        bot.latest_data['data'] = {}
                     
-                    self.latest_data['data'][stream_name] = msg
+                    bot.latest_data['data'][stream_name] = msg
                     
                     # Mise à jour du timestamp
                     bot.ws_connection['last_message'] = datetime.now(timezone.utc)
@@ -1464,7 +1464,7 @@ async def check_websocket_health(bot):
             return await reset_websocket(bot)
 
         # Vérifier si on reçoit des données
-        if not self.latest_data:
+        if not bot.latest_data:
             return await reset_websocket(bot)
 
         return True
@@ -1539,13 +1539,13 @@ async def update_trading_data(bot):
         logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
-            self.latest_data["BTCUSDT"] = btc_data
+            bot.latest_data["BTCUSDT"] = btc_data
             
         # Récupération des données ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
-            self.latest_data["ETHUSDT"] = eth_data
+            bot.latest_data["ETHUSDT"] = eth_data
             
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
@@ -1651,14 +1651,14 @@ async def update_market_data(bot):
         logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, 'BTCUSDT')
         if btc_data:
-            self.latest_data['BTCUSDT'] = btc_data
+            bot.latest_data['BTCUSDT'] = btc_data
             data_received = True
             
         # Récupération ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, 'ETHUSDT')
         if eth_data:
-            self.latest_data['ETHUSDT'] = eth_data
+            bot.latest_data['ETHUSDT'] = eth_data
             data_received = True
             
         if not data_received:
@@ -1673,7 +1673,7 @@ async def update_market_data(bot):
 async def process_market_data(bot, symbol):
     """Traite les données de marché pour un symbole"""
     try:
-        data = self.latest_data[symbol]
+        data = bot.latest_data[symbol]
         if not data:
             return
             
@@ -1743,13 +1743,13 @@ async def process_ws_message(bot, msg):
 
         if msg['e'] == 'ticker':
             # Mise à jour du prix
-            self.latest_data['price'] = float(msg['c'])
-            self.latest_data['volume'] = float(msg['v'])
-            logger.debug(f"💰 Price updated: {self.latest_data['price']}")
+            bot.latest_data['price'] = float(msg['c'])
+            bot.latest_data['volume'] = float(msg['v'])
+            logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
             
         elif msg['e'] == 'depth':
             # Mise à jour de l'orderbook
-            self.latest_data['orderbook'] = {
+            bot.latest_data['orderbook'] = {
                 'bids': msg['b'][:5],
                 'asks': msg['a'][:5]
             }
@@ -1758,7 +1758,7 @@ async def process_ws_message(bot, msg):
         elif msg['e'] == 'kline':
             # Mise à jour des klines
             k = msg['k']
-            self.latest_data['klines'] = {
+            bot.latest_data['klines'] = {
                 'open': float(k['o']),
                 'high': float(k['h']),
                 'low': float(k['l']),
@@ -1768,7 +1768,7 @@ async def process_ws_message(bot, msg):
             logger.debug("📊 Klines updated")
             
         # Mise à jour du timestamp
-        self.latest_data['timestamp'] = msg.get('E', int(time.time() * 1000))
+        bot.latest_data['timestamp'] = msg.get('E', int(time.time() * 1000))
         bot.ws_connection['last_message'] = time.time()
         
     except Exception as e:
@@ -3517,7 +3517,7 @@ Take Profit: {take_profit}"""
 
                 if st.button("Lancer Backtest"):
                     # Récupère tes données historiques depuis le bot (exemple)
-                    data = self.latest_data  # ou adapte selon ta logique (doit être un DataFrame avec 'close')
+                    data = bot.latest_data  # ou adapte selon ta logique (doit être un DataFrame avec 'close')
                     # Définis une fonction de stratégie simple pour tester
                     def strategy_func(df, **params):
                         # Ex : signal long si cours > moyenne mobile 5
@@ -3527,7 +3527,7 @@ Take Profit: {take_profit}"""
                     st.write("Résultats du backtest :", results)
 
                 if st.button("Lancer Backtest Quantique"):
-                    data = self.latest_data  # ou autre selon ta logique
+                    data = bot.latest_data  # ou autre selon ta logique
                     def strategy_func(df):
                         return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
                     config = BacktestConfig(initial_capital=10000)
@@ -5280,7 +5280,7 @@ async def _render_trading_tab(bot):
     """Rendu de l'onglet Trading"""
     if st.session_state.bot_running:
         try:
-            latest_data = self.latest_data.get('BTCUSDT', {})
+            latest_data = bot.latest_data.get('BTCUSDT', {})
             if latest_data:
                 col1, col2 = st.columns(2)
                 with col1:
@@ -5318,10 +5318,10 @@ async def _render_analysis_tab(bot):
     """Rendu de l'onglet Analysis"""
     if st.session_state.bot_running:
         try:
-            if self.latest_data and bot.indicators:
+            if bot.latest_data and bot.indicators:
                 st.subheader("Technical Analysis")
                 
-                for symbol in self.latest_data:
+                for symbol in bot.latest_data:
                     await process_market_data(bot, symbol)
                 
                 if hasattr(bot, 'advanced_indicators'):
@@ -5340,7 +5340,7 @@ async def _render_analysis_tab(bot):
     if hasattr(bot, "qsvm") and bot.qsvm is not None:
         try:
             # Prépare les features à passer à predict (adapte cette ligne selon ta logique)
-            features = self.latest_data  # ou bot.indicators ou ton dataframe, adapte selon besoin
+            features = bot.latest_data  # ou bot.indicators ou ton dataframe, adapte selon besoin
             quantum_signal = bot.qsvm.predict(features)
             st.subheader("Quantum SVM Signal")
             st.metric("Quantum SVM Signal", quantum_signal)
@@ -5391,7 +5391,7 @@ async def _render_trading_tab(bot):
     """Rendu de l'onglet Trading"""
     if st.session_state.bot_running:
         try:
-            latest_data = self.latest_data.get('BTCUSDT', {})
+            latest_data = bot.latest_data.get('BTCUSDT', {})
             if latest_data:
                 col1, col2 = st.columns(2)
                 with col1:
@@ -5429,10 +5429,10 @@ async def _render_analysis_tab(bot):
     """Rendu de l'onglet Analysis"""
     if st.session_state.bot_running:
         try:
-            if self.latest_data and bot.indicators:
+            if bot.latest_data and bot.indicators:
                 st.subheader("Technical Analysis")
                 
-                for symbol in self.latest_data:
+                for symbol in bot.latest_data:
                     await process_market_data(bot, symbol)
                 
                 if hasattr(bot, 'advanced_indicators'):
