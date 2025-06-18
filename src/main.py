@@ -117,7 +117,6 @@ from src.risk_management.position_manager import PositionManager
 
 # Imports des modules de notification et news
 from src.notifications.telegram_bot import TelegramBot
-from src.news_integration.news_processor import NewsProcessor as NewsAnalyzer
 
 # Imports des modules de stratégie et visualisation
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
@@ -2268,7 +2267,6 @@ class TradingBotM4:
         )
         self.news_analyzer = NewsAnalyzer()
         self.regime_detector = RegimeDetector()
-        self.qsvm = QuantumSVM()
         self.client_session = None
         
     def _generate_recommendation(self, trend, momentum, volatility, volume):
@@ -5321,7 +5319,18 @@ async def _render_analysis_tab(bot):
             st.error(f"❌ Analysis error: {str(e)}")
     else:
         st.warning("⚠️ Start trading to view analysis")
-
+    
+    # --- Signal Quantum SVM ---
+    if hasattr(bot, "qsvm") and bot.qsvm is not None:
+        try:
+            # Prépare les features à passer à predict (adapte cette ligne selon ta logique)
+            features = bot.latest_data  # ou bot.indicators ou ton dataframe, adapte selon besoin
+            quantum_signal = bot.qsvm.predict(features)
+            st.subheader("Quantum SVM Signal")
+            st.metric("Quantum SVM Signal", quantum_signal)
+        except Exception as e:
+            st.warning(f"Erreur Quantum SVM : {e}")
+        
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
     """Rendu de l'onglet Portfolio"""
