@@ -79,7 +79,6 @@ import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
 
-# 7. Imports des modules locaux
 # Imports des modules d'échange
 from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
@@ -125,6 +124,7 @@ from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageS
 from src.liquidity_heatmap.visualization import generate_heatmap
 
 from src.core.buffer.circular_buffer import CircularBuffer
+from web_interface.app.services.news_analyzer import NewsAnalyzer
 
 # Constantes de nettoyage
 cleanup_lock = asyncio.Lock()
@@ -3402,7 +3402,7 @@ Take Profit: {take_profit}"""
 
             # En-tête
             st.title("Trading Bot Ultimate v4 🤖")
-    
+
             # Tabs pour organiser l'information
             tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
 
@@ -3438,7 +3438,7 @@ Take Profit: {take_profit}"""
                 if not positions_df.empty:
                     st.dataframe(positions_df, use_container_width=True)
 
-            # TAB 2: TRADING
+            # TAB 2: TRADING (Signaux, Arbitrage, Ordres)
             with tab2:
                 col1, col2 = st.columns(2)
                 with col1:
@@ -3446,7 +3446,16 @@ Take Profit: {take_profit}"""
                     st.subheader("🎯 Trading Signals")
                     if self.indicators:
                         st.dataframe(pd.DataFrame(self.indicators), use_container_width=True)
-            
+                    # Opportunités d'Arbitrage
+                    if 'arbitrage_opportunities' in st.session_state and st.session_state['arbitrage_opportunities']:
+                        st.subheader("⚡ Opportunités d'Arbitrage")
+                        st.write(st.session_state['arbitrage_opportunities'])
+                    # Bouton arbitrage manuel
+                    if st.button("Scan Arbitrage"):
+                        opps = await self.arbitrage_engine.find_opportunities()
+                        if opps:
+                            st.session_state['arbitrage_opportunities'] = opps
+                            st.success("Arbitrage détecté !")
                 with col2:
                     # Ordres en cours
                     st.subheader("📋 Open Orders")
@@ -3455,7 +3464,7 @@ Take Profit: {take_profit}"""
                         if orders:
                             st.dataframe(pd.DataFrame(orders), use_container_width=True)
 
-            # TAB 3: ANALYSIS
+            # TAB 3: ANALYSIS (Indicateurs, Heatmap, News, Quantum, Regime)
             with tab3:
                 col1, col2 = st.columns(2)
                 with col1:
@@ -3466,6 +3475,29 @@ Take Profit: {take_profit}"""
                             pd.DataFrame(self.advanced_indicators.get_all_signals()),
                             use_container_width=True
                         )
+                    # Heatmap de liquidité
+                    if 'heatmap' in st.session_state and st.session_state['heatmap'] is not None:
+                        st.subheader("Liquidity Heatmap")
+                        st.image(st.session_state['heatmap'], caption="Heatmap Carnet d'ordres BTC/USDT")
+                with col2:
+                    # News/Sentiment
+                    if 'news_score' in st.session_state and st.session_state['news_score']:
+                        st.subheader("📰 Impact News")
+                        st.write(st.session_state['news_score'])
+                    # Signal Quantum
+                    if 'quantum_signal' in st.session_state:
+                        st.subheader("Quantum SVM Signal")
+                        st.metric("Quantum SVM Signal", st.session_state['quantum_signal'])
+                    # Regime de marché
+                    if 'regime' in st.session_state:
+                        st.subheader("Régime de marché")
+                        st.info(f"{st.session_state['regime']}")
+
+                # Bouton backtest si tu as un module
+                if st.button("Lancer Backtest"):
+                    from src.backtest.engine import run_backtest
+                    report = run_backtest(...)  # à adapter
+                    st.write(report)
 
             # TAB 4: SETTINGS
             with tab4:
@@ -3476,21 +3508,18 @@ Take Profit: {take_profit}"""
                     st.write("Trading Parameters")
                     risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
                     max_positions = st.number_input("Max Open Positions", 1, 10, 3)
-            
-            # Dans le sidebar
+
+            # Sidebar toujours accessible
             with st.sidebar:
                 st.header("🛠️ Bot Controls")
-            
-                # Ajout d'un identifiant unique pour le slider
+
                 risk_level = st.select_slider(
                     "Risk Level",
                     options=["Low", "Medium", "High"],
                     value="Low",
-                    key=f"risk_level_slider_{id(self)}"  # Clé unique basée sur l'ID de l'instance
+                    key=f"risk_level_slider_{id(self)}"
                 )
-            
                 st.divider()
-            
                 # Market Overview
                 st.subheader("Market Overview")
                 latest_data = self.buffer.get_latest_data() if hasattr(self, 'buffer') else None
@@ -4801,6 +4830,68 @@ Take Profit: {take_profit}"""
         except Exception as e:
             logger.error(f"Erreur: {e}")
 
+    async def run_adaptive_trading(self, period="7d"):
+        """
+        Boucle principale adaptative : étude du marché, stratégie, trading auto.
+        """
+        # 1. Étudier le marché sur la période définie (ex: 7j)
+        regime, historical_data, indicators_analysis = await self.study_market(period=period)
+
+        # 2. Établir un plan/stratégie selon le régime détecté
+        strategy = self.choose_strategy(regime, indicators_analysis)
+        await self.telegram.send_message(f"📊 Plan établi : {strategy} | Régime détecté : {regime}")
+
+        self.current_regime = regime
+        self.current_strategy = strategy
+
+        while st.session_state.get("bot_running", True):
+            # 3. Mise à jour continue du marché
+            market_data = await self.get_latest_data()
+            signals = await self.analyze_signals(market_data)
+            news = await self.news_analyzer.analyze() if hasattr(self, "news_analyzer") else None
+            arbitrage_opps = await self.arbitrage_engine.find_opportunities() if hasattr(self, "arbitrage_engine") else None
+            new_regime = self.regime_detector.predict(signals) if hasattr(self, "regime_detector") else self.current_regime
+
+            # 4. Adaptation : news, arbitrage, changement de régime
+            if news and news.get('impact', 0) > 0.7:
+                await self.telegram.send_message(f"📰 News critique détectée : {news}")
+                self.current_strategy = "Defensive/No Trade"
+            elif arbitrage_opps:
+                await self.telegram.send_message(f"⚡ Arbitrage détecté : {arbitrage_opps}")
+                self.current_strategy = "Arbitrage"
+            elif new_regime != self.current_regime:
+                self.current_regime = new_regime
+                self.current_strategy = self.choose_strategy(new_regime, signals)
+                await self.telegram.send_message(f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}")
+
+            # 5. Prendre position selon la stratégie courante
+            decision = self.make_trade_decision(signals, self.current_strategy, news, arbitrage_opps)
+            if decision and decision.get("action") in ["buy", "sell"]:
+                order = await self.execute_real_trade(decision)
+                await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
+
+            await asyncio.sleep(2)  # ajustable selon besoins
+
+    def choose_strategy(self, regime, indicators):
+        # Logique simple d'exemple : personnalise selon tes besoins
+        if "Bull" in regime:
+            return "Trend Following"
+        elif "Bear" in regime:
+            return "Short/Defensive"
+        elif "Arbitrage" in regime:
+            return "Arbitrage"
+        else:
+            return "Range/Scalping"
+
+    def make_trade_decision(self, signals, strategy, news, arbitrage_opps):
+        # Logique simple d'exemple : personnalise selon tes besoins
+        if strategy == "Arbitrage" and arbitrage_opps:
+            # Place un trade d'arbitrage (implémente selon ta structure)
+            return {"action": "arbitrage", "details": arbitrage_opps}
+        if signals and signals.get("recommendation", {}).get("action") in ["buy", "sell"]:
+            return signals["recommendation"]
+        return None
+    
 async def run_trading_bot():
     """Point d'entrée synchrone pour le bot de trading"""
     try:
@@ -4819,9 +4910,10 @@ async def run_trading_bot():
                 async with asyncio.timeout(30):  # Ajouter un timeout de 30 secondes
                     # Démarrer le bot de façon asynchrone
                     bot = TradingBotM4()
+                    await bot.run_adaptive_trading(period="7d")
                     await bot.initialize()  # Utiliser await au lieu de asyncio.run
                     await bot.run()  # Utiliser await ici aussi
-            
+
             except asyncio.TimeoutError:
                 st.error("❌ Bot initialization timed out")
                 logger.error("Bot initialization timed out")
