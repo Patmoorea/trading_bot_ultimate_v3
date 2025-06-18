@@ -1940,6 +1940,7 @@ class TradingBotM4:
                     
                 # Appel périodique de l’analyseur de news
                 now = time.time()
+                news_result = None
                 if now - self.last_news_check > self.news_refresh_interval:
                     news_result = await self.news_analyzer.analyze_news()
                     self.last_news_check = now
@@ -1947,9 +1948,10 @@ class TradingBotM4:
                     st.session_state['news_score'] = news_result['sentiment_summary']
                     st.session_state['important_news'] = news_result['important_news']
                     self.logger.info(f"News sentiment: {news_result['sentiment_summary']}")
-                else:
+                elif news_result is not None:
                     st.session_state['news_score'] = None
                     st.session_state['important_news'] = []
+    
         except Exception as e:
             logger.error(f"Erreur tick: {e}")
             
@@ -3499,6 +3501,11 @@ Take Profit: {take_profit}"""
                     if 'news_score' in st.session_state and st.session_state['news_score']:
                         st.subheader("📰 Impact News")
                         st.write(st.session_state['news_score'])
+                    if 'important_news' in st.session_state and st.session_state['important_news']:
+                        st.subheader("📰 News Importantes")
+                        for news in st.session_state['important_news']:
+                            st.markdown(f"- [{news['title']}]({news['url']}) ({news['sentiment']}, {news['confidence']:.2f})")
+                    
                     # Signal Quantum
                     if 'quantum_signal' in st.session_state:
                         st.subheader("Quantum SVM Signal")
