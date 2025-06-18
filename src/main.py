@@ -1937,6 +1937,19 @@ class TradingBotM4:
                     st.session_state.portfolio = portfolio
                     st.session_state.latest_data = market_data
                     st.session_state.indicators = indicators
+                    
+                # Appel périodique de l’analyseur de news
+                now = time.time()
+                if now - self.last_news_check > self.news_refresh_interval:
+                    news_result = await self.news_analyzer.analyze_news()
+                    self.last_news_check = now
+                if news_result and news_result.get("status") == "success":
+                    st.session_state['news_score'] = news_result['sentiment_summary']
+                    st.session_state['important_news'] = news_result['important_news']
+                    self.logger.info(f"News sentiment: {news_result['sentiment_summary']}")
+                else:
+                    st.session_state['news_score'] = None
+                    st.session_state['important_news'] = []
         except Exception as e:
             logger.error(f"Erreur tick: {e}")
             
@@ -2117,6 +2130,8 @@ class TradingBotM4:
 
         # Composants d'analyse
         self.news_analyzer = NewsAnalyzer()
+        self.last_news_check = 0
+        self.news_refresh_interval = int(os.getenv("NEWS_REFRESH_INTERVAL", 60))  # secondes, configurable
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
