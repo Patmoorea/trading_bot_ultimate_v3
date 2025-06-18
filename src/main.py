@@ -124,6 +124,7 @@ from src.liquidity_heatmap.visualization import generate_heatmap
 
 from src.core.buffer.circular_buffer import CircularBuffer
 from web_interface.app.services.news_analyzer import NewsAnalyzer
+from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
 
 # Constantes de nettoyage
 cleanup_lock = asyncio.Lock()
