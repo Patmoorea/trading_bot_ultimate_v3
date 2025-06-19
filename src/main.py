@@ -5106,6 +5106,10 @@ from src.backtesting.advanced.quantum_backtest import QuantumBacktester, Backtes
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
+    from datetime import datetime
+    import time
+    import streamlit as st
+
     current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     current_user = "Patmoorea"
 
@@ -5144,7 +5148,7 @@ async def main_async():
 
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-        latest_data = getattr(bot, "latest_data", {})
+        latest_data = getattr(bot, "latest_data", {}) or {}
         st.sidebar.write({k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée")
 
         # 5. Interface principale - État et contrôles
@@ -5188,23 +5192,40 @@ async def main_async():
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # --- GESTION DES DONNEES ---
-            data_ready = latest_data and len(latest_data) > 0
+            # On relit latest_data à chaque affichage de la sidebar pour forcer la cohérence
+            latest_data = getattr(bot, "latest_data", {}) or {}
+            data_ready = isinstance(latest_data, dict) and len(latest_data) > 0
 
             if not data_ready:
                 st.warning("Aucune donnée disponible. Clique sur le bouton ci-dessous pour charger les données de marché.")
                 if st.button("Charger les données", key="load_data_btn"):
                     with st.spinner("Chargement des données..."):
-                        # Adapte cet appel à TA fonction selon ton bot
-                        if hasattr(bot, "load_all_data"):
-                            await bot.load_all_data()
-                        elif hasattr(bot, "get_latest_data"):
-                            # Peut être async, donc on attend le résultat
-                            data = await bot.get_latest_data()
-                            if data:
-                                bot.latest_data = data
-                        else:
-                            st.error("Aucune méthode de chargement trouvée sur le bot.")
-                    st.success("Données chargées ! Tu peux lancer un backtest.")
+                        loaded = False
+                        # --- PATCH ICI ---
+                        try:
+                            if hasattr(bot, "get_latest_data"):
+                                data = await bot.get_latest_data()
+                                st.write("DEBUG - Résultat get_latest_data:", data)
+                                if data and isinstance(data, dict) and len(data) > 0:
+                                    bot.latest_data = data
+                                    loaded = True
+                                else:
+                                    st.error("La récupération a retourné None ou un dict vide : pas de données.")
+                            elif hasattr(bot, "load_all_data"):
+                                await bot.load_all_data()
+                                # On relit latest_data après le chargement
+                                latest_data = getattr(bot, "latest_data", {}) or {}
+                                st.write("DEBUG - latest_data après load_all_data:", latest_data)
+                                loaded = isinstance(latest_data, dict) and len(latest_data) > 0
+                                if not loaded:
+                                    st.error("La récupération a retourné None ou un dict vide : pas de données.")
+                            else:
+                                st.error("Aucune méthode de chargement trouvée sur le bot.")
+                        except Exception as exc:
+                            st.error(f"Erreur lors du chargement des données : {exc}")
+                        if loaded:
+                            st.success("Données chargées ! Tu peux lancer un backtest.")
+                            st.experimental_rerun()  # Force Streamlit à réafficher avec boutons backtest visibles
             else:
                 # --- BACKTEST CLASSIQUE ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
@@ -5298,7 +5319,7 @@ async def main_async():
         # Protection finale avec timestamp
         try:
             session_manager.protect_session()
-            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            st.session_state.last_update_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         except Exception as protect_error:
             logger.error(f"Session protection error: {protect_error}")
 
