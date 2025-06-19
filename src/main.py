@@ -2794,7 +2794,11 @@ class TradingBotM4:
                 logger.warning("🔄 WebSocket non initialisé, tentative d'initialisation...")
                 if not self.initialized:
                     await self.initialize()
-                return None
+                # Re-vérifie après init, et si toujours pas prêt, alors seulement return None
+                if not hasattr(self, 'binance_ws') or self.binance_ws is None:
+                    logger.error("Impossible d'initialiser le WebSocket après tentative.")
+                    return None
+                # Sinon, continue la récupération normale des données (pas de return ici)
 
             # Récupération des données pour chaque paire
             for pair in config["TRADING"]["pairs"]:
@@ -5192,7 +5196,6 @@ async def main_async():
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # --- GESTION DES DONNEES ---
-            # On relit latest_data à chaque affichage de la sidebar pour forcer la cohérence
             latest_data = getattr(bot, "latest_data", {}) or {}
             data_ready = isinstance(latest_data, dict) and len(latest_data) > 0
 
@@ -5201,8 +5204,12 @@ async def main_async():
                 if st.button("Charger les données", key="load_data_btn"):
                     with st.spinner("Chargement des données..."):
                         loaded = False
-                        # --- PATCH ICI ---
                         try:
+                            # Initialisation WebSocket si besoin
+                            if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
+                                st.info("Initialisation de la WebSocket…")
+                                await bot.initialize()
+                            # Chargement effectif des données
                             if hasattr(bot, "get_latest_data"):
                                 data = await bot.get_latest_data()
                                 st.write("DEBUG - Résultat get_latest_data:", data)
@@ -5213,7 +5220,6 @@ async def main_async():
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
                             elif hasattr(bot, "load_all_data"):
                                 await bot.load_all_data()
-                                # On relit latest_data après le chargement
                                 latest_data = getattr(bot, "latest_data", {}) or {}
                                 st.write("DEBUG - latest_data après load_all_data:", latest_data)
                                 loaded = isinstance(latest_data, dict) and len(latest_data) > 0
@@ -5322,7 +5328,7 @@ async def main_async():
             st.session_state.last_update_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         except Exception as protect_error:
             logger.error(f"Session protection error: {protect_error}")
-
+            
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
     """Rendu de l'onglet Portfolio"""
