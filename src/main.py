@@ -2793,25 +2793,21 @@ class TradingBotM4:
     async def get_latest_data(self):
         """Récupère les dernières données de marché en temps réel"""
         try:
-            # Structure pour stocker les données
             data = {}
-        
+
             # Vérification de la connexion WebSocket
             if not hasattr(self, 'binance_ws') or self.binance_ws is None:
                 logger.warning("🔄 WebSocket non initialisé, tentative d'initialisation...")
                 if not self.initialized:
                     await self.initialize()
-                # Re-vérifie après init, et si toujours pas prêt, alors seulement return None
                 if not hasattr(self, 'binance_ws') or self.binance_ws is None:
                     logger.error("Impossible d'initialiser le WebSocket après tentative.")
                     return None
-                # Sinon, continue la récupération normale des données (pas de return ici)
 
-            # Récupération des données pour chaque paire
             for pair in config["TRADING"]["pairs"]:
                 logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
-            
+
                 try:
                     async def fetch_async():
                         result = {
@@ -2819,43 +2815,51 @@ class TradingBotM4:
                             'balance': None,
                             'ticker_24h': None,
                             'ticker': None
-                        }
-                        
-                        # 1. Prix en temps réel via WebSocket
+                    }
+
+                        # 1. Prix en temps réel via WebSocket (toujours async)
                         if hasattr(self.binance_ws, 'get_symbol_ticker'):
                             result['ticker'] = await self.binance_ws.get_symbol_ticker(symbol=pair.replace('/', ''))
-                        
+
                         # 2. & 3. Orderbook et Balance
                         if hasattr(self, 'spot_client'):
-                            result['orderbook'] = await self.spot_client.get_order_book(pair)
-                            result['balance'] = await self.spot_client.get_balance()
-                            
-                        # 4. Volume 24h
+                            ob_func = self.spot_client.get_order_book
+                            bal_func = self.spot_client.get_balance
+
+                            # Orderbook
+                            if asyncio.iscoroutinefunction(ob_func):
+                                result['orderbook'] = await ob_func(pair)
+                            else:
+                                result['orderbook'] = ob_func(pair)
+
+                            # Balance
+                            if asyncio.iscoroutinefunction(bal_func):
+                                result['balance'] = await bal_func()
+                            else:
+                                result['balance'] = bal_func()
+
+                        # 4. Volume 24h (toujours async)
                         if hasattr(self.binance_ws, 'get_24h_ticker'):
                             result['ticker_24h'] = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
-                            
+
                         return result
 
-                    # Execution avec timeout correct
                     async with asyncio.timeout(5.0):
                         result = await fetch_async()
-                    
+
                     # Traitement des résultats
                     if result['ticker']:
                         data[pair]['price'] = float(result['ticker']['price'])
                         logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
-                    
                     if result['orderbook']:
                         data[pair]['orderbook'] = {
                             'bids': result['orderbook']['bids'][:5],
                             'asks': result['orderbook']['asks'][:5]
                         }
                         logger.info(f"📚 Orderbook mis à jour pour {pair}")
-                        
                     if result['balance']:
                         data[pair]['account'] = result['balance']
                         logger.info(f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC")
-                        
                     if result['ticker_24h']:
                         data[pair].update({
                             'volume': float(result['ticker_24h']['volume']),
@@ -2868,19 +2872,15 @@ class TradingBotM4:
                     continue
                 except Exception as inner_e:
                     logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
-                    continue
+                continue
 
             # Mise en cache des données si disponibles
             if data and any(data.values()):
                 logger.info("✅ Données reçues, mise à jour du buffer")
                 for symbol, symbol_data in data.items():
                     if symbol_data:
-                        # Mise à jour du buffer circulaire
                         self.buffer.update_data(symbol, symbol_data)
-                    
-                        # Mise à jour des données latest
                         self.latest_data[symbol] = symbol_data
-                    
                 return data
             else:
                 logger.warning("⚠️ Aucune donnée reçue")
@@ -5238,7 +5238,7 @@ async def main_async():
                             st.error(f"Erreur lors du chargement des données : {exc}")
                         if loaded:
                             st.success("Données chargées ! Tu peux lancer un backtest.")
-                            st.experimental_rerun()  # Force Streamlit à réafficher avec boutons backtest visibles
+                            st.rerun()  # Force Streamlit à réafficher avec boutons backtest visibles
             else:
                 # --- BACKTEST CLASSIQUE ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
