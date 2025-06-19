@@ -2791,7 +2791,11 @@ class TradingBotM4:
             return decision
 
     async def get_latest_data(self):
-        """Récupère les dernières données de marché en temps réel"""
+        """
+        Récupère les dernières données de marché en temps réel pour chaque paire,
+        et inclut un historique OHLCV (nécessaire au backtest).
+        Résout le problème d'affichage du bouton de backtest dans l'UI Streamlit.
+        """
         try:
             data = {}
 
@@ -2814,8 +2818,9 @@ class TradingBotM4:
                             'orderbook': None,
                             'balance': None,
                             'ticker_24h': None,
-                            'ticker': None
-                    }
+                            'ticker': None,
+                            'ohlcv': None,  # AJOUT POUR L'HISTORIQUE
+                        }
 
                         # 1. Prix en temps réel via WebSocket (toujours async)
                         if hasattr(self.binance_ws, 'get_symbol_ticker'):
@@ -2842,12 +2847,37 @@ class TradingBotM4:
                         if hasattr(self.binance_ws, 'get_24h_ticker'):
                             result['ticker_24h'] = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
 
+                        # 5. HISTORIQUE OHLCV (pour le backtest !)
+                        if hasattr(self.binance_ws, 'get_klines'):
+                            # Utilise '1m' ou la timeframe de ton choix et un limit raisonnable (ex: 200)
+                            try:
+                                klines = await self.binance_ws.get_klines(
+                                    symbol=pair.replace('/', ''),
+                                    interval='1m',
+                                    limit=200
+                                )
+                                # Structure standard OHLCV
+                                result['ohlcv'] = [
+                                    {
+                                        'timestamp': k[0],
+                                        'open': float(k[1]),
+                                        'high': float(k[2]),
+                                        'low': float(k[3]),
+                                        'close': float(k[4]),
+                                        'volume': float(k[5]),
+                                    }
+                                    for k in klines
+                                ]
+                            except Exception as hist_e:
+                                logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
+
                         return result
 
-                    async with asyncio.timeout(5.0):
+                    async with asyncio.timeout(10.0):
                         result = await fetch_async()
 
                     # Traitement des résultats
+                    # ATTENTION : on structure le résultat pour le backtest
                     if result['ticker']:
                         data[pair]['price'] = float(result['ticker']['price'])
                         logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
@@ -2866,13 +2896,17 @@ class TradingBotM4:
                             'price_change': float(result['ticker_24h']['priceChangePercent'])
                         })
                         logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
+                    if result['ohlcv']:
+                        # C'est CETTE CLÉ qui doit être utilisée pour le backtest dans l'UI
+                        data[pair]['ohlcv'] = result['ohlcv']
+                        logger.info(f"📊 OHLCV récupéré ({len(result['ohlcv'])} bougies) pour {pair}")
 
                 except asyncio.TimeoutError:
                     logger.warning(f"⏱️ Timeout pour {pair}")
                     continue
                 except Exception as inner_e:
                     logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
-                continue
+                    continue
 
             # Mise en cache des données si disponibles
             if data and any(data.values()):
@@ -5159,8 +5193,11 @@ async def main_async():
 
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-        latest_data = getattr(bot, "latest_data", {}) or {}
-        st.sidebar.write({k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée")
+        # --- CORRIGE ici pour toujours refléter l'état session_state ---
+        latest_data = st.session_state.get('latest_data', {})
+        st.sidebar.write(
+            {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée"
+        )
 
         # 5. Interface principale - État et contrôles
         status_col1, status_col2 = st.columns([2, 1])
@@ -5203,11 +5240,14 @@ async def main_async():
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # --- GESTION DES DONNEES ---
+            # Utilise UNIQUEMENT le session_state pour l'état des données !
             latest_data = st.session_state.get('latest_data', {})
             data_ready = isinstance(latest_data, dict) and len(latest_data) > 0
 
             if not data_ready:
-                st.warning("Aucune donnée disponible. Clique sur le bouton ci-dessous pour charger les données de marché.")
+                st.warning(
+                    "Aucune donnée disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
+                )
                 if st.button("Charger les données", key="load_data_btn"):
                     with st.spinner("Chargement des données..."):
                         loaded = False
@@ -5222,7 +5262,7 @@ async def main_async():
                                 st.write("DEBUG - Résultat get_latest_data:", data)
                                 if data and isinstance(data, dict) and len(data) > 0:
                                     bot.latest_data = data
-                                    st.session_state['latest_data'] = data  # <-- AJOUT POUR PERSISTENCE
+                                    st.session_state['latest_data'] = data  # <-- toujours synchronisé !
                                     loaded = True
                                 else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
@@ -5232,7 +5272,7 @@ async def main_async():
                                 st.write("DEBUG - latest_data après load_all_data:", latest_data)
                                 loaded = isinstance(latest_data, dict) and len(latest_data) > 0
                                 if loaded:
-                                    st.session_state['latest_data'] = latest_data  # <-- AJOUT POUR PERSISTENCE
+                                    st.session_state['latest_data'] = latest_data  # <-- toujours synchronisé !
                                 else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
                             else:
@@ -5241,20 +5281,22 @@ async def main_async():
                             st.error(f"Erreur lors du chargement des données : {exc}")
                         if loaded:
                             st.success("Données chargées ! Tu peux lancer un backtest.")
-                            
+
             else:
-                # --- BACKTEST CLASSIQUE ---
+                # --- BACKTESTS : UNIQUEMENT SI DONNEES PRÊTES ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
                     results = {}
                     st.info("Backtest en cours sur toutes les paires...")
                     try:
                         for symbol, data in latest_data.items():
                             try:
-                                if data is not None and hasattr(data, "empty") and not data.empty:
+                                # PATCH : assure la compatibilité avec DataFrame attendu
+                                df = pd.DataFrame(data) if isinstance(data, list) else data
+                                if df is not None and hasattr(df, "empty") and not df.empty:
                                     def strategy_func(df, **params):
                                         return (df['close'] > df['close'].rolling(5).mean()).astype(int)
                                     engine = BacktestEngine(initial_capital=10000)
-                                    results[symbol] = engine.run_backtest(data, strategy_func)
+                                    results[symbol] = engine.run_backtest(df, strategy_func)
                                 else:
                                     st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
                             except Exception as pair_exc:
@@ -5273,12 +5315,13 @@ async def main_async():
                         for symbol, data in latest_data.items():
                             st.write(f"Test {symbol} ...")
                             try:
-                                if data is not None and hasattr(data, "empty") and not data.empty:
+                                df = pd.DataFrame(data) if isinstance(data, list) else data
+                                if df is not None and hasattr(df, "empty") and not df.empty:
                                     def strategy_func(df):
                                         return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
                                     config = BacktestConfig(initial_capital=10000)
                                     backtester = QuantumBacktester(config)
-                                    results[symbol] = backtester.run_quantum_simulation(data, strategy_func)
+                                    results[symbol] = backtester.run_quantum_simulation(df, strategy_func)
                                 else:
                                     st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
                             except Exception as pair_exc:
@@ -5302,12 +5345,6 @@ async def main_async():
                 st.markdown("**Résultats Backtest Quantique :**")
                 for symbol, res in st.session_state['all_quantum_results'].items():
                     st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-        if st.session_state.bot_running:
-            auto_refresh(interval_ms=2000, key="js_autorefresh")
-            bot = get_bot()
-            loop = st.session_state.loop or asyncio.get_event_loop()
-            loop.run_until_complete(bot.tick())
 
         # 8. Onglets principaux avec gestion d'erreur
         try:
