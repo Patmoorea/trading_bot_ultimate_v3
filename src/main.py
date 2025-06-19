@@ -3515,26 +3515,6 @@ Take Profit: {take_profit}"""
                         st.subheader("Régime de marché")
                         st.info(f"{st.session_state['regime']}")
 
-                if st.button("Lancer Backtest"):
-                    # Récupère tes données historiques depuis le bot (exemple)
-                    data = bot.latest_data  # ou adapte selon ta logique (doit être un DataFrame avec 'close')
-                    # Définis une fonction de stratégie simple pour tester
-                    def strategy_func(df, **params):
-                        # Ex : signal long si cours > moyenne mobile 5
-                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
-                    engine = BacktestEngine(initial_capital=10000)
-                    results = engine.run_backtest(data, strategy_func)
-                    st.write("Résultats du backtest :", results)
-
-                if st.button("Lancer Backtest Quantique"):
-                    data = bot.latest_data  # ou autre selon ta logique
-                    def strategy_func(df):
-                        return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
-                    config = BacktestConfig(initial_capital=10000)
-                    backtester = QuantumBacktester(config)
-                    results = backtester.run_quantum_simulation(data, strategy_func)
-                    st.write("Résultats du backtest quantique :", results)
-    
             # TAB 4: SETTINGS
             with tab4:
                 st.subheader("⚙️ Bot Configuration")
@@ -5198,6 +5178,20 @@ async def main_async():
                     st.session_state.bot_running = False
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
+
+            # === AJOUTE TES BOUTONS JUSTE EN DESSOUS ===
+            if st.button("Lancer Backtest", key="backtest_btn"):
+                # Remplace le print par ta logique réelle de backtest
+                st.session_state['backtest_result'] = "Backtest lancé !"  # Ou lance ta vraie fonction ici
+
+            if st.button("Lancer Backtest Quantique", key="quantum_backtest_btn"):
+                st.session_state['quantum_result'] = "Backtest quantique lancé !"  # Ou lance ta vraie fonction ici
+
+            # Affichage des résultats dans la sidebar (facultatif)
+            if st.session_state.get('backtest_result'):
+                st.success(st.session_state.get('backtest_result'))
+            if st.session_state.get('quantum_result'):
+                st.success(st.session_state.get('quantum_result'))
 
          # --- Ajout du refresh automatique JS SANS st_autorefresh ---
         if st.session_state.bot_running:
