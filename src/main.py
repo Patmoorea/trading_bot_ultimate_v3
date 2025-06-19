@@ -2487,6 +2487,13 @@ class TradingBotM4:
                     api_secret=os.getenv('BINANCE_API_SECRET')
                 )
 
+            # Initialisation du WebSocket MANQUANTE :
+            if not getattr(self, 'initialized', False):
+                success = await self.start()
+                if not success:
+                    logger.error("❌ Impossible d'initialiser le WebSocket dans initialize()")
+                    return False
+
             # Récupération initiale du portfolio
             portfolio = await self.get_real_portfolio()
             if portfolio:
