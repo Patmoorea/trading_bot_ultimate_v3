@@ -5210,11 +5210,10 @@ async def main_async():
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # --- GESTION DES DONNEES ET BACKTEST ---
+            # TOUJOURS lire depuis session_state !
             latest_data = st.session_state.get('latest_data', {})
-            if not isinstance(latest_data, dict):
-                latest_data = {}
+            st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
 
-            # PATCH : on vérifie si au moins une paire a des données OHLCV exploitables
             def _has_valid_ohlcv(item):
                 return (
                     isinstance(item, dict)
@@ -5228,24 +5227,19 @@ async def main_async():
             data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
 
             if not data_ready:
-                st.warning(
-                "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
-                )
+                st.warning("Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché.")
                 if st.button("Charger les données", key="load_data_btn"):
                     with st.spinner("Chargement des données..."):
                         loaded = False
                         try:
-                            # Initialisation WebSocket si besoin
                             if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
                                 st.info("Initialisation de la WebSocket…")
                                 await bot.initialize()
-                            # Chargement effectif des données
                             if hasattr(bot, "get_latest_data"):
                                 data = await bot.get_latest_data()
                                 st.write("DEBUG - Résultat get_latest_data:", data)
                                 if data and isinstance(data, dict) and len(data) > 0:
-                                    bot.latest_data = data
-                                    st.session_state['latest_data'] = data  # <-- toujours synchronisé !
+                                    st.session_state['latest_data'] = data  # <-- SYNC dans la session
                                     loaded = True
                                 else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
@@ -5257,7 +5251,7 @@ async def main_async():
                                 st.write("DEBUG - latest_data après load_all_data:", latest_data)
                                 loaded = isinstance(latest_data, dict) and len(latest_data) > 0
                                 if loaded:
-                                    st.session_state['latest_data'] = latest_data  # <-- toujours synchronisé !
+                                    st.session_state['latest_data'] = latest_data
                                 else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
                             else:
@@ -5266,14 +5260,13 @@ async def main_async():
                             st.error(f"Erreur lors du chargement des données : {exc}")
                         if loaded:
                             st.success("Données chargées ! Tu peux lancer un backtest.")
-
+                            st.rerun()
             else:
+                # --- BACKTEST CLASSIQUE ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
                     results = {}
                     st.info("Backtest en cours sur toutes les paires...")
                     try:
-                        if not isinstance(latest_data, dict):
-                            latest_data = {}
                         for symbol, data in latest_data.items():
                             try:
                                 if _has_valid_ohlcv(data):
@@ -5292,32 +5285,38 @@ async def main_async():
                     except Exception as batch_exc:
                         st.error(f"Erreur lors du backtest: {batch_exc}")
 
-                if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
-                    st.info("Backtest quantique en cours sur toutes les paires...")
-                    results = {}
-                    if not isinstance(latest_data, dict):
-                        latest_data = {}
-                    st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
-                    try:
-                        for symbol, data in latest_data.items():
-                            st.write(f"Test {symbol} ...")
+                # Résultats
+                if st.session_state.get('all_backtest_results'):
+                    st.markdown("**Résultats Backtest Classique :**")
+                    for symbol, res in st.session_state['all_backtest_results'].items():
+                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
+                        if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
+                            st.info("Backtest quantique en cours sur toutes les paires...")
+                            results = {}
+                            if not isinstance(latest_data, dict):
+                                latest_data = {}
+                            st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
                             try:
-                                if _has_valid_ohlcv(data):
-                                    import pandas as pd
-                                    df = pd.DataFrame(data['ohlcv'])
-                                    def strategy_func(df, **params):
-                                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
-                                    engine = BacktestEngine(initial_capital=10000)
-                                    results[symbol] = engine.run_backtest(df, strategy_func)
-                                else:
-                                    st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
-                            except Exception as pair_exc:
-                                st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
-                        st.session_state['all_quantum_results'] = results
-                        st.success("Backtest quantique terminé ✅")
-                        st.write("DEBUG - Résultats quantum :", results)
-                    except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+                                for symbol, data in latest_data.items():
+                                    st.write(f"Test {symbol} ...")
+                                    try:
+                                        if _has_valid_ohlcv(data):
+                                            import pandas as pd
+                                            df = pd.DataFrame(data['ohlcv'])
+                                            def strategy_func(df, **params):
+                                                return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                                            engine = BacktestEngine(initial_capital=10000)
+                                            results[symbol] = engine.run_backtest(df, strategy_func)
+                                        else:
+                                            st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
+                                    except Exception as pair_exc:
+                                        st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                                st.session_state['all_quantum_results'] = results
+                                st.success("Backtest quantique terminé ✅")
+                                st.write("DEBUG - Résultats quantum :", results)
+                            except Exception as batch_exc:
+                                st.error(f"Erreur lors du backtest quantique: {batch_exc}")
 
                 # Affichage des résultats
                 if st.session_state.get('all_backtest_results'):
