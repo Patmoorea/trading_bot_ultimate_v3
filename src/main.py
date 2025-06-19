@@ -5142,10 +5142,10 @@ async def main_async():
             st.error("❌ Failed to initialize bot")
             return
 
-        # Affichage debug des data pour aider le diagnostic
-        if hasattr(bot, "latest_data") and bot.latest_data:
-            st.sidebar.markdown("#### Données disponibles :")
-            st.sidebar.write({k: getattr(v, "shape", str(type(v))) for k, v in bot.latest_data.items()})
+        # --- DEBUG données disponibles ---
+        st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
+        latest_data = getattr(bot, "latest_data", {})
+        st.sidebar.write({k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée")
 
         # 5. Interface principale - État et contrôles
         status_col1, status_col2 = st.columns([2, 1])
@@ -5187,57 +5187,75 @@ async def main_async():
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-            # --- BACKTEST CLASSIQUE ---
-            if st.button("Lancer Backtest", key="backtest_all_btn"):
-                results = {}
-                st.info("Backtest en cours sur toutes les paires...")
-                try:
-                    for symbol, data in bot.latest_data.items():
-                        try:
-                            if data is not None and hasattr(data, "empty") and not data.empty:
-                                def strategy_func(df, **params):
-                                    return (df['close'] > df['close'].rolling(5).mean()).astype(int)
-                                engine = BacktestEngine(initial_capital=10000)
-                                results[symbol] = engine.run_backtest(data, strategy_func)
-                            else:
-                                st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
-                        except Exception as pair_exc:
-                            st.warning(f"Erreur sur {symbol}: {pair_exc}")
-                    st.session_state['all_backtest_results'] = results
-                    st.success("Backtest terminé ✅")
-                except Exception as batch_exc:
-                    st.error(f"Erreur lors du backtest: {batch_exc}")
+            # --- GESTION DES DONNEES ---
+            data_ready = latest_data and len(latest_data) > 0
 
-            # --- BACKTEST QUANTIQUE ---
-            if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
-                st.info("Backtest quantique en cours sur toutes les paires...")
-                results = {}
-                st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in bot.latest_data.items()})
-                try:
-                    for symbol, data in bot.latest_data.items():
-                        st.write(f"Test {symbol} ...")
-                        try:
-                            if data is not None and hasattr(data, "empty") and not data.empty:
-                                def strategy_func(df):
-                                    return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
-                                config = BacktestConfig(initial_capital=10000)
-                                backtester = QuantumBacktester(config)
-                                results[symbol] = backtester.run_quantum_simulation(data, strategy_func)
-                            else:
-                                st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
-                        except Exception as pair_exc:
-                            st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
-                    st.session_state['all_quantum_results'] = results
-                    st.success("Backtest quantique terminé ✅")
-                    st.write("DEBUG - Résultats quantum :", results)
-                except Exception as batch_exc:
-                    st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+            if not data_ready:
+                st.warning("Aucune donnée disponible. Clique sur le bouton ci-dessous pour charger les données de marché.")
+                if st.button("Charger les données", key="load_data_btn"):
+                    with st.spinner("Chargement des données..."):
+                        # Adapte cet appel à TA fonction selon ton bot
+                        if hasattr(bot, "load_all_data"):
+                            await bot.load_all_data()
+                        elif hasattr(bot, "get_latest_data"):
+                            # Peut être async, donc on attend le résultat
+                            data = await bot.get_latest_data()
+                            if data:
+                                bot.latest_data = data
+                        else:
+                            st.error("Aucune méthode de chargement trouvée sur le bot.")
+                    st.success("Données chargées ! Tu peux lancer un backtest.")
+            else:
+                # --- BACKTEST CLASSIQUE ---
+                if st.button("Lancer Backtest", key="backtest_all_btn"):
+                    results = {}
+                    st.info("Backtest en cours sur toutes les paires...")
+                    try:
+                        for symbol, data in latest_data.items():
+                            try:
+                                if data is not None and hasattr(data, "empty") and not data.empty:
+                                    def strategy_func(df, **params):
+                                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                                    engine = BacktestEngine(initial_capital=10000)
+                                    results[symbol] = engine.run_backtest(data, strategy_func)
+                                else:
+                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
+                            except Exception as pair_exc:
+                                st.warning(f"Erreur sur {symbol}: {pair_exc}")
+                        st.session_state['all_backtest_results'] = results
+                        st.success("Backtest terminé ✅")
+                    except Exception as batch_exc:
+                        st.error(f"Erreur lors du backtest: {batch_exc}")
+
+                # --- BACKTEST QUANTIQUE ---
+                if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
+                    st.info("Backtest quantique en cours sur toutes les paires...")
+                    results = {}
+                    st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
+                    try:
+                        for symbol, data in latest_data.items():
+                            st.write(f"Test {symbol} ...")
+                            try:
+                                if data is not None and hasattr(data, "empty") and not data.empty:
+                                    def strategy_func(df):
+                                        return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
+                                    config = BacktestConfig(initial_capital=10000)
+                                    backtester = QuantumBacktester(config)
+                                    results[symbol] = backtester.run_quantum_simulation(data, strategy_func)
+                                else:
+                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
+                            except Exception as pair_exc:
+                                st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                        st.session_state['all_quantum_results'] = results
+                        st.success("Backtest quantique terminé ✅")
+                        st.write("DEBUG - Résultats quantum :", results)
+                    except Exception as batch_exc:
+                        st.error(f"Erreur lors du backtest quantique: {batch_exc}")
 
             # Affichage du résultat (même vide)
             st.markdown("**Résultats Backtest Quantique (debug):**")
             st.write(st.session_state.get('all_quantum_results'))
 
-            # Résumé rapide dans la sidebar
             if st.session_state.get('all_backtest_results'):
                 st.markdown("**Résultats Backtest Classique :**")
                 for symbol, res in st.session_state['all_backtest_results'].items():
