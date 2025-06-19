@@ -5215,13 +5215,17 @@ async def main_async():
                 latest_data = {}
 
             # PATCH : on vérifie si au moins une paire a des données OHLCV exploitables
-            data_ready = any(
-                isinstance(item, dict)
-                and 'ohlcv' in item
-                and isinstance(item['ohlcv'], list)
-                and len(item['ohlcv']) > 0
-                for item in latest_data.values()
-            )
+            def _has_valid_ohlcv(item):
+                return (
+                    isinstance(item, dict)
+                    and 'ohlcv' in item
+                    and isinstance(item['ohlcv'], list)
+                    and len(item['ohlcv']) > 0
+                    and isinstance(item['ohlcv'][0], dict)
+                    and all(k in item['ohlcv'][0] for k in ['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                )
+
+            data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
 
             if not data_ready:
                 st.warning(
@@ -5272,13 +5276,15 @@ async def main_async():
                             latest_data = {}
                         for symbol, data in latest_data.items():
                             try:
-                                if data is not None and hasattr(data, "empty") and not data.empty:
+                                if _has_valid_ohlcv(data):
+                                    import pandas as pd
+                                    df = pd.DataFrame(data['ohlcv'])
                                     def strategy_func(df, **params):
                                         return (df['close'] > df['close'].rolling(5).mean()).astype(int)
                                     engine = BacktestEngine(initial_capital=10000)
-                                    results[symbol] = engine.run_backtest(data, strategy_func)
+                                    results[symbol] = engine.run_backtest(df, strategy_func)
                                 else:
-                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
+                                    st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
                             except Exception as pair_exc:
                                 st.warning(f"Erreur sur {symbol}: {pair_exc}")
                         st.session_state['all_backtest_results'] = results
@@ -5296,14 +5302,15 @@ async def main_async():
                         for symbol, data in latest_data.items():
                             st.write(f"Test {symbol} ...")
                             try:
-                                if data is not None and hasattr(data, "empty") and not data.empty:
-                                    def strategy_func(df):
-                                        return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
-                                    config = BacktestConfig(initial_capital=10000)
-                                    backtester = QuantumBacktester(config)
-                                    results[symbol] = backtester.run_quantum_simulation(data, strategy_func)
+                                if _has_valid_ohlcv(data):
+                                    import pandas as pd
+                                    df = pd.DataFrame(data['ohlcv'])
+                                    def strategy_func(df, **params):
+                                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                                    engine = BacktestEngine(initial_capital=10000)
+                                    results[symbol] = engine.run_backtest(df, strategy_func)
                                 else:
-                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
+                                    st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
                             except Exception as pair_exc:
                                 st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
                         st.session_state['all_quantum_results'] = results
