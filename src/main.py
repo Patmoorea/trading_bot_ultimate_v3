@@ -5203,7 +5203,7 @@ async def main_async():
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
             # --- GESTION DES DONNEES ---
-            latest_data = getattr(bot, "latest_data", {}) or {}
+            latest_data = st.session_state.get('latest_data', {})
             data_ready = isinstance(latest_data, dict) and len(latest_data) > 0
 
             if not data_ready:
@@ -5222,6 +5222,7 @@ async def main_async():
                                 st.write("DEBUG - Résultat get_latest_data:", data)
                                 if data and isinstance(data, dict) and len(data) > 0:
                                     bot.latest_data = data
+                                    st.session_state['latest_data'] = data  # <-- AJOUT POUR PERSISTENCE
                                     loaded = True
                                 else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
@@ -5230,7 +5231,9 @@ async def main_async():
                                 latest_data = getattr(bot, "latest_data", {}) or {}
                                 st.write("DEBUG - latest_data après load_all_data:", latest_data)
                                 loaded = isinstance(latest_data, dict) and len(latest_data) > 0
-                                if not loaded:
+                                if loaded:
+                                    st.session_state['latest_data'] = latest_data  # <-- AJOUT POUR PERSISTENCE
+                                else:
                                     st.error("La récupération a retourné None ou un dict vide : pas de données.")
                             else:
                                 st.error("Aucune méthode de chargement trouvée sur le bot.")
