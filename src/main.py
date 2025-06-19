@@ -2817,11 +2817,6 @@ class TradingBotM4:
             return decision
 
     async def get_latest_data(self):
-        """
-        Récupère les dernières données de marché en temps réel pour chaque paire,
-        et inclut un historique OHLCV (nécessaire au backtest).
-        Résout le problème d'affichage du bouton de backtest dans l'UI Streamlit.
-        """
         try:
             data = {}
 
@@ -2834,7 +2829,7 @@ class TradingBotM4:
                     logger.error("Impossible d'initialiser le WebSocket après tentative.")
                     return None
 
-            for pair in config["TRADING"]["pairs"]:
+            for pair in self.config["TRADING"]["pairs"]:
                 logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
 
@@ -2845,7 +2840,7 @@ class TradingBotM4:
                             'balance': None,
                             'ticker_24h': None,
                             'ticker': None,
-                            'ohlcv': None,  # AJOUT POUR L'HISTORIQUE
+                            'ohlcv': None,
                         }
 
                         # 1. Prix en temps réel via WebSocket (toujours async)
@@ -2874,15 +2869,25 @@ class TradingBotM4:
                             result['ticker_24h'] = await self.binance_ws.get_24h_ticker(pair.replace('/', ''))
 
                         # 5. HISTORIQUE OHLCV (pour le backtest !)
-                        if hasattr(self.binance_ws, 'get_klines'):
-                            # Utilise '1m' ou la timeframe de ton choix et un limit raisonnable (ex: 200)
-                            try:
+                        # PATCH : Ajout d'une vraie liste de dicts pour ohlcv
+                        result['ohlcv'] = []
+                        try:
+                            # Essaye d'utiliser spot_client en priorité pour des données plus fiables
+                            klines = None
+                            if hasattr(self, 'spot_client') and hasattr(self.spot_client, 'get_klines'):
+                                k_func = self.spot_client.get_klines
+                                if asyncio.iscoroutinefunction(k_func):
+                                    klines = await k_func(pair, interval="1m", limit=200)
+                                else:
+                                    klines = k_func(pair, interval="1m", limit=200)
+                            elif hasattr(self.binance_ws, 'get_klines'):
                                 klines = await self.binance_ws.get_klines(
                                     symbol=pair.replace('/', ''),
                                     interval='1m',
                                     limit=200
                                 )
-                                # Structure standard OHLCV
+                            # Structure standard OHLCV
+                            if klines:
                                 result['ohlcv'] = [
                                     {
                                         'timestamp': k[0],
@@ -2890,12 +2895,12 @@ class TradingBotM4:
                                         'high': float(k[2]),
                                         'low': float(k[3]),
                                         'close': float(k[4]),
-                                        'volume': float(k[5]),
+                                        'volume': float(k[5])
                                     }
-                                    for k in klines
+                                    for k in klines if len(k) >= 6
                                 ]
-                            except Exception as hist_e:
-                                logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
+                        except Exception as hist_e:
+                            logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
 
                         return result
 
@@ -2903,7 +2908,6 @@ class TradingBotM4:
                         result = await fetch_async()
 
                     # Traitement des résultats
-                    # ATTENTION : on structure le résultat pour le backtest
                     if result['ticker']:
                         data[pair]['price'] = float(result['ticker']['price'])
                         logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
@@ -2922,10 +2926,9 @@ class TradingBotM4:
                             'price_change': float(result['ticker_24h']['priceChangePercent'])
                         })
                         logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
-                    if result['ohlcv']:
-                        # C'est CETTE CLÉ qui doit être utilisée pour le backtest dans l'UI
-                        data[pair]['ohlcv'] = result['ohlcv']
-                        logger.info(f"📊 OHLCV récupéré ({len(result['ohlcv'])} bougies) pour {pair}")
+                    # AJOUT FORTEMENT RECOMMANDÉ : Toujours une liste de dicts, même vide
+                    data[pair]['ohlcv'] = result['ohlcv'] if result['ohlcv'] else []
+                    logger.info(f"📊 OHLCV récupéré ({len(data[pair]['ohlcv'])} bougies) pour {pair}")
 
                 except asyncio.TimeoutError:
                     logger.warning(f"⏱️ Timeout pour {pair}")
