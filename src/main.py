@@ -3591,10 +3591,12 @@ Take Profit: {take_profit}"""
                 st.subheader("⚙️ Bot Configuration")
                 col1, col2 = st.columns(2)
                 with col1:
-                    # Paramètres de trading
                     st.write("Trading Parameters")
                     risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
                     max_positions = st.number_input("Max Open Positions", 1, 10, 3)
+        except Exception as e:
+            self.logger.error(f"Erreur création dashboard: {e}")
+            st.error(f"Error creating dashboard: {str(e)}")
         
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
