@@ -167,7 +167,7 @@ class StreamlitSessionManager:
                 # États du bot
                 'bot_running': False,
                 'portfolio': None,
-                'latest_data': None,
+                'latest_data': {},
                 'indicators': None,
                 'refresh_count': 0,
                 
@@ -681,7 +681,7 @@ def init_session_state():
         'initialized': False,
         'bot_running': False,
         'portfolio': None,
-        'latest_data': None,
+        'latest_data': {},
         'indicators': None,
         'refresh_count': 0,
         'loop': None,
@@ -5211,7 +5211,9 @@ async def main_async():
 
             # --- GESTION DES DONNEES ET BACKTEST ---
             # TOUJOURS lire depuis session_state !
-            latest_data = st.session_state.get('latest_data', {})
+            latest_data = st.session_state.get('latest_data')
+            if not isinstance(latest_data, dict):
+                latest_data = {}
             st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
 
             def _has_valid_ohlcv(item):
@@ -5688,7 +5690,7 @@ def _initialize_session_state():
             # États du bot
             'bot_running': False,
             'portfolio': None,
-            'latest_data': None,
+            'latest_data': {},
             'indicators': None,
             'refresh_count': 0,
             
