@@ -2272,59 +2272,102 @@ class TradingBotM4:
         self.client_session = None
         
     def _generate_recommendation(self, trend, momentum, volatility, volume):
-        """Génère une recommandation basée sur l'analyse des signaux"""
         try:
-            # Compteurs pour les signaux
+            # Compteurs pour les signaux buy/sell (ancienne logique)
             buy_signals = 0
             sell_signals = 0
-        
-            # Analyse de la tendance
+
+            # Système de points (nouvelle logique)
+            points = 0
+
+            # --- Analyse de la tendance ---
             if trend['primary_trend'] == 'bullish':
                 buy_signals += 1
+                points += 2
             elif trend['primary_trend'] == 'bearish':
                 sell_signals += 1
-            
-            # Analyse du momentum
-            if momentum['rsi_signal'] == 'oversold':
+            if trend.get('trend_strength', 0) > 25:
+                points += 1
+            if trend.get('trend_direction', 0) == 1:
+                points += 1
+
+            # --- Momentum ---
+            if momentum.get('rsi_signal') == 'oversold':
                 buy_signals += 1
-            elif momentum['rsi_signal'] == 'overbought':
+                points += 2
+            elif momentum.get('rsi_signal') == 'overbought':
                 sell_signals += 1
-            
-            # Analyse de la volatilité
-            if volatility['bb_signal'] == 'oversold':
+            if momentum.get('stoch_signal') == 'buy':
+                points += 1
+            if momentum.get('stoch_signal') == 'buy':
                 buy_signals += 1
-            elif volatility['bb_signal'] == 'overbought':
+            if momentum.get('stoch_signal') == 'sell':
                 sell_signals += 1
-            
-            # Analyse du volume
-            if volume['mfi_signal'] == 'buy':
+            if momentum.get('ultimate_signal') == 'buy':
+                points += 1
+
+            # --- Volatilité ---
+            if volatility.get('bb_signal') == 'oversold':
+                points += 1
                 buy_signals += 1
-            elif volume['mfi_signal'] == 'sell':
+            elif volatility.get('bb_signal') == 'overbought':
                 sell_signals += 1
-            
-            # Génération de la recommandation finale
-            recommendation = {
-                'action': 'hold',
-                'strength': 0,
-                'signals': {
-                    'buy': buy_signals,
-                    'sell': sell_signals
-                }
+            if volatility.get('kc_signal') == 'breakout':
+                points += 1
+
+            # --- Volume ---
+            if volume.get('mfi_signal') == 'buy':
+                buy_signals += 1
+                points += 1
+            elif volume.get('mfi_signal') == 'sell':
+                sell_signals += 1
+            if volume.get('cmf_trend') == 'positive':
+                points += 1
+                buy_signals += 1
+            if volume.get('obv_trend') == 'up':
+                points += 1
+                buy_signals += 1
+            elif volume.get('obv_trend') == 'down':
+                sell_signals += 1
+
+            # --- Génération de la recommandation finale ---
+            # Par points (plus fin)
+            if points >= 8:
+                action = 'strong_buy'
+                confidence = points / 12
+            elif points >= 6:
+                action = 'buy'
+                confidence = points / 12
+            elif points <= 2:
+                action = 'strong_sell'
+                confidence = 1 - (points / 12)
+            elif points <= 4:
+                action = 'sell'
+                confidence = 1 - (points / 12)
+            else:
+                action = 'neutral'
+                confidence = 0.5
+
+            # Par signaux purs (pour compatibilité)
+            strength = abs(buy_signals - sell_signals)
+            signals = {'buy': buy_signals, 'sell': sell_signals}
+
+            return {
+                'action': action,
+                'confidence': confidence,
+                'strength': strength,
+                'signals': signals
             }
-        
-            if buy_signals > sell_signals:
-                recommendation['action'] = 'buy'
-                recommendation['strength'] = buy_signals - sell_signals
-            elif sell_signals > buy_signals:
-                recommendation['action'] = 'sell'
-                recommendation['strength'] = sell_signals - buy_signals
-            
-            logger.info(f"✅ Recommandation générée: {recommendation}")
-            return recommendation
-            
+
         except Exception as e:
             logger.error(f"❌ Erreur génération recommandation: {e}")
-            return {'action': 'error', 'strength': 0, 'error': str(e)}
+            return {
+                'action': 'error',
+                'confidence': 0,
+                'strength': 0,
+                'signals': {'buy': 0, 'sell': 0},
+                'error': str(e)
+            }
 
     def _generate_analysis_report(self, indicators_analysis, regime):
         """Génère un rapport d'analyse du marché"""
@@ -3570,47 +3613,6 @@ Take Profit: {take_profit}"""
                     risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
                     max_positions = st.number_input("Max Open Positions", 1, 10, 3)
         
-    def _generate_recommendation(self, trend, momentum, volatility, volume):
-            """Génère une recommandation basée sur l'analyse des indicateurs"""
-            try:
-                # Système de points pour la décision
-                points = 0
-        
-                # Points basés sur la tendance
-                if trend['primary_trend'] == 'bullish': points += 2
-                if trend['trend_strength'] > 25: points += 1
-                if trend['trend_direction'] == 1: points += 1
-        
-                # Points basés sur le momentum
-                if momentum['rsi_signal'] == 'oversold': points += 2
-                if momentum['stoch_signal'] == 'buy': points += 1
-                if momentum['ultimate_signal'] == 'buy': points += 1
-        
-                # Points basés sur la volatilité
-                if volatility['bb_signal'] == 'oversold': points += 1
-                if volatility['kc_signal'] == 'breakout': points += 1
-        
-                # Points basés sur le volume
-                if volume['mfi_signal'] == 'buy': points += 1
-                if volume['cmf_trend'] == 'positive': points += 1
-                if volume['obv_trend'] == 'up': points += 1
-        
-                # Génération de la recommandation
-                if points >= 8:
-                    return {'action': 'strong_buy', 'confidence': points/12}
-                elif points >= 6:
-                    return {'action': 'buy', 'confidence': points/12}
-                elif points <= 2:
-                    return {'action': 'strong_sell', 'confidence': 1 - points/12}
-                elif points <= 4:
-                    return {'action': 'sell', 'confidence': 1 - points/12}
-                else:
-                    return {'action': 'neutral', 'confidence': 0.5}
-            
-            except Exception as e:
-                logger.error(f"❌ Erreur génération recommandation: {e}")
-                return {'action': 'error', 'confidence': 0}
-
     def _build_decision(self, policy, value, technical_score, news_sentiment, regime, timestamp):
         """Construit la décision finale basée sur tous les inputs"""
         try:
