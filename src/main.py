@@ -5179,21 +5179,40 @@ async def main_async():
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-            # === AJOUTE TES BOUTONS JUSTE EN DESSOUS ===
-            if st.button("Lancer Backtest", key="backtest_btn"):
-                # Remplace le print par ta logique réelle de backtest
-                st.session_state['backtest_result'] = "Backtest lancé !"  # Ou lance ta vraie fonction ici
+            # --- BACKTEST CLASSIQUE ---
+            if st.button("Lancer Backtest", key="backtest_all_btn"):
+                results = {}
+                for symbol, data in bot.latest_data.items():
+                    if data is not None and not data.empty:
+                        def strategy_func(df, **params):
+                            return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                        engine = BacktestEngine(initial_capital=10000)
+                        results[symbol] = engine.run_backtest(data, strategy_func)
+                st.session_state['all_backtest_results'] = results
 
-            if st.button("Lancer Backtest Quantique", key="quantum_backtest_btn"):
-                st.session_state['quantum_result'] = "Backtest quantique lancé !"  # Ou lance ta vraie fonction ici
+            # --- BACKTEST QUANTIQUE ---
+            if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
+                results = {}
+                for symbol, data in bot.latest_data.items():
+                    if data is not None and not data.empty:
+                        def strategy_func(df):
+                            return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
+                        config = BacktestConfig(initial_capital=10000)
+                        backtester = QuantumBacktester(config)
+                        results[symbol] = backtester.run_quantum_simulation(data, strategy_func)
+                st.session_state['all_quantum_results'] = results
 
-            # Affichage des résultats dans la sidebar (facultatif)
-            if st.session_state.get('backtest_result'):
-                st.success(st.session_state.get('backtest_result'))
-            if st.session_state.get('quantum_result'):
-                st.success(st.session_state.get('quantum_result'))
+            # Résumé rapide dans la sidebar
+            if st.session_state.get('all_backtest_results'):
+                st.markdown("**Résultats Backtest Classique :**")
+                for symbol, res in st.session_state['all_backtest_results'].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-         # --- Ajout du refresh automatique JS SANS st_autorefresh ---
+            if st.session_state.get('all_quantum_results'):
+                st.markdown("**Résultats Backtest Quantique :**")
+                for symbol, res in st.session_state['all_quantum_results'].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+            
         if st.session_state.bot_running:
             auto_refresh(interval_ms=2000, key="js_autorefresh")
             bot = get_bot()
