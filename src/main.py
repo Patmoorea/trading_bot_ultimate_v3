@@ -3,6 +3,7 @@ import streamlit as st
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
+    """Inject JS code for auto-refresh in Streamlit."""
     js_code = f"""
     <script>
         if (!window.{key}) {{
@@ -13,17 +14,17 @@ def auto_refresh(interval_ms=2000, key="js_autorefresh"):
     </script>
     """
     st.markdown(js_code, unsafe_allow_html=True)
-                
+
 # Initialisation des flags de protection
-if 'prevent_cleanup' not in st.session_state:
-    st.session_state.prevent_cleanup = True
-if 'keep_alive' not in st.session_state:
-    st.session_state.keep_alive = True
-if 'force_cleanup' not in st.session_state:
-    st.session_state.force_cleanup = False
-if 'cleanup_allowed' not in st.session_state:
-    st.session_state.cleanup_allowed = False
-    
+for flag, default in [
+    ('prevent_cleanup', True),
+    ('keep_alive', True),
+    ('force_cleanup', False),
+    ('cleanup_allowed', False)
+]:
+    if flag not in st.session_state:
+        st.session_state[flag] = default
+
 st.set_page_config(
     page_title="Trading Bot Ultimate v4",
     page_icon="📈",
@@ -44,29 +45,30 @@ from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
+import asyncio
+import nest_asyncio
 import aiohttp
 
 # 3. Configuration des chemins
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-sys.path.extend([parent_dir, current_dir])
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
-# 4. Configuration asyncio et event loop
-import asyncio
-import nest_asyncio
-
-# 5. Configuration du logging
+# 4. Configuration du logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler('trading_bot.log'),
+        logging.FileHandler("trading_bot.log"),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
-# 6. Imports des bibliothèques externes
+# 5. Imports des bibliothèques externes
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
@@ -79,24 +81,16 @@ import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
 
-# Imports des modules d'échange
+# 6. Imports des modules internes (exchanges, core, etc.)
 from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
 from src.core.exchange import ExchangeInterface as Exchange
-
-# Imports des modules core
 from src.core.buffer.circular_buffer import CircularBuffer
 from src.connectors.binance import BinanceConnector
-
-# Imports des modules de portfolio et régime
 from src.portfolio.real_portfolio import RealPortfolio
 from src.regime_detection.hmm_kmeans import MarketRegimeDetector
-
-# Imports des modules de monitoring et websocket
 from src.monitoring.streamlit_ui import TradingDashboard
 from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
-
-# Imports des modules d'analyse technique
 from src.indicators.advanced.multi_timeframe import MultiTimeframeAnalyzer, TimeframeConfig
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
 from src.analysis.indicators.momentum.momentum import MomentumIndicators
@@ -104,36 +98,26 @@ from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
 from src.analysis.indicators.trend.indicators import TrendIndicators
 from src.analysis.indicators.orderflow.orderflow_analysis import OrderFlowAnalysis, OrderFlowConfig
 from src.analysis.indicators.volatility.volatility import VolatilityIndicators
-
-# Imports des modules d'IA
 from src.ai.cnn_lstm import CNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
 from src.ai.hybrid_model import HybridAI
 from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
-
-# Imports des modules de gestion des risques
 from src.risk_management.circuit_breakers import CircuitBreaker
 from src.risk_management.position_manager import PositionManager
-
-# Imports des modules de notification et news
 from src.notifications.telegram_bot import TelegramBot
-
-# Imports des modules de stratégie et visualisation
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner as ArbitrageEngine
 from src.liquidity_heatmap.visualization import generate_heatmap
-
-from src.core.buffer.circular_buffer import CircularBuffer
 from web_interface.app.services.news_analyzer import NewsAnalyzer
 from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
 from src.backtesting.core.backtest_engine import BacktestEngine
 
-# Constantes de nettoyage
+# 7. Constantes de nettoyage
 cleanup_lock = asyncio.Lock()
 cleanup_in_progress = False
 last_cleanup_time = 0
 CLEANUP_COOLDOWN = 5
 
-# Constantes WebSocket globales
+# 8. Constantes WebSocket globales
 WEBSOCKET_CONFIG = {
     'RECONNECT_DELAY': 1.0,
     'MESSAGE_TIMEOUT': 30.0,
@@ -143,7 +127,7 @@ WEBSOCKET_CONFIG = {
 }
 
 def setup_asyncio():
-    """Configure l'environnement asyncio"""
+    """Configure l'environnement asyncio pour Streamlit."""
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -152,7 +136,6 @@ def setup_asyncio():
     except Exception as e:
         logger.error(f"Error setting up asyncio: {e}")
         return None
-    
 class StreamlitSessionManager:
     """Gestionnaire de session Streamlit avec protection et logging améliorés"""
     
