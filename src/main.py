@@ -5160,6 +5160,8 @@ async def main_async():
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
         # --- CORRIGE ici pour toujours refléter l'état session_state ---
         latest_data = st.session_state.get('latest_data', {})
+        if not isinstance(latest_data, dict):
+            latest_data = {}
         st.sidebar.write(
             {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée"
         )
@@ -5206,6 +5208,8 @@ async def main_async():
 
             # --- GESTION DES DONNEES ET BACKTEST ---
             latest_data = st.session_state.get('latest_data', {})
+            if not isinstance(latest_data, dict):
+                latest_data = {}
 
             # PATCH : on vérifie si au moins une paire a des données OHLCV exploitables
             data_ready = any(
