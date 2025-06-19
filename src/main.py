@@ -3569,28 +3569,6 @@ Take Profit: {take_profit}"""
                     st.write("Trading Parameters")
                     risk_per_trade = st.slider("Risk per Trade (%)", 0.1, 5.0, 2.0)
                     max_positions = st.number_input("Max Open Positions", 1, 10, 3)
-
-            # Sidebar toujours accessible
-            with st.sidebar:
-                st.header("🛠️ Bot Controls")
-
-                risk_level = st.select_slider(
-                    "Risk Level",
-                    options=["Low", "Medium", "High"],
-                    value="Low",
-                    key=f"risk_level_slider_{id(self)}"
-                )
-                st.divider()
-                # Market Overview
-                st.subheader("Market Overview")
-                latest_data = self.buffer.get_latest_data() if hasattr(self, 'buffer') else None
-                if latest_data:
-                    st.metric("BTC/USDC", f"${latest_data.get('price', 0):,.2f}",
-                            f"{latest_data.get('change', 0):+.2f}%")
-
-        except Exception as e:
-            self.logger.error(f"Erreur création dashboard: {e}")
-            st.error(f"Error creating dashboard: {str(e)}")
         
     def _generate_recommendation(self, trend, momentum, volatility, volume):
             """Génère une recommandation basée sur l'analyse des indicateurs"""
@@ -5239,14 +5217,21 @@ async def main_async():
             st.divider()
             st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
 
-            # --- GESTION DES DONNEES ---
-            # Utilise UNIQUEMENT le session_state pour l'état des données !
+            # --- GESTION DES DONNEES ET BACKTEST ---
             latest_data = st.session_state.get('latest_data', {})
-            data_ready = isinstance(latest_data, dict) and len(latest_data) > 0
+
+            # PATCH : on vérifie si au moins une paire a des données OHLCV exploitables
+            data_ready = any(
+                isinstance(item, dict)
+                and 'ohlcv' in item
+                and isinstance(item['ohlcv'], list)
+                and len(item['ohlcv']) > 0
+                for item in latest_data.values()
+            )
 
             if not data_ready:
                 st.warning(
-                    "Aucune donnée disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
+                "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
                 )
                 if st.button("Charger les données", key="load_data_btn"):
                     with st.spinner("Chargement des données..."):
@@ -5283,68 +5268,53 @@ async def main_async():
                             st.success("Données chargées ! Tu peux lancer un backtest.")
 
             else:
-                # --- BACKTESTS : UNIQUEMENT SI DONNEES PRÊTES ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
                     results = {}
                     st.info("Backtest en cours sur toutes les paires...")
-                    try:
-                        for symbol, data in latest_data.items():
-                            try:
-                                # PATCH : assure la compatibilité avec DataFrame attendu
-                                df = pd.DataFrame(data) if isinstance(data, list) else data
-                                if df is not None and hasattr(df, "empty") and not df.empty:
-                                    def strategy_func(df, **params):
-                                        return (df['close'] > df['close'].rolling(5).mean()).astype(int)
-                                    engine = BacktestEngine(initial_capital=10000)
-                                    results[symbol] = engine.run_backtest(df, strategy_func)
-                                else:
-                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
-                            except Exception as pair_exc:
-                                st.warning(f"Erreur sur {symbol}: {pair_exc}")
-                        st.session_state['all_backtest_results'] = results
-                        st.success("Backtest terminé ✅")
-                    except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest: {batch_exc}")
+                    for symbol, item in latest_data.items():
+                        try:
+                            df = pd.DataFrame(item['ohlcv']) if 'ohlcv' in item and isinstance(item['ohlcv'], list) else None
+                            if df is not None and not df.empty:
+                                def strategy_func(df, **params):
+                                    return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                                engine = BacktestEngine(initial_capital=10000)
+                                results[symbol] = engine.run_backtest(df, strategy_func)
+                            else:
+                                st.warning(f"Aucune donnée OHLCV pour {symbol}")
+                        except Exception as pair_exc:
+                            st.warning(f"Erreur sur {symbol}: {pair_exc}")
+                    st.session_state['all_backtest_results'] = results
+                    st.success("Backtest terminé ✅")
 
-                # --- BACKTEST QUANTIQUE ---
                 if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
                     st.info("Backtest quantique en cours sur toutes les paires...")
                     results = {}
-                    st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
-                    try:
-                        for symbol, data in latest_data.items():
-                            st.write(f"Test {symbol} ...")
-                            try:
-                                df = pd.DataFrame(data) if isinstance(data, list) else data
-                                if df is not None and hasattr(df, "empty") and not df.empty:
-                                    def strategy_func(df):
-                                        return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
-                                    config = BacktestConfig(initial_capital=10000)
-                                    backtester = QuantumBacktester(config)
-                                    results[symbol] = backtester.run_quantum_simulation(df, strategy_func)
-                                else:
-                                    st.warning(f"Aucune donnée ou DataFrame vide pour {symbol}")
-                            except Exception as pair_exc:
-                                st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
-                        st.session_state['all_quantum_results'] = results
-                        st.success("Backtest quantique terminé ✅")
-                        st.write("DEBUG - Résultats quantum :", results)
-                    except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+                    for symbol, item in latest_data.items():
+                        try:
+                            df = pd.DataFrame(item['ohlcv']) if 'ohlcv' in item and isinstance(item['ohlcv'], list) else None
+                            if df is not None and not df.empty:
+                                def strategy_func(df):
+                                    return 1 if df["close"].iloc[-1] > df["close"].rolling(5).mean().iloc[-1] else 0
+                                config = BacktestConfig(initial_capital=10000)
+                                backtester = QuantumBacktester(config)
+                                results[symbol] = backtester.run_quantum_simulation(df, strategy_func)
+                            else:
+                                st.warning(f"Aucune donnée OHLCV pour {symbol}")
+                        except Exception as pair_exc:
+                            st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                    st.session_state['all_quantum_results'] = results
+                    st.success("Backtest quantique terminé ✅")
 
-            # Affichage du résultat (même vide)
-            st.markdown("**Résultats Backtest Quantique (debug):**")
-            st.write(st.session_state.get('all_quantum_results'))
+                # Affichage des résultats
+                if st.session_state.get('all_backtest_results'):
+                    st.markdown("**Résultats Backtest Classique :**")
+                    for symbol, res in st.session_state['all_backtest_results'].items():
+                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-            if st.session_state.get('all_backtest_results'):
-                st.markdown("**Résultats Backtest Classique :**")
-                for symbol, res in st.session_state['all_backtest_results'].items():
-                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-            if st.session_state.get('all_quantum_results'):
-                st.markdown("**Résultats Backtest Quantique :**")
-                for symbol, res in st.session_state['all_quantum_results'].items():
-                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+                if st.session_state.get('all_quantum_results'):
+                    st.markdown("**Résultats Backtest Quantique :**")
+                    for symbol, res in st.session_state['all_quantum_results'].items():
+                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
         # 8. Onglets principaux avec gestion d'erreur
         try:
