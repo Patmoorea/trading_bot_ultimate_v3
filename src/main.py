@@ -5823,11 +5823,12 @@ def _perform_cleanup():
                             loop.run_until_complete(
                                 cleanup_resources(st.session_state.bot_instance)
                             )
-                    loop.close()
+                    # NE PAS FERMER LA BOUCLE ! On ne fait PAS loop.close()
                 except Exception as e:
                     logger.error(f"Loop cleanup error: {e}")
                 finally:
-                    st.session_state.loop = None
+                    # On ne détruit pas la boucle ici non plus
+                    pass
 
         logger.info("""
 ╔═════════════════════════════════════════════════╗
