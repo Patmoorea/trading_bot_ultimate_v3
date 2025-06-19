@@ -5238,7 +5238,7 @@ async def main_async():
                             st.error(f"Erreur lors du chargement des données : {exc}")
                         if loaded:
                             st.success("Données chargées ! Tu peux lancer un backtest.")
-                            st.rerun()  # Force Streamlit à réafficher avec boutons backtest visibles
+                            
             else:
                 # --- BACKTEST CLASSIQUE ---
                 if st.button("Lancer Backtest", key="backtest_all_btn"):
