@@ -4946,7 +4946,11 @@ async def run_trading_bot():
                 bot = get_bot()
 
                 # On lance la tâche de trading adaptatif si elle n'existe pas déjà
-                if "trading_task" not in st.session_state or st.session_state.trading_task is None or st.session_state.trading_task.done():
+                if (
+                    "trading_task" not in st.session_state
+                    or st.session_state.trading_task is None
+                    or st.session_state.trading_task.done()
+                ):
                     loop = st.session_state.loop or asyncio.get_event_loop()
                     st.session_state.trading_task = loop.create_task(bot.run_adaptive_trading(period="7d"))
                     st.session_state.bot_running = True
@@ -4968,106 +4972,96 @@ async def run_trading_bot():
                     except Exception as cleanup_error:
                         logger.error(f"Cleanup error: {cleanup_error}")
                     
-def _calculate_supertrend(self, data):
-    """
-    Calcule l'indicateur Supertrend avec gestion des erreurs et logging.
-    
-    Args:
-        data (pd.DataFrame): DataFrame contenant les données OHLCV
-
-    Returns:
-        dict: Dictionnaire contenant les valeurs du Supertrend, la direction et la force
-              ou None en cas d'erreur
-    """
-    try:
-        # Log de début de calcul
-        logger.info(f"""
+    def _calculate_supertrend(self, data):
+        try:
+            # Log de début de calcul
+            logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           CALCULATING SUPERTREND                 ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
-        """)
+            """)
 
-        # Vérification de la configuration
-        if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
-            logger.warning("Missing Supertrend configuration")
-            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
-            return None
+            # Vérification de la configuration
+            if not (self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})):
+                logger.warning("Missing Supertrend configuration")
+                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing config")
+                return None
 
-        # Récupération des paramètres
-        try:
-            period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
-            multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
-            
-            logger.info(f"Using parameters: period={period}, multiplier={multiplier}")
-            
-        except KeyError as ke:
-            logger.error(f"Missing parameter: {ke}")
-            self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
-            return None
-
-        # Vérification des données d'entrée
-        if data is None or data.empty:
-            logger.error("No input data provided")
-            self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
-            return None
-
-        required_columns = ['high', 'low', 'close']
-        if not all(col in data.columns for col in required_columns):
-            logger.error(f"Missing required columns: {required_columns}")
-            self.dashboard.update_indicator_status("Supertrend", "ERROR - Missing columns")
-            return None
-
-        # Extraction des séries de prix
-        high = data['high']
-        low = data['low']
-        close = data['close']
-
-        # Calcul du True Range (TR)
-        tr = pd.DataFrame()
-        tr['h-l'] = high - low
-        tr['h-pc'] = abs(high - close.shift(1))
-        tr['l-pc'] = abs(low - close.shift(1))
-        tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
-        
-        # Calcul de l'ATR
-        atr = tr['tr'].rolling(window=period, min_periods=1).mean()
-
-        # Calcul des bandes
-        hl2 = (high + low) / 2
-        final_upperband = hl2 + (multiplier * atr)
-        final_lowerband = hl2 - (multiplier * atr)
-
-        # Initialisation des séries Supertrend
-        supertrend = pd.Series(index=data.index, dtype=float)
-        direction = pd.Series(index=data.index, dtype=float)
-
-        # Calcul du Supertrend
-        for i in range(period, len(data)):
+            # Récupération des paramètres
             try:
-                if close[i] > final_upperband[i-1]:
-                    supertrend[i] = final_lowerband[i]
-                    direction[i] = 1
-                elif close[i] < final_lowerband[i-1]:
-                    supertrend[i] = final_upperband[i]
-                    direction[i] = -1
-                else:
-                    supertrend[i] = supertrend[i-1]
-                    direction[i] = direction[i-1]
-            except IndexError as idx_error:
-                logger.error(f"Index error at position {i}: {idx_error}")
-                continue
+                period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
+                multiplier = self.config["INDICATORS"]["trend"]["supertrend"]["multiplier"]
+            
+                logger.info(f"Using parameters: period={period}, multiplier={multiplier}")
+            
+            except KeyError as ke:
+                logger.error(f"Missing parameter: {ke}")
+                self.dashboard.update_indicator_status("Supertrend", "DISABLED - Missing parameters")
+                return None
 
-        # Calcul de la force du signal
-        strength = abs(close - supertrend) / close
+            # Vérification des données d'entrée
+            if data is None or data.empty:
+                logger.error("No input data provided")
+                self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
+                return None
 
-        # Mise à jour du statut
-        self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+            required_columns = ['high', 'low', 'close']
+            if not all(col in data.columns for col in required_columns):
+                logger.error(f"Missing required columns: {required_columns}")
+                self.dashboard.update_indicator_status("Supertrend", "ERROR - Missing columns")
+                return None
+
+            # Extraction des séries de prix
+            high = data['high']
+            low = data['low']
+            close = data['close']
+
+            # Calcul du True Range (TR)
+            tr = pd.DataFrame()
+            tr['h-l'] = high - low
+            tr['h-pc'] = abs(high - close.shift(1))
+            tr['l-pc'] = abs(low - close.shift(1))
+            tr['tr'] = tr[['h-l', 'h-pc', 'l-pc']].max(axis=1)
         
-        # Log de succès
-        logger.info(f"""
+            # Calcul de l'ATR
+            atr = tr['tr'].rolling(window=period, min_periods=1).mean()
+
+            # Calcul des bandes
+            hl2 = (high + low) / 2
+            final_upperband = hl2 + (multiplier * atr)
+            final_lowerband = hl2 - (multiplier * atr)
+
+            # Initialisation des séries Supertrend
+            supertrend = pd.Series(index=data.index, dtype=float)
+            direction = pd.Series(index=data.index, dtype=float)
+
+            # Calcul du Supertrend
+            for i in range(period, len(data)):
+                try:
+                    if close[i] > final_upperband[i-1]:
+                        supertrend[i] = final_lowerband[i]
+                        direction[i] = 1
+                    elif close[i] < final_lowerband[i-1]:
+                        supertrend[i] = final_upperband[i]
+                        direction[i] = -1
+                    else:
+                        supertrend[i] = supertrend[i-1]
+                        direction[i] = direction[i-1]
+                except IndexError as idx_error:
+                    logger.error(f"Index error at position {i}: {idx_error}")
+                    continue
+
+            # Calcul de la force du signal
+            strength = abs(close - supertrend) / close
+
+            # Mise à jour du statut
+            self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+        
+            # Log de succès
+            logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SUPERTREND CALCULATED                  ║
 ╠═════════════════════════════════════════════════╣
@@ -5075,25 +5069,25 @@ def _calculate_supertrend(self, data):
 ║ Direction: {'Bullish' if direction.iloc[-1] == 1 else 'Bearish'}
 ║ Strength: {strength.iloc[-1]:.4f}
 ╚═════════════════════════════════════════════════╝
-        """)
+            """)
 
-        return {
-            "value": supertrend,
-            "direction": direction,
-            "strength": strength,
-            "parameters": {
-                "period": period,
-                "multiplier": multiplier
-            },
-            "metadata": {
-                "calculation_time": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
-                "status": "SUCCESS"
+            return {
+                "value": supertrend,
+                "direction": direction,
+                "strength": strength,
+                "parameters": {
+                    "period": period,
+                    "multiplier": multiplier
+                },
+                "metadata": {
+                    "calculation_time": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                    "status": "SUCCESS"
+                }
             }
-        }
 
-    except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(f"""
+        except Exception as e:
+            # Log d'erreur détaillé
+            logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║           SUPERTREND ERROR                       ║
 ╠═════════════════════════════════════════════════╣
@@ -5101,28 +5095,28 @@ def _calculate_supertrend(self, data):
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
-        """)
+            """)
         
-        # Mise à jour du statut dans le dashboard
-        self.dashboard.update_indicator_status("Supertrend", f"ERROR - {type(e).__name__}")
+            # Mise à jour du statut dans le dashboard
+            self.dashboard.update_indicator_status("Supertrend", f"ERROR - {type(e).__name__}")
         
-        return None
+            return None
 
-    finally:
-        # Nettoyage et libération des ressources si nécessaire
-        try:
-            del tr
-        except:
-            pass
+        finally:
+            # Nettoyage et libération des ressources si nécessaire
+            try:
+                del tr
+            except:
+                pass
                     
-import time
-import asyncio
-from datetime import datetime, timezone
-import streamlit as st
+    import time
+    import asyncio
+    from datetime import datetime, timezone
+    import streamlit as st
 
-# Assure-toi d'importer ces classes au bon endroit selon ton arborescence
-from src.backtesting.core.backtest_engine import BacktestEngine
-from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
+    # Assure-toi d'importer ces classes au bon endroit selon ton arborescence
+    from src.backtesting.core.backtest_engine import BacktestEngine
+    from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
