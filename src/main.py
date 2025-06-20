@@ -4942,30 +4942,31 @@ async def run_trading_bot():
         # Bouton de démarrage
         if st.button("Start Trading Bot", type="primary"):
             try:
-                async with asyncio.timeout(30):  # Ajouter un timeout de 30 secondes
-                    # Démarrer le bot de façon asynchrone
-                    bot = TradingBotM4()
-                    await bot.run_adaptive_trading(period="7d")
-                    await bot.initialize()  # Utiliser await au lieu de asyncio.run
-                    await bot.run()  # Utiliser await ici aussi
+                # Récupère (ou crée) une seule instance du bot si nécessaire
+                bot = get_bot()
 
-            except asyncio.TimeoutError:
-                st.error("❌ Bot initialization timed out")
-                logger.error("Bot initialization timed out")
+                # On lance la tâche de trading adaptatif si elle n'existe pas déjà
+                if "trading_task" not in st.session_state or st.session_state.trading_task is None or st.session_state.trading_task.done():
+                    loop = st.session_state.loop or asyncio.get_event_loop()
+                    st.session_state.trading_task = loop.create_task(bot.run_adaptive_trading(period="7d"))
+                    st.session_state.bot_running = True
+                    st.success("🚀 Trading adaptatif lancé.")
+                else:
+                    st.info("Le bot est déjà en cours d’exécution.")
+
             except Exception as e:
-                st.error(f"❌ Bot error: {str(e)}")
-                logger.error(f"Bot error: {e}")
-    
-    except Exception as e:
-        logger.error(f"Trading bot runtime error: {e}")
-        st.error(f"❌ Runtime error: {str(e)}")
-    finally:
-        # Nettoyage des ressources
-        if 'bot' in locals():
-            try:
-                await bot._cleanup()
-            except Exception as cleanup_error:
-                logger.error(f"Cleanup error: {cleanup_error}")
+                logger.error(f"Trading bot runtime error: {e}")
+                st.error(f"❌ Runtime error: {str(e)}")
+            finally:
+                # Nettoyage des ressources si le bot a crashé
+                if "bot" in locals() and hasattr(bot, "_cleanup"):
+                    try:
+                        cleanup_coro = bot._cleanup()
+                        if asyncio.iscoroutine(cleanup_coro):
+                            loop = st.session_state.loop or asyncio.get_event_loop()
+                            loop.run_until_complete(cleanup_coro)
+                    except Exception as cleanup_error:
+                        logger.error(f"Cleanup error: {cleanup_error}")
                     
 def _calculate_supertrend(self, data):
     """
