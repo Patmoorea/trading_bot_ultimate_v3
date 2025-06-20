@@ -5473,46 +5473,6 @@ async def _render_analysis_tab(bot):
         except Exception as e:
             st.warning(f"Erreur Quantum SVM : {e}")
         
-# Fonctions auxiliaires pour le rendu des onglets
-async def _render_portfolio_tab(bot):
-    """Rendu de l'onglet Portfolio"""
-    if st.session_state.bot_running:
-        try:
-            portfolio = st.session_state.get('portfolio')
-            if portfolio:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "💰 Total Value",
-                        f"{portfolio.get('total_value', 0):.2f} USDC",
-                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                    )
-                with col2:
-                    st.metric(
-                        "📈 24h Volume",
-                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                        f"{portfolio.get('volume_change', 0):+.2f}%"
-                    )
-                with col3:
-                    positions = portfolio.get('positions', [])
-                    st.metric(
-                        "🔄 Active Positions",
-                        str(len(positions)),
-                        f"{len(positions)} active"
-                    )
-                
-                if positions:
-                    st.subheader("Active Positions")
-                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
-                else:
-                    st.info("💡 No active positions")
-            else:
-                st.warning("⚠️ Waiting for portfolio data...")
-        except Exception as e:
-            st.error(f"❌ Portfolio error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view portfolio")
-
 async def _render_trading_tab(bot):
     """Rendu de l'onglet Trading"""
     if st.session_state.bot_running:
