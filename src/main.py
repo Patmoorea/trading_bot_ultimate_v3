@@ -5293,32 +5293,32 @@ async def main_async():
                     for symbol, res in st.session_state['all_backtest_results'].items():
                         st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-                        if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
-                            st.info("Backtest quantique en cours sur toutes les paires...")
-                            results = {}
-                            if not isinstance(latest_data, dict):
-                                latest_data = {}
-                            st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
-                            try:
-                                for symbol, data in latest_data.items():
-                                    st.write(f"Test {symbol} ...")
-                                    try:
-                                        if _has_valid_ohlcv(data):
-                                            import pandas as pd
-                                            df = pd.DataFrame(data['ohlcv'])
-                                            def strategy_func(df, **params):
-                                                return (df['close'] > df['close'].rolling(5).mean()).astype(int)
-                                            engine = BacktestEngine(initial_capital=10000)
-                                            results[symbol] = engine.run_backtest(df, strategy_func)
-                                        else:
-                                            st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
-                                    except Exception as pair_exc:
-                                        st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
-                                st.session_state['all_quantum_results'] = results
-                                st.success("Backtest quantique terminé ✅")
-                                st.write("DEBUG - Résultats quantum :", results)
-                            except Exception as batch_exc:
-                                st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+                    if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
+                        st.info("Backtest quantique en cours sur toutes les paires...")
+                        results = {}
+                        if not isinstance(latest_data, dict):
+                            latest_data = {}
+                        st.write("DEBUG - Paire/Data dispo :", {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()})
+                        try:
+                            for symbol, data in latest_data.items():
+                                st.write(f"Test {symbol} ...")
+                                try:
+                                    if _has_valid_ohlcv(data):
+                                        import pandas as pd
+                                        df = pd.DataFrame(data['ohlcv'])
+                                        def strategy_func(df, **params):
+                                            return (df['close'] > df['close'].rolling(5).mean()).astype(int)
+                                        engine = BacktestEngine(initial_capital=10000)
+                                        results[symbol] = engine.run_backtest(df, strategy_func)
+                                    else:
+                                        st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
+                                except Exception as pair_exc:
+                                    st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                            st.session_state['all_quantum_results'] = results
+                            st.success("Backtest quantique terminé ✅")
+                            st.write("DEBUG - Résultats quantum :", results)
+                        except Exception as batch_exc:
+                            st.error(f"Erreur lors du backtest quantique: {batch_exc}")
 
                 # Affichage des résultats
                 if st.session_state.get('all_backtest_results'):
