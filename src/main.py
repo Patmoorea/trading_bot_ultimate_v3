@@ -2017,6 +2017,9 @@ class TradingBotM4:
             }
         }
         
+        api_key = self.config["BINANCE"]["API_KEY"]
+        api_secret = self.config["BINANCE"]["API_SECRET"]
+        self.exchange = BinanceExchange(api_key, api_secret)
         # Initialisation du WebSocket Manager (AJOUT ICI)
         self.ws_manager = WebSocketManager(self)
         
@@ -2984,9 +2987,12 @@ class TradingBotM4:
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
         logger.info("🔊 Étude du marché en cours...")
-
+    
         try:
             # Récupération des données historiques
+            if not getattr(self.exchange, "_initialized", False):
+                await self.exchange.initialize()
+                
             historical_data = await self.exchange.get_historical_data(
                 config["TRADING"]["pairs"],
                 config["TRADING"]["timeframes"],
