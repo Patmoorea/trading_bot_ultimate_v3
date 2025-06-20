@@ -4927,51 +4927,6 @@ Take Profit: {take_profit}"""
             return signals["recommendation"]
         return None
     
-async def run_trading_bot():
-    """Point d'entrée synchrone pour le bot de trading"""
-    try:
-        # Stats en temps réel
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Portfolio Value", f"{portfolio_value:.2f} USDC", f"{pnl:+.2f} USDC")
-        with col2:
-            st.metric("Active Positions", "2", "Open")
-        with col3:
-            st.metric("24h P&L", "+123 USDC", "+1.23%")
-
-        # Bouton de démarrage
-        if st.button("Start Trading Bot", type="primary"):
-            try:
-                # Récupère (ou crée) une seule instance du bot si nécessaire
-                bot = get_bot()
-
-                # On lance la tâche de trading adaptatif si elle n'existe pas déjà
-                if (
-                    "trading_task" not in st.session_state
-                    or st.session_state.trading_task is None
-                    or st.session_state.trading_task.done()
-                ):
-                    loop = st.session_state.loop or asyncio.get_event_loop()
-                    st.session_state.trading_task = loop.create_task(bot.run_adaptive_trading(period="7d"))
-                    st.session_state.bot_running = True
-                    st.success("🚀 Trading adaptatif lancé.")
-                else:
-                    st.info("Le bot est déjà en cours d’exécution.")
-
-            except Exception as e:
-                logger.error(f"Trading bot runtime error: {e}")
-                st.error(f"❌ Runtime error: {str(e)}")
-            finally:
-                # Nettoyage des ressources si le bot a crashé
-                if "bot" in locals() and hasattr(bot, "_cleanup"):
-                    try:
-                        cleanup_coro = bot._cleanup()
-                        if asyncio.iscoroutine(cleanup_coro):
-                            loop = st.session_state.loop or asyncio.get_event_loop()
-                            loop.run_until_complete(cleanup_coro)
-                    except Exception as cleanup_error:
-                        logger.error(f"Cleanup error: {cleanup_error}")
-                    
     def _calculate_supertrend(self, data):
         try:
             # Log de début de calcul
@@ -5108,15 +5063,51 @@ async def run_trading_bot():
                 del tr
             except:
                 pass
-                    
-    import time
-    import asyncio
-    from datetime import datetime, timezone
-    import streamlit as st
+    
+async def run_trading_bot():
+    """Point d'entrée synchrone pour le bot de trading"""
+    try:
+        # Stats en temps réel
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Portfolio Value", f"{portfolio_value:.2f} USDC", f"{pnl:+.2f} USDC")
+        with col2:
+            st.metric("Active Positions", "2", "Open")
+        with col3:
+            st.metric("24h P&L", "+123 USDC", "+1.23%")
 
-    # Assure-toi d'importer ces classes au bon endroit selon ton arborescence
-    from src.backtesting.core.backtest_engine import BacktestEngine
-    from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
+        # Bouton de démarrage
+        if st.button("Start Trading Bot", type="primary"):
+            try:
+                # Récupère (ou crée) une seule instance du bot si nécessaire
+                bot = get_bot()
+
+                # On lance la tâche de trading adaptatif si elle n'existe pas déjà
+                if (
+                    "trading_task" not in st.session_state
+                    or st.session_state.trading_task is None
+                    or st.session_state.trading_task.done()
+                ):
+                    loop = st.session_state.loop or asyncio.get_event_loop()
+                    st.session_state.trading_task = loop.create_task(bot.run_adaptive_trading(period="7d"))
+                    st.session_state.bot_running = True
+                    st.success("🚀 Trading adaptatif lancé.")
+                else:
+                    st.info("Le bot est déjà en cours d’exécution.")
+
+            except Exception as e:
+                logger.error(f"Trading bot runtime error: {e}")
+                st.error(f"❌ Runtime error: {str(e)}")
+            finally:
+                # Nettoyage des ressources si le bot a crashé
+                if "bot" in locals() and hasattr(bot, "_cleanup"):
+                    try:
+                        cleanup_coro = bot._cleanup()
+                        if asyncio.iscoroutine(cleanup_coro):
+                            loop = st.session_state.loop or asyncio.get_event_loop()
+                            loop.run_until_complete(cleanup_coro)
+                    except Exception as cleanup_error:
+                        logger.error(f"Cleanup error: {cleanup_error}")
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
