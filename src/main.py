@@ -5200,15 +5200,24 @@ async def main_async():
                 key=f"risk_level_slider_{st.session_state.session_id}"
             )
             st.divider()
-            if not st.session_state.bot_running:
+            if not st.session_state.get("bot_running", False):
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
                     st.session_state.bot_running = True
+                    # Protection pour éviter plusieurs tâches concurrentes
+                    if not st.session_state.get("trading_task"):
+                        loop = st.session_state.loop or asyncio.get_event_loop()
+                        st.session_state.trading_task = loop.create_task(
+                            bot.run_adaptive_trading(period="7d")
+                        )
+                    st.success("Trading adaptatif lancé (étude marché + stratégie auto).")
             else:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     st.session_state.bot_running = False
-            st.divider()
-            st.markdown(f"**Status**: {'🟢 Running' if st.session_state.bot_running else '🔴 Stopped'}")
-
+                    # Arrêt propre de la tâche si elle existe
+                    if st.session_state.get("trading_task"):
+                        st.session_state.trading_task.cancel()
+                        st.session_state.trading_task = None
+                    st.warning("Trading stoppé.")
             # --- GESTION DES DONNEES ET BACKTEST ---
             # TOUJOURS lire depuis session_state !
             latest_data = st.session_state.get('latest_data')
