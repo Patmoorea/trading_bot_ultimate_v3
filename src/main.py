@@ -228,30 +228,6 @@ class StreamlitSessionManager:
         
         # Incrément du compteur d'erreurs
         st.session_state.error_count = st.session_state.get('error_count', 0) + 1
-
-    def protect_session(self):
-        """Protection renforcée de la session"""
-        try:
-            # Vérification et réinitialisation si nécessaire
-            if not st.session_state.get('session_initialized'):
-                self._initialize_session_state()
-                
-            # Mise à jour du timestamp
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-            
-            # Activation des protections
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
-            
-            self._log_protection()
-            return True
-            
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
     
     def _log_protection(self):
         """Log de la protection de session"""
