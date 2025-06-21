@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional
 from decimal import Decimal
 from datetime import datetime, timezone
 import ccxt.async_support as ccxt
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -297,4 +298,37 @@ class BingXExchange:
             return order
         except Exception as e:
             logger.error(f"Error fetching order {order_id}: {e}")
+            raise
+
+    async def get_historical_data(self, pairs: List[str], timeframes: List[str], period: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+        """
+        Récupère les données OHLCV historiques pour chaque paire/timeframe sur la période demandée.
+        Retourne {timeframe: {pair: pd.DataFrame}}
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        result = {}
+        try:
+            # Parse period (ex: "7d" -> 7 jours)
+            if period.endswith("d"):
+                days = int(period.replace("d", ""))
+                since = int((datetime.utcnow() - timedelta(days=days)).timestamp() * 1000)
+            else:
+                # Fallback: 1 jour
+                since = int((datetime.utcnow() - timedelta(days=1)).timestamp() * 1000)
+            for tf in timeframes:
+                tf_result = {}
+                for pair in pairs:
+                    try:
+                        ohlcv = await self._exchange.fetch_ohlcv(pair, tf, since=since)
+                        df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                        tf_result[pair] = df
+                    except Exception as e:
+                        logger.error(f"Erreur historique {pair} {tf}: {e}")
+                        tf_result[pair] = pd.DataFrame()
+                result[tf] = tf_result
+            return result
+        except Exception as e:
+            logger.error(f"Erreur get_historical_data: {e}")
             raise
