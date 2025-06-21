@@ -49,6 +49,7 @@ from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
 import nest_asyncio
 import aiohttp
+import traceback
 
 # 3. Configuration des chemins
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -2088,13 +2089,17 @@ class TradingBotM4:
         """
         try:
             self.logger.info(f"[run_adaptive_trading] Lancement, bot_running={st.session_state.get('bot_running')}")
+            self.logger.info("[run_adaptive_trading] AVANT study_market")
             regime, historical_data, indicators_analysis = await self.study_market(period=period)
-
+            self.logger.info("[run_adaptive_trading] APRÈS study_market")
             strategy = self.choose_strategy(regime, indicators_analysis)
+            self.logger.info(f"[run_adaptive_trading] APRÈS choose_strategy: {strategy}")
             await self.telegram.send_message(f"📊 Plan établi : {strategy} | Régime détecté : {regime}")
+            self.logger.info("[run_adaptive_trading] APRÈS send_message")
 
             self.current_regime = regime
             self.current_strategy = strategy
+
 
             while st.session_state.get("bot_running", True):
                 try:
@@ -2537,6 +2542,15 @@ class TradingBotM4:
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
         try:
+            print("Avant exchange.initialize")
+            await asyncio.wait_for(self.exchange.initialize(), timeout=10)
+            print("Après exchange.initialize")
+        except Exception as e:
+            import sys
+            print("=== EXCEPTION DETECTEE DANS EXCHANGE.INITIALIZE ===", file=sys.stderr)
+            print(traceback.format_exc(), file=sys.stderr)
+            raise
+        
             # Initialisation du client spot si nécessaire
             if not hasattr(self, 'spot_client') or self.spot_client is None:
                 self.spot_client = BinanceClient(
@@ -2567,8 +2581,10 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Initialization error: {e}")
-            return False
+            logging.error(f"Exception dans Exchange.initialize: {e}", exc_info=True)
+            print("=== EXCEPTION dans Exchange.initialize ===")
+            print(traceback.format_exc())
+            raise
             
     async def _setup_components(self):
         """Configure les composants du bot"""
@@ -3013,21 +3029,29 @@ class TradingBotM4:
             return {}
 
     async def study_market(self, period="7d"):
-        """Analyse initiale du marché"""
-        logger.info("🔊 Étude du marché en cours...")
-    
+        logger.info("🔊 Étude du marché en cours... (DEBUT)")
         try:
-            # Récupération des données historiques
+            logger.info("🔊 [study_market] Check exchange._initialized")
             if not getattr(self.exchange, "_initialized", False):
-                await self.exchange.initialize()
-                
+                logger.info("🔊 [study_market] Appel exchange.initialize()")
+                try:
+                    await self.exchange.initialize()
+                    logger.info("🔊 [study_market] APRÈS exchange.initialize()")
+                except Exception as e:
+                    logger.error(f"❌ [study_market] EXCEPTION dans exchange.initialize: {e}", exc_info=True)
+                    print("=== EXCEPTION exchange.initialize ===")
+                    print(traceback.format_exc())
+                    raise
+            
+            logger.info("🔊 [study_market] Appel get_historical_data")    
             historical_data = await self.exchange.get_historical_data(
                 config["TRADING"]["pairs"],
                 config["TRADING"]["timeframes"],
                 period
             )
-
+            logger.info(f"🔊 [study_market] historical_data récupéré: {bool(historical_data)}")
             if not historical_data:
+                logger.error("[study_market] Données historiques non disponibles")
                 raise ValueError("Données historiques non disponibles")
 
             # Analyse des indicateurs par timeframe
@@ -3078,9 +3102,11 @@ class TradingBotM4:
             return regime, historical_data, indicators_analysis
 
         except Exception as e:
-            logger.error(f"Erreur study_market: {e}")
+            logger.error(f"Erreur study_market: {e}", exc_info=True)
+            print("=== EXCEPTION study_market ===")
+            print(traceback.format_exc())
             raise
-
+        
     async def analyze_signals(self, market_data, indicators=None):
         """Analyse des signaux de trading basée sur tous les indicateurs"""
         try:
