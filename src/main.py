@@ -1970,6 +1970,11 @@ class TradingBotM4:
                 api_secret=self.config['BINANCE']['API_SECRET']
             )
             self.logger.info("✅ Spot client initialisé avec succès")
+            try:
+                self.binance_markets = set(self.spot_client.load_markets().keys())
+            except Exception as e:
+                self.logger.warning(f"Impossible de charger les marchés Binance: {e}")
+                self.binance_markets = set()
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
@@ -3302,24 +3307,28 @@ class TradingBotM4:
                             portfolio['total_value'] += (free + locked)
                         else:
                             # Conversion en USDC pour les autres assets
-                            try:
-                                price = self.get_latest_price(f"{asset}USDC")
-                                value = (free + locked) * price
-                            
-                                if value > 0:
-                                    portfolio['total_value'] += value
-                                    portfolio['positions'].append({
-                                        'symbol': f"{asset}/USDC",
-                                        'size': free + locked,
-                                        'value': value,
-                                        'price': price,
-                                        'free': free,
-                                        'locked': locked,
-                                        'timestamp': portfolio['timestamp']
-                                    })
-                            except Exception as price_error:
-                                logger.warning(f"⚠️ Cannot get price for {asset}: {price_error}")
-                                continue
+                            symbol = f"{asset}USDC"
+                            if hasattr(self, "binance_markets") and symbol in self.binance_markets:
+                                try:
+                                    price = self.get_latest_price(symbol)
+                                    value = (free + locked) * price
+                                
+                                    if value > 0:
+                                        portfolio['total_value'] += value
+                                        portfolio['positions'].append({
+                                            'symbol': f"{asset}/USDC",
+                                            'size': free + locked,
+                                            'value': value,
+                                            'price': price,
+                                            'free': free,
+                                            'locked': locked,
+                                            'timestamp': portfolio['timestamp']
+                                        })
+                                except Exception as price_error:
+                                    logger.warning(f"⚠️ Cannot get price for {asset}: {price_error}")
+                                    continue
+                            else:
+                                logger.info(f"🔎 {symbol} not listed on Binance, skipping.")
                             
                 except Exception as asset_error:
                     logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
