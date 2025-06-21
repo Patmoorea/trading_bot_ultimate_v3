@@ -351,123 +351,69 @@ def _setup_and_verify_event_loop():
         # Mise à jour du timestamp
         st.session_state.last_update_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
     
-    def protect_session(self):
-        """Protection renforcée de la session"""
-        try:
-            # Vérification et réinitialisation si nécessaire
-            if not st.session_state.get('session_initialized'):
-                self._initialize_session_state()
+def protect_session(self):
+    """Protection renforcée de la session"""
+    try:
+        # Vérification et réinitialisation si nécessaire
+        if not st.session_state.get('session_initialized'):
+            self._initialize_session_state()
                 
-            # Mise à jour du timestamp
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+        # Mise à jour du timestamp
+        current_time = datetime.now(timezone.utc)
+        st.session_state.last_action_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
             
-            # Activation des protections
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
+        # Activation des protections
+        st.session_state.prevent_cleanup = True
+        st.session_state.keep_alive = True
+        st.session_state.force_cleanup = False
+        st.session_state.cleanup_allowed = False
             
-            self._log_protection()
-            return True
+        self._log_protection()
+        return True
             
-        except Exception as e:
-            self._log_error("Session protection error", e)
+    except Exception as e:
+        self._log_error("Session protection error", e)
+        return False
+            
+def allow_cleanup(self):
+    """Autorisation sécurisée du nettoyage"""
+    try:
+        # Vérification de l'état du bot
+        if st.session_state.get('bot_running', False):
+            logger.warning("Cannot allow cleanup while bot is running")
             return False
-            
-    def allow_cleanup(self):
-        """Autorisation sécurisée du nettoyage"""
-        try:
-            # Vérification de l'état du bot
-            if st.session_state.get('bot_running', False):
-                logger.warning("Cannot allow cleanup while bot is running")
-                return False
                 
-            # Configuration du nettoyage
-            st.session_state.cleanup_allowed = True
-            st.session_state.force_cleanup = True
-            st.session_state.prevent_cleanup = False
-            st.session_state.keep_alive = False
+        # Configuration du nettoyage
+        st.session_state.cleanup_allowed = True
+        st.session_state.force_cleanup = True
+        st.session_state.prevent_cleanup = False
+        st.session_state.keep_alive = False
             
-            self._log_cleanup_authorization()
-            return True
+        self._log_cleanup_authorization()
+        return True
             
-        except Exception as e:
-            self._log_error("Cleanup authorization error", e)
-            return False
+    except Exception as e:
+        self._log_error("Cleanup authorization error", e)
+        return False
             
-    def get_session_info(self):
-        """Récupération des informations de session"""
-        try:
-            info = {
-                'user': self.user,
-                'session_id': self.session_id,
-                'init_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'last_action': st.session_state.get('last_action_time'),
-                'session_initialized': st.session_state.get('session_initialized', False),
-                'bot_running': st.session_state.get('bot_running', False),
-                'ws_initialized': st.session_state.get('ws_initialized', False),
-                'error_count': st.session_state.get('error_count', 0)
-            }
-            return info
+def get_session_info(self):
+    """Récupération des informations de session"""
+    try:
+        info = {
+            'user': self.user,
+            'session_id': self.session_id,
+            'init_time': self.init_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_action': st.session_state.get('last_action_time'),
+            'session_initialized': st.session_state.get('session_initialized', False),
+            'bot_running': st.session_state.get('bot_running', False),
+            'ws_initialized': st.session_state.get('ws_initialized', False),
+            'error_count': st.session_state.get('error_count', 0)
+        }
+        return info
             
-        except Exception as e:
-            self._log_error("Session info retrieval error", e)
-            return None
-            
-    def _log_initialization(self):
-        """Log de l'initialisation"""
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION INITIALIZED                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {self.user}
-║ Session ID: {self.session_id}
-║ Status: Active
-╚═════════════════════════════════════════════════╝
-        """)
-        
-    def _log_protection(self):
-        """Log de la protection"""
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION PROTECTED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Last Action: {st.session_state.get('last_action_time')}
-╚═════════════════════════════════════════════════╝
-        """)
-        
-    def _log_cleanup_authorization(self):
-        """Log de l'autorisation de nettoyage"""
-        logger.info(f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP AUTHORIZED                     ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
-╚═════════════════════════════════════════════════╝
-        """)
-        
-    def _log_error(self, message, error):
-        """Log d'erreur unifié"""
-        logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {message}
-║ Details: {str(error)}
-║ Type: {type(error).__name__}
-║ Session ID: {self.session_id}
-╚═════════════════════════════════════════════════╝
-        """)
-        
-        # Incrémenter le compteur d'erreurs
-        st.session_state.error_count = st.session_state.get('error_count', 0) + 1
+    except Exception as e:
+        self._log_error("Session info retrieval error", e)
+        return None   
 
 # Création de l'instance globale avec vérification
 try:
