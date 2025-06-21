@@ -5054,7 +5054,6 @@ Take Profit: {take_profit}"""
         
             # Mise à jour du statut dans le dashboard
             self.dashboard.update_indicator_status("Supertrend", f"ERROR - {type(e).__name__}")
-        
             return None
 
         finally:
@@ -5063,7 +5062,7 @@ Take Profit: {take_profit}"""
                 del tr
             except:
                 pass
-    
+
 async def run_trading_bot():
     """Point d'entrée synchrone pour le bot de trading"""
     try:
@@ -5111,9 +5110,6 @@ async def run_trading_bot():
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
-    from datetime import datetime
-    import time
-    import streamlit as st
 
     current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     current_user = "Patmoorea"
@@ -5472,44 +5468,6 @@ async def _render_analysis_tab(bot):
             st.metric("Quantum SVM Signal", quantum_signal)
         except Exception as e:
             st.warning(f"Erreur Quantum SVM : {e}")
-        
-async def _render_trading_tab(bot):
-    """Rendu de l'onglet Trading"""
-    if st.session_state.bot_running:
-        try:
-            latest_data = bot.latest_data.get('BTCUSDT', {})
-            if latest_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    current_price = latest_data[-1]['close']
-                    prev_price = latest_data[-2]['close'] if len(latest_data) > 1 else current_price
-                    price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
-                    
-                    st.metric(
-                        "BTC/USDC Price",
-                        f"{current_price:.2f}",
-                        f"{price_change:+.2f}%"
-                    )
-                with col2:
-                    current_vol = latest_data[-1]['volume']
-                    prev_vol = latest_data[-2]['volume'] if len(latest_data) > 1 else current_vol
-                    vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                    
-                    st.metric(
-                        "Trading Volume",
-                        f"{current_vol:.2f}",
-                        f"{vol_change:+.2f}%"
-                    )
-            
-            if bot.indicators:
-                st.subheader("Trading Signals")
-                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
-            else:
-                st.info("💡 Waiting for signals...")
-        except Exception as e:
-            st.error(f"❌ Trading data error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view signals")
 
 async def _render_analysis_tab(bot):
     """Rendu de l'onglet Analysis"""
