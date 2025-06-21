@@ -40,6 +40,7 @@ import json
 import re
 import time
 import signal
+from datetime import timedelta
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
@@ -126,6 +127,19 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+def get_binance_usdc_pairs():
+    """
+    Retourne la liste réelle des symboles disponibles sur Binance au format [XXX/USDC, ...]
+    """
+    try:
+        exchange = ccxt.binance()
+        markets = exchange.load_markets()
+        usdc_pairs = [symbol for symbol in markets if symbol.endswith('/USDC')]
+        return usdc_pairs
+    except Exception as e:
+        print(f"Erreur récupération des paires USDC Binance: {e}")
+        return []
+    
 def setup_asyncio():
     """Configure l'environnement asyncio pour Streamlit."""
     try:
@@ -4786,14 +4800,14 @@ Take Profit: {take_profit}"""
         except Exception as e:
             logger.error(f"Erreur: {e}")
 
-    async def run_adaptive_trading(self, period="7d"):
-        """
-        Boucle principale adaptative : étude du marché, stratégie, trading auto.
-        """
-        # 1. Étudier le marché sur la période définie (ex: 7j)
+async def run_adaptive_trading(self, period="7d"):
+    """
+    Boucle principale adaptative : étude du marché, stratégie, trading auto.
+    Robustesse accrue : log d'erreur, crash, et infos de debug.
+    """
+    try:
         regime, historical_data, indicators_analysis = await self.study_market(period=period)
 
-        # 2. Établir un plan/stratégie selon le régime détecté
         strategy = self.choose_strategy(regime, indicators_analysis)
         await self.telegram.send_message(f"📊 Plan établi : {strategy} | Régime détecté : {regime}")
 
@@ -4801,32 +4815,39 @@ Take Profit: {take_profit}"""
         self.current_strategy = strategy
 
         while st.session_state.get("bot_running", True):
-            # 3. Mise à jour continue du marché
-            market_data = await self.get_latest_data()
-            signals = await self.analyze_signals(market_data)
-            news = await self.news_analyzer.analyze() if hasattr(self, "news_analyzer") else None
-            arbitrage_opps = await self.arbitrage_engine.find_opportunities() if hasattr(self, "arbitrage_engine") else None
-            new_regime = self.regime_detector.predict(signals) if hasattr(self, "regime_detector") else self.current_regime
+            try:
+                market_data = await self.get_latest_data()
+                signals = await self.analyze_signals(market_data)
+                news = await self.news_analyzer.analyze() if hasattr(self, "news_analyzer") else None
+                arbitrage_opps = await self.arbitrage_engine.find_opportunities() if hasattr(self, "arbitrage_engine") else None
+                new_regime = self.regime_detector.predict(signals) if hasattr(self, "regime_detector") else self.current_regime
 
-            # 4. Adaptation : news, arbitrage, changement de régime
-            if news and news.get('impact', 0) > 0.7:
-                await self.telegram.send_message(f"📰 News critique détectée : {news}")
-                self.current_strategy = "Defensive/No Trade"
-            elif arbitrage_opps:
-                await self.telegram.send_message(f"⚡ Arbitrage détecté : {arbitrage_opps}")
-                self.current_strategy = "Arbitrage"
-            elif new_regime != self.current_regime:
-                self.current_regime = new_regime
-                self.current_strategy = self.choose_strategy(new_regime, signals)
-                await self.telegram.send_message(f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}")
+                # Adaptation
+                if news and news.get('impact', 0) > 0.7:
+                    await self.telegram.send_message(f"📰 News critique détectée : {news}")
+                    self.current_strategy = "Defensive/No Trade"
+                elif arbitrage_opps:
+                    await self.telegram.send_message(f"⚡ Arbitrage détecté : {arbitrage_opps}")
+                    self.current_strategy = "Arbitrage"
+                elif new_regime != self.current_regime:
+                    self.current_regime = new_regime
+                    self.current_strategy = self.choose_strategy(new_regime, signals)
+                    await self.telegram.send_message(f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}")
 
-            # 5. Prendre position selon la stratégie courante
-            decision = self.make_trade_decision(signals, self.current_strategy, news, arbitrage_opps)
-            if decision and decision.get("action") in ["buy", "sell"]:
-                order = await self.execute_real_trade(decision)
-                await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
+                # Prendre position selon la stratégie courante
+                decision = self.make_trade_decision(signals, self.current_strategy, news, arbitrage_opps)
+                if decision and decision.get("action") in ["buy", "sell"]:
+                    order = await self.execute_real_trade(decision)
+                    await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
 
-            await asyncio.sleep(2)  # ajustable selon besoins
+                await asyncio.sleep(2)
+            except Exception as loop_error:
+                logging.error(f"[run_adaptive_trading] Loop error: {loop_error}\n{traceback.format_exc()}")
+                # Optionnel: notifier via Telegram ou afficher dans Streamlit un flag d'erreur
+                # continue la boucle malgré l'erreur
+
+    except Exception as e:
+        logging.error(f"[run_adaptive_trading] CRASH: {e}\n{traceback.format_exc()}")
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -5112,26 +5133,37 @@ async def main_async():
                 key=f"risk_level_slider_{st.session_state.session_id}"
             )
             st.divider()
-            if not st.session_state.get("bot_running", False):
-                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    st.session_state.bot_running = True
-                    # Protection pour éviter plusieurs tâches concurrentes
-                    if not st.session_state.get("trading_task"):
-                        loop = st.session_state.loop or asyncio.get_event_loop()
-                        st.session_state.trading_task = loop.create_task(
-                            bot.run_adaptive_trading(period="7d")
-                        )
-                    st.success("Trading adaptatif lancé (étude marché + stratégie auto).")
-            else:
+
+            trading_task = st.session_state.get("trading_task", None)
+            task_is_running = trading_task is not None and not trading_task.done()
+
+            if task_is_running:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     st.session_state.bot_running = False
-                    # Arrêt propre de la tâche si elle existe
-                    if st.session_state.get("trading_task"):
-                        st.session_state.trading_task.cancel()
+                    if trading_task:
+                        trading_task.cancel()
                         st.session_state.trading_task = None
                     st.warning("Trading stoppé.")
+            else:
+                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
+                    st.session_state.bot_running = True
+                    loop = st.session_state.loop or asyncio.get_event_loop()
+                    st.session_state.trading_task = loop.create_task(
+                        bot.run_adaptive_trading(period="7d")
+                    )
+                    st.success("Trading adaptatif lancé (étude marché + stratégie auto).")
+
+            # ---- DEBUG TASK STATUS ----
+            st.info(
+                f"DEBUG: bot_running={st.session_state.get('bot_running')}, "
+                f"trading_task={trading_task}, "
+                f"task_is_running={task_is_running}, "
+                f"task_done={trading_task.done() if trading_task else 'None'}"
+            )
+            if trading_task and trading_task.done() and trading_task.exception():
+                st.error(f"Task error: {trading_task.exception()}")
+
             # --- GESTION DES DONNEES ET BACKTEST ---
-            # TOUJOURS lire depuis session_state !
             latest_data = st.session_state.get('latest_data')
             if not isinstance(latest_data, dict):
                 latest_data = {}
