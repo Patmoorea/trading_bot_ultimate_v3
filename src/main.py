@@ -2087,6 +2087,7 @@ class TradingBotM4:
         Robustesse accrue : log d'erreur, crash, et infos de debug.
         """
         try:
+            self.logger.info(f"[run_adaptive_trading] Lancement, bot_running={st.session_state.get('bot_running')}")
             regime, historical_data, indicators_analysis = await self.study_market(period=period)
 
             strategy = self.choose_strategy(regime, indicators_analysis)
@@ -2097,6 +2098,7 @@ class TradingBotM4:
 
             while st.session_state.get("bot_running", True):
                 try:
+                    self.logger.debug("[run_adaptive_trading] Début itération trading loop.")
                     market_data = await self.get_latest_data()
                     signals = await self.analyze_signals(market_data)
                     news = await self.news_analyzer.analyze() if hasattr(self, "news_analyzer") else None
@@ -2123,12 +2125,26 @@ class TradingBotM4:
 
                     await asyncio.sleep(2)
                 except Exception as loop_error:
-                    logging.error(f"[run_adaptive_trading] Loop error: {loop_error}\n{traceback.format_exc()}")
-                    # Optionnel: notifier via Telegram ou afficher dans Streamlit un flag d'erreur
+                    self.logger.error(f"[run_adaptive_trading] Loop error: {loop_error}\n{traceback.format_exc()}")
+                    # On peut envoyer un message Telegram pour alerter l'utilisateur
+                    try:
+                            await self.telegram.send_message(f"⚠️ Erreur dans trading loop: {loop_error}")
+                    except Exception:
+                        pass
                     # continue la boucle malgré l'erreur
 
         except Exception as e:
-            logging.error(f"[run_adaptive_trading] CRASH: {e}\n{traceback.format_exc()}")
+            self.logger.error(f"[run_adaptive_trading] CRASH: {e}\n{traceback.format_exc()}")
+            # Ajout d'une notification Telegram en cas de crash global
+            try:
+                await self.telegram.send_message(f"🚨 Bot CRASH: {e}")
+            except Exception:
+                pass
+            # Désactivation du flag pour éviter une boucle infinie de crash
+            st.session_state.bot_running = False
+            # Optionnel: on peut aussi appeler un cleanup ici
+            if hasattr(self, "_cleanup"):
+                await self._cleanup()
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
