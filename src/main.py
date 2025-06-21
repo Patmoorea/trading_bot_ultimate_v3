@@ -5029,6 +5029,9 @@ async def run_trading_bot():
                             loop.run_until_complete(cleanup_coro)
                     except Exception as cleanup_error:
                         logger.error(f"Cleanup error: {cleanup_error}")
+    except Exception as e:
+        logger.error(f"Trading bot error: {e}")
+        st.error(f"❌ Trading bot error: {str(e)}")
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
