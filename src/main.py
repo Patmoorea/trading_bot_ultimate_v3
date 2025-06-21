@@ -5469,28 +5469,6 @@ async def _render_analysis_tab(bot):
         except Exception as e:
             st.warning(f"Erreur Quantum SVM : {e}")
 
-async def _render_analysis_tab(bot):
-    """Rendu de l'onglet Analysis"""
-    if st.session_state.bot_running:
-        try:
-            if bot.latest_data and bot.indicators:
-                st.subheader("Technical Analysis")
-                
-                for symbol in bot.latest_data:
-                    await process_market_data(bot, symbol)
-                
-                if hasattr(bot, 'advanced_indicators'):
-                    analysis = bot.advanced_indicators.get_all_signals()
-                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
-                else:
-                    st.info("💡 Processing analysis...")
-            else:
-                st.info("💡 Waiting for market data...")
-        except Exception as e:
-            st.error(f"❌ Analysis error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view analysis")
-
 async def shutdown():
     """Arrêt propre de l'application"""
     try:
