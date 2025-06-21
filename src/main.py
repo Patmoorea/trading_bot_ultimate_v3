@@ -1971,7 +1971,10 @@ class TradingBotM4:
             )
             self.logger.info("✅ Spot client initialisé avec succès")
             try:
-                self.binance_markets = set(self.spot_client.load_markets().keys())
+                ccxt_binance = ccxt.binance()
+                ccxt_binance.load_markets()
+                # Pour les symboles au format "BTCUSDC", "ETHUSDC", ...
+                self.binance_markets = set(s.replace('/', '') for s in ccxt_binance.symbols)
             except Exception as e:
                 self.logger.warning(f"Impossible de charger les marchés Binance: {e}")
                 self.binance_markets = set()
