@@ -2146,7 +2146,7 @@ class TradingBotM4:
                     except Exception as e:
                         retry_count += 1
                         if retry_count == 3:
-                        r   aise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
+                            raise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
                         await asyncio.sleep(1)
             
                 # Configuration des composants
