@@ -7,7 +7,7 @@ import asyncio
 import logging
 from typing import Dict, Any, List, Optional
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import ccxt.async_support as ccxt
 import pandas as pd
 
@@ -29,32 +29,33 @@ class BinanceExchange:
         self._exchange = None
         self._initialized = False
 
-    async def initialize(self) -> None:
-        """Initialize the exchange connection"""
+    async def initialize(self):
         try:
             self._exchange = ccxt.binance({
                 'apiKey': self.api_key,
                 'secret': self.api_secret,
                 'enableRateLimit': True,
                 'options': {
-                    'defaultType': 'spot',  # Changed from 'future' to 'spot'
+                    'defaultType': 'spot',
                     'adjustForTimeDifference': True,
                     'testnet': self.testnet
                 }
             })
-            
-            # Configure testnet URLs if needed
-            if self.testnet:
-                self._exchange.urls['api'] = {
-                    'web': 'https://testnet.binance.vision',  # Changed to spot testnet URL
-                    'rest': 'https://testnet.binance.vision'
-                }
-            
-            await self._exchange.load_markets()
+
+            # On SPOT TESTNET, do NOT call load_markets!
+            if self.testnet and self._exchange.options.get('defaultType') == 'spot':
+                print(">>> TESTNET SPOT: PAS de load_markets()", flush=True)
+                # PAS de load_markets ici !
+            else:
+                print(">>> AVANT load_markets", flush=True)
+                await self._exchange.load_markets()
+                print(">>> APRES load_markets", flush=True)
+
             self._initialized = True
             logger.info("BinanceExchange initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize BinanceExchange: {e}")
+            import traceback
+            logger.error(f"Failed to initialize BinanceExchange: {e}\n{traceback.format_exc()}")
             raise
 
     async def get_ticker(self, symbol: str) -> Dict[str, Any]:
@@ -100,15 +101,14 @@ class BinanceExchange:
             balance = await self._exchange.fetch_balance()
             # Filter only assets with non-zero balances
             return {
-                currency: data 
-                for currency, data in balance.items() 
+                currency: data
+                for currency, data in balance.items()
                 if isinstance(data, dict) and float(data.get('total', 0)) > 0
             }
         except Exception as e:
             logger.error(f"Error fetching balance: {e}")
             raise
 
-    # Les autres méthodes restent similaires, mais nous retirons les méthodes spécifiques aux futures
     async def close(self) -> None:
         if self._exchange:
             await self._exchange.close()
@@ -150,8 +150,8 @@ class BinanceExchange:
             logger.error(f"Error fetching trades for {symbol}: {e}")
             raise
 
-    async def create_order(self, symbol: str, order_type: str, side: str, 
-                         amount: str, price: Optional[str] = None) -> Dict[str, Any]:
+    async def create_order(self, symbol: str, order_type: str, side: str,
+                          amount: str, price: Optional[str] = None) -> Dict[str, Any]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
         
