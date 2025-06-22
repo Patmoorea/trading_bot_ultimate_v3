@@ -1,5 +1,7 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
+import asyncio
+import nest_asyncio
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
@@ -52,8 +54,6 @@ from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
-import asyncio
-import nest_asyncio
 import aiohttp
 import traceback
 
@@ -512,32 +512,74 @@ class WebSocketManager:
         self.max_retries = WEBSOCKET_CONFIG['MAX_RETRIES']
         self.retry_delay = WEBSOCKET_CONFIG['RETRY_DELAY']
 
+    async def cleanup(self):
+        """Nettoie les ressources WebSocket"""
+        try:
+            self.running = False
+            
+            # Annulation des tâches
+            for stream in self.streams.values():
+                if not stream.done():
+                    stream.cancel()
+                    try:
+                        await stream
+                    except asyncio.CancelledError:
+                        pass
+                        
+            self.streams.clear()
+            
+            # Fermeture du socket manager
+            if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
+                try:
+                    for socket in self.bot.socket_manager.sockets:
+                        await self.bot.socket_manager.stop_socket(socket)
+                    self.bot.socket_manager = None
+                except Exception as e:
+                    logger.warning(f"Error closing socket manager: {e}")
+            
+            # Fermeture du client Binance
+            if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
+                try:
+                    await self.bot.binance_ws.close_connection()
+                except Exception as e:
+                    logger.warning(f"Error closing Binance client: {e}")
+                self.bot.binance_ws = None
+
+            return True
+        except Exception as e:
+            logger.error(f"WebSocket cleanup error: {e}")
+            return False
+        
     async def start(self):
         """Démarre les WebSockets"""
         async with self.lock:
             if self.running:
                 return True
-                
+            
             try:
+                # Reset des états
+                self.retry_count = 0
+                self.streams.clear()
+            
                 # Initialisation du client Binance
                 self.bot.binance_ws = await AsyncClient.create(
                     api_key=os.getenv('BINANCE_API_KEY'),
                     api_secret=os.getenv('BINANCE_API_SECRET')
                 )
-                
+            
                 # Initialisation du socket manager
                 self.bot.socket_manager = BinanceSocketManager(self.bot.binance_ws)
-                
+            
                 # Configuration des streams
                 if not await self._setup_streams():
                     raise Exception("Failed to setup streams")
-                    
+                
                 self.running = True
                 return True
-                
+            
             except Exception as e:
                 logger.error(f"WebSocket start error: {e}")
-                await self.cleanup()
+                await self.cleanup()  # Utilisation de la nouvelle méthode cleanup
                 return False
 
     async def _setup_streams(self):
@@ -726,18 +768,17 @@ def init_session_state():
 @st.cache_resource(ttl=None)
 def get_bot():
     """Create or get the bot instance with lifecycle protection"""
-    if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
-        return st.session_state.bot_instance
-
     try:
-        session_manager.protect_session()  # Protection explicite
-        logger.info("Creating new bot instance...")
-        bot = TradingBotM4()
-        st.session_state.bot_instance = bot
-        return bot
-    except Exception as e:
-        logger.error(f"Bot creation error: {e}")
-        return None
+        # Vérifier si une instance existe déjà
+        if 'bot_instance' in st.session_state and st.session_state.bot_instance is not None:
+            if st.session_state.bot_instance.is_properly_initialized():
+                return st.session_state.bot_instance
+            else:
+                # Nettoyer l'instance mal initialisée
+                del st.session_state.bot_instance
+
+        # Protection de la session
+        session_manager.protect_session()
 
         logger.info(f"""
 ╔═════════════════════════════════════════════════╗
@@ -748,9 +789,6 @@ def get_bot():
 ╚═════════════════════════════════════════════════╝
         """)
 
-        # Création du bot
-        bot = TradingBotM4()
-        
         # Configuration de la boucle d'événements
         if not st.session_state.get('loop'):
             try:
@@ -770,13 +808,13 @@ def get_bot():
                 """)
                 raise
 
-        # Initialisation du bot
+        # Création et initialisation du bot
+        bot = TradingBotM4()
+        
         async def initialize_bot():
             try:
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
-                bot._initialized = True
-                logger.info("✅ Bot initialization successful")
                 return bot
             except Exception as init_error:
                 logger.error(f"""
@@ -791,20 +829,22 @@ def get_bot():
 
         try:
             # Initialisation avec gestion des erreurs de boucle
+            loop = st.session_state.loop
             try:
-                bot = st.session_state.loop.run_until_complete(initialize_bot())
+                bot = loop.run_until_complete(initialize_bot())
             except RuntimeError as e:
                 if "This event loop is already running" in str(e):
                     logger.warning("⚠️ Event loop already running, applying nest_asyncio")
                     nest_asyncio.apply()
-                    bot = st.session_state.loop.run_until_complete(initialize_bot())
+                    bot = loop.run_until_complete(initialize_bot())
                 else:
                     raise
 
-            if not bot or not getattr(bot, '_initialized', False):
+            # Vérification de l'initialisation
+            if not bot or not bot.is_properly_initialized():
                 raise Exception("Bot initialization incomplete")
 
-            # Sauvegarde dans la session state
+            # Sauvegarde dans la session
             st.session_state.bot_instance = bot
 
             logger.info(f"""
@@ -820,25 +860,8 @@ def get_bot():
 
             return bot
 
-        except Exception as run_error:
+        except Exception as e:
             logger.error(f"""
-╔═════════════════════════════════════════════════╗
-║             RUNTIME ERROR                        ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(run_error)}
-╚═════════════════════════════════════════════════╝
-            """)
-            # Nettoyage sécurisé
-            if hasattr(bot, '_cleanup'):
-                try:
-                    st.session_state.loop.run_until_complete(bot._cleanup())
-                except:
-                    pass
-            raise
-
-    except Exception as e:
-        logger.error(f"""
 ╔═════════════════════════════════════════════════╗
 ║             BOT CREATION ERROR                   ║
 ╠═════════════════════════════════════════════════╣
@@ -846,26 +869,37 @@ def get_bot():
 ║ Error: {str(e)}
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
-        """)
-        
-        # Nettoyage de la session
-        if 'bot_instance' in st.session_state:
-            del st.session_state.bot_instance
-        if 'loop' in st.session_state:
-            del st.session_state.loop
-            
+            """)
+
+            # Nettoyage en cas d'erreur
+            if hasattr(bot, '_cleanup'):
+                try:
+                    loop.run_until_complete(bot._cleanup())
+                except Exception as cleanup_error:
+                    logger.error(f"Cleanup error: {cleanup_error}")
+
+            # Nettoyage de la session
+            if 'bot_instance' in st.session_state:
+                del st.session_state.bot_instance
+
+            return None
+
+    except Exception as e:
+        logger.error(f"Critical error in get_bot: {e}")
         return None
 
-# Fonction d'aide pour la configuration asyncio
 def setup_asyncio():
     """Configure l'environnement asyncio pour Streamlit"""
     try:
         if not st.session_state.get('loop'):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            st.session_state.loop = loop
             nest_asyncio.apply()
+            st.session_state.loop = loop
+            logger.info("✅ Asyncio setup successful")
+            return loop
         return st.session_state.loop
+        
     except Exception as e:
         logger.error(f"""
 ╔═════════════════════════════════════════════════╗
@@ -1902,13 +1936,6 @@ class TradingBotM4:
             'max_reconnect_attempts': 3
         }
 
-        # Configuration des streams
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-
         # État du WebSocket
         self.ws_connection = {
             'enabled': False,
@@ -1924,13 +1951,6 @@ class TradingBotM4:
         self.indicators = {}
         self.latest_data = {}
     
-        # Configuration des streams (DOIT ÊTRE EN PREMIER)
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-        
         self.cleanup_in_progress = False
         self.shutdown_requested = False
         self.initialized = False
@@ -1942,7 +1962,6 @@ class TradingBotM4:
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
-        print("[DEBUG] self.config['BINANCE'] =", self.config["BINANCE"])
         print("[DEBUG] use_testnet =", use_testnet)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
         # Initialisation du WebSocket Manager (AJOUT ICI)
@@ -1977,16 +1996,6 @@ class TradingBotM4:
             pairs=self.config["TRADING"]["pairs"],
             config=self.stream_config
         )
-        
-        self.ws_connection = {
-            'enabled': False,
-            'reconnect_count': 0,
-            'max_reconnects': 3,
-            'last_connection': None,
-            'status': 'disconnected',
-            'last_message': None,
-            'last_error': None
-        }
         
         # Mode de trading et composants
         self.trading_mode = os.getenv('TRADING_MODE', 'production')
@@ -2058,6 +2067,19 @@ class TradingBotM4:
         self.qsvm = QuantumSVM()
         self.client_session = None
     
+    def is_properly_initialized(self):
+        """Vérifie si l'initialisation est complète"""
+        return (
+            self.initialized and 
+            hasattr(self, 'spot_client') and 
+            self.spot_client is not None and
+            hasattr(self, 'ws_connection') and 
+            self.ws_connection.get('enabled', False) and
+            self.ws_connection.get('status') == 'connected' and
+            hasattr(self, 'ws_manager') and
+            self.ws_manager is not None
+        )
+        
     def get_latest_price(self, symbol):
         """
         Récupère le dernier prix pour un symbole donné via le spot_client.
@@ -2511,12 +2533,7 @@ class TradingBotM4:
             print("Avant exchange.initialize")
             await asyncio.wait_for(self.exchange.initialize(), timeout=10)
             print("Après exchange.initialize")
-        except Exception as e:
-            import sys
-            print("=== EXCEPTION DETECTEE DANS EXCHANGE.INITIALIZE ===", file=sys.stderr)
-            print(traceback.format_exc(), file=sys.stderr)
-            raise
-        
+
             # Initialisation du client spot si nécessaire
             if not hasattr(self, 'spot_client') or self.spot_client is None:
                 self.spot_client = BinanceClient(
@@ -2524,7 +2541,7 @@ class TradingBotM4:
                     api_secret=os.getenv('BINANCE_API_SECRET')
                 )
 
-            # Initialisation du WebSocket MANQUANTE :
+            # Initialisation du WebSocket
             if not getattr(self, 'initialized', False):
                 success = await self.start()
                 if not success:
@@ -2544,12 +2561,31 @@ class TradingBotM4:
                 'last_message': time.time()
             })
 
+            # Marquer comme initialisé
+            self.initialized = True
+        
             return True
 
+        except asyncio.TimeoutError:
+            logger.error("Timeout lors de l'initialisation")
+            return False
+        
         except Exception as e:
             logging.error(f"Exception dans Exchange.initialize: {e}", exc_info=True)
             print("=== EXCEPTION dans Exchange.initialize ===")
             print(traceback.format_exc())
+        
+            # Nettoyage en cas d'erreur
+            try:
+                if hasattr(self, 'ws_connection'):
+                    self.ws_connection.update({
+                        'enabled': False,
+                        'status': 'error',
+                        'last_error': str(e)
+                    })
+            except:
+                pass
+            
             raise
             
     async def _setup_components(self):
@@ -5081,7 +5117,7 @@ async def run_trading_bot():
     except Exception as e:
         logger.error(f"Trading bot error: {e}")
         st.error(f"❌ Trading bot error: {str(e)}")
-
+        
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
 
@@ -5175,12 +5211,28 @@ async def main_async():
                     st.warning("Trading stoppé.")
             else:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    st.session_state.bot_running = True
-                    loop = st.session_state.loop or asyncio.get_event_loop()
-                    st.session_state.trading_task = loop.create_task(
-                        bot.run_adaptive_trading(period="7d")
-                    )
-                    st.success("Trading adaptatif lancé (étude marché + stratégie auto).")
+                    # Tout ce qui suit va à l'intérieur du if st.button()
+                    if not st.session_state.get('bot_running'):  # Vérifie si le bot n'est pas déjà en cours
+                        try:
+                            # Initialisation et démarrage
+                            bot = get_bot()
+                            if not bot:
+                                st.error("Failed to initialize bot")
+                                return
+
+                            st.session_state.bot_running = True
+                            loop = st.session_state.loop or asyncio.get_event_loop()
+                            st.session_state.trading_task = loop.create_task(
+                            bot.run_adaptive_trading(period="7d")
+                            )
+                            st.success("Trading adaptatif lancé")
+
+                        except Exception as e:
+                            st.error(f"Erreur lors du démarrage : {e}")
+                            st.session_state.bot_running = False
+                            st.session_state.trading_task = None
+                    else:
+                        st.warning("Le bot est déjà en cours d'exécution")
 
             # ---- DEBUG TASK STATUS ----
             st.info(
