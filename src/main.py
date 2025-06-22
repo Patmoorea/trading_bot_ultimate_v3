@@ -50,6 +50,7 @@ import asyncio
 import nest_asyncio
 import aiohttp
 import traceback
+import threading
 
 # 3. Configuration des chemins
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -206,6 +207,18 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+def start_trading_thread(bot):
+    # Lance la boucle de trading dans un thread pour survivre aux reruns Streamlit
+    if "trading_thread" not in st.session_state or not st.session_state.trading_thread.is_alive():
+        def runner():
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(bot.run_adaptive_trading(period="7d"))
+        th = threading.Thread(target=runner, daemon=True)
+        st.session_state.trading_thread = th
+        th.start()
+        
 def get_binance_usdc_pairs():
     """
     Retourne la liste réelle des symboles disponibles sur Binance au format [XXX/USDC, ...]
@@ -2074,6 +2087,7 @@ class TradingBotM4:
             strategy = self.choose_strategy(regime, indicators_analysis)
             st.session_state['bot_status'] = f"🧭 Stratégie : {strategy}"
 
+            # Boucle de trading contrôlée par le flag 'bot_running'
             while st.session_state.get("bot_running", True):
                 try:
                     st.session_state['bot_status'] = "⏳ Récupération des données de marché…"
@@ -2105,9 +2119,13 @@ class TradingBotM4:
                         st.session_state['bot_status'] = "⏳ Aucune action, attente…"
 
                     await asyncio.sleep(2)
+
                 except Exception as loop_error:
                     st.session_state['bot_status'] = f"❌ Exception dans la boucle trading : {loop_error}"
                     continue
+            # Quand on sort de la boucle (bot_running mis à False)
+            st.session_state['bot_status'] = "🛑 Trading stoppé par l'utilisateur."
+
         except Exception as e:
             st.session_state['bot_status'] = f"❌ Erreur critique : {e}"
 
@@ -5159,11 +5177,9 @@ async def main_async():
             else:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
                     st.session_state.bot_running = True
-                    loop = st.session_state.loop or asyncio.get_event_loop()
-                    st.session_state.trading_task = loop.create_task(
-                        bot.run_adaptive_trading(period="7d")
-                    )
-                    st.success("Trading adaptatif lancé (étude marché + stratégie auto).")
+                    bot = get_bot()
+                    start_trading_thread(bot)
+                    st.success("Trading adaptatif lancé (thread).")
 
             # ---- DEBUG TASK STATUS ----
             st.info(
