@@ -244,8 +244,6 @@ class StreamlitSessionManager:
     """Gestionnaire de session Streamlit avec protection et logging améliorés"""
     
     def __init__(self):
-        # Utiliser la config globale !
-        self.config = config
         
         """Initialisation du gestionnaire de session"""
         self.init_time = datetime.now(timezone.utc)
@@ -522,7 +520,7 @@ class WebSocketManager:
         """Nettoie les ressources WebSocket"""
         try:
             self.running = False
-            
+        
             # Annulation des tâches
             for stream in self.streams.values():
                 if not stream.done():
@@ -531,29 +529,33 @@ class WebSocketManager:
                         await stream
                     except asyncio.CancelledError:
                         pass
-                        
+                    
             self.streams.clear()
-            
+        
             # Fermeture du socket manager
-            if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
+            if hasattr(self, 'socket_manager') and self.socket_manager:
                 try:
-                    for socket in self.bot.socket_manager.sockets:
-                        await self.bot.socket_manager.stop_socket(socket)
-                    self.bot.socket_manager = None
+                    for socket in self.socket_manager.sockets:
+                        await self.socket_manager.stop_socket(socket)
+                    self.socket_manager = None
                 except Exception as e:
                     logger.warning(f"Error closing socket manager: {e}")
-            
+                finally:
+                    self.socket_manager = None
+        
             # Fermeture du client Binance
-            if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
+            if hasattr(self, 'binance_ws') and self.binance_ws:
                 try:
-                    await self.bot.binance_ws.close_connection()
+                    await self.binance_ws.close_connection()
                 except Exception as e:
                     logger.warning(f"Error closing Binance client: {e}")
-                self.bot.binance_ws = None
+                finally:
+                    self.binance_ws = None
 
             return True
+        
         except Exception as e:
-            logger.error(f"WebSocket cleanup error: {e}")
+            logger.error(f"Cleanup error: {e}")
             return False
         
     async def start(self):
@@ -639,43 +641,6 @@ class WebSocketManager:
                         await asyncio.sleep(self.retry_delay)
                         continue
                 return
-
-    # Dans la méthode cleanup()
-async def cleanup(self):
-    """Nettoie les ressources WebSocket"""
-    try:
-        self.running = False
-        
-        # Annulation des tâches
-        for stream in self.streams.values():
-            if not stream.done():
-                stream.cancel()
-                try:
-                    await stream
-                except asyncio.CancelledError:
-                    pass
-                    
-        self.streams.clear()
-        
-        # Fermeture du socket manager
-        if hasattr(self.bot, 'socket_manager') and self.bot.socket_manager:
-            try:
-                # Modification pour utiliser stop_socket
-                for socket in self.bot.socket_manager.sockets:
-                    await self.bot.socket_manager.stop_socket(socket)
-                self.bot.socket_manager = None
-            except Exception as e:
-                self.logger.warning(f"Error closing socket manager: {e}")
-        
-        # Fermeture du client Binance
-        if hasattr(self.bot, 'binance_ws') and self.bot.binance_ws:
-            try:
-                await self.bot.binance_ws.close_connection()
-            except Exception as e:
-                self.logger.warning(f"Error closing Binance client: {e}")
-            self.bot.binance_ws = None
-    except Exception as e:
-        self.logger.error(f"Cleanup error: {e}")
             
 # Définition de la classe SessionManager
 class SessionManager:
@@ -1969,9 +1934,6 @@ class TradingBotM4:
         print("[DEBUG] use_testnet =", use_testnet)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
 
-        # Initialisation du WebSocket Manager (UNE SEULE FOIS)
-        self.ws_manager = WebSocketManager(self)
-
         # Buffer et autres composants
         self.buffer = CircularBuffer(maxlen=1000)
         self.indicators = {}
@@ -2530,23 +2492,75 @@ class TradingBotM4:
         finally:
             self.cleanup_in_progress = False
 
-    async def check_ws_connection(self):  # Changé de statique à méthode d'instance
-        """Check WebSocket connection and reconnect if needed"""
+    async def check_ws_connection(self):
+        """Vérifie la connexion WebSocket et tente une reconnexion si nécessaire"""
         try:
+            # Vérification de l'état de la connexion
             if not self.ws_connection['enabled']:
+                # Vérification du nombre de tentatives de reconnexion
                 if self.ws_connection['reconnect_count'] < self.ws_connection['max_reconnects']:
-                    logger.info("Attempting WebSocket reconnection...")
-                    if await initialize_websocket(self):
-                        self.ws_connection['reconnect_count'] = 0
-                        return True
-                    self.ws_connection['reconnect_count'] += 1
+                    logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET RECONNECTION ATTEMPT          ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Attempt: {self.ws_connection['reconnect_count'] + 1}/{self.ws_connection['max_reconnects']}
+╚═════════════════════════════════════════════════╝
+                    """)
+
+                    # Tentative d'initialisation
+                    try:
+                        # Utilisation de la méthode d'instance initialize_websocket
+                        success = await self.initialize_websocket()
+                    
+                        if success:
+                            # Réinitialisation du compteur en cas de succès
+                            self.ws_connection['reconnect_count'] = 0
+                            self.ws_connection['status'] = 'connected'
+                            self.ws_connection['last_heartbeat'] = datetime.now(timezone.utc)
+                        
+                            logger.info("✅ WebSocket reconnection successful")
+                            return True
+                        
+                        # Incrémentation du compteur en cas d'échec
+                        self.ws_connection['reconnect_count'] += 1
+                        self.ws_connection['status'] = 'error'
+                    
+                        logger.warning(f"⚠️ WebSocket reconnection failed (attempt {self.ws_connection['reconnect_count']})")
+                        return False
+                    
+                    except Exception as init_error:
+                        self.ws_connection['reconnect_count'] += 1
+                        logger.error(f"❌ WebSocket initialization error: {init_error}")
+                        return False
                 else:
-                    logger.error("Max WebSocket reconnection attempts reached")
+                    logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         MAX RECONNECTION ATTEMPTS REACHED        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Max Attempts: {self.ws_connection['max_reconnects']}
+╚═════════════════════════════════════════════════╝
+                    """)
                     return False
+        
+            # La connexion est active
             return True
+
         except Exception as e:
-            logger.error(f"WebSocket check error: {e}")
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET CHECK ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+            """)
             return False
+
+        finally:
+            # Mise à jour du statut de la connexion
+            self.ws_connection['last_check'] = datetime.now(timezone.utc)
     
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
