@@ -211,6 +211,12 @@ WEBSOCKET_CONFIG = {
     'STREAM_TYPES': ['ticker', 'depth', 'kline']
 }
 
+def init_session_manager():
+    if 'session_manager_initialized' not in st.session_state:
+        st.write("Initialisation du gestionnaire de session")
+        session_manager.init()
+        st.session_state.session_manager_initialized = True
+        
 def get_binance_usdc_pairs():
     """
     Retourne la liste réelle des symboles disponibles sur Binance au format [XXX/USDC, ...]
@@ -1924,6 +1930,7 @@ class TradingBotM4:
         self._ws_initializing = False
         self._cleanup_requested = False
         self._initialized = False
+        self.socket_manager = None
         self._reconnecting = False
 
         # Configuration de la session
@@ -2464,52 +2471,66 @@ class TradingBotM4:
     async def _cleanup(self):
         """Nettoyage sécurisé avec timeout"""
         try:
-            if self.cleanup_in_progress:
+            # Vérifier si le nettoyage est déjà en cours
+            if hasattr(self, 'cleanup_in_progress') and self.cleanup_in_progress:
+                logger.warning("Nettoyage déjà en cours")
                 return
-            
+
             self.cleanup_in_progress = True
         
+            # Afficher le message de début de nettoyage
+            logger.info("""
+╔═════════════════════════════════════════════════╗
+║              DÉBUT NETTOYAGE                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """)
+
             # Fermeture WebSocket avec timeout
             try:
                 async with asyncio.timeout(5.0):
-                    if hasattr(self, 'ws_manager'):
+                    if hasattr(self, 'ws_manager') and self.ws_manager is not None:
                         await self.ws_manager.cleanup()
+                        logger.info("✅ WebSocket fermé avec succès")
             except asyncio.TimeoutError:
-                logger.warning("Timeout fermeture WebSocket")
-        
+                logger.warning("⚠️ Timeout fermeture WebSocket")
+            except Exception as e:
+                logger.error(f"❌ Erreur fermeture WebSocket: {e}")
+
             # Nettoyage des données
-            self.latest_data = {}
-            self.indicators = {}
-            self.initialized = False
-        
+            try:
+                self.latest_data = {}
+                self.indicators = {}
+                self.initialized = False
+                logger.info("✅ Données nettoyées avec succès")
+            except Exception as e:
+                logger.error(f"❌ Erreur nettoyage données: {e}")
+
+            # Message de fin de nettoyage
+            logger.info("""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ Status: All resources cleaned
+╚═════════════════════════════════════════════════╝
+            """)
+
             return True
-        
+
         except Exception as e:
-            logger.error(f"Erreur nettoyage: {e}")
+            logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║              ERREUR NETTOYAGE                    ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+╚═════════════════════════════════════════════════╝
+            """)
             return False
+
         finally:
             self.cleanup_in_progress = False
 
-    async def start(self):
-        """Démarre le bot"""
-        try:
-            # Initialisation des WebSockets
-            if not await self.ws_manager.start():
-                raise Exception("Failed to start WebSocket manager")
-                
-            # Initialisation des composants
-            await self._setup_components()
-            
-            # Mise à jour du statut
-            self.initialized = True
-            logger.info("✅ Bot started successfully")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Bot start error: {e}")
-            await self._cleanup()
-            return False
-        
     async def check_ws_connection(self):  # Changé de statique à méthode d'instance
         """Check WebSocket connection and reconnect if needed"""
         try:
