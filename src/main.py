@@ -3002,8 +3002,8 @@ class TradingBotM4:
         
             logger.info("🔊 [study_market] Appel get_historical_data")    
             historical_data = await self.exchange.get_historical_data(
-                config["TRADING"]["pairs"],
-                config["TRADING"]["timeframes"],
+                self.config["TRADING"]["pairs"],
+                self.config["TRADING"]["timeframes"],
                 period
             )
             logger.info(f"🔊 [study_market] historical_data récupéré: {bool(historical_data)}")
@@ -4050,7 +4050,7 @@ Take Profit: {take_profit}"""
                         await self.execute_trades(decision)
                     
                     # Attente avant la prochaine itération
-                    await asyncio.sleep(config["TRADING"]["update_interval"])
+                    await asyncio.sleep(self.config["TRADING"]["update_interval"])
                     
                 except Exception as loop_error:
                     logger.error(f"Erreur dans la boucle principale: {loop_error}")
@@ -4067,7 +4067,7 @@ Take Profit: {take_profit}"""
         """Détermine si les modèles doivent être réentraînés"""
         try:
             # Vérification de la taille minimale des données
-            if len(historical_data.get('1h', [])) < config["AI"]["min_training_size"]:
+            if len(historical_data.get('1h', [])) < self.config["AI"]["min_training_size"]:
                 return False
 
             # Vérification de la dernière session d'entraînement
@@ -4094,26 +4094,26 @@ Take Profit: {take_profit}"""
             self.hybrid_model.train(
                 market_data=historical_data,
                 indicators=initial_analysis,
-                epochs=config["AI"]["n_epochs"],
-                batch_size=config["AI"]["batch_size"],
-                learning_rate=config["AI"]["learning_rate"]
+                epochs=self.config["AI"]["n_epochs"],
+                batch_size=self.config["AI"]["batch_size"],
+                learning_rate=self.config["AI"]["learning_rate"]
             )
 
             # Entraînement du PPO-GTrXL
             self.models["ppo_gtrxl"].train(
                 env=self.env,
                 total_timesteps=100000,
-                batch_size=config["AI"]["batch_size"],
-                learning_rate=config["AI"]["learning_rate"],
-                gradient_clip=config["AI"]["gradient_clip"]
+                batch_size=self.config["AI"]["batch_size"],
+                learning_rate=self.config["AI"]["learning_rate"],
+                gradient_clip=self.config["AI"]["gradient_clip"]
             )
 
             # Entraînement du CNN-LSTM
             self.models["cnn_lstm"].train(
                 X_train,
                 y_train,
-                epochs=config["AI"]["n_epochs"],
-                batch_size=config["AI"]["batch_size"],
+                epochs=self.config["AI"]["n_epochs"],
+                batch_size=self.config["AI"]["batch_size"],
                 validation_split=0.2
             )
 
@@ -4135,7 +4135,7 @@ Take Profit: {take_profit}"""
             labels = []
 
             # Pour chaque timeframe
-            for timeframe in config["TRADING"]["timeframes"]:
+            for timeframe in self.config["TRADING"]["timeframes"]:
                 tf_data = historical_data[timeframe]
                 tf_analysis = initial_analysis[timeframe]
 
@@ -4652,12 +4652,12 @@ Take Profit: {take_profit}"""
 
             # Vérification du drawdown maximum
             current_drawdown = self.position_manager.calculate_drawdown()
-            if current_drawdown > config["RISK"]["max_drawdown"]:
+            if current_drawdown > self.config["RISK"]["max_drawdown"]:
                 return True
 
             # Vérification de la perte journalière
             daily_loss = self.position_manager.calculate_daily_loss()
-            if daily_loss > config["RISK"]["daily_stop_loss"]:
+            if daily_loss > self.config["RISK"]["daily_stop_loss"]:
                 return True
 
             # Vérification des conditions de marché
@@ -4722,7 +4722,7 @@ Take Profit: {take_profit}"""
             }
 
             # Analyse du carnet d'ordres
-            for pair in config["TRADING"]["pairs"]:
+            for pair in self.config["TRADING"]["pairs"]:
                 orderbook = self.buffer.get_orderbook(pair)
                 if orderbook:
                     # Profondeur de marché
@@ -4766,7 +4766,7 @@ Take Profit: {take_profit}"""
                 "details": {}
             }
 
-            for pair in config["TRADING"]["pairs"]:
+            for pair in self.config["TRADING"]["pairs"]:
                 pair_data = self.buffer.get_latest_ohlcv(pair)
 
                 # Vérification des divergences
