@@ -1943,7 +1943,7 @@ class TradingBotM4:
             'max_reconnect_attempts': 3
         }
 
-        # Configuration des streams (DOIT ÊTRE EN PREMIER)
+        # Configuration des streams
         self.stream_config = StreamConfig(
             max_connections=12,
             reconnect_delay=1.0,
@@ -1960,16 +1960,6 @@ class TradingBotM4:
             'tasks': []
         }
 
-        # Initialisation des composants
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
-    
-        self.cleanup_in_progress = False
-        self.shutdown_requested = False
-        self.initialized = False
-        self.logger = logging.getLogger(__name__)
-
         # Configuration principale
         self.config = config
     
@@ -1978,9 +1968,18 @@ class TradingBotM4:
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
         print("[DEBUG] use_testnet =", use_testnet)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
-    
-        # Initialisation du WebSocket Manager
+
+        # Initialisation du WebSocket Manager (UNE SEULE FOIS)
         self.ws_manager = WebSocketManager(self)
+
+        # Buffer et autres composants
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
+        self.cleanup_in_progress = False
+        self.shutdown_requested = False
+        self.initialized = False
+        self.logger = logging.getLogger(__name__)
     
         # Configuration du WebSocket
         self.websocket = MultiStreamManager(
