@@ -79,6 +79,84 @@ import telegram
 import ccxt
 import ta
 from dotenv import load_dotenv
+# Configuration du bot
+load_dotenv()
+config = {
+    'NEWS': {
+        'enabled': True,
+        'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
+    },
+    'BINANCE': {
+        'API_KEY': os.getenv('BINANCE_API_KEY'),
+        'API_SECRET': os.getenv('BINANCE_API_SECRET'),
+        'TESTNET': os.getenv('BINANCE_TESTNET', 'false').lower() == 'true'
+    },
+    "ARBITRAGE": {
+        "exchanges": ["binance", "bitfinex", "kraken"],
+        "min_profit": 0.001,
+        "max_trade_size": 1000,
+        "pairs": ["BTC/USDC", "ETH/USDC"],
+        "timeout": 5,
+        "volume_filter": 1000,
+        "price_check": True,
+        "max_slippage": 0.0005
+    },
+    "TRADING": {
+        "base_currency": "USDC",
+        "pairs": ["BTC/USDC", "ETH/USDC"],
+        "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
+        "study_period": "7d"
+    },
+    "RISK": {
+        'max_drawdown': 0.05,
+        'daily_stop_loss': 0.02,
+        'position_sizing': 'volatility_based',
+        'circuit_breaker': {
+            'market_crash': True,
+            'liquidity_shock': True,
+            'black_swan': True
+        }
+    },
+    "AI": {
+        "confidence_threshold": 0.75,
+        "min_training_size": 1000,
+        "learning_rate": 0.0001,
+        "batch_size": 32,
+        "n_epochs": 10,
+        "gtrxl_layers": 6,
+        "embedding_dim": 512,
+        "dropout": 0.1,
+        "gradient_clip": 0.5
+    },
+    "INDICATORS": {
+        "trend": {
+            "supertrend": {"period": 10, "multiplier": 3},
+            "ichimoku": {"tenkan": 9, "kijun": 26, "senkou": 52},
+            "ema_ribbon": [5, 10, 20, 50, 100, 200]
+        },
+        "momentum": {
+            "rsi": {"period": 14, "overbought": 70, "oversold": 30},
+            "stoch_rsi": {"period": 14, "k": 3, "d": 3},
+            "macd": {"fast": 12, "slow": 26, "signal": 9}
+        },
+        "volatility": {
+            "bbands": {"period": 20, "std_dev": 2},
+            "keltner": {"period": 20, "atr_mult": 2},
+            "atr": {"period": 14}
+        },
+        "volume": {
+            "vwap": {"anchor": "session"},
+            "obv": {"signal": 20},
+            "volume_profile": {"price_levels": 100}
+        },
+        "orderflow": {
+            "delta": {"window": 100},
+            "cvd": {"smoothing": 20},
+            "imbalance": {"threshold": 0.2}
+        }
+    }
+}
+
 import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
@@ -639,84 +717,6 @@ def init_session_state():
             st.session_state.setdefault(var, True)
         else:
             st.session_state[var] = default
-
-# Configuration du bot
-load_dotenv()
-config = {
-    'NEWS': {
-        'enabled': True,
-        'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-    },
-    'BINANCE': {
-        'API_KEY': os.getenv('BINANCE_API_KEY'),
-        'API_SECRET': os.getenv('BINANCE_API_SECRET'),
-        'TESTNET': os.getenv('BINANCE_TESTNET', 'false').lower() == 'true'
-    },
-    "ARBITRAGE": {
-        "exchanges": ["binance", "bitfinex", "kraken"],
-        "min_profit": 0.001,
-        "max_trade_size": 1000,
-        "pairs": ["BTC/USDC", "ETH/USDC"],
-        "timeout": 5,
-        "volume_filter": 1000,
-        "price_check": True,
-        "max_slippage": 0.0005
-    },
-    "TRADING": {
-        "base_currency": "USDC",
-        "pairs": ["BTC/USDC", "ETH/USDC"],
-        "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-        "study_period": "7d"
-    },
-    "RISK": {
-        'max_drawdown': 0.05,
-        'daily_stop_loss': 0.02,
-        'position_sizing': 'volatility_based',
-        'circuit_breaker': {
-            'market_crash': True,
-            'liquidity_shock': True,
-            'black_swan': True
-        }
-    },
-    "AI": {
-        "confidence_threshold": 0.75,
-        "min_training_size": 1000,
-        "learning_rate": 0.0001,
-        "batch_size": 32,
-        "n_epochs": 10,
-        "gtrxl_layers": 6,
-        "embedding_dim": 512,
-        "dropout": 0.1,
-        "gradient_clip": 0.5
-    },
-    "INDICATORS": {
-        "trend": {
-            "supertrend": {"period": 10, "multiplier": 3},
-            "ichimoku": {"tenkan": 9, "kijun": 26, "senkou": 52},
-            "ema_ribbon": [5, 10, 20, 50, 100, 200]
-        },
-        "momentum": {
-            "rsi": {"period": 14, "overbought": 70, "oversold": 30},
-            "stoch_rsi": {"period": 14, "k": 3, "d": 3},
-            "macd": {"fast": 12, "slow": 26, "signal": 9}
-        },
-        "volatility": {
-            "bbands": {"period": 20, "std_dev": 2},
-            "keltner": {"period": 20, "atr_mult": 2},
-            "atr": {"period": 14}
-        },
-        "volume": {
-            "vwap": {"anchor": "session"},
-            "obv": {"signal": 20},
-            "volume_profile": {"price_levels": 100}
-        },
-        "orderflow": {
-            "delta": {"window": 100},
-            "cvd": {"smoothing": 20},
-            "imbalance": {"threshold": 0.2}
-        }
-    }
-}
 
 @st.cache_resource(ttl=None)
 def get_bot():
