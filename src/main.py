@@ -155,6 +155,9 @@ class StreamlitSessionManager:
     """Gestionnaire de session Streamlit avec protection et logging améliorés"""
     
     def __init__(self):
+        # Utiliser la config globale !
+        self.config = config
+        
         """Initialisation du gestionnaire de session"""
         self.init_time = datetime.now(timezone.utc)
         self.user = os.getenv('USER', 'Patmoorea')
@@ -1929,34 +1932,13 @@ class TradingBotM4:
         self.logger = logging.getLogger(__name__)
 
         # Configuration principale
-        self.config = {
-            'NEWS': {
-                'enabled': True,
-                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-            },
-            'BINANCE': {
-                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
-                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
-            },
-            'TRADING': {
-                'pairs': ["BTC/USDT", "ETH/USDT"],
-                'timeframes': ["1m", "5m", "15m", "1h", "4h", "1d"]
-            },
-            'ARBITRAGE': {
-                'exchanges': ["binance", "bitfinex", "kraken"],
-                'pairs': ["BTC/USDT", "ETH/USDT"],
-                'min_profit': 0.002,
-                'max_trade_size': 1000,
-                'timeout': 5,
-                'volume_filter': 100000,
-                'price_check': True,
-                'max_slippage': 0.001
-            }
-        }
+        self.config = config
         
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
+        print("[DEBUG] self.config['BINANCE'] =", self.config["BINANCE"])
+        print("[DEBUG] use_testnet =", use_testnet)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
         # Initialisation du WebSocket Manager (AJOUT ICI)
         self.ws_manager = WebSocketManager(self)
