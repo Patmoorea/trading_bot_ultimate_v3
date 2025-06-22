@@ -2067,72 +2067,49 @@ class TradingBotM4:
             raise NotImplementedError("No method to get latest price")
         
     async def run_adaptive_trading(self, period="7d"):
-        print(">>> [run_adaptive_trading] Lancement")
-        st.info("🚦 Bot : lancement du trading adaptatif…")
         try:
-            st.info("🔍 Étude du marché…")
-            print(">>> [run_adaptive_trading] Etude du marché…")
+            st.session_state['bot_status'] = "🚦 Étude du marché…"
             regime, historical_data, indicators_analysis = await self.study_market(period=period)
-            st.success(f"📊 Régime détecté : {regime}")
-            print(f">>> [run_adaptive_trading] Etude OK. Régime : {regime}")
+            st.session_state['bot_status'] = f"📊 Régime détecté : {regime}"
             strategy = self.choose_strategy(regime, indicators_analysis)
-            st.info(f"🧭 Stratégie choisie : {strategy}")
-            print(f">>> [run_adaptive_trading] Stratégie choisie : {strategy}")
+            st.session_state['bot_status'] = f"🧭 Stratégie : {strategy}"
 
             while st.session_state.get("bot_running", True):
                 try:
-                    st.info("⏳ Récupération des données de marché…")
-                    print(">>> [run_adaptive_trading] Récupération données marché")
+                    st.session_state['bot_status'] = "⏳ Récupération des données de marché…"
                     market_data = await self.get_latest_data()
-                    st.success("✅ Données marché récupérées")
-                    print(">>> [run_adaptive_trading] Données marché récupérées")
 
-                    st.info("📈 Analyse des signaux…")
+                    st.session_state['bot_status'] = "📈 Analyse des signaux…"
                     signals = await self.analyze_signals(market_data)
-                    st.success(f"✅ Signaux analysés : {signals['recommendation'] if signals else 'N/A'}")
-                    print(">>> [run_adaptive_trading] Signaux analysés")
 
-                    st.info("📰 Analyse des news…")
-                    news = await self.news_analyzer.analyze() if hasattr(self, "news_analyzer") else None
-                    st.success(f"✅ Analyse news : {news['sentiment_summary'] if news else 'N/A'}")
-                    print(f">>> [run_adaptive_trading] News : {news}")
-
-                    st.info("💹 Recherche arbitrage…")
-                    arbitrage_opps = await self.arbitrage_engine.find_opportunities() if hasattr(self, "arbitrage_engine") else None
-                    st.success(f"✅ Arbitrage : {arbitrage_opps if arbitrage_opps else 'Aucune'}")
-                    print(f">>> [run_adaptive_trading] Arbitrage : {arbitrage_opps}")
-
-                    st.info("🤔 Prise de décision trading…")
-                    decision = self.make_trade_decision(signals, strategy, news, arbitrage_opps)
-                    print(f">>> [run_adaptive_trading] Décision : {decision}")
-                    if decision and decision.get("action") in ["buy", "sell"]:
-                        st.success(f"🚀 Décision : {decision['action']} sur {decision['symbol']}")
-                        order = await self.execute_real_trade(decision)
-                        st.success(f"✅ Trade exécuté : {order if order else 'Erreur'}")
-                        print(f">>> [run_adaptive_trading] Trade exécuté : {order}")
+                    st.session_state['bot_status'] = "📰 Analyse des news…"
+                    if hasattr(self, "news_analyzer"):
+                        news = await self.news_analyzer.analyze_news()
                     else:
-                        st.info("⏳ Aucune action de trade ce tour-ci.")
+                        news = None
+
+                    st.session_state['bot_status'] = "💹 Recherche arbitrage…"
+                    if hasattr(self, "arbitrage_engine"):
+                        arbitrage_opps = await self.arbitrage_engine.find_opportunities()
+                    else:
+                        arbitrage_opps = None
+
+                    st.session_state['bot_status'] = "🤔 Prise de décision…"
+                    decision = self.make_trade_decision(signals, strategy, news, arbitrage_opps)
+
+                    if decision and decision.get("action") in ["buy", "sell"]:
+                        st.session_state['bot_status'] = f"🚀 Trade en cours : {decision['action']} {decision['symbol']}"
+                        order = await self.execute_real_trade(decision)
+                        st.session_state['bot_status'] = f"✅ Trade terminé : {order if order else 'Erreur'}"
+                    else:
+                        st.session_state['bot_status'] = "⏳ Aucune action, attente…"
 
                     await asyncio.sleep(2)
                 except Exception as loop_error:
-                    st.error(f"❌ Exception dans la boucle trading : {loop_error}")
-                    print(f"Exception dans la boucle trading : {loop_error}")
+                    st.session_state['bot_status'] = f"❌ Exception dans la boucle trading : {loop_error}"
                     continue
         except Exception as e:
-            st.error(f"❌ Exception dans run_adaptive_trading : {e}")
-            print(f"Exception dans run_adaptive_trading : {e}")
-            st.session_state.bot_running = False
-            
-    def choose_strategy(self, regime, indicators):
-        # Logique simple d'exemple : personnalise selon tes besoins
-        if "Bull" in regime:
-            return "Trend Following"
-        elif "Bear" in regime:
-            return "Short/Defensive"
-        elif "Arbitrage" in regime:
-            return "Arbitrage"
-        else:
-            return "Range/Scalping"
+            st.session_state['bot_status'] = f"❌ Erreur critique : {e}"
 
     def make_trade_decision(self, signals, strategy, news, arbitrage_opps):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -3537,7 +3514,8 @@ Take Profit: {take_profit}"""
 
             # En-tête
             st.title("Trading Bot Ultimate v4 🤖")
-
+            st.info(f"⏳ [BOT] {st.session_state.get('bot_status', 'En attente…')}")
+            
             # Tabs pour organiser l'information
             tab1, tab2, tab3, tab4 = st.tabs(["Portfolio", "Trading", "Analysis", "Settings"])
 
