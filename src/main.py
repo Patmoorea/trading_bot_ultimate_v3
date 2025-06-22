@@ -1925,7 +1925,7 @@ class TradingBotM4:
         self._cleanup_requested = False
         self._initialized = False
         self._reconnecting = False
-    
+
         # Configuration de la session
         self.session_config = {
             'keep_alive': True,
@@ -1935,6 +1935,13 @@ class TradingBotM4:
             'reconnect_on_error': True,
             'max_reconnect_attempts': 3
         }
+
+        # Configuration des streams (DOIT ÊTRE EN PREMIER)
+        self.stream_config = StreamConfig(
+            max_connections=12,
+            reconnect_delay=1.0,
+            buffer_size=10000
+        )
 
         # État du WebSocket
         self.ws_connection = {
@@ -1958,20 +1965,22 @@ class TradingBotM4:
 
         # Configuration principale
         self.config = config
-        
+    
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
         print("[DEBUG] use_testnet =", use_testnet)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
-        # Initialisation du WebSocket Manager (AJOUT ICI)
+    
+        # Initialisation du WebSocket Manager
         self.ws_manager = WebSocketManager(self)
-        
-        # Initialisation des buffers et données
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
-        
+    
+        # Configuration du WebSocket
+        self.websocket = MultiStreamManager(
+            pairs=self.config["TRADING"]["pairs"],
+            config=self.stream_config  # Maintenant stream_config existe déjà
+        )
+
         # Initialisation du client Binance
         try:
             self.spot_client = BinanceClient(
@@ -1979,14 +1988,6 @@ class TradingBotM4:
                 api_secret=self.config['BINANCE']['API_SECRET']
             )
             self.logger.info("✅ Spot client initialisé avec succès")
-            try:
-                ccxt_binance = ccxt.binance()
-                ccxt_binance.load_markets()
-                # Pour les symboles au format "BTCUSDC", "ETHUSDC", ...
-                self.binance_markets = set(s.replace('/', '') for s in ccxt_binance.symbols)
-            except Exception as e:
-                self.logger.warning(f"Impossible de charger les marchés Binance: {e}")
-                self.binance_markets = set()
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
