@@ -31,7 +31,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+# Configuration immédiate de la boucle d'événements
+if 'loop' not in st.session_state:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    nest_asyncio.apply()
+    st.session_state.loop = loop
+    
 # 2. Imports système
 import os
 import sys
@@ -2067,48 +2073,49 @@ class TradingBotM4:
         
     async def run_adaptive_trading(self, period="7d"):
         try:
-            st.session_state['bot_status'] = "🚦 Étude du marché…"
-            regime, historical_data, indicators_analysis = await self.study_market(period=period)
-            st.session_state['bot_status'] = f"📊 Régime détecté : {regime}"
-            strategy = self.choose_strategy(regime, indicators_analysis)
-            st.session_state['bot_status'] = f"🧭 Stratégie : {strategy}"
-
+            if not self.initialized:
+                st.session_state['bot_status'] = "🔄 Initialisation du bot..."
+                if not await self.start():
+                    raise Exception("Échec initialisation bot")
+        
+            st.session_state['bot_status'] = "🚦 Étude du marché..."
+            regime, historical_data = await asyncio.wait_for(
+                self.study_market(period=period),
+                timeout=30.0
+            )
+        
             while st.session_state.get("bot_running", True):
                 try:
-                    st.session_state['bot_status'] = "⏳ Récupération des données de marché…"
-                    market_data = await self.get_latest_data()
-
-                    st.session_state['bot_status'] = "📈 Analyse des signaux…"
-                    signals = await self.analyze_signals(market_data)
-
-                    st.session_state['bot_status'] = "📰 Analyse des news…"
-                    if hasattr(self, "news_analyzer"):
-                        news = await self.news_analyzer.analyze_news()
-                    else:
-                        news = None
-
-                    st.session_state['bot_status'] = "💹 Recherche arbitrage…"
-                    if hasattr(self, "arbitrage_engine"):
-                        arbitrage_opps = await self.arbitrage_engine.find_opportunities()
-                    else:
-                        arbitrage_opps = None
-
-                    st.session_state['bot_status'] = "🤔 Prise de décision…"
-                    decision = self.make_trade_decision(signals, strategy, news, arbitrage_opps)
-
-                    if decision and decision.get("action") in ["buy", "sell"]:
-                        st.session_state['bot_status'] = f"🚀 Trade en cours : {decision['action']} {decision['symbol']}"
-                        order = await self.execute_real_trade(decision)
-                        st.session_state['bot_status'] = f"✅ Trade terminé : {order if order else 'Erreur'}"
-                    else:
-                        st.session_state['bot_status'] = "⏳ Aucune action, attente…"
-
-                    await asyncio.sleep(2)
-                except Exception as loop_error:
-                    st.session_state['bot_status'] = f"❌ Exception dans la boucle trading : {loop_error}"
+                    st.session_state['bot_status'] = "⏳ Analyse en cours..."
+                
+                    # Récupération données avec timeout
+                    market_data = await asyncio.wait_for(
+                        self.get_latest_data(),
+                        timeout=5.0
+                    )
+                
+                    if market_data:
+                        signals = await self.analyze_signals(market_data)
+                        if signals and signals.get("action") in ["buy", "sell"]:
+                            await self.execute_real_trade(signals)
+                
+                    # Pause pour éviter surcharge
+                    await asyncio.sleep(1)
+                
+                except asyncio.TimeoutError:
+                    logger.warning("Timeout opération, nouvelle tentative...")
                     continue
+                except Exception as loop_error:
+                    logger.error(f"Erreur boucle trading: {loop_error}")
+                    # Ne pas casser la boucle sur erreur ponctuelle
+                    await asyncio.sleep(2)
+                    continue
+                
         except Exception as e:
-            st.session_state['bot_status'] = f"❌ Erreur critique : {e}"
+            logger.error(f"Erreur critique trading: {e}")
+            st.session_state['bot_status'] = f"❌ Erreur: {e}"
+            # Nettoyage en cas d'erreur
+            await self._cleanup()
 
     def make_trade_decision(self, signals, strategy, news, arbitrage_opps):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -2122,25 +2129,44 @@ class TradingBotM4:
     async def start(self):
         """Démarre le bot"""
         try:
-            self.logger.info("Starting bot initialization...")
-        
-            # Démarrage du WebSocket Manager
-            if not await self.ws_manager.start():
-                raise Exception("Failed to start WebSocket manager")
+            if self._ws_initializing:
+                logger.warning("Initialisation déjà en cours")
+                return False
             
-            # Configuration des composants
-            if not await self._setup_components():
-                raise Exception("Failed to setup components")
-            
-            # Mise à jour du statut
-            self.initialized = True
-            self.logger.info("✅ Bot initialized successfully")
-            return True
+            self._ws_initializing = True
         
-        except Exception as e:
-            self.logger.error(f"❌ Bot initialization error: {e}")
+            # Timeout de 10 secondes pour l'initialisation
+            async with asyncio.timeout(10):
+                # Initialisation WebSocket avec retry
+                retry_count = 0
+                while retry_count < 3:
+                    try:
+                        if await self.ws_manager.start():
+                            break
+                    except Exception as e:
+                        retry_count += 1
+                        if retry_count == 3:
+                        r   aise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
+                        await asyncio.sleep(1)
+            
+                # Configuration des composants
+                if not await self._setup_components():
+                    raise Exception("Échec configuration composants")
+            
+                self.initialized = True
+                logger.info("✅ Bot démarré avec succès")
+                return True
+            
+        except asyncio.TimeoutError:
+            logger.error("Timeout démarrage bot")
             await self._cleanup()
             return False
+        except Exception as e:
+            logger.error(f"Erreur démarrage bot: {e}")
+            await self._cleanup()
+            return False
+        finally:
+            self._ws_initializing = False
 
         self.config = {
             'NEWS': {
@@ -2413,41 +2439,33 @@ class TradingBotM4:
             return False
 
     async def _cleanup(self):
-        """Nettoie les ressources avant de fermer"""
+        """Nettoyage sécurisé avec timeout"""
         try:
-            # Fermeture propre du WebSocket
-            await close_websocket(self)
+            if self.cleanup_in_progress:
+                return
+            
+            self.cleanup_in_progress = True
         
-            # Nettoyage du buffer
-            if hasattr(self, 'buffer'):
-                try:
-                    self.buffer = None  # Au lieu de clear()
-                except Exception as buffer_error:
-                    logger.error(f"❌ Buffer cleanup error: {buffer_error}")
+            # Fermeture WebSocket avec timeout
+            try:
+                async with asyncio.timeout(5.0):
+                    if hasattr(self, 'ws_manager'):
+                        await self.ws_manager.cleanup()
+            except asyncio.TimeoutError:
+                logger.warning("Timeout fermeture WebSocket")
         
             # Nettoyage des données
-            if hasattr(self, 'latest_data'):
-                self.latest_data = {}
-        
-            if hasattr(self, 'indicators'):
-                self.indicators = {}
-        
-            # Désactivation du mode trading
-            if hasattr(st.session_state, 'bot_running'):
-                st.session_state.bot_running = False
-        
-            logger.info("""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned successfully              ║
-╚═════════════════════════════════════════════════╝
-            """)
+            self.latest_data = {}
+            self.indicators = {}
+            self.initialized = False
         
             return True
         
         except Exception as e:
+            logger.error(f"Erreur nettoyage: {e}")
             return False
+        finally:
+            self.cleanup_in_progress = False
 
     async def start(self):
         """Démarre le bot"""
