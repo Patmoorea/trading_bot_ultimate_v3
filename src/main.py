@@ -2222,26 +2222,50 @@ class TradingBotM4:
         try:
             self.logger.info("Starting bot initialization...")
 
-            # Initialisation de l'exchange
-            if not self.exchange._initialized:
-                await self.exchange.initialize()
-                self.logger.info("✅ Exchange initialized successfully")
+            # Vérification et création des échanges si nécessaire
+            if not hasattr(self, "exchange") or self.exchange is None:
+                self.exchange = BinanceExchange(
+                    api_key=self.config["BINANCE"]["API_KEY"],
+                    api_secret=self.config["BINANCE"]["API_SECRET"],
+                )
+                self.logger.info("✅ Exchange created")
 
-            # Démarrage du WebSocket Manager
-            if not await self.ws_manager.start():
-                raise Exception("Failed to start WebSocket manager")
+            if not hasattr(self, "spot_client") or self.spot_client is None:
+                self.spot_client = BinanceClient(
+                    api_key=self.config["BINANCE"]["API_KEY"],
+                    api_secret=self.config["BINANCE"]["API_SECRET"],
+                )
+                self.logger.info("✅ Spot client created")
 
-            # Configuration des composants
-            if not await self._setup_components():
-                raise Exception("Failed to setup components")
+            # Chargement des marchés avec gestion d'erreur explicite
+            try:
+                self.logger.info("🔄 Loading markets...")
+                if hasattr(self.exchange, "load_markets"):
+                    if asyncio.iscoroutinefunction(self.exchange.load_markets):
+                        await self.exchange.load_markets()
+                    else:
+                        self.exchange.load_markets()
+                self.logger.info("✅ Markets loaded successfully")
+            except Exception as market_error:
+                self.logger.error(f"❌ Market loading error: {market_error}")
+                raise
 
-            # Mise à jour du statut
-            self.initialized = True
-            self.logger.info("✅ Bot initialized successfully")
+            # Initialisation WebSocket
+            try:
+                self.logger.info("🔄 Initializing WebSocket...")
+                await self.initialize_websocket()
+                self.logger.info("✅ WebSocket initialized")
+            except Exception as ws_error:
+                self.logger.error(f"❌ WebSocket error: {ws_error}")
+                raise
+
+            # Marquer comme initialisé seulement si tout a réussi
+            self._initialized = True
+            self.logger.info("✅ Bot initialization complete")
             return True
 
         except Exception as e:
-            self.logger.error(f"❌ Bot initialization error: {e}")
+            self.logger.error(f"❌ Bot initialization failed: {e}")
             await self._cleanup()
             return False
 
@@ -2482,37 +2506,119 @@ class TradingBotM4:
     async def initialize(self):
         """Initialisation asynchrone des connexions"""
         try:
-            # Initialisation du client spot si nécessaire
+            self.logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║         INITIALISATION BOT                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+                """
+            )
+
+            # 1. Initialisation du client spot
             if not hasattr(self, "spot_client") or self.spot_client is None:
                 self.spot_client = BinanceClient(
                     api_key=os.getenv("BINANCE_API_KEY"),
                     api_secret=os.getenv("BINANCE_API_SECRET"),
                 )
+                self.logger.info("✅ Spot client initialisé")
 
-            # Initialisation du WebSocket MANQUANTE :
+            # 2. Chargement des marchés
+            try:
+                self.logger.info("🔄 Chargement des marchés...")
+                if hasattr(self.spot_client, "load_markets"):
+                    if asyncio.iscoroutinefunction(self.spot_client.load_markets):
+                        await self.spot_client.load_markets()
+                    else:
+                        self.spot_client.load_markets()
+                self.logger.info("✅ Marchés chargés avec succès")
+            except Exception as market_error:
+                self.logger.error(f"❌ Erreur chargement marchés: {market_error}")
+                return False
+
+            # 3. Initialisation WebSocket
             if not getattr(self, "initialized", False):
+                self.logger.info("🔄 Initialisation WebSocket...")
                 success = await self.start()
                 if not success:
-                    logger.error(
-                        "❌ Impossible d'initialiser le WebSocket dans initialize()"
-                    )
+                    self.logger.error("❌ Échec initialisation WebSocket")
                     return False
+                self.logger.info("✅ WebSocket initialisé")
 
-            # Récupération initiale du portfolio
-            portfolio = await self.get_real_portfolio()
-            if portfolio:
-                st.session_state.portfolio = portfolio
-                logger.info("✅ Initial portfolio data loaded")
+            # 4. Chargement du portfolio initial
+            try:
+                self.logger.info("🔄 Chargement portfolio initial...")
+                portfolio = await self.get_real_portfolio()
+                if portfolio:
+                    st.session_state.portfolio = portfolio
+                    self.logger.info("✅ Portfolio initial chargé")
+            except Exception as portfolio_error:
+                self.logger.error(f"❌ Erreur chargement portfolio: {portfolio_error}")
+                # On continue même si le portfolio échoue
 
-            # Mise à jour du statut
+            # 5. Mise à jour du statut des connexions
             self.ws_connection.update(
-                {"enabled": True, "status": "connected", "last_message": time.time()}
+                {
+                    "enabled": True,
+                    "status": "connected",
+                    "last_message": time.time(),
+                    "initialized_at": datetime.now(timezone.utc).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+                }
             )
 
-            return True
+            # 6. Vérification finale
+            all_initialized = all(
+                [
+                    hasattr(self, "spot_client") and self.spot_client is not None,
+                    getattr(self, "initialized", False),
+                    self.ws_connection["enabled"],
+                ]
+            )
+
+            if all_initialized:
+                self.logger.info(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║         INITIALISATION RÉUSSIE                  ║
+╠═════════════════════════════════════════════════╣
+║ Status: All components initialized
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+                    """
+                )
+                return True
+            else:
+                self.logger.error(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║         INITIALISATION INCOMPLÈTE               ║
+╠═════════════════════════════════════════════════╣
+║ Missing: {
+    'spot_client' if not hasattr(self, "spot_client") else '',
+    'initialized' if not getattr(self, "initialized", False) else '',
+    'websocket' if not self.ws_connection["enabled"] else ''
+}
+╚═════════════════════════════════════════════════╝
+                    """
+                )
+                return False
 
         except Exception as e:
-            logger.error(f"❌ Initialization error: {e}")
+            self.logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║         ERREUR FATALE INITIALISATION            ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+                """
+            )
             return False
 
     async def _setup_components(self):
@@ -2988,15 +3094,11 @@ class TradingBotM4:
         self.logger.info("🔊 Étude du marché en cours...")
 
         try:
-            # Vérification de la connexion WebSocket
-            if not getattr(
-                self, "_initialized", False
-            ):  # Chercher _initialized avec underscore
-                logger.warning(
-                    "🔄 WebSocket non initialisé, tentative d'initialisation..."
-                )
-                if not await self.initialize():
-                    raise Exception("Échec de l'initialisation")
+            # Vérification et initialisation si nécessaire
+            if not hasattr(self, "initialized") or not self.initialized:
+                self.logger.info("Starting initialization...")
+                if not await self.start():
+                    raise Exception("Failed to initialize bot")
 
             # Récupération des données historiques
             historical_data = await self.exchange.get_historical_data(
