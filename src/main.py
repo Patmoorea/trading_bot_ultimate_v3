@@ -2313,42 +2313,42 @@ class TradingBotM4:
                 if not await self.start():
                     raise Exception("Échec initialisation bot")
         
-            st.session_state['bot_status'] = "🚦 Étude du marché..."
-            regime, historical_data = await asyncio.wait_for(
-                self.study_market(period=period),
-                timeout=30.0
-            )
+            st.session_state['bot_status'] = "🚦 Trading en cours..."
+            st.session_state.bot_running = True
+            st.session_state.ws_connection_status = 'connected'  # Important !
         
             while st.session_state.get("bot_running", True):
                 try:
-                    st.session_state['bot_status'] = "⏳ Analyse en cours..."
+                    # Mise à jour du portfolio
+                    portfolio = await self.get_real_portfolio()
+                    if portfolio:
+                        st.session_state.portfolio = portfolio
+                        self.logger.info("Portfolio updated")
                 
-                    # Récupération données avec timeout
-                    market_data = await asyncio.wait_for(
-                        self.get_latest_data(),
-                        timeout=5.0
-                    )
-                
+                    # Récupération et traitement des données
+                    market_data = await self.get_latest_data()
                     if market_data:
                         signals = await self.analyze_signals(market_data)
                         if signals and signals.get("action") in ["buy", "sell"]:
                             await self.execute_real_trade(signals)
                 
+                    # Mise à jour des états de session
+                    st.session_state.latest_data = market_data
+                    st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                
                     # Pause pour éviter surcharge
                     await asyncio.sleep(1)
                 
-                except asyncio.TimeoutError:
-                    logger.warning("Timeout opération, nouvelle tentative...")
-                    continue
                 except Exception as loop_error:
-                    logger.error(f"Erreur boucle trading: {loop_error}")
-                    # Ne pas casser la boucle sur erreur ponctuelle
+                    self.logger.error(f"Erreur boucle trading: {loop_error}")
                     await asyncio.sleep(2)
                     continue
                 
         except Exception as e:
-            logger.error(f"Erreur critique trading: {e}")
+            self.logger.error(f"Erreur critique trading: {e}")
             st.session_state['bot_status'] = f"❌ Erreur: {e}"
+            st.session_state.bot_running = False
+            st.session_state.ws_connection_status = 'disconnected'
             # Nettoyage en cas d'erreur
             await self._cleanup()
 
@@ -5423,6 +5423,7 @@ async def main_async():
 
         st.title("Trading Bot Ultimate v4 🤖")
 
+        # Initialisation des états de session
         if 'initialization_time' not in st.session_state:
             st.session_state.initialization_time = current_time
 
@@ -5442,59 +5443,73 @@ async def main_async():
             'update_interval': 2.0,
             'last_refresh': time.time()
         }
+        
+        # Mise à jour des états manquants
         for key, value in default_session_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
 
+        # Initialisation du bot
         bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
 
-        # --- DEBUG données disponibles ---
-        st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-        # --- CORRIGE ici pour toujours refléter l'état session_state ---
-        latest_data = st.session_state.get('latest_data', {})
-        if not isinstance(latest_data, dict):
-            latest_data = {}
-        st.sidebar.write(
-            {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "Aucune donnée"
-        )
-
-        # 5. Interface principale - État et contrôles
-        status_col1, status_col2 = st.columns([2, 1])
-        with status_col1:
-            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
-            ws_icon = {
-                'connected': '🟢',
-                'disconnected': '🔴',
-                'initializing': '🔄',
-                'error': '⚠️'
-            }.get(ws_status, '🔴')
-
-            status_info = f"""
-            ### Bot Status
-            - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
-            - 📡 WebSocket: {ws_icon} {ws_status.title()}
-            - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
-            - ⏰ Last Update: {st.session_state.last_update_time}
-            - 👤 User: {st.session_state.user}
-            """
-            st.info(status_info)
-
-        # 6. Contrôles de la barre latérale avec gestion améliorée
+        # Sidebar avec données de debug
         with st.sidebar:
             st.header("🛠️ Bot Controls")
+            
+            # Risk Level Selector
             risk_level = st.select_slider(
                 "Risk Level",
                 options=["Low", "Medium", "High"],
                 value="Low",
                 key=f"risk_level_slider_{st.session_state.session_id}"
             )
+            
+            # Debug Data Display
+            st.markdown("#### Debug Data")
+            latest_data = st.session_state.get('latest_data', {})
+            if not isinstance(latest_data, dict):
+                latest_data = {}
+            st.write(
+                {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()} if latest_data else "No data"
+            )
             st.divider()
 
-            trading_task = st.session_state.get("trading_task", None)
-            task_is_running = trading_task is not None and not trading_task.done()
+        # Interface principale - État du bot
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
+            portfolio_status = '✅ Available' if st.session_state.get('portfolio') else '⚠️ Not Available'
+            
+            status_info = f"""
+            ### Bot Status
+            - 🚦 Trading: {'🟢 Active' if st.session_state.get('bot_running') else '🔴 Stopped'}
+            - 📡 WebSocket: {'🟢 Connected' if ws_status == 'connected' else '🔴 Disconnected'}
+            - 💼 Portfolio: {portfolio_status}
+            - ⏰ Last Update: {st.session_state.get('last_update_time', 'Never')}
+            - 👤 User: {st.session_state.get('user', 'Unknown')}
+            """
+            st.info(status_info)
+
+            # Debug Task Status
+            if st.checkbox("Show Debug Info", key="show_debug"):
+                trading_task = st.session_state.get("trading_task")
+                task_is_running = (trading_task is not None and 
+                                 not trading_task.done() if trading_task else False)
+                
+                debug_info = f"""
+                🔍 Debug Information:
+                - Task Status: {'Running' if task_is_running else 'Stopped/Not Found'}
+                - Bot Running: {st.session_state.get('bot_running', False)}
+                - WebSocket Status: {ws_status}
+                - Session ID: {st.session_state.get('session_id', 'Not Set')}
+                """
+                st.code(debug_info)
+
+                if trading_task and trading_task.done() and trading_task.exception():
+                    st.error(f"Task Error: {trading_task.exception()}")
 
             if task_is_running:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
