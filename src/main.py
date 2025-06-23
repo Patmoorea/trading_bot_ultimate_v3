@@ -1199,6 +1199,97 @@ async def initialize_websocket(bot):
         if not bot.ws_connection.get('enabled', False):
             logger.warning("⚠️ WebSocket non initialisé correctement")
 
+async def check_websocket_health(self):
+    """Vérifie l'état du WebSocket et le réinitialise si nécessaire"""
+    try:
+        # Vérification des attributs requis
+        if not hasattr(self, 'ws_connection'):
+            self.logger.error("Attribut ws_connection manquant")
+            return False
+            
+        # Protection contre une réinitialisation en cours
+        if getattr(self, '_ws_initializing', False):
+            self.logger.warning("Initialisation WebSocket déjà en cours")
+            return False
+            
+        # Vérification de la connexion
+        if not self.ws_connection.get('enabled', False):
+            self.logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET DISCONNECTED                  ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Attempting reconnection
+╚═════════════════════════════════════════════════╝
+            """)
+            return await self.initialize_websocket()
+            
+        # Vérification du dernier message
+        last_message = self.ws_connection.get('last_message')
+        if last_message and (time.time() - last_message) > 30:
+            self.logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET TIMEOUT                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Last Message: {datetime.fromtimestamp(last_message).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Reconnecting
+╚═════════════════════════════════════════════════╝
+            """)
+            return await self.initialize_websocket()
+            
+        # Vérification des tâches actives
+        active_tasks = [t for t in self.ws_connection.get('tasks', []) 
+                       if not t.done() and not t.cancelled()]
+        if not active_tasks:
+            self.logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║         NO ACTIVE WEBSOCKET TASKS               ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Restarting tasks
+╚═════════════════════════════════════════════════╝
+            """)
+            return await self.initialize_websocket()
+            
+        # Vérification du heartbeat
+        last_heartbeat = self.ws_connection.get('last_heartbeat')
+        if last_heartbeat and (time.time() - last_heartbeat) > 60:
+            self.logger.warning(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET HEARTBEAT TIMEOUT             ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Last Heartbeat: {datetime.fromtimestamp(last_heartbeat).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Reconnecting
+╚═════════════════════════════════════════════════╝
+            """)
+            return await self.initialize_websocket()
+            
+        # Tous les contrôles sont OK
+        self.logger.debug(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET HEALTH CHECK PASSED           ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Healthy
+║ Active Tasks: {len(active_tasks)}
+╚═════════════════════════════════════════════════╝
+        """)
+        return True
+            
+    except Exception as e:
+        self.logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET HEALTH CHECK ERROR            ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """)
+        return False
+    
 async def websocket_heartbeat(bot):
     """Maintient la connexion WebSocket active"""
     while True:
@@ -1839,6 +1930,11 @@ class TradingEnv(gym.Env):
         print(f"Number of Trades: {len(self.position_history)}")
 
 class MultiStreamManager:
+    def __init__(self, pairs, config):
+        self.pairs = pairs
+        self.config = config
+        self.logger = logging.getLogger(__name__)
+        
     async def close(self):
         """Ferme proprement les streams"""
         try:
@@ -1857,6 +1953,10 @@ class TradingBotM4:
     async def tick(self):
         """Effectue une itération de trading (une fois par refresh)"""
         try:
+            # Vérification de la santé WebSocket
+            if not await self.check_websocket_health():
+                self.logger.warning("Problème de connexion WebSocket détecté")
+                return
             # Récupération des données
             market_data = await self.get_latest_data()
             if market_data:
@@ -2148,22 +2248,19 @@ class TradingBotM4:
             # Vérification des composants critiques
             checks = {
                 'spot_client': self.spot_client is not None,
-                'ws_connection': hasattr(self, 'ws_connection') and isinstance(self.ws_connection, dict),
-                'ws_status': self.ws_connection.get('status') == 'connected' if hasattr(self, 'ws_connection') else False,
                 'ws_manager': hasattr(self, 'ws_manager') and self.ws_manager is not None,
                 'multi_stream': hasattr(self, 'multi_stream') and self.multi_stream is not None,
                 'exchange': hasattr(self, 'exchange') and self.exchange is not None,
                 'buffer': hasattr(self, 'buffer') and self.buffer is not None
             }
         
-            # Log détaillé des vérifications
+            # Ne plus vérifier ws_connection et ws_status qui sont initialisés plus tard
+        
             self.logger.info(f"""
 ╔═════════════════════════════════════════════════╗
 ║           INITIALIZATION CHECK                   ║
 ╠═════════════════════════════════════════════════╣
 ║ spot_client: {checks['spot_client']}
-║ ws_connection: {checks['ws_connection']}
-║ ws_status: {checks['ws_status']}
 ║ ws_manager: {checks['ws_manager']}
 ║ multi_stream: {checks['multi_stream']}
 ║ exchange: {checks['exchange']}
@@ -2171,9 +2268,8 @@ class TradingBotM4:
 ╚═════════════════════════════════════════════════╝
             """)
 
-            # Tous les composants doivent être True sauf ws_connection et ws_status
-            essential_checks = {k: v for k, v in checks.items() if k not in ['ws_connection', 'ws_status']}
-            return all(essential_checks.values())
+            # Retourne True seulement si les composants essentiels sont présents
+            return all(checks.values())
 
         except Exception as e:
             self.logger.error(f"Error in is_properly_initialized: {e}")
@@ -2258,20 +2354,30 @@ class TradingBotM4:
     
             # Timeout de 10 secondes pour l'initialisation
             async with asyncio.timeout(10):
+                # Configuration initiale des objets WebSocket
+                if not hasattr(self, 'ws_connection'):
+                    self.ws_connection = {
+                        'enabled': False,
+                        'status': 'initializing',
+                        'reconnect_count': 0,
+                        'max_reconnects': 3,
+                        'tasks': [],
+                        'last_message': None
+                    }
+
                 # Initialisation WebSocket avec retry
                 retry_count = 0
                 while retry_count < 3:
                     try:
-                        # Mise à jour du statut de connexion
-                        self.ws_connection.update({
-                            'enabled': True,
-                            'status': 'connected',
-                            'last_message': time.time()
-                        })
-                    
                         # Configuration des streams
                         success = await self.ws_manager.start()
                         if success:
+                            # Mise à jour du statut de connexion
+                            self.ws_connection.update({
+                                'enabled': True,
+                                'status': 'connected',
+                                'last_message': time.time()
+                            })
                             self.logger.info("✅ WebSocket streams démarrés")
                             break
                 
@@ -2281,7 +2387,7 @@ class TradingBotM4:
                             raise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
                         await asyncio.sleep(1)
         
-                # Configuration des composants
+                # Configuration des composants 
                 if not await self._setup_components():
                     raise Exception("Échec configuration composants")
         
