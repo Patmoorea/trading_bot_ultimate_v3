@@ -2364,15 +2364,17 @@ class TradingBotM4:
     async def start(self):
         """Démarre le bot avec initialisation complète"""
         try:
+            # Vérification si déjà en cours d'initialisation
             if self._ws_initializing:
                 self.logger.warning("Initialisation déjà en cours")
                 return False
             
             self._ws_initializing = True
-    
+            st.session_state.ws_connection_status = 'initializing'
+
             # Timeout de 10 secondes pour l'initialisation
             async with asyncio.timeout(10):
-                # Configuration initiale des objets WebSocket et connexion immédiate
+                # Configuration initiale des objets WebSocket
                 if not hasattr(self, 'ws_connection'):
                     self.ws_connection = {
                         'enabled': False,
@@ -2383,8 +2385,10 @@ class TradingBotM4:
                         'last_message': None
                     }
 
-                # Initialisation WebSocket avec retry immédiat
+                # Initialisation WebSocket avec retry
                 retry_count = 0
+                success = False
+            
                 while retry_count < 3:
                     try:
                         # Configuration des streams
@@ -2396,35 +2400,49 @@ class TradingBotM4:
                                 'status': 'connected',
                                 'last_message': time.time()
                             })
-                            self.logger.info("✅ WebSocket streams démarrés")
                         
-                            # Important: Mettre à jour le statut dans session_state
+                            # Mise à jour des états Streamlit
                             st.session_state.ws_connection_status = 'connected'
                             st.session_state.ws_initialized = True
+                        
+                            self.logger.info("✅ WebSocket streams démarrés")
                             break
-                
+                    
                     except Exception as e:
                         retry_count += 1
                         if retry_count == 3:
                             raise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
                         await asyncio.sleep(1)
-        
-                # Configuration des composants 
+
+                # Vérification du succès de l'initialisation WebSocket
+                if not success:
+                    raise Exception("Échec de l'initialisation WebSocket")
+
+                # Configuration des composants
                 if not await self._setup_components():
                     raise Exception("Échec configuration composants")
-        
+
+                # Marquer comme initialisé
                 self.initialized = True
+                st.session_state.bot_running = True  # Important pour l'état de l'interface
+            
                 self.logger.info("✅ Bot démarré avec succès")
                 return True
-            
+
         except asyncio.TimeoutError:
             self.logger.error("Timeout démarrage bot")
+            st.session_state.ws_connection_status = 'disconnected'
+            st.session_state.bot_running = False
             await self._cleanup()
             return False
+        
         except Exception as e:
             self.logger.error(f"Erreur démarrage bot: {e}")
+            st.session_state.ws_connection_status = 'disconnected'
+            st.session_state.bot_running = False
             await self._cleanup()
             return False
+        
         finally:
             self._ws_initializing = False
 
@@ -5532,19 +5550,18 @@ async def main_async():
                             st.error("Failed to initialize bot")
                             return
 
-                        # Configuration initiale du trading dans une seule tâche async
+                        # Tout le démarrage en une seule tâche asynchrone
                         async def init_and_start_trading():
                             try:
-                                # Forcer la mise à jour des états
+                                # Mise à jour immédiate des états
                                 st.session_state.bot_running = True
                                 st.session_state.ws_connection_status = 'connecting'
-                                st.session_state.portfolio = None
                 
                                 # Démarrage complet en une fois
                                 if not await bot.start():
                                     raise Exception("Failed to initialize bot")
-                    
-                                # Lancement immédiat du trading adaptatif
+                
+                                # Lancement immédiat du trading
                                 await bot.run_adaptive_trading(period="7d")
                 
                             except Exception as e:
@@ -5552,7 +5569,7 @@ async def main_async():
                                 st.session_state.ws_connection_status = 'disconnected'
                                 raise e
 
-                        # Création et lancement de la tâche
+                        # Lancement de la tâche
                         loop = st.session_state.loop or asyncio.get_event_loop()
                         st.session_state.trading_task = loop.create_task(init_and_start_trading())
                         st.success("🚀 Trading started!")
