@@ -2476,17 +2476,24 @@ class TradingBotM4:
     async def _cleanup(self):
         """Nettoie les ressources avant de fermer"""
         try:
+            current_session = getattr(self, "session_id", "Unknown")
             self.logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
+║ Time: {current_time} UTC
+║ User: {current_user}
 ║ Bot Status: {'Running' if hasattr(st.session_state, 'bot_running') and st.session_state.bot_running else 'Stopped'}
+║ Session: {current_session}
 ╚═════════════════════════════════════════════════╝
             """
             )
+
+            # Vérification des protections de la session COURANTE uniquement
+            if not hasattr(self, "session_id"):
+                self.logger.error("No session ID found")
+                return False
 
             # Vérification des protections actives AVANT le nettoyage
             active_protections = self.get_active_protections()
