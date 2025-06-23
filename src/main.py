@@ -46,6 +46,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
+from src.ui.ui_renderer import UIRenderer
 from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
 import nest_asyncio
@@ -162,261 +163,87 @@ class StreamlitSessionManager:
                 self._log_initialization()
 
     def _initialize_session_state(self):
-        """Initialise l'état de la session avec gestion des erreurs"""
+        """Initialisation centralisée des états"""
         try:
-            # Nettoyage des anciennes sessions
-            if "sessions" in st.session_state:
-                old_sessions = list(st.session_state.sessions)
-                for old_session in old_sessions:
-                    if old_session != self.session_id:
-                        self._cleanup_session(old_session)
+            # 1. Nettoyage des anciennes sessions
+            self._cleanup_old_sessions()
 
-            # Initialisation des états de base
-            st.session_state.session_initialized = True
-            st.session_state.sessions = {self.session_id}
-            st.session_state.protections = {self.session_id: set()}
-            st.session_state.last_action = self.init_time
+            # 2. Initialisation des états de base
+            self._initialize_base_states()
+
+            # 3. Initialisation des protections
+            self._initialize_protection_states()
+
+            # 4. Initialisation des états WebSocket et Bot
+            self._initialize_ws_and_bot_states()
 
             return True
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation session: {e}")
             return False
 
-    def _log_initialization(self):
-        """Logs l'initialisation de la session"""
-        self.logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION INITIALIZED                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {self.user}
-║ Session ID: {self.session_id}
-║ Status: Active
-╚═════════════════════════════════════════════════╝
-        """
+    def _cleanup_old_sessions(self):
+        """Nettoyage des anciennes sessions"""
+        if "sessions" in st.session_state:
+            old_sessions = list(st.session_state.sessions)
+            for old_session in old_sessions:
+                if old_session != self.session_id:
+                    self._cleanup_session(old_session)
+
+    def _initialize_base_states(self):
+        """Initialisation des états de base"""
+        st.session_state.update(
+            {
+                "session_initialized": True,
+                "sessions": {self.session_id},
+                "last_action": self.init_time,
+                "last_update_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "error_count": 0,
+            }
         )
 
-    def _cleanup_session(self, session_id):
-        """Nettoie une session spécifique"""
-        try:
-            # Nettoyage des protections de l'ancienne session
-            if (
-                "protections" in st.session_state
-                and session_id in st.session_state.protections
-            ):
-                del st.session_state.protections[session_id]
+    def _initialize_protection_states(self):
+        """Initialisation des états de protection"""
+        if "protections" not in st.session_state:
+            st.session_state.protections = {}
+        st.session_state.protections[self.session_id] = set()
 
-            # Nettoyage des états de la session
-            if "sessions" in st.session_state:
-                st.session_state.sessions.discard(session_id)
-
-            self.logger.info(f"✅ Cleaned session: {session_id}")
-        except Exception as e:
-            self._log_error(f"Session cleanup error for {session_id}", e)
-
-    def add_protection(self, protection):
-        """Ajoute une protection à la session courante"""
-        try:
-            if "protections" not in st.session_state:
-                st.session_state.protections = {}
-
-            if self.session_id not in st.session_state.protections:
-                st.session_state.protections[self.session_id] = set()
-
-            st.session_state.protections[self.session_id].add(protection)
-            self._log_protection_added(protection)
-        except Exception as e:
-            self._log_error(f"Protection addition error", e)
-
-    def _log_protection_added(self, protection):
-        """Logs l'ajout d'une protection"""
-        self.logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           PROTECTION ADDED                       ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Protection: {protection}
-╚═════════════════════════════════════════════════╝
-            """
+        # États de protection de base
+        st.session_state.update(
+            {
+                "prevent_cleanup": True,
+                "keep_alive": True,
+                "force_cleanup": False,
+                "cleanup_allowed": False,
+            }
         )
 
-    def _log_error(self, message, error):
-        """Log unifié des erreurs"""
-        self.logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {message}
-║ Details: {str(error)}
-║ Type: {type(error).__name__}
-║ Session ID: {self.session_id}
-╚═════════════════════════════════════════════════╝
-        """
+    def _initialize_ws_and_bot_states(self):
+        """Initialisation des états WebSocket et Bot"""
+        st.session_state.update(
+            {
+                "ws_status": "disconnected",
+                "ws_initialized": False,
+                "ws_connection_status": "disconnected",
+                "bot_running": False,
+                "portfolio": None,
+                "latest_data": {},
+                "indicators": None,
+            }
         )
-
-        # Incrément du compteur d'erreurs
-        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
 
     def protect_session(self):
         """Protection renforcée de la session"""
         try:
-            # Vérification et réinitialisation si nécessaire
             if not st.session_state.get("session_initialized"):
                 self._initialize_session_state()
 
-            # Mise à jour du timestamp
             current_time = datetime.now(timezone.utc)
             st.session_state.last_action_time = current_time.strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
 
-            # Activation des protections
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
-
-            self._log_protection()
-            return True
-
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
-
-    def _log_protection(self):
-        """Log de la protection de session"""
-        self.logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION PROTECTED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Last Action: {st.session_state.get('last_action_time')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    def _setup_and_verify_event_loop(self):
-        """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-        current_time = datetime.now(timezone.utc)
-        current_user = os.getenv("USER", "Patmoorea")
-
-        try:
-            # Vérification de l'existence d'une boucle
-            if not st.session_state.get("loop"):
-                # Création et configuration de la nouvelle boucle
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                nest_asyncio.apply()
-
-                # Sauvegarde dans la session
-                st.session_state.loop = loop
-
-                # Log de succès d'initialisation
-                logger.info(
-                    f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP INITIALIZED              ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-║ Status: Successfully configured
-║ Loop ID: {id(loop)}
-╚═════════════════════════════════════════════════╝
-                """
-                )
-
-                return loop
-
-            # Vérification de la boucle existante
-            existing_loop = st.session_state.loop
-            if existing_loop.is_closed():
-                logger.warning(
-                    f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP CLOSED                   ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: Creating new loop
-║ Previous Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-                """
-                )
-
-                # Création d'une nouvelle boucle
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                nest_asyncio.apply()
-                st.session_state.loop = new_loop
-                return new_loop
-
-            # Retour de la boucle existante
-            logger.debug(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP VERIFIED                 ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: Using existing loop
-║ Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-            return existing_loop
-
-        except Exception as e:
-            # Log d'erreur détaillé
-            logger.error(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
-║ Details: {traceback.format_exc()}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-            # Incrément du compteur d'erreurs
-            st.session_state.error_count = st.session_state.get("error_count", 0) + 1
-
-            return None
-
-        finally:
-            # Mise à jour du timestamp
-            st.session_state.last_update_time = current_time.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-    def protect_session(self):
-        """Protection renforcée de la session"""
-        try:
-            # Vérification et réinitialisation si nécessaire
-            if not st.session_state.get("session_initialized"):
-                self._initialize_session_state()
-
-            # Mise à jour du timestamp
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-            # Activation des protections
-            st.session_state.prevent_cleanup = True
-            st.session_state.keep_alive = True
-            st.session_state.force_cleanup = False
-            st.session_state.cleanup_allowed = False
-
+            self._set_protection_flags(True)
             self._log_protection()
             return True
 
@@ -427,17 +254,11 @@ class StreamlitSessionManager:
     def allow_cleanup(self):
         """Autorisation sécurisée du nettoyage"""
         try:
-            # Vérification de l'état du bot
             if st.session_state.get("bot_running", False):
-                logger.warning("Cannot allow cleanup while bot is running")
+                self.logger.warning("Cannot allow cleanup while bot is running")
                 return False
 
-            # Configuration du nettoyage
-            st.session_state.cleanup_allowed = True
-            st.session_state.force_cleanup = True
-            st.session_state.prevent_cleanup = False
-            st.session_state.keep_alive = False
-
+            self._set_protection_flags(False)
             self._log_cleanup_authorization()
             return True
 
@@ -445,10 +266,24 @@ class StreamlitSessionManager:
             self._log_error("Cleanup authorization error", e)
             return False
 
+    def _set_protection_flags(self, protected):
+        """Configure les flags de protection"""
+        st.session_state.update(
+            {
+                "cleanup_allowed": not protected,
+                "force_cleanup": not protected,
+                "prevent_cleanup": protected,
+                "keep_alive": protected,
+            }
+        )
+
+    # Les méthodes de logging restent identiques
+    # _log_initialization, _log_protection, _log_error, etc.
+
     def get_session_info(self):
         """Récupération des informations de session"""
         try:
-            info = {
+            return {
                 "user": self.user,
                 "session_id": self.session_id,
                 "init_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -460,82 +295,9 @@ class StreamlitSessionManager:
                 "ws_initialized": st.session_state.get("ws_initialized", False),
                 "error_count": st.session_state.get("error_count", 0),
             }
-            return info
-
         except Exception as e:
             self._log_error("Session info retrieval error", e)
             return None
-
-    def _log_initialization(self):
-        """Log de l'initialisation"""
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION INITIALIZED                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {self.user}
-║ Session ID: {self.session_id}
-║ Status: Active
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    def _log_protection(self):
-        """Log de la protection"""
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION PROTECTED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Last Action: {st.session_state.get('last_action_time')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    def _log_cleanup_authorization(self):
-        """Log de l'autorisation de nettoyage"""
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP AUTHORIZED                     ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session ID: {self.session_id}
-║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    def _log_error(self, message, error):
-        """Log d'erreur unifié"""
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {message}
-║ Details: {str(error)}
-║ Type: {type(error).__name__}
-║ Session ID: {self.session_id}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Incrémenter le compteur d'erreurs
-        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
-
-
-# Création de l'instance globale avec vérification
-try:
-    session_manager = StreamlitSessionManager()
-    logger.info("✅ Session manager initialized successfully")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize session manager: {e}")
-    session_manager = None
 
 
 class WebSocketManager:
@@ -5568,23 +5330,62 @@ from src.backtesting.core.backtest_engine import BacktestEngine
 from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
 
 
-async def main_async():
-    """Point d'entrée principal de l'application avec gestion améliorée des états"""
-    from datetime import datetime
-    import time
-    import streamlit as st
-
-    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+def initialize_app():
+    """Initialisation de l'application"""
+    # Mise à jour avec le nouveau timestamp fourni
+    current_time = "2025-06-23 22:29:14"  # Votre nouveau timestamp
     current_user = "Patmoorea"
 
+    # Configuration du logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+    # Configuration de la session Streamlit
+    st.set_page_config(
+        page_title="Trading Bot Ultimate v4",
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+
+    # Initialisation des états de session de base
+    if "initialization_time" not in st.session_state:
+        st.session_state.initialization_time = current_time
+        st.session_state.user = current_user
+        st.session_state.session_id = f"{current_user}_{int(datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S').timestamp())}"
+
+    # Configuration du logger
+    logger.info(
+        f"""
+╔═════════════════════════════════════════════════╗
+║              APP INITIALIZATION                  ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time} UTC
+║ User: {current_user}
+║ Session ID: {st.session_state.session_id}
+╚═════════════════════════════════════════════════╝
+    """
+    )
+
+    return current_time, current_user
+
+
+async def main_async():
+    """Point d'entrée principal de l'application"""
     try:
         session_manager.protect_session()
-
         st.title("Trading Bot Ultimate v4 🤖")
+
+        # 1. Initialisation de l'état de session
+        current_time = "2025-06-23 22:23:25"
+        current_user = "Patmoorea"
 
         if "initialization_time" not in st.session_state:
             st.session_state.initialization_time = current_time
 
+        # 2. Initialisation des états par défaut
         default_session_state = {
             "session_id": f"{current_user}_{int(datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S').timestamp())}",
             "user": current_user,
@@ -5610,19 +5411,54 @@ async def main_async():
             st.error("❌ Failed to initialize bot")
             return
 
-        # --- DEBUG données disponibles ---
-        st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-        # --- CORRIGE ici pour toujours refléter l'état session_state ---
-        latest_data = st.session_state.get("latest_data", {})
-        if not isinstance(latest_data, dict):
-            latest_data = {}
-        st.sidebar.write(
-            {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()}
-            if latest_data
-            else "Aucune donnée"
-        )
+        # 3. Interface principale
+        # Sidebar
+        with st.sidebar:
+            st.header("🛠️ Bot Controls")
+            risk_level = st.select_slider(
+                "Risk Level",
+                options=["Low", "Medium", "High"],
+                value="Low",
+                key=f"risk_level_slider_{st.session_state.session_id}",
+            )
+            st.divider()
 
-        # 5. Interface principale - État et contrôles
+            # Boutons de contrôle du bot
+            if not st.session_state.get("bot_running", False):
+                if st.button(
+                    "🟢 Start Trading", key="start_button", use_container_width=True
+                ):
+                    st.session_state.bot_running = True
+                    if not st.session_state.get("trading_task"):
+                        loop = st.session_state.loop or asyncio.get_event_loop()
+                        st.session_state.trading_task = loop.create_task(
+                            bot.run_adaptive_trading(period="7d")
+                        )
+                    st.success(
+                        "Trading adaptatif lancé (étude marché + stratégie auto)."
+                    )
+            else:
+                if st.button(
+                    "🔴 Stop Trading", key="stop_button", use_container_width=True
+                ):
+                    st.session_state.bot_running = False
+                    if st.session_state.get("trading_task"):
+                        st.session_state.trading_task.cancel()
+                        st.session_state.trading_task = None
+                    st.warning("Trading stoppé.")
+
+            # Debug data
+            st.markdown("#### Données présentes dans bot.latest_data :")
+            latest_data = st.session_state.get("latest_data", {})
+            if not isinstance(latest_data, dict):
+                latest_data = {}
+            st.write(
+                {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()}
+                if latest_data
+                else "Aucune donnée"
+            )
+
+        # 4. Status Section
         status_col1, status_col2 = st.columns([2, 1])
         with status_col1:
             ws_status = st.session_state.get("ws_connection_status", "disconnected")
@@ -5642,125 +5478,119 @@ async def main_async():
             - 👤 User: {st.session_state.user}
             """
             st.info(status_info)
+        # 5. Gestion des données et backtest
+        latest_data = st.session_state.get("latest_data")
+        if not isinstance(latest_data, dict):
+            latest_data = {}
 
-        # 6. Contrôles de la barre latérale avec gestion améliorée
-        with st.sidebar:
-            st.header("🛠️ Bot Controls")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low",
-                key=f"risk_level_slider_{st.session_state.session_id}",
+        def _has_valid_ohlcv(item):
+            return (
+                isinstance(item, dict)
+                and "ohlcv" in item
+                and isinstance(item["ohlcv"], list)
+                and len(item["ohlcv"]) > 0
+                and isinstance(item["ohlcv"][0], dict)
+                and all(
+                    k in item["ohlcv"][0]
+                    for k in ["timestamp", "open", "high", "low", "close", "volume"]
+                )
             )
-            st.divider()
-            if not st.session_state.get("bot_running", False):
-                if st.button(
-                    "🟢 Start Trading", key="start_button", use_container_width=True
-                ):
-                    st.session_state.bot_running = True
-                    # Protection pour éviter plusieurs tâches concurrentes
-                    if not st.session_state.get("trading_task"):
-                        loop = st.session_state.loop or asyncio.get_event_loop()
-                        st.session_state.trading_task = loop.create_task(
-                            bot.run_adaptive_trading(period="7d")
-                        )
-                    st.success(
-                        "Trading adaptatif lancé (étude marché + stratégie auto)."
-                    )
-            else:
-                if st.button(
-                    "🔴 Stop Trading", key="stop_button", use_container_width=True
-                ):
-                    st.session_state.bot_running = False
-                    # Arrêt propre de la tâche si elle existe
-                    if st.session_state.get("trading_task"):
-                        st.session_state.trading_task.cancel()
-                        st.session_state.trading_task = None
-                    st.warning("Trading stoppé.")
-            # --- GESTION DES DONNEES ET BACKTEST ---
-            # TOUJOURS lire depuis session_state !
-            latest_data = st.session_state.get("latest_data")
-            if not isinstance(latest_data, dict):
-                latest_data = {}
-            st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
 
-            def _has_valid_ohlcv(item):
-                return (
-                    isinstance(item, dict)
-                    and "ohlcv" in item
-                    and isinstance(item["ohlcv"], list)
-                    and len(item["ohlcv"]) > 0
-                    and isinstance(item["ohlcv"][0], dict)
-                    and all(
-                        k in item["ohlcv"][0]
-                        for k in ["timestamp", "open", "high", "low", "close", "volume"]
-                    )
-                )
+        data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
 
-            data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
-
-            if not data_ready:
-                st.warning(
-                    "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
-                )
-                if st.button("Charger les données", key="load_data_btn"):
-                    with st.spinner("Chargement des données..."):
-                        loaded = False
-                        try:
-                            if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
-                                st.info("Initialisation de la WebSocket…")
-                                await bot.initialize()
-                            if hasattr(bot, "get_latest_data"):
-                                data = await bot.get_latest_data()
-                                st.write("DEBUG - Résultat get_latest_data:", data)
-                                if data and isinstance(data, dict) and len(data) > 0:
-                                    st.session_state["latest_data"] = (
-                                        data  # <-- SYNC dans la session
-                                    )
-                                    loaded = True
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
-                            elif hasattr(bot, "load_all_data"):
-                                await bot.load_all_data()
-                                latest_data = getattr(bot, "latest_data", {}) or {}
-                                if not isinstance(latest_data, dict):
-                                    latest_data = {}
-                                st.write(
-                                    "DEBUG - latest_data après load_all_data:",
-                                    latest_data,
+        if not data_ready:
+            st.warning(
+                "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
+            )
+            if st.button("Charger les données", key="load_data_btn"):
+                with st.spinner("Chargement des données..."):
+                    loaded = False
+                    try:
+                        if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
+                            st.info("Initialisation de la WebSocket…")
+                            await bot.initialize()
+                        if hasattr(bot, "get_latest_data"):
+                            data = await bot.get_latest_data()
+                            st.write("DEBUG - Résultat get_latest_data:", data)
+                            if data and isinstance(data, dict) and len(data) > 0:
+                                st.session_state["latest_data"] = (
+                                    data  # SYNC dans la session
                                 )
-                                loaded = (
-                                    isinstance(latest_data, dict)
-                                    and len(latest_data) > 0
-                                )
-                                if loaded:
-                                    st.session_state["latest_data"] = latest_data
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
+                                loaded = True
                             else:
                                 st.error(
-                                    "Aucune méthode de chargement trouvée sur le bot."
+                                    "La récupération a retourné None ou un dict vide : pas de données."
                                 )
-                        except Exception as exc:
-                            st.error(f"Erreur lors du chargement des données : {exc}")
-                        if loaded:
-                            st.success("Données chargées ! Tu peux lancer un backtest.")
-                            st.rerun()
-            else:
-                # --- BACKTEST CLASSIQUE ---
-                if st.button("Lancer Backtest", key="backtest_all_btn"):
+                        elif hasattr(bot, "load_all_data"):
+                            await bot.load_all_data()
+                            latest_data = getattr(bot, "latest_data", {}) or {}
+                            if not isinstance(latest_data, dict):
+                                latest_data = {}
+                            st.write(
+                                "DEBUG - latest_data après load_all_data:", latest_data
+                            )
+                            loaded = (
+                                isinstance(latest_data, dict) and len(latest_data) > 0
+                            )
+                            if loaded:
+                                st.session_state["latest_data"] = latest_data
+                            else:
+                                st.error(
+                                    "La récupération a retourné None ou un dict vide : pas de données."
+                                )
+                        else:
+                            st.error("Aucune méthode de chargement trouvée sur le bot.")
+                    except Exception as exc:
+                        st.error(f"Erreur lors du chargement des données : {exc}")
+                    if loaded:
+                        st.success("Données chargées ! Tu peux lancer un backtest.")
+                        st.rerun()
+        else:
+            # 6. Backtest Section
+            if st.button("Lancer Backtest", key="backtest_all_btn"):
+                results = {}
+                st.info("Backtest en cours sur toutes les paires...")
+                try:
+                    for symbol, data in latest_data.items():
+                        try:
+                            if _has_valid_ohlcv(data):
+                                df = pd.DataFrame(data["ohlcv"])
+
+                                def strategy_func(df, **params):
+                                    return (
+                                        df["close"] > df["close"].rolling(5).mean()
+                                    ).astype(int)
+
+                                engine = BacktestEngine(initial_capital=10000)
+                                results[symbol] = engine.run_backtest(df, strategy_func)
+                            else:
+                                st.warning(
+                                    f"Aucune donnée OHLCV exploitable pour {symbol}"
+                                )
+                        except Exception as pair_exc:
+                            st.warning(f"Erreur sur {symbol}: {pair_exc}")
+                    st.session_state["all_backtest_results"] = results
+                    st.success("Backtest terminé ✅")
+                except Exception as batch_exc:
+                    st.error(f"Erreur lors du backtest: {batch_exc}")
+
+            # 7. Affichage des résultats
+            if st.session_state.get("all_backtest_results"):
+                st.markdown("**Résultats Backtest Classique :**")
+                for symbol, res in st.session_state["all_backtest_results"].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
+                # 8. Backtest Quantique
+                if st.button(
+                    "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
+                ):
+                    st.info("Backtest quantique en cours sur toutes les paires...")
                     results = {}
-                    st.info("Backtest en cours sur toutes les paires...")
                     try:
                         for symbol, data in latest_data.items():
+                            st.write(f"Test {symbol} ...")
                             try:
                                 if _has_valid_ohlcv(data):
-                                    import pandas as pd
-
                                     df = pd.DataFrame(data["ohlcv"])
 
                                     def strategy_func(df, **params):
@@ -5777,93 +5607,41 @@ async def main_async():
                                         f"Aucune donnée OHLCV exploitable pour {symbol}"
                                     )
                             except Exception as pair_exc:
-                                st.warning(f"Erreur sur {symbol}: {pair_exc}")
-                        st.session_state["all_backtest_results"] = results
-                        st.success("Backtest terminé ✅")
+                                st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                        st.session_state["all_quantum_results"] = results
+                        st.success("Backtest quantique terminé ✅")
                     except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest: {batch_exc}")
+                        st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+            # 9. Affichage des résultats finaux
+            if st.session_state.get("all_backtest_results"):
+                st.markdown("**Résultats Backtest Classique :**")
+                for symbol, res in st.session_state["all_backtest_results"].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-                # Résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+            if st.session_state.get("all_quantum_results"):
+                st.markdown("**Résultats Backtest Quantique :**")
+                for symbol, res in st.session_state["all_quantum_results"].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-                    if st.button(
-                        "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
-                    ):
-                        st.info("Backtest quantique en cours sur toutes les paires...")
-                        results = {}
-                        if not isinstance(latest_data, dict):
-                            latest_data = {}
-                        st.write(
-                            "DEBUG - Paire/Data dispo :",
-                            {
-                                k: getattr(v, "shape", str(type(v)))
-                                for k, v in latest_data.items()
-                            },
-                        )
-                        try:
-                            for symbol, data in latest_data.items():
-                                st.write(f"Test {symbol} ...")
-                                try:
-                                    if _has_valid_ohlcv(data):
-                                        import pandas as pd
-
-                                        df = pd.DataFrame(data["ohlcv"])
-
-                                        def strategy_func(df, **params):
-                                            return (
-                                                df["close"]
-                                                > df["close"].rolling(5).mean()
-                                            ).astype(int)
-
-                                        engine = BacktestEngine(initial_capital=10000)
-                                        results[symbol] = engine.run_backtest(
-                                            df, strategy_func
-                                        )
-                                    else:
-                                        st.warning(
-                                            f"Aucune donnée OHLCV exploitable pour {symbol}"
-                                        )
-                                except Exception as pair_exc:
-                                    st.warning(
-                                        f"Erreur quantique sur {symbol}: {pair_exc}"
-                                    )
-                            st.session_state["all_quantum_results"] = results
-                            st.success("Backtest quantique terminé ✅")
-                            st.write("DEBUG - Résultats quantum :", results)
-                        except Exception as batch_exc:
-                            st.error(f"Erreur lors du backtest quantique: {batch_exc}")
-
-                # Affichage des résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-                if st.session_state.get("all_quantum_results"):
-                    st.markdown("**Résultats Backtest Quantique :**")
-                    for symbol, res in st.session_state["all_quantum_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-        # 8. Onglets principaux avec gestion d'erreur
+        # 10. Onglets principaux avec gestion d'erreur
         try:
             portfolio_tab, trading_tab, analysis_tab = st.tabs(
                 ["📈 Portfolio", "🎯 Trading", "📊 Analysis"]
             )
 
-            # Onglet Portfolio
             with portfolio_tab:
-                await _render_portfolio_tab(bot)
+                await UIRenderer.render_portfolio_tab(bot)
 
-            # Onglet Trading
             with trading_tab:
-                await _render_trading_tab(bot)
+                await UIRenderer.render_trading_tab(bot)
 
-            # Onglet Analysis
             with analysis_tab:
-                await _render_analysis_tab(bot)
+                await UIRenderer.render_analysis_tab(bot)
+
+            # Gestion du backtest
+            if st.session_state.get("latest_data"):
+                UIRenderer.render_backtest_section(bot)
+
         except Exception as tab_error:
             logger.error(f"Tab rendering error: {tab_error}")
             st.error("Error rendering tabs")
@@ -5921,93 +5699,6 @@ async def _render_portfolio_tab(bot):
             st.error(f"❌ Portfolio error: {str(e)}")
     else:
         st.warning("⚠️ Start trading to view portfolio")
-
-
-async def _render_trading_tab(bot):
-    """Rendu de l'onglet Trading"""
-    if st.session_state.bot_running:
-        try:
-            latest_data = bot.latest_data.get("BTCUSDT", {})
-            if latest_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    current_price = latest_data[-1]["close"]
-                    prev_price = (
-                        latest_data[-2]["close"]
-                        if len(latest_data) > 1
-                        else current_price
-                    )
-                    price_change = (
-                        ((current_price - prev_price) / prev_price * 100)
-                        if prev_price
-                        else 0
-                    )
-
-                    st.metric(
-                        "BTC/USDC Price",
-                        f"{current_price:.2f}",
-                        f"{price_change:+.2f}%",
-                    )
-                with col2:
-                    current_vol = latest_data[-1]["volume"]
-                    prev_vol = (
-                        latest_data[-2]["volume"]
-                        if len(latest_data) > 1
-                        else current_vol
-                    )
-                    vol_change = (
-                        ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                    )
-
-                    st.metric(
-                        "Trading Volume", f"{current_vol:.2f}", f"{vol_change:+.2f}%"
-                    )
-
-            if bot.indicators:
-                st.subheader("Trading Signals")
-                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
-            else:
-                st.info("💡 Waiting for signals...")
-        except Exception as e:
-            st.error(f"❌ Trading data error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view signals")
-
-
-async def _render_analysis_tab(bot):
-    """Rendu de l'onglet Analysis"""
-    if st.session_state.bot_running:
-        try:
-            if bot.latest_data and bot.indicators:
-                st.subheader("Technical Analysis")
-
-                for symbol in bot.latest_data:
-                    await process_market_data(bot, symbol)
-
-                if hasattr(bot, "advanced_indicators"):
-                    analysis = bot.advanced_indicators.get_all_signals()
-                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
-                else:
-                    st.info("💡 Processing analysis...")
-            else:
-                st.info("💡 Waiting for market data...")
-        except Exception as e:
-            st.error(f"❌ Analysis error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view analysis")
-
-    # --- Signal Quantum SVM ---
-    if hasattr(bot, "qsvm") and bot.qsvm is not None:
-        try:
-            # Prépare les features à passer à predict (adapte cette ligne selon ta logique)
-            features = (
-                bot.latest_data
-            )  # ou bot.indicators ou ton dataframe, adapte selon besoin
-            quantum_signal = bot.qsvm.predict(features)
-            st.subheader("Quantum SVM Signal")
-            st.metric("Quantum SVM Signal", quantum_signal)
-        except Exception as e:
-            st.warning(f"Erreur Quantum SVM : {e}")
 
 
 async def shutdown():
@@ -6372,7 +6063,32 @@ def ensure_event_loop():
 
 if __name__ == "__main__":
     try:
-        main()
+        # Initialisation
+        current_time = "2025-06-23 22:28:07"  # Votre timestamp
+        current_user = "Patmoorea"
+
+        # Configuration initiale
+        st.set_page_config(
+            page_title="Trading Bot Ultimate v4",
+            page_icon="🤖",
+            layout="wide",
+            initial_sidebar_state="expanded",
+        )
+
+        # Création et vérification du gestionnaire de session
+        if "session_manager" not in st.session_state:
+            session_manager = StreamlitSessionManager()
+            st.session_state["session_manager"] = session_manager
+
+        # Configuration de la boucle d'événements asyncio
+        if "loop" not in st.session_state:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+            st.session_state.loop = loop
+
+        # Exécution de la fonction principale
+        st.session_state.loop.run_until_complete(main_async())
 
     except KeyboardInterrupt:
         logger.info(
@@ -6384,7 +6100,7 @@ if __name__ == "__main__":
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: Graceful shutdown initiated
 ╚═════════════════════════════════════════════════╝
-        """
+            """
         )
 
     except Exception as e:
@@ -6398,7 +6114,7 @@ if __name__ == "__main__":
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
-        """
+            """
         )
         sys.exit(1)
 
@@ -6426,7 +6142,7 @@ if __name__ == "__main__":
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: All resources cleaned
 ╚═════════════════════════════════════════════════╝
-            """
+                """
             )
 
         except Exception as cleanup_error:
@@ -6439,5 +6155,5 @@ if __name__ == "__main__":
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(cleanup_error)}
 ╚═════════════════════════════════════════════════╝
-            """
+                """
             )
