@@ -5467,16 +5467,30 @@ async def main_async():
             if key not in st.session_state:
                 st.session_state[key] = value
 
+        # IMPORTANT: Définir ces variables ici, au début
+        trading_task = st.session_state.get("trading_task")
+        task_is_running = (trading_task is not None and 
+                         not trading_task.done() if trading_task else False)
+        ws_status = st.session_state.get('ws_connection_status', 'disconnected')
+        portfolio_status = '✅ Available' if st.session_state.get('portfolio') else '⚠️ Not Available'
+        
         # Initialisation du bot
         bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
 
-        # Sidebar avec données de debug
+        # Variables globales importantes
+        trading_task = st.session_state.get("trading_task")
+        task_is_running = (trading_task is not None and 
+                        not trading_task.done() if trading_task else False)
+        ws_status = st.session_state.get('ws_connection_status', 'disconnected')
+        portfolio_status = '✅ Available' if st.session_state.get('portfolio') else '⚠️ Not Available'
+
+        # Sidebar - Contrôles et Debug Data
         with st.sidebar:
             st.header("🛠️ Bot Controls")
-            
+    
             # Risk Level Selector
             risk_level = st.select_slider(
                 "Risk Level",
@@ -5484,7 +5498,7 @@ async def main_async():
                 value="Low",
                 key=f"risk_level_slider_{st.session_state.session_id}"
             )
-            
+    
             # Debug Data Display
             st.markdown("#### Debug Data")
             latest_data = st.session_state.get('latest_data', {})
@@ -5495,12 +5509,50 @@ async def main_async():
             )
             st.divider()
 
+            # Boutons de contrôle dans la sidebar
+            if task_is_running:
+                if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
+                    st.session_state.bot_running = False
+                    if trading_task:
+                        trading_task.cancel()
+                        st.session_state.trading_task = None
+                    st.warning("Trading stoppé.")
+            else:
+                if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
+                    try:
+                        if st.session_state.get('bot_running', False):
+                            st.info("Bot is already running")
+                            return
+
+                        bot = get_bot()
+                        if not bot:
+                            st.error("Failed to initialize bot")
+                            return
+
+                        async def init_and_start_trading():
+                            try:
+                                st.session_state.bot_running = True
+                                st.session_state.ws_connection_status = 'connecting'
+                                if not await bot.start():
+                                    raise Exception("Failed to initialize bot")
+                                await bot.run_adaptive_trading(period="7d")
+                            except Exception as e:
+                                st.session_state.bot_running = False
+                                st.session_state.ws_connection_status = 'disconnected'
+                                raise e
+
+                        loop = st.session_state.loop or asyncio.get_event_loop()
+                        st.session_state.trading_task = loop.create_task(init_and_start_trading())
+                        st.success("🚀 Trading started!")
+
+                    except Exception as e:
+                        st.error(f"Error starting bot: {e}")
+                        st.session_state.bot_running = False
+
         # Interface principale - État du bot
         col1, col2 = st.columns([2, 1])
         with col1:
-            ws_status = st.session_state.get('ws_connection_status', 'disconnected')
-            portfolio_status = '✅ Available' if st.session_state.get('portfolio') else '⚠️ Not Available'
-            
+            # Status Info
             status_info = f"""
             ### Bot Status
             - 🚦 Trading: {'🟢 Active' if st.session_state.get('bot_running') else '🔴 Stopped'}
@@ -5511,12 +5563,8 @@ async def main_async():
             """
             st.info(status_info)
 
-            # Debug Task Status
+            # Debug Info
             if st.checkbox("Show Debug Info", key="show_debug"):
-                trading_task = st.session_state.get("trading_task")
-                task_is_running = (trading_task is not None and 
-                                 not trading_task.done() if trading_task else False)
-                
                 debug_info = f"""
                 🔍 Debug Information:
                 - Task Status: {'Running' if task_is_running else 'Stopped/Not Found'}
