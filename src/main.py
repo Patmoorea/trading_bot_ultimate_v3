@@ -2372,7 +2372,7 @@ class TradingBotM4:
         return None
     
     async def start(self):
-        """Démarre le bot"""
+        """Démarre le bot avec initialisation complète"""
         try:
             if self._ws_initializing:
                 self.logger.warning("Initialisation déjà en cours")
@@ -2382,7 +2382,7 @@ class TradingBotM4:
     
             # Timeout de 10 secondes pour l'initialisation
             async with asyncio.timeout(10):
-                # Configuration initiale des objets WebSocket
+                # Configuration initiale des objets WebSocket et connexion immédiate
                 if not hasattr(self, 'ws_connection'):
                     self.ws_connection = {
                         'enabled': False,
@@ -2393,7 +2393,7 @@ class TradingBotM4:
                         'last_message': None
                     }
 
-                # Initialisation WebSocket avec retry
+                # Initialisation WebSocket avec retry immédiat
                 retry_count = 0
                 while retry_count < 3:
                     try:
@@ -2407,6 +2407,10 @@ class TradingBotM4:
                                 'last_message': time.time()
                             })
                             self.logger.info("✅ WebSocket streams démarrés")
+                        
+                            # Important: Mettre à jour le statut dans session_state
+                            st.session_state.ws_connection_status = 'connected'
+                            st.session_state.ws_initialized = True
                             break
                 
                     except Exception as e:
@@ -5511,28 +5515,48 @@ async def main_async():
                     st.warning("Trading stoppé.")
             else:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
-                    # Tout ce qui suit va à l'intérieur du if st.button()
-                    if not st.session_state.get('bot_running'):  # Vérifie si le bot n'est pas déjà en cours
-                        try:
-                            # Initialisation et démarrage
-                            bot = get_bot()
-                            if not bot:
-                                st.error("Failed to initialize bot")
-                                return
+                    try:
+                        # Récupération ou création du bot
+                        bot = get_bot()
+                        if not bot:
+                            st.error("Failed to initialize bot")
+                            return
 
-                            st.session_state.bot_running = True
+                        # Vérification si une tâche de trading existe déjà
+                        trading_task = st.session_state.get("trading_task")
+                        task_is_running = trading_task is not None and not trading_task.done()
+
+                        if not task_is_running:
+                            # Démarrage immédiat du trading
                             loop = st.session_state.loop or asyncio.get_event_loop()
-                            st.session_state.trading_task = loop.create_task(
-                            bot.run_adaptive_trading(period="7d")
-                            )
-                            st.success("Trading adaptatif lancé")
+            
+                            # Initialisation et démarrage en une seule étape
+                            async def start_trading():
+                                try:
+                                    # Initialisation du bot si nécessaire
+                                    if not bot.initialized:
+                                        if not await bot.start():
+                                            raise Exception("Failed to initialize bot")
+                    
+                                    # Démarrage immédiat du trading adaptatif
+                                    st.session_state.bot_running = True
+                                    await bot.run_adaptive_trading(period="7d")
+                    
+                                except Exception as e:
+                                    st.session_state.bot_running = False
+                                    raise e
 
-                        except Exception as e:
-                            st.error(f"Erreur lors du démarrage : {e}")
-                            st.session_state.bot_running = False
-                            st.session_state.trading_task = None
-                    else:
-                        st.warning("Le bot est déjà en cours d'exécution")
+                            # Création et lancement de la tâche
+                            st.session_state.trading_task = loop.create_task(start_trading())
+                            st.success("🚀 Trading started successfully")
+                        else:
+                            st.info("Bot is already running")
+
+                    except Exception as e:
+                        st.error(f"Error starting bot: {e}")
+                        st.session_state.bot_running = False
+                        if 'trading_task' in st.session_state:
+                            del st.session_state.trading_task
 
             # ---- DEBUG TASK STATUS ----
             st.info(
