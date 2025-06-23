@@ -2448,40 +2448,90 @@ class TradingBotM4:
     async def _cleanup(self):
         """Nettoie les ressources avant de fermer"""
         try:
-            # Fermeture propre du WebSocket
+            self.logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP ATTEMPT STARTED                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """
+            )
+
+            # 1. Nettoyage des protections et statuts
+            if hasattr(self, "_ws_initializing"):
+                self._ws_initializing = False
+                self.logger.info("✅ WebSocket initialization flag cleared")
+
+            # 2. Fermeture propre du WebSocket
             await close_websocket(self)
 
-            # Nettoyage du buffer
-            if hasattr(self, "buffer"):
-                try:
-                    self.buffer = None  # Au lieu de clear()
-                except Exception as buffer_error:
-                    logger.error(f"❌ Buffer cleanup error: {buffer_error}")
+            # 3. Nettoyage des buffers et données
+            cleanup_attributes = [
+                "buffer",
+                "latest_data",
+                "indicators",
+                "ws_connection",
+                "ws_tasks",
+                "binance_ws",
+                "socket_manager",
+            ]
 
-            # Nettoyage des données
-            if hasattr(self, "latest_data"):
-                self.latest_data = {}
+            for attr in cleanup_attributes:
+                if hasattr(self, attr):
+                    try:
+                        if attr == "buffer":
+                            self.buffer = None
+                        elif attr == "latest_data":
+                            self.latest_data = {}
+                        elif attr == "indicators":
+                            self.indicators = {}
+                        elif attr == "ws_connection":
+                            self.ws_connection = {
+                                "enabled": False,
+                                "status": "disconnected",
+                            }
+                        elif attr == "ws_tasks":
+                            self.ws_tasks = []
+                        elif attr == "binance_ws":
+                            self.binance_ws = None
+                        elif attr == "socket_manager":
+                            self.socket_manager = None
 
-            if hasattr(self, "indicators"):
-                self.indicators = {}
+                        self.logger.info(f"✅ Cleaned {attr}")
+                    except Exception as attr_error:
+                        self.logger.error(f"❌ Error cleaning {attr}: {attr_error}")
 
-            # Désactivation du mode trading
-            if hasattr(st.session_state, "self_running"):
+            # 4. Désactivation du mode trading dans la session
+            if hasattr(st.session_state, "bot_running"):
                 st.session_state.bot_running = False
+                self.logger.info("✅ Bot status set to stopped")
 
-            logger.info(
-                """
+            self.logger.info(
+                f"""
 ╔═════════════════════════════════════════════════╗
 ║              CLEANUP COMPLETED                   ║
 ╠═════════════════════════════════════════════════╣
 ║ All resources cleaned successfully              ║
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
-            """
+                """
             )
 
             return True
 
         except Exception as e:
+            self.logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+                """
+            )
             return False
 
     async def check_ws_connection(self):  # Changé de statique à méthode d'instance
@@ -2493,7 +2543,7 @@ class TradingBotM4:
                     < self.ws_connection["max_reconnects"]
                 ):
                     logger.info("Attempting WebSocket reconnection...")
-                    if await initialize_websocket(self):
+                    if await self.initialize_websocket():
                         self.ws_connection["reconnect_count"] = 0
                         return True
                     self.ws_connection["reconnect_count"] += 1
