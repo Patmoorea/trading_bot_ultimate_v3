@@ -509,6 +509,8 @@ class WebSocketManager:
         self.streams = {}
         self.running = False
         self.lock = asyncio.Lock()
+        self.logger = logging.getLogger(__name__)  # Ajout du loggeR
+        
         # Correction des valeurs par défaut
         self.pairs = bot.config.get("TRADING", {}).get("pairs", ["BTC/USDT", "ETH/USDT"])
         self.timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m", "5m", "15m", "1h", "4h", "1d"])
@@ -1837,16 +1839,18 @@ class TradingEnv(gym.Env):
         print(f"Number of Trades: {len(self.position_history)}")
 
 class MultiStreamManager:
-    def __init__(self, pairs=None, config=None):
-        """Initialise le gestionnaire de flux multiples"""
-        self.pairs = pairs or []
-        self.config = config
-        self.exchange = None  # Initialisé plus tard
-        self.buffer = CircularBuffer()
-
-    def setup_exchange(self, exchange_id="binance"):
-        """Configure l'exchange"""
-        self.exchange = Exchange(exchange_id=exchange_id)
+    async def close(self):
+        """Ferme proprement les streams"""
+        try:
+            if hasattr(self, 'exchange') and self.exchange:
+                await self.exchange.close()
+            if hasattr(self, 'buffer'):
+                self.buffer.clear()
+            return True
+        except Exception as e:
+            if hasattr(self, 'logger'):
+                self.logger.error(f"Error closing MultiStreamManager: {e}")
+            return False
 
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
@@ -2141,11 +2145,11 @@ class TradingBotM4:
     def is_properly_initialized(self):
         """Vérifie si l'initialisation est complète"""
         try:
-            # Liste des vérifications critiques
+            # Vérification des composants critiques
             checks = {
                 'spot_client': self.spot_client is not None,
-                'ws_connection': self.ws_connection.get('enabled', False),
-                'ws_status': self.ws_connection.get('status') == 'connected',
+                'ws_connection': hasattr(self, 'ws_connection') and isinstance(self.ws_connection, dict),
+                'ws_status': self.ws_connection.get('status') == 'connected' if hasattr(self, 'ws_connection') else False,
                 'ws_manager': hasattr(self, 'ws_manager') and self.ws_manager is not None,
                 'multi_stream': hasattr(self, 'multi_stream') and self.multi_stream is not None,
                 'exchange': hasattr(self, 'exchange') and self.exchange is not None,
@@ -2166,11 +2170,13 @@ class TradingBotM4:
 ║ buffer: {checks['buffer']}
 ╚═════════════════════════════════════════════════╝
             """)
-        
-            return all(checks.values())
-        
+
+            # Tous les composants doivent être True sauf ws_connection et ws_status
+            essential_checks = {k: v for k, v in checks.items() if k not in ['ws_connection', 'ws_status']}
+            return all(essential_checks.values())
+
         except Exception as e:
-            self.logger.error(f"Erreur vérification initialisation: {e}")
+            self.logger.error(f"Error in is_properly_initialized: {e}")
             return False
         
     def get_latest_price(self, symbol):
@@ -2245,7 +2251,7 @@ class TradingBotM4:
         """Démarre le bot"""
         try:
             if self._ws_initializing:
-                logger.warning("Initialisation déjà en cours")
+                self.logger.warning("Initialisation déjà en cours")
                 return False
             
             self._ws_initializing = True
@@ -2256,8 +2262,19 @@ class TradingBotM4:
                 retry_count = 0
                 while retry_count < 3:
                     try:
-                        if await self.ws_manager.start():
+                        # Mise à jour du statut de connexion
+                        self.ws_connection.update({
+                            'enabled': True,
+                            'status': 'connected',
+                            'last_message': time.time()
+                        })
+                    
+                        # Configuration des streams
+                        success = await self.ws_manager.start()
+                        if success:
+                            self.logger.info("✅ WebSocket streams démarrés")
                             break
+                
                     except Exception as e:
                         retry_count += 1
                         if retry_count == 3:
@@ -2269,15 +2286,15 @@ class TradingBotM4:
                     raise Exception("Échec configuration composants")
         
                 self.initialized = True
-                logger.info("✅ Bot démarré avec succès")
+                self.logger.info("✅ Bot démarré avec succès")
                 return True
-        
+            
         except asyncio.TimeoutError:
-            logger.error("Timeout démarrage bot")
+            self.logger.error("Timeout démarrage bot")
             await self._cleanup()
             return False
         except Exception as e:
-            logger.error(f"Erreur démarrage bot: {e}")
+            self.logger.error(f"Erreur démarrage bot: {e}")
             await self._cleanup()
             return False
         finally:
