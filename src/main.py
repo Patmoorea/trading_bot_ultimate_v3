@@ -2508,10 +2508,9 @@ class TradingBotM4:
     async def _cleanup(self):
         """Nettoie les ressources avant de fermer"""
         try:
-            # Variables de contexte
             current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             current_user = os.getenv("USER", "Patmoorea")
-            current_session = getattr(self, "session_id", "Unknown")
+            current_session = self.session_id  # Utiliser directement self.session_id
 
             # Log initial
             self.logger.info(
@@ -2527,22 +2526,23 @@ class TradingBotM4:
                 """
             )
 
-            # Vérification des protections de la SESSION COURANTE
+            # VÉRIFICATION UNIQUE des protections avec la session courante
             if not hasattr(self, "session_id"):
                 self.logger.error("No session ID found")
                 return False
 
-            current_protections = st.session_state.protections.get(
+            # Accès direct aux protections de la session courante
+            active_protections = st.session_state.protections.get(
                 self.session_id, set()
             )
-            if current_protections:
+            if active_protections:
                 self.logger.info(
                     f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP PREVENTED                      ║
 ╠═════════════════════════════════════════════════╣
 ║ Time: {current_time} UTC
-║ Active Protections: {', '.join(current_protections)}
+║ Active Protections: {', '.join(active_protections)}
 ║ Session ID: {self.session_id}
 ╚═════════════════════════════════════════════════╝
                     """
