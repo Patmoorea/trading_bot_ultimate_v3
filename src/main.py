@@ -1909,6 +1909,14 @@ class TradingBotM4:
         self._reconnecting = False
         self.logger = logging.getLogger(__name__)
 
+        # Initialisation des protections spécifiques à cette session
+        self.session_id = f"patricejourdan_{int(time.time())}"
+        if "protections" not in st.session_state:
+            st.session_state.protections = {}
+        st.session_state.protections[self.session_id] = set()
+        self.add_protection("prevent_cleanup")
+        self.add_protection("keep_alive")
+
         # Configuration principale
         self.config = {
             "NEWS": {
@@ -2059,6 +2067,26 @@ class TradingBotM4:
         self.news_analyzer = NewsAnalyzer()
         self.regime_detector = RegimeDetector()
         self.client_session = None
+
+    def add_protection(self, protection):
+        """Ajoute une protection pour la session courante"""
+        if hasattr(self, "session_id"):
+            if self.session_id not in st.session_state.protections:
+                st.session_state.protections[self.session_id] = set()
+            st.session_state.protections[self.session_id].add(protection)
+
+    def get_active_protections(self):
+        """Retourne les protections actives pour la session courante"""
+        if (
+            hasattr(self, "session_id")
+            and self.session_id in st.session_state.protections
+        ):
+            return st.session_state.protections[self.session_id]
+        return set()  # Retourne un set vide si pas de protections
+
+    def is_protection_active(self, protection):
+        """Vérifie si une protection est active pour la session courante"""
+        return protection in self.get_active_protections()
 
     async def start(self):
         """Démarre le bot"""
@@ -2457,8 +2485,24 @@ class TradingBotM4:
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Bot Status: {'Running' if hasattr(st.session_state, 'bot_running') and st.session_state.bot_running else 'Stopped'}
 ╚═════════════════════════════════════════════════╝
-        """
+            """
             )
+
+            # Vérification des protections actives AVANT le nettoyage
+            active_protections = self.get_active_protections()
+            if active_protections:
+                self.logger.info(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP PREVENTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Active Protections: {', '.join(active_protections)}
+║ Session ID: {self.session_id}
+╚═════════════════════════════════════════════════╝
+                    """
+                )
+                return False
 
             # 1. Nettoyage des protections spécifiques à cette session
             if (
