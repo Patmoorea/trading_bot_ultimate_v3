@@ -1,6 +1,14 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
 
+# Configuration de la page - DOIT ÊTRE LA PREMIÈRE COMMANDE STREAMLIT
+st.set_page_config(
+    page_title="Trading Bot Ultimate v4",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
@@ -26,13 +34,6 @@ for flag, default in [
 ]:
     if flag not in st.session_state:
         st.session_state[flag] = default
-
-st.set_page_config(
-    page_title="Trading Bot Ultimate v4",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
 
 # 2. Imports système
 import os
@@ -5342,14 +5343,6 @@ def initialize_app():
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    # Configuration de la session Streamlit
-    st.set_page_config(
-        page_title="Trading Bot Ultimate v4",
-        page_icon="🤖",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
-
     # Initialisation des états de session de base
     if "initialization_time" not in st.session_state:
         st.session_state.initialization_time = current_time
@@ -6066,14 +6059,6 @@ if __name__ == "__main__":
         # Initialisation
         current_time = "2025-06-23 22:28:07"  # Votre timestamp
         current_user = "Patmoorea"
-
-        # Configuration initiale
-        st.set_page_config(
-            page_title="Trading Bot Ultimate v4",
-            page_icon="🤖",
-            layout="wide",
-            initial_sidebar_state="expanded",
-        )
 
         # Création et vérification du gestionnaire de session
         if "session_manager" not in st.session_state:
