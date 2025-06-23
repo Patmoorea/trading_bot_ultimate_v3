@@ -279,26 +279,25 @@ class StreamlitSessionManager:
         """
         )
 
+    def _setup_and_verify_event_loop():
+        """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+        current_time = datetime.now(timezone.utc)
+        current_user = os.getenv("USER", "Patmoorea")
 
-def _setup_and_verify_event_loop():
-    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv("USER", "Patmoorea")
+        try:
+            # Vérification de l'existence d'une boucle
+            if not st.session_state.get("loop"):
+                # Création et configuration de la nouvelle boucle
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                nest_asyncio.apply()
 
-    try:
-        # Vérification de l'existence d'une boucle
-        if not st.session_state.get("loop"):
-            # Création et configuration de la nouvelle boucle
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
+                # Sauvegarde dans la session
+                st.session_state.loop = loop
 
-            # Sauvegarde dans la session
-            st.session_state.loop = loop
-
-            # Log de succès d'initialisation
-            logger.info(
-                f"""
+                # Log de succès d'initialisation
+                logger.info(
+                    f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
@@ -307,16 +306,16 @@ def _setup_and_verify_event_loop():
 ║ Status: Successfully configured
 ║ Loop ID: {id(loop)}
 ╚═════════════════════════════════════════════════╝
-            """
-            )
+                """
+                )
 
-            return loop
+                return loop
 
-        # Vérification de la boucle existante
-        existing_loop = st.session_state.loop
-        if existing_loop.is_closed():
-            logger.warning(
-                f"""
+            # Vérification de la boucle existante
+            existing_loop = st.session_state.loop
+            if existing_loop.is_closed():
+                logger.warning(
+                    f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP CLOSED                   ║
 ╠═════════════════════════════════════════════════╣
@@ -324,19 +323,19 @@ def _setup_and_verify_event_loop():
 ║ Status: Creating new loop
 ║ Previous Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
-            """
-            )
+                """
+                )
 
-            # Création d'une nouvelle boucle
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            nest_asyncio.apply()
-            st.session_state.loop = new_loop
-            return new_loop
+                # Création d'une nouvelle boucle
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                nest_asyncio.apply()
+                st.session_state.loop = new_loop
+                return new_loop
 
-        # Retour de la boucle existante
-        logger.debug(
-            f"""
+            # Retour de la boucle existante
+            logger.debug(
+                f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP VERIFIED                 ║
 ╠═════════════════════════════════════════════════╣
@@ -344,15 +343,15 @@ def _setup_and_verify_event_loop():
 ║ Status: Using existing loop
 ║ Loop ID: {id(existing_loop)}
 ╚═════════════════════════════════════════════════╝
-        """
-        )
+            """
+            )
 
-        return existing_loop
+            return existing_loop
 
-    except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(
-            f"""
+        except Exception as e:
+            # Log d'erreur détaillé
+            logger.error(
+                f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
 ╠═════════════════════════════════════════════════╣
@@ -362,17 +361,19 @@ def _setup_and_verify_event_loop():
 ║ User: {current_user}
 ║ Details: {traceback.format_exc()}
 ╚═════════════════════════════════════════════════╝
-        """
-        )
+            """
+            )
 
-        # Incrément du compteur d'erreurs
-        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
+            # Incrément du compteur d'erreurs
+            st.session_state.error_count = st.session_state.get("error_count", 0) + 1
 
-        return None
+            return None
 
-    finally:
-        # Mise à jour du timestamp
-        st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+        finally:
+            # Mise à jour du timestamp
+            st.session_state.last_update_time = current_time.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
 
     def protect_session(self):
         """Protection renforcée de la session"""
@@ -1188,164 +1189,6 @@ async def setup_websocket_streams(bot):
     except Exception as e:
         logger.error(f"❌ Stream setup error: {e}")
         return False
-
-
-async def initialize_websocket(bot):
-    """
-    Initialise la connexion WebSocket avec gestion améliorée des erreurs et des reconnexions.
-    """
-    try:
-        # Vérification du statut d'initialisation
-        if getattr(bot, "_ws_initializing", False):
-            logger.warning("⚠️ Initialisation WebSocket déjà en cours")
-            return False
-
-        bot._ws_initializing = True
-
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║         INITIALISATION WEBSOCKET                ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # 1. Vérification des credentials
-        api_key = os.getenv("BINANCE_API_KEY")
-        api_secret = os.getenv("BINANCE_API_SECRET")
-
-        if not api_key or not api_secret:
-            logger.error(
-                """
-╔═════════════════════════════════════════════════╗
-║         ERREUR CREDENTIALS                      ║
-╠═════════════════════════════════════════════════╣
-║ API Key ou Secret manquants                    ║
-╚═════════════════════════════════════════════════╝
-            """
-            )
-            return False
-
-        # 2. Nettoyage des connexions existantes si nécessaire
-        if hasattr(bot, "binance_ws") and bot.binance_ws:
-            try:
-                await bot.binance_ws.close_connection()
-                bot.binance_ws = None
-            except Exception as cleanup_error:
-                logger.warning(
-                    f"⚠️ Erreur nettoyage connexion existante: {cleanup_error}"
-                )
-
-        # 3. Création du client avec timeout et retry
-        try:
-            bot.binance_ws = await AsyncClient.create(
-                api_key=api_key, api_secret=api_secret, tld="com"
-            )
-            logger.info("✅ Client Binance initialisé")
-        except Exception as client_error:
-            logger.error(f"❌ Erreur création client: {client_error}")
-            return False
-
-        # 4. Configuration du socket manager avec paramètres optimisés
-        try:
-            bot.socket_manager = BinanceSocketManager(
-                bot.binance_ws,
-            )
-            logger.info("✅ Socket Manager configuré")
-        except Exception as manager_error:
-            logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
-            return False
-
-        # 5. Configuration des streams avec gestion d'erreur
-        try:
-            # Définition des streams
-            streams = [
-                "btcusdt@trade",  # Stream de trades
-                "btcusdt@depth",  # Stream d'orderbook
-                "btcusdt@kline_1m",  # Stream de klines 1m
-            ]
-
-            # Réinitialisation des tâches
-            bot.ws_tasks = []
-
-            # Création du socket multiplexé avec retry
-            multiplex_socket = bot.socket_manager.multiplex_socket(streams)
-
-            # Création de la tâche principale avec gestion d'erreur
-            main_task = asyncio.create_task(
-                handle_socket_message(bot, multiplex_socket, "market_data")
-            )
-            main_task.set_name("main_market_data_stream")
-            bot.ws_tasks.append(main_task)
-
-            # Ajout d'un heartbeat pour maintenir la connexion
-            heartbeat_task = asyncio.create_task(websocket_heartbeat(bot))
-            heartbeat_task.set_name("websocket_heartbeat")
-            bot.ws_tasks.append(heartbeat_task)
-
-            logger.info("✅ Streams configurés")
-
-        except Exception as stream_error:
-            logger.error(f"❌ Erreur configuration streams: {stream_error}")
-            return False
-
-        # 6. Mise à jour du statut de connexion
-        bot.ws_connection = {
-            "enabled": True,
-            "status": "connected",
-            "tasks": bot.ws_tasks,
-            "last_heartbeat": datetime.now(timezone.utc),
-            "reconnect_count": 0,
-            "max_reconnects": 3,
-            "start_time": datetime.now(timezone.utc),
-        }
-
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║         WEBSOCKET INITIALISÉ                    ║
-╠═════════════════════════════════════════════════╣
-║ Status: Connected
-║ Streams: {len(streams)}
-║ Tasks: {len(bot.ws_tasks)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        return True
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║         ERREUR INITIALISATION                   ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Nettoyage en cas d'erreur
-        try:
-            if hasattr(bot, "binance_ws") and bot.binance_ws:
-                await bot.binance_ws.close_connection()
-            if hasattr(bot, "socket_manager"):
-                bot.socket_manager = None
-        except:
-            pass
-
-        return False
-
-    finally:
-        bot._ws_initializing = False
-        # Vérification finale de la connexion
-        if not bot.ws_connection.get("enabled", False):
-            logger.warning("⚠️ WebSocket non initialisé correctement")
 
 
 async def websocket_heartbeat(bot):
@@ -2269,6 +2112,163 @@ class TradingBotM4:
             await self._cleanup()
             return False
 
+    async def initialize_websocket(self):
+        """
+        Initialise la connexion WebSocket avec gestion améliorée des erreurs et des reconnexions.
+        """
+        try:
+            # Vérification du statut d'initialisation
+            if getattr(self, "_ws_initializing", False):
+                self.logger.warning("⚠️ Initialisation WebSocket déjà en cours")
+                return False
+
+            self._ws_initializing = True
+
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║         INITIALISATION WEBSOCKET                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # 1. Vérification des credentials
+            api_key = os.getenv("BINANCE_API_KEY")
+            api_secret = os.getenv("BINANCE_API_SECRET")
+
+            if not api_key or not api_secret:
+                logger.error(
+                    """
+╔═════════════════════════════════════════════════╗
+║         ERREUR CREDENTIALS                      ║
+╠═════════════════════════════════════════════════╣
+║ API Key ou Secret manquants                    ║
+╚═════════════════════════════════════════════════╝
+                """
+                )
+                return False
+
+            # 2. Nettoyage des connexions existantes si nécessaire
+            if hasattr(self, "binance_ws") and self.binance_ws:
+                try:
+                    await self.binance_ws.close_connection()
+                    self.binance_ws = None
+                except Exception as cleanup_error:
+                    logger.warning(
+                        f"⚠️ Erreur nettoyage connexion existante: {cleanup_error}"
+                    )
+
+            # 3. Création du client avec timeout et retry
+            try:
+                self.binance_ws = await AsyncClient.create(
+                    api_key=api_key, api_secret=api_secret, tld="com"
+                )
+                logger.info("✅ Client Binance initialisé")
+            except Exception as client_error:
+                logger.error(f"❌ Erreur création client: {client_error}")
+                return False
+
+            # 4. Configuration du socket manager avec paramètres optimisés
+            try:
+                self.socket_manager = BinanceSocketManager(
+                    self.binance_ws,
+                )
+                logger.info("✅ Socket Manager configuré")
+            except Exception as manager_error:
+                logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
+                return False
+
+            # 5. Configuration des streams avec gestion d'erreur
+            try:
+                # Définition des streams
+                streams = [
+                    "btcusdt@trade",  # Stream de trades
+                    "btcusdt@depth",  # Stream d'orderbook
+                    "btcusdt@kline_1m",  # Stream de klines 1m
+                ]
+
+                # Réinitialisation des tâches
+                self.ws_tasks = []
+
+                # Création du socket multiplexé avec retry
+                multiplex_socket = self.socket_manager.multiplex_socket(streams)
+
+                # Création de la tâche principale avec gestion d'erreur
+                main_task = asyncio.create_task(
+                    handle_socket_message(self, multiplex_socket, "market_data")
+                )
+                main_task.set_name("main_market_data_stream")
+                self.ws_tasks.append(main_task)
+
+                # Ajout d'un heartbeat pour maintenir la connexion
+                heartbeat_task = asyncio.create_task(websocket_heartbeat(self))
+                heartbeat_task.set_name("websocket_heartbeat")
+                self.ws_tasks.append(heartbeat_task)
+
+                logger.info("✅ Streams configurés")
+
+            except Exception as stream_error:
+                logger.error(f"❌ Erreur configuration streams: {stream_error}")
+                return False
+
+            # 6. Mise à jour du statut de connexion
+            self.ws_connection = {
+                "enabled": True,
+                "status": "connected",
+                "tasks": self.ws_tasks,
+                "last_heartbeat": datetime.now(timezone.utc),
+                "reconnect_count": 0,
+                "max_reconnects": 3,
+                "start_time": datetime.now(timezone.utc),
+            }
+
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║         WEBSOCKET INITIALISÉ                    ║
+╠═════════════════════════════════════════════════╣
+║ Status: Connected
+║ Streams: {len(streams)}
+║ Tasks: {len(self.ws_tasks)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return True
+
+        except Exception as e:
+            logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║         ERREUR INITIALISATION                   ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # Nettoyage en cas d'erreur
+            try:
+                if hasattr(self, "binance_ws") and self.binance_ws:
+                    await self.binance_ws.close_connection()
+                if hasattr(self, "socket_manager"):
+                    self.socket_manager = None
+            except:
+                pass
+
+            return False
+
+        finally:
+            self._ws_initializing = False
+            # Vérification finale de la connexion
+            if not self.ws_connection.get("enabled", False):
+                logger.warning("⚠️ WebSocket non initialisé correctement")
+
     def _generate_recommendation(self, trend, momentum, volatility, volume):
         try:
             # Compteurs pour les signaux buy/sell (ancienne logique)
@@ -2464,7 +2464,7 @@ class TradingBotM4:
                 self.indicators = {}
 
             # Désactivation du mode trading
-            if hasattr(st.session_state, "bot_running"):
+            if hasattr(st.session_state, "self_running"):
                 st.session_state.bot_running = False
 
             logger.info(
