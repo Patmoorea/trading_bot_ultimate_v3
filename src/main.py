@@ -5498,9 +5498,14 @@ async def main_async():
         # Interface principale - État du bot
         col1, col2 = st.columns([2, 1])
         with col1:
+            # Récupération des états
+            trading_task = st.session_state.get("trading_task")
+            task_is_running = (trading_task is not None and 
+                            not trading_task.done() if trading_task else False)
             ws_status = st.session_state.get('ws_connection_status', 'disconnected')
             portfolio_status = '✅ Available' if st.session_state.get('portfolio') else '⚠️ Not Available'
-            
+    
+            # Affichage du statut
             status_info = f"""
             ### Bot Status
             - 🚦 Trading: {'🟢 Active' if st.session_state.get('bot_running') else '🔴 Stopped'}
@@ -5511,12 +5516,8 @@ async def main_async():
             """
             st.info(status_info)
 
-            # Debug Task Status
+            # Debug Info
             if st.checkbox("Show Debug Info", key="show_debug"):
-                trading_task = st.session_state.get("trading_task")
-                task_is_running = (trading_task is not None and 
-                                 not trading_task.done() if trading_task else False)
-                
                 debug_info = f"""
                 🔍 Debug Information:
                 - Task Status: {'Running' if task_is_running else 'Stopped/Not Found'}
@@ -5529,6 +5530,7 @@ async def main_async():
                 if trading_task and trading_task.done() and trading_task.exception():
                     st.error(f"Task Error: {trading_task.exception()}")
 
+            # Boutons de contrôle
             if task_is_running:
                 if st.button("🔴 Stop Trading", key="stop_button", use_container_width=True):
                     st.session_state.bot_running = False
