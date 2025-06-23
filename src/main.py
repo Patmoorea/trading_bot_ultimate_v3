@@ -157,13 +157,13 @@ class StreamlitSessionManager:
         self.user = os.getenv("USER", "Patmoorea")
         self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
         self.logger = logging.getLogger(__name__)
+        self.current_time = "2025-06-23 22:42:09"  # Mise à jour timestamp
 
         # Initialisation immédiate de la session
         if "session_initialized" not in st.session_state:
             if self._initialize_session_state():
                 self._log_initialization()
 
-    # Ajoutez cette méthode
     def _log_initialization(self):
         """Log l'initialisation de la session"""
         self.logger.info(
@@ -178,9 +178,54 @@ class StreamlitSessionManager:
 ╚═════════════════════════════════════════════════╝
             """
         )
-        st.session_state.last_update_time = (
-            "2025-06-23 22:38:31"  # Mise à jour avec votre timestamp
+        st.session_state.last_update_time = self.current_time
+
+    def _log_error(self, message, error=None):
+        """Log une erreur avec formatage"""
+        error_details = str(error) if error else "No details available"
+        self.logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION ERROR                          ║
+╠═════════════════════════════════════════════════╣
+║ Time: {self.current_time} UTC
+║ User: {self.user}
+║ Error: {message}
+║ Details: {error_details}
+╚═════════════════════════════════════════════════╝
+            """
         )
+
+    def _log_protection(self):
+        """Log la protection de session"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION PROTECTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {self.current_time} UTC
+║ User: {self.user}
+║ Session ID: {self.session_id}
+╚═════════════════════════════════════════════════╝
+            """
+        )
+
+    def protect_session(self):
+        """Protection renforcée de la session"""
+        try:
+            if not st.session_state.get("session_initialized"):
+                self._initialize_session_state()
+
+            st.session_state.last_action_time = datetime.now(timezone.utc).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            self._set_protection_flags(True)
+            self._log_protection()
+            return True
+
+        except Exception as e:
+            self._log_error("Session protection error", e)
+            return False
 
     def _initialize_session_state(self):
         """Initialisation centralisée des états"""
@@ -199,7 +244,7 @@ class StreamlitSessionManager:
 
             return True
         except Exception as e:
-            self.logger.error(f"❌ Erreur initialisation session: {e}")
+            self._log_error("Erreur initialisation session", e)
             return False
 
     def _cleanup_old_sessions(self):
@@ -209,6 +254,17 @@ class StreamlitSessionManager:
             for old_session in old_sessions:
                 if old_session != self.session_id:
                     self._cleanup_session(old_session)
+
+    def _cleanup_session(self, session_id):
+        """Nettoie une session spécifique"""
+        try:
+            if session_id in st.session_state.protections:
+                del st.session_state.protections[session_id]
+            if "sessions" in st.session_state:
+                st.session_state.sessions.discard(session_id)
+            self.logger.info(f"Session {session_id} cleaned successfully")
+        except Exception as e:
+            self._log_error(f"Error cleaning session {session_id}", e)
 
     def _initialize_base_states(self):
         """Initialisation des états de base"""
@@ -252,40 +308,6 @@ class StreamlitSessionManager:
             }
         )
 
-    def protect_session(self):
-        """Protection renforcée de la session"""
-        try:
-            if not st.session_state.get("session_initialized"):
-                self._initialize_session_state()
-
-            current_time = datetime.now(timezone.utc)
-            st.session_state.last_action_time = current_time.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-            self._set_protection_flags(True)
-            self._log_protection()
-            return True
-
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
-
-    def allow_cleanup(self):
-        """Autorisation sécurisée du nettoyage"""
-        try:
-            if st.session_state.get("bot_running", False):
-                self.logger.warning("Cannot allow cleanup while bot is running")
-                return False
-
-            self._set_protection_flags(False)
-            self._log_cleanup_authorization()
-            return True
-
-        except Exception as e:
-            self._log_error("Cleanup authorization error", e)
-            return False
-
     def _set_protection_flags(self, protected):
         """Configure les flags de protection"""
         st.session_state.update(
@@ -297,27 +319,22 @@ class StreamlitSessionManager:
             }
         )
 
-    # Les méthodes de logging restent identiques
-    # _log_initialization, _log_protection, _log_error, etc.
-
-    def get_session_info(self):
-        """Récupération des informations de session"""
+    def check_session_status(self):
+        """Vérifie l'état de la session"""
         try:
+            is_valid = (
+                "session_initialized" in st.session_state
+                and self.session_id in st.session_state.get("sessions", set())
+            )
             return {
-                "user": self.user,
+                "valid": is_valid,
                 "session_id": self.session_id,
-                "init_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "last_action": st.session_state.get("last_action_time"),
-                "session_initialized": st.session_state.get(
-                    "session_initialized", False
-                ),
-                "bot_running": st.session_state.get("bot_running", False),
-                "ws_initialized": st.session_state.get("ws_initialized", False),
-                "error_count": st.session_state.get("error_count", 0),
+                "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "last_update": st.session_state.get("last_update_time"),
             }
         except Exception as e:
-            self._log_error("Session info retrieval error", e)
-            return None
+            self._log_error("Session status check failed", e)
+            return {"valid": False, "error": str(e)}
 
 
 class WebSocketManager:
