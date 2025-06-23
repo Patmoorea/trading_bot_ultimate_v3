@@ -2455,19 +2455,31 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ User: {os.getenv('USER', 'Patmoorea')}
+║ Bot Status: {'Running' if hasattr(st.session_state, 'bot_running') and st.session_state.bot_running else 'Stopped'}
 ╚═════════════════════════════════════════════════╝
         """
             )
 
-            # 1. Nettoyage des protections et statuts
+            # 1. Nettoyage des protections spécifiques à cette session
+            if (
+                hasattr(self, "session_id")
+                and self.session_id in st.session_state.protections
+            ):
+                protection_count = len(st.session_state.protections[self.session_id])
+                del st.session_state.protections[self.session_id]
+                self.logger.info(
+                    f"✅ Cleaned {protection_count} protections for session {self.session_id}"
+                )
+
+            # 2. Nettoyage des flags et statuts
             if hasattr(self, "_ws_initializing"):
                 self._ws_initializing = False
                 self.logger.info("✅ WebSocket initialization flag cleared")
 
-            # 2. Fermeture propre du WebSocket
+            # 3. Fermeture propre du WebSocket
             await close_websocket(self)
 
-            # 3. Nettoyage des buffers et données
+            # 4. Nettoyage des buffers et données
             cleanup_attributes = [
                 "buffer",
                 "latest_data",
@@ -2503,7 +2515,7 @@ class TradingBotM4:
                     except Exception as attr_error:
                         self.logger.error(f"❌ Error cleaning {attr}: {attr_error}")
 
-            # 4. Désactivation du mode trading dans la session
+            # 5. Désactivation du mode trading dans la session
             if hasattr(st.session_state, "bot_running"):
                 st.session_state.bot_running = False
                 self.logger.info("✅ Bot status set to stopped")
@@ -2515,6 +2527,7 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣
 ║ All resources cleaned successfully              ║
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session: {getattr(self, 'session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
                 """
             )
@@ -2529,6 +2542,7 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session: {getattr(self, 'session_id', 'Unknown')}
 ╚═════════════════════════════════════════════════╝
                 """
             )
