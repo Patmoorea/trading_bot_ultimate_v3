@@ -581,12 +581,27 @@ class WebSocketManager:
                 if not await self._setup_streams():
                     raise Exception("Failed to setup streams")
                 
+                # Mise à jour du statut - AJOUT IMPORTANT ICI
+                if hasattr(self.bot, 'ws_connection'):
+                    self.bot.ws_connection.update({
+                        'enabled': True,
+                        'status': 'connected',
+                        'last_message': time.time()
+                    })
+                
                 self.running = True
                 return True
-            
+        
             except Exception as e:
                 logger.error(f"WebSocket start error: {e}")
-                await self.cleanup()  # Utilisation de la nouvelle méthode cleanup
+                # Mise à jour du statut en cas d'erreur - AJOUT IMPORTANT ICI
+                if hasattr(self.bot, 'ws_connection'):
+                    self.bot.ws_connection.update({
+                        'enabled': False,
+                        'status': 'error',
+                        'last_error': str(e)
+                    })
+                await self.cleanup()
                 return False
 
     async def _setup_streams(self):
@@ -625,6 +640,13 @@ class WebSocketManager:
                 async with socket as sock:
                     msg = await sock.recv()
                     if msg:
+                        # Mise à jour du statut de connexion - AJOUT IMPORTANT ICI
+                        if hasattr(self.bot, 'ws_connection'):
+                            self.bot.ws_connection.update({
+                                'status': 'connected',
+                                'last_message': time.time()
+                            })
+                        
                         # Traitement selon le type
                         if stream_type == "trade":
                             await self.bot._handle_trade(msg)
@@ -632,10 +654,16 @@ class WebSocketManager:
                             await self.bot._handle_orderbook(msg)
                         elif stream_type == "kline":
                             await self.bot._handle_kline(msg)
-                            
+                        
             except Exception as e:
                 if "shutdown" not in str(e).lower() and "closed" not in str(e).lower():
                     logger.error(f"Stream error ({stream_type}-{pair}): {e}")
+                    # Mise à jour du statut en cas d'erreur - AJOUT IMPORTANT ICI
+                    if hasattr(self.bot, 'ws_connection'):
+                        self.bot.ws_connection.update({
+                            'status': 'error',
+                            'last_error': str(e)
+                        })
                     if self.running:
                         await asyncio.sleep(self.retry_delay)
                         continue
