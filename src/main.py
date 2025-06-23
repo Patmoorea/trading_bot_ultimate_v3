@@ -2988,14 +2988,15 @@ class TradingBotM4:
         self.logger.info("🔊 Étude du marché en cours...")
 
         try:
-            # Vérifier et initialiser l'exchange si nécessaire
-            if not getattr(self.exchange, "_initialized", False):
-                try:
-                    await self.exchange.initialize()
-                    self.logger.info("✅ Exchange initialized successfully")
-                except Exception as init_error:
-                    self.logger.error(f"❌ Exchange initialization error: {init_error}")
-                    raise
+            # Vérification de la connexion WebSocket
+            if not getattr(
+                self, "_initialized", False
+            ):  # Chercher _initialized avec underscore
+                logger.warning(
+                    "🔄 WebSocket non initialisé, tentative d'initialisation..."
+                )
+                if not await self.initialize():
+                    raise Exception("Échec de l'initialisation")
 
             # Récupération des données historiques
             historical_data = await self.exchange.get_historical_data(
