@@ -2985,12 +2985,23 @@ class TradingBotM4:
 
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
-        logger.info("🔊 Étude du marché en cours...")
+        self.logger.info("🔊 Étude du marché en cours...")
 
         try:
+            # Vérifier et initialiser l'exchange si nécessaire
+            if not getattr(self.exchange, "_initialized", False):
+                try:
+                    await self.exchange.initialize()
+                    self.logger.info("✅ Exchange initialized successfully")
+                except Exception as init_error:
+                    self.logger.error(f"❌ Exchange initialization error: {init_error}")
+                    raise
+
             # Récupération des données historiques
             historical_data = await self.exchange.get_historical_data(
-                config["TRADING"]["pairs"], config["TRADING"]["timeframes"], period
+                pairs=self.config["TRADING"]["pairs"],
+                timeframes=self.config["TRADING"]["timeframes"],
+                period=period,
             )
 
             if not historical_data:
@@ -2998,7 +3009,7 @@ class TradingBotM4:
 
             # Analyse des indicateurs par timeframe
             indicators_analysis = {}
-            for timeframe in config["TRADING"]["timeframes"]:
+            for timeframe in self.config["TRADING"]["timeframes"]:
                 try:
                     tf_data = historical_data[timeframe]
                     result = self.advanced_indicators.analyze_timeframe(
@@ -3015,7 +3026,9 @@ class TradingBotM4:
                         else result
                     )
                 except Exception as tf_error:
-                    logger.error(f"Erreur analyse timeframe {timeframe}: {tf_error}")
+                    self.logger.error(
+                        f"Erreur analyse timeframe {timeframe}: {tf_error}"
+                    )
                     indicators_analysis[timeframe] = {
                         "trend": {"trend_strength": 0},
                         "volatility": {"current_volatility": 0},
@@ -3025,7 +3038,7 @@ class TradingBotM4:
 
             # Détection du régime de marché
             regime = self.regime_detector.predict(indicators_analysis)
-            logger.info(f"🔈 Régime de marché détecté: {regime}")
+            self.logger.info(f"🔈 Régime de marché détecté: {regime}")
 
             # Génération et envoi du rapport
             try:
@@ -3035,7 +3048,7 @@ class TradingBotM4:
                 )
                 await self.telegram.send_message(analysis_report)
             except Exception as report_error:
-                logger.error(f"Erreur génération rapport: {report_error}")
+                self.logger.error(f"Erreur génération rapport: {report_error}")
 
             # Mise à jour du dashboard
             try:
@@ -3045,12 +3058,12 @@ class TradingBotM4:
                     regime=regime,
                 )
             except Exception as dash_error:
-                logger.error(f"Erreur mise à jour dashboard: {dash_error}")
+                self.logger.error(f"Erreur mise à jour dashboard: {dash_error}")
 
             return regime, historical_data, indicators_analysis
 
         except Exception as e:
-            logger.error(f"Erreur study_market: {e}")
+            self.logger.error(f"Erreur study_market: {e}")
             raise
 
     async def analyze_signals(self, market_data, indicators=None):
