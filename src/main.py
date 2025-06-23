@@ -2124,7 +2124,7 @@ class TradingBotM4:
 
             self._ws_initializing = True
 
-            logger.info(
+            self.logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         INITIALISATION WEBSOCKET                ║
@@ -2140,7 +2140,7 @@ class TradingBotM4:
             api_secret = os.getenv("BINANCE_API_SECRET")
 
             if not api_key or not api_secret:
-                logger.error(
+                self.logger.error(
                     """
 ╔═════════════════════════════════════════════════╗
 ║         ERREUR CREDENTIALS                      ║
@@ -2166,9 +2166,9 @@ class TradingBotM4:
                 self.binance_ws = await AsyncClient.create(
                     api_key=api_key, api_secret=api_secret, tld="com"
                 )
-                logger.info("✅ Client Binance initialisé")
+                self.logger.info("✅ Client Binance initialisé")
             except Exception as client_error:
-                logger.error(f"❌ Erreur création client: {client_error}")
+                self.logger.error(f"❌ Erreur création client: {client_error}")
                 return False
 
             # 4. Configuration du socket manager avec paramètres optimisés
@@ -2176,9 +2176,11 @@ class TradingBotM4:
                 self.socket_manager = BinanceSocketManager(
                     self.binance_ws,
                 )
-                logger.info("✅ Socket Manager configuré")
+                self.logger.info("✅ Socket Manager configuré")
             except Exception as manager_error:
-                logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
+                self.logger.error(
+                    f"❌ Erreur configuration socket manager: {manager_error}"
+                )
                 return False
 
             # 5. Configuration des streams avec gestion d'erreur
@@ -2208,10 +2210,10 @@ class TradingBotM4:
                 heartbeat_task.set_name("websocket_heartbeat")
                 self.ws_tasks.append(heartbeat_task)
 
-                logger.info("✅ Streams configurés")
+                self.logger.info("✅ Streams configurés")
 
             except Exception as stream_error:
-                logger.error(f"❌ Erreur configuration streams: {stream_error}")
+                self.logger.error(f"❌ Erreur configuration streams: {stream_error}")
                 return False
 
             # 6. Mise à jour du statut de connexion
@@ -2225,7 +2227,7 @@ class TradingBotM4:
                 "start_time": datetime.now(timezone.utc),
             }
 
-            logger.info(
+            self.logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         WEBSOCKET INITIALISÉ                    ║
@@ -2241,7 +2243,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         ERREUR INITIALISATION                   ║
@@ -2267,7 +2269,7 @@ class TradingBotM4:
             self._ws_initializing = False
             # Vérification finale de la connexion
             if not self.ws_connection.get("enabled", False):
-                logger.warning("⚠️ WebSocket non initialisé correctement")
+                self.logger.warning("⚠️ WebSocket non initialisé correctement")
 
     def _generate_recommendation(self, trend, momentum, volatility, volume):
         try:
