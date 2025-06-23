@@ -1979,12 +1979,19 @@ class MultiStreamManager:
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
     async def tick(self):
-        """Effectue une itération de trading (une fois par refresh)"""
+        """Effectue une itération de trading"""
         try:
             # Vérification de la santé WebSocket
             if not await self.check_websocket_health():
                 self.logger.warning("Problème de connexion WebSocket détecté")
                 return
+
+            # Mise à jour du portfolio
+            portfolio = await self.get_real_portfolio()
+            if portfolio:
+                st.session_state.portfolio = portfolio
+                self.logger.debug("Portfolio updated successfully")
+
             # Récupération des données
             market_data = await self.get_latest_data()
             if market_data:
@@ -1992,31 +1999,14 @@ class TradingBotM4:
                     indicators = await self.calculate_indicators(pair)
                     if indicators:
                         signals = await self.analyze_signals(market_data, indicators)
-                        # Ici tu peux gérer l’exécution réelle du trade si besoin
-                        # if signals and signals.get('should_trade', False):
-                        #     await self.execute_real_trade(signals)
-                portfolio = await self.get_real_portfolio()
-                if portfolio:
-                    st.session_state.portfolio = portfolio
-                    st.session_state.latest_data = market_data
-                    st.session_state.indicators = indicators
-                    
-                # Appel périodique de l’analyseur de news
-                now = time.time()
-                news_result = None
-                if now - self.last_news_check > self.news_refresh_interval:
-                    news_result = await self.news_analyzer.analyze_news()
-                    self.last_news_check = now
-                if news_result and news_result.get("status") == "success":
-                    st.session_state['news_score'] = news_result['sentiment_summary']
-                    st.session_state['important_news'] = news_result['important_news']
-                    self.logger.info(f"News sentiment: {news_result['sentiment_summary']}")
-                elif news_result is not None:
-                    st.session_state['news_score'] = None
-                    st.session_state['important_news'] = []
-    
+
+            # Mise à jour des états de session
+            st.session_state.latest_data = market_data
+            st.session_state.indicators = indicators
+            st.session_state.last_update_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+
         except Exception as e:
-            logger.error(f"Erreur tick: {e}")
+            self.logger.error(f"Erreur tick: {e}")
    
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
@@ -5516,47 +5506,45 @@ async def main_async():
             else:
                 if st.button("🟢 Start Trading", key="start_button", use_container_width=True):
                     try:
+                        # Vérification si déjà en cours d'exécution
+                        if st.session_state.get('bot_running', False):
+                            st.info("Bot is already running")
+                            return
+
                         # Récupération ou création du bot
                         bot = get_bot()
                         if not bot:
                             st.error("Failed to initialize bot")
                             return
 
-                        # Vérification si une tâche de trading existe déjà
-                        trading_task = st.session_state.get("trading_task")
-                        task_is_running = trading_task is not None and not trading_task.done()
-
-                        if not task_is_running:
-                            # Démarrage immédiat du trading
-                            loop = st.session_state.loop or asyncio.get_event_loop()
-            
-                            # Initialisation et démarrage en une seule étape
-                            async def start_trading():
-                                try:
-                                    # Initialisation du bot si nécessaire
-                                    if not bot.initialized:
-                                        if not await bot.start():
-                                            raise Exception("Failed to initialize bot")
+                        # Configuration initiale du trading dans une seule tâche async
+                        async def init_and_start_trading():
+                            try:
+                                # Forcer la mise à jour des états
+                                st.session_state.bot_running = True
+                                st.session_state.ws_connection_status = 'connecting'
+                                st.session_state.portfolio = None
+                
+                                # Démarrage complet en une fois
+                                if not await bot.start():
+                                    raise Exception("Failed to initialize bot")
                     
-                                    # Démarrage immédiat du trading adaptatif
-                                    st.session_state.bot_running = True
-                                    await bot.run_adaptive_trading(period="7d")
-                    
-                                except Exception as e:
-                                    st.session_state.bot_running = False
-                                    raise e
+                                # Lancement immédiat du trading adaptatif
+                                await bot.run_adaptive_trading(period="7d")
+                
+                            except Exception as e:
+                                st.session_state.bot_running = False
+                                st.session_state.ws_connection_status = 'disconnected'
+                                raise e
 
-                            # Création et lancement de la tâche
-                            st.session_state.trading_task = loop.create_task(start_trading())
-                            st.success("🚀 Trading started successfully")
-                        else:
-                            st.info("Bot is already running")
+                        # Création et lancement de la tâche
+                        loop = st.session_state.loop or asyncio.get_event_loop()
+                        st.session_state.trading_task = loop.create_task(init_and_start_trading())
+                        st.success("🚀 Trading started!")
 
                     except Exception as e:
                         st.error(f"Error starting bot: {e}")
                         st.session_state.bot_running = False
-                        if 'trading_task' in st.session_state:
-                            del st.session_state.trading_task
 
             # ---- DEBUG TASK STATUS ----
             st.info(
@@ -5722,42 +5710,53 @@ async def main_async():
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
     """Rendu de l'onglet Portfolio"""
-    if st.session_state.bot_running:
-        try:
-            portfolio = st.session_state.get('portfolio')
+    try:
+        # Mise à jour forcée du portfolio
+        if st.session_state.bot_running:
+            portfolio = await bot.get_real_portfolio()
             if portfolio:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "💰 Total Value",
-                        f"{portfolio.get('total_value', 0):.2f} USDC",
-                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC"
-                    )
-                with col2:
-                    st.metric(
-                        "📈 24h Volume",
-                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                        f"{portfolio.get('volume_change', 0):+.2f}%"
-                    )
-                with col3:
-                    positions = portfolio.get('positions', [])
-                    st.metric(
-                        "🔄 Active Positions",
-                        str(len(positions)),
-                        f"{len(positions)} active"
-                    )
-                
-                if positions:
-                    st.subheader("Active Positions")
-                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
-                else:
-                    st.info("💡 No active positions")
+                st.session_state.portfolio = portfolio
+
+        # Affichage du portfolio
+        if st.session_state.get('portfolio'):
+            portfolio = st.session_state.portfolio
+            
+            # Métriques principales
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(
+                    "💰 Total Value",
+                    f"{portfolio.get('total_value', 0):.2f} USDC",
+                    f"{portfolio.get('daily_pnl', 0):+.2f}%"
+                )
+            with col2:
+                st.metric(
+                    "📈 24h Volume",
+                    f"{portfolio.get('volume_24h', 0):.2f} USDC",
+                    f"{portfolio.get('volume_change', 0):+.2f}%"
+                )
+            with col3:
+                positions = portfolio.get('positions', [])
+                st.metric(
+                    "🔄 Active Positions",
+                    str(len(positions)),
+                    f"{len(positions)} active"
+                )
+            
+            # Positions actives
+            if positions:
+                st.subheader("Active Positions")
+                positions_df = pd.DataFrame(positions)
+                st.dataframe(positions_df, use_container_width=True)
             else:
-                st.warning("⚠️ Waiting for portfolio data...")
-        except Exception as e:
-            st.error(f"❌ Portfolio error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view portfolio")
+                st.info("💡 No active positions")
+
+        else:
+            st.info("⏳ Waiting for portfolio data...")
+
+    except Exception as e:
+        st.error(f"Error displaying portfolio: {e}")
+        logger.error(f"Portfolio display error: {e}")
 
 async def _render_trading_tab(bot):
     """Rendu de l'onglet Trading"""
