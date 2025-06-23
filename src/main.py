@@ -2508,14 +2508,14 @@ class TradingBotM4:
     async def _cleanup(self):
         """Nettoie les ressources avant de fermer"""
         try:
+            # Variables de contexte
+            current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            current_user = os.getenv("USER", "Patmoorea")
             current_session = getattr(self, "session_id", "Unknown")
-            active_protections = st.session_state.protections.get(
-                current_session, set()
-            )
 
-            if active_protections:
-                self.logger.info(
-                    f"""
+            # Log initial
+            self.logger.info(
+                f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
 ╠═════════════════════════════════════════════════╣
@@ -2525,24 +2525,24 @@ class TradingBotM4:
 ║ Session: {current_session}
 ╚═════════════════════════════════════════════════╝
                 """
-                )
-                return False
+            )
 
-            # Vérification des protections de la session COURANTE uniquement
+            # Vérification des protections de la SESSION COURANTE
             if not hasattr(self, "session_id"):
                 self.logger.error("No session ID found")
                 return False
 
-            # Vérification des protections actives AVANT le nettoyage
-            active_protections = self.get_active_protections()
-            if active_protections:
+            current_protections = st.session_state.protections.get(
+                self.session_id, set()
+            )
+            if current_protections:
                 self.logger.info(
                     f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP PREVENTED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Active Protections: {', '.join(active_protections)}
+║ Time: {current_time} UTC
+║ Active Protections: {', '.join(current_protections)}
 ║ Session ID: {self.session_id}
 ╚═════════════════════════════════════════════════╝
                     """
@@ -2550,10 +2550,7 @@ class TradingBotM4:
                 return False
 
             # 1. Nettoyage des protections spécifiques à cette session
-            if (
-                hasattr(self, "session_id")
-                and self.session_id in st.session_state.protections
-            ):
+            if self.session_id in st.session_state.protections:
                 protection_count = len(st.session_state.protections[self.session_id])
                 del st.session_state.protections[self.session_id]
                 self.logger.info(
@@ -2615,8 +2612,8 @@ class TradingBotM4:
 ║              CLEANUP COMPLETED                   ║
 ╠═════════════════════════════════════════════════╣
 ║ All resources cleaned successfully              ║
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session: {getattr(self, 'session_id', 'Unknown')}
+║ Time: {current_time} UTC
+║ Session: {self.session_id}
 ╚═════════════════════════════════════════════════╝
                 """
             )
@@ -2630,8 +2627,8 @@ class TradingBotM4:
 ║              CLEANUP ERROR                       ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Session: {getattr(self, 'session_id', 'Unknown')}
+║ Time: {current_time} UTC
+║ Session: {self.session_id}
 ╚═════════════════════════════════════════════════╝
                 """
             )
