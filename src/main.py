@@ -162,51 +162,28 @@ class StreamlitSessionManager:
                 self._log_initialization()
 
     def _initialize_session_state(self):
-        """Initialise l'état de la session avec des valeurs sûres"""
+        """Initialise l'état de la session avec gestion des erreurs"""
         try:
-            # États par défaut avec horodatage
-            default_state = {
-                # États de base
-                "session_id": self.session_id,
-                "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "last_update_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "user": self.user,
-                "initialized": True,
-                "session_initialized": True,
-                # États du bot
-                "bot_running": False,
-                "portfolio": None,
-                "latest_data": {},
-                "indicators": None,
-                "refresh_count": 0,
-                # États de la boucle événementielle
-                "loop": None,
-                "error_count": 0,
-                # États WebSocket
-                "ws_status": "disconnected",
-                "ws_initialized": False,
-                "ws_connection_status": "disconnected",
-                "ws_last_heartbeat": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                # Protections
-                "keep_alive": True,
-                "prevent_cleanup": True,
-                "force_cleanup": False,
-                "cleanup_allowed": False,
-            }
+            # Nettoyage des anciennes sessions
+            if "sessions" in st.session_state:
+                old_sessions = list(st.session_state.sessions)
+                for old_session in old_sessions:
+                    if old_session != self.session_id:
+                        self._cleanup_session(old_session)
 
-            # Initialisation des états manquants uniquement
-            for key, value in default_state.items():
-                if key not in st.session_state:
-                    st.session_state[key] = value
+            # Initialisation des états de base
+            st.session_state.session_initialized = True
+            st.session_state.sessions = {self.session_id}
+            st.session_state.protections = {self.session_id: set()}
+            st.session_state.last_action = self.init_time
 
             return True
-
         except Exception as e:
-            self._log_error("Session state initialization error", e)
+            self.logger.error(f"❌ Erreur initialisation session: {e}")
             return False
 
     def _log_initialization(self):
-        """Log de l'initialisation de la session"""
+        """Logs l'initialisation de la session"""
         self.logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
@@ -218,6 +195,52 @@ class StreamlitSessionManager:
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """
+        )
+
+    def _cleanup_session(self, session_id):
+        """Nettoie une session spécifique"""
+        try:
+            # Nettoyage des protections de l'ancienne session
+            if (
+                "protections" in st.session_state
+                and session_id in st.session_state.protections
+            ):
+                del st.session_state.protections[session_id]
+
+            # Nettoyage des états de la session
+            if "sessions" in st.session_state:
+                st.session_state.sessions.discard(session_id)
+
+            self.logger.info(f"✅ Cleaned session: {session_id}")
+        except Exception as e:
+            self._log_error(f"Session cleanup error for {session_id}", e)
+
+    def add_protection(self, protection):
+        """Ajoute une protection à la session courante"""
+        try:
+            if "protections" not in st.session_state:
+                st.session_state.protections = {}
+
+            if self.session_id not in st.session_state.protections:
+                st.session_state.protections[self.session_id] = set()
+
+            st.session_state.protections[self.session_id].add(protection)
+            self._log_protection_added(protection)
+        except Exception as e:
+            self._log_error(f"Protection addition error", e)
+
+    def _log_protection_added(self, protection):
+        """Logs l'ajout d'une protection"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           PROTECTION ADDED                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session ID: {self.session_id}
+║ Protection: {protection}
+╚═════════════════════════════════════════════════╝
+            """
         )
 
     def _log_error(self, message, error):
@@ -279,7 +302,7 @@ class StreamlitSessionManager:
         """
         )
 
-    def _setup_and_verify_event_loop():
+    def _setup_and_verify_event_loop(self):
         """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
         current_time = datetime.now(timezone.utc)
         current_user = os.getenv("USER", "Patmoorea")
@@ -1909,10 +1932,19 @@ class TradingBotM4:
         self._reconnecting = False
         self.logger = logging.getLogger(__name__)
 
-        # Initialisation des protections spécifiques à cette session
+        # Initialisation des protections avec nettoyage des anciennes sessions
         self.session_id = f"patricejourdan_{int(time.time())}"
         if "protections" not in st.session_state:
             st.session_state.protections = {}
+        else:
+            # Nettoyer les anciennes sessions avant d'en créer une nouvelle
+            old_sessions = list(st.session_state.protections.keys())
+            for old_session in old_sessions:
+                if old_session != self.session_id:
+                    del st.session_state.protections[old_session]
+                    self.logger.info(f"Cleaned old session: {old_session}")
+
+        # Initialiser les protections pour la nouvelle session
         st.session_state.protections[self.session_id] = set()
         self.add_protection("prevent_cleanup")
         self.add_protection("keep_alive")
