@@ -517,46 +517,43 @@ class WebSocketManager:
         self.retry_delay = WEBSOCKET_CONFIG['RETRY_DELAY']
 
     async def cleanup(self):
-        """Nettoie les ressources WebSocket"""
+        """Nettoie les ressources avec gestion améliorée"""
         try:
-            self.running = False
+            self.logger.info("""
+╔═════════════════════════════════════════════════╗
+║           STARTING CLEANUP                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """)
         
-            # Annulation des tâches
-            for stream in self.streams.values():
-                if not stream.done():
-                    stream.cancel()
-                    try:
-                        await stream
-                    except asyncio.CancelledError:
-                        pass
-                    
-            self.streams.clear()
+            # Marquer le début du nettoyage
+            self.cleanup_in_progress = True
         
-            # Fermeture du socket manager
-            if hasattr(self, 'socket_manager') and self.socket_manager:
-                try:
-                    for socket in self.socket_manager.sockets:
-                        await self.socket_manager.stop_socket(socket)
-                    self.socket_manager = None
-                except Exception as e:
-                    logger.warning(f"Error closing socket manager: {e}")
-                finally:
-                    self.socket_manager = None
+            # Fermeture des sessions
+            await self.close_sessions()
         
-            # Fermeture du client Binance
-            if hasattr(self, 'binance_ws') and self.binance_ws:
-                try:
-                    await self.binance_ws.close_connection()
-                except Exception as e:
-                    logger.warning(f"Error closing Binance client: {e}")
-                finally:
-                    self.binance_ws = None
-
+            # Nettoyage des données
+            self.latest_data = {}
+            self.indicators = {}
+            self.initialized = False
+        
+            # Réinitialisation des états
+            self.ws_connection = {
+                'enabled': False,
+                'status': 'disconnected',
+                'tasks': []
+            }
+        
+            self.logger.info("✅ Nettoyage complet terminé")
             return True
         
         except Exception as e:
-            logger.error(f"Cleanup error: {e}")
+            self.logger.error(f"❌ Erreur nettoyage: {e}")
             return False
+        
+        finally:
+            self.cleanup_in_progress = False
         
     async def start(self):
         """Démarre les WebSockets"""
@@ -1888,166 +1885,293 @@ class TradingBotM4:
     
         except Exception as e:
             logger.error(f"Erreur tick: {e}")
-            
+   
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
-        # Flags de contrôle
-        self._ws_initializing = False
-        self._cleanup_requested = False
-        self._initialized = False
-        self.socket_manager = None
-        self._reconnecting = False
-
-        # Configuration de la session
-        self.session_config = {
-            'keep_alive': True,
-            'timeout': 60,
-            'ping_interval': 20,
-            'ping_timeout': 10,
-            'reconnect_on_error': True,
-            'max_reconnect_attempts': 3
-        }
-
-        # Configuration des streams
-        self.stream_config = StreamConfig(
-            max_connections=12,
-            reconnect_delay=1.0,
-            buffer_size=10000
-        )
-
-        # État du WebSocket
-        self.ws_connection = {
-            'enabled': False,
-            'status': 'disconnected',
-            'reconnect_count': 0,
-            'last_message': None,
-            'last_heartbeat': None,
-            'tasks': []
-        }
-
-        # Configuration principale
-        self.config = config
-    
-        api_key = self.config["BINANCE"]["API_KEY"]
-        api_secret = self.config["BINANCE"]["API_SECRET"]
-        use_testnet = self.config["BINANCE"].get("TESTNET", False)
-        print("[DEBUG] use_testnet =", use_testnet)
-        self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
-
-        # Buffer et autres composants
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
-        self.cleanup_in_progress = False
-        self.shutdown_requested = False
-        self.initialized = False
-        self.logger = logging.getLogger(__name__)
-    
-        # Configuration du WebSocket
-        self.websocket = MultiStreamManager(
-            pairs=self.config["TRADING"]["pairs"],
-            config=self.stream_config  # Maintenant stream_config existe déjà
-        )
-
-        # Initialisation du client Binance
         try:
-            self.spot_client = BinanceClient(
-                api_key=self.config['BINANCE']['API_KEY'],
-                api_secret=self.config['BINANCE']['API_SECRET']
-            )
-            self.logger.info("✅ Spot client initialisé avec succès")
-        except Exception as e:
-            self.logger.error(f"❌ Erreur initialisation spot client: {e}")
-            self.spot_client = None
+            # Initialisation du logger en PREMIER
+            self.logger = logging.getLogger(__name__)
+            
+            self.logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           BOT INITIALIZATION STARTED             ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """)
 
-        # Configuration du WebSocket
-        self.websocket = MultiStreamManager(
-            pairs=self.config["TRADING"]["pairs"],
-            config=self.stream_config
-        )
-        
-        # Mode de trading et composants
-        self.trading_mode = os.getenv('TRADING_MODE', 'production')
-        self.testnet = False
-        self.news_enabled = True
-        self.arbitrage_enabled = True
-        self.telegram_enabled = True
+            # Flags de contrôle
+            self._ws_initializing = False
+            self._cleanup_requested = False
+            self._initialized = False
+            self._reconnecting = False
 
-        # Configuration risque
-        self.max_drawdown = 0.05  # 5% max
-        self.daily_stop_loss = 0.02  # 2% par jour
-        self.max_position_size = 1000  # USDC
-
-        # Interface et monitoring
-        self.dashboard = TradingDashboard()
-
-        # Composants principaux
-        self.arbitrage_engine = ArbitrageEngine(
-            exchanges=self.config["ARBITRAGE"]["exchanges"],
-            pairs=self.config["ARBITRAGE"]["pairs"],
-            min_profit=self.config["ARBITRAGE"]["min_profit"],
-            max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
-            timeout=self.config["ARBITRAGE"]["timeout"],
-            volume_filter=self.config["ARBITRAGE"]["volume_filter"],
-            price_check=self.config["ARBITRAGE"]["price_check"],
-            max_slippage=self.config["ARBITRAGE"]["max_slippage"]
-        )
-
-        # Configuration Telegram
-        self.telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
-        self.telegram = TelegramBot()
-
-        # IA et analyse
-        self.hybrid_model = HybridAI()
-        self.env = TradingEnv(
-            trading_pairs=self.config["TRADING"]["pairs"],
-            timeframes=self.config["TRADING"]["timeframes"]
-        )
-
-        # Gestionnaires de trading
-        self.position_manager = PositionManager(
-            account_balance=10000,
-            max_positions=5,
-            max_leverage=3.0,
-            min_position_size=0.001
-        )
-        
-        self.circuit_breaker = CircuitBreaker(
-            crash_threshold=0.1,
-            liquidity_threshold=0.5,
-            volatility_threshold=0.3
-        )
-
-        # Configuration timeframes
-        self.timeframe_config = TimeframeConfig(
-            timeframes=self.config["TRADING"]["timeframes"],
-            weights={
-                "1m": 0.1, "5m": 0.15, "15m": 0.2,
-                "1h": 0.25, "4h": 0.15, "1d": 0.15
+            # Configuration de la session
+            self.session_config = {
+                'keep_alive': True,
+                'timeout': 60,
+                'ping_interval': 20,
+                'ping_timeout': 10,
+                'reconnect_on_error': True,
+                'max_reconnect_attempts': 3
             }
-        )
 
-        # Composants d'analyse
-        self.news_analyzer = NewsAnalyzer()
-        self.last_news_check = 0
-        self.news_refresh_interval = int(os.getenv("NEWS_REFRESH_INTERVAL", 60))  # secondes, configurable
-        self.regime_detector = RegimeDetector()
-        self.qsvm = QuantumSVM()
-        self.client_session = None
+            # Configuration des streams
+            self.stream_config = StreamConfig(
+                max_connections=12,
+                reconnect_delay=1.0,
+                buffer_size=10000
+            )
+
+            # État du WebSocket
+            self.ws_connection = {
+                'enabled': False,
+                'status': 'disconnected',
+                'reconnect_count': 0,
+                'last_message': None,
+                'last_heartbeat': None,
+                'tasks': []
+            }
+
+            # Configuration principale
+            self.config = config
+            if not self.config:
+                raise ValueError("Configuration manquante")
+            
+            self.logger.info("✅ Configuration chargée")
+
+            # Initialisation des credentials
+            api_key = self.config["BINANCE"]["API_KEY"]
+            api_secret = self.config["BINANCE"]["API_SECRET"]
+            use_testnet = self.config["BINANCE"].get("TESTNET", False)
+            
+            if not api_key or not api_secret:
+                raise ValueError("Clés API Binance manquantes")
+            
+            self.logger.info(f"[DEBUG] use_testnet = {use_testnet}")
+
+            # Initialisation de l'exchange
+            self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
+            self.logger.info("✅ Exchange initialisé")
+
+            # Initialisation du spot client
+            try:
+                self.spot_client = BinanceClient(
+                    api_key=api_key,
+                    api_secret=api_secret
+                )
+                self.logger.info("✅ Spot client initialisé avec succès")
+            except Exception as e:
+                self.logger.error(f"❌ Erreur initialisation spot client: {e}")
+                self.spot_client = None
+
+            # Initialisation WebSocket
+            self.ws_manager = WebSocketManager(self)
+            self.multi_stream = MultiStreamManager(
+                pairs=self.config["TRADING"]["pairs"],
+                config=self.stream_config
+            )
+            self.logger.info("✅ WebSocket managers initialisés")
+
+            # Buffer et composants
+            self.buffer = CircularBuffer(maxlen=1000)
+            self.indicators = {}
+            self.latest_data = {}
+            self.cleanup_in_progress = False
+            self.shutdown_requested = False
+            self.initialized = False
+
+            # Mode de trading et composants
+            self.trading_mode = os.getenv('TRADING_MODE', 'production')
+            self.testnet = False
+            self.news_enabled = True
+            self.arbitrage_enabled = True
+            self.telegram_enabled = True
+
+            # Configuration risque
+            self.max_drawdown = 0.05
+            self.daily_stop_loss = 0.02
+            self.max_position_size = 1000
+
+            # Interface et monitoring
+            self.dashboard = TradingDashboard()
+            self.logger.info("✅ Dashboard initialisé")
+
+            # Composants principaux
+            self.arbitrage_engine = ArbitrageEngine(
+                exchanges=self.config["ARBITRAGE"]["exchanges"],
+                pairs=self.config["ARBITRAGE"]["pairs"],
+                min_profit=self.config["ARBITRAGE"]["min_profit"],
+                max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
+                timeout=self.config["ARBITRAGE"]["timeout"],
+                volume_filter=self.config["ARBITRAGE"]["volume_filter"],
+                price_check=self.config["ARBITRAGE"]["price_check"],
+                max_slippage=self.config["ARBITRAGE"]["max_slippage"]
+            )
+            self.logger.info("✅ Arbitrage engine initialisé")
+
+            # Configuration Telegram
+            self.telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')
+            self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
+            self.telegram = TelegramBot()
+            self.logger.info("✅ Telegram initialisé")
+
+            # IA et analyse
+            self.hybrid_model = HybridAI()
+            self.env = TradingEnv(
+                trading_pairs=self.config["TRADING"]["pairs"],
+                timeframes=self.config["TRADING"]["timeframes"]
+            )
+            self.logger.info("✅ Modèles IA initialisés")
+
+            # Gestionnaires de trading
+            self.position_manager = PositionManager(
+                account_balance=10000,
+                max_positions=5,
+                max_leverage=3.0,
+                min_position_size=0.001
+            )
+            
+            self.circuit_breaker = CircuitBreaker(
+                crash_threshold=0.1,
+                liquidity_threshold=0.5,
+                volatility_threshold=0.3
+            )
+            self.logger.info("✅ Gestionnaires de trading initialisés")
+
+            # Configuration timeframes
+            self.timeframe_config = TimeframeConfig(
+                timeframes=self.config["TRADING"]["timeframes"],
+                weights={
+                    "1m": 0.1, "5m": 0.15, "15m": 0.2,
+                    "1h": 0.25, "4h": 0.15, "1d": 0.15
+                }
+            )
+
+            # Composants d'analyse
+            self.news_analyzer = NewsAnalyzer()
+            self.last_news_check = 0
+            self.news_refresh_interval = int(os.getenv("NEWS_REFRESH_INTERVAL", 60))
+            self.regime_detector = RegimeDetector()
+            self.qsvm = QuantumSVM()
+            self.client_session = None
+            self.logger.info("✅ Composants d'analyse initialisés")
+
+            # Vérification finale
+            self._check_initialization()
+            
+            self.logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           BOT INITIALIZATION COMPLETED           ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: SUCCESS
+║ Trading Mode: {self.trading_mode}
+║ TestNet: {use_testnet}
+╚═════════════════════════════════════════════════╝
+            """)
+
+        except Exception as e:
+            self.logger.error(f"""
+╔═════════════════════════════════════════════════╗
+║           BOT INITIALIZATION ERROR               ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+            """)
+            raise
+
+    def _check_initialization(self):
+        """Vérifie que toutes les composantes critiques sont initialisées"""
+        critical_components = [
+            ('logger', 'Logger'),
+            ('config', 'Configuration'),
+            ('exchange', 'Exchange'),
+            ('ws_manager', 'WebSocket Manager'),
+            ('buffer', 'Buffer'),
+            ('spot_client', 'Spot Client')
+        ]
+
+        missing = []
+        for attr, name in critical_components:
+            if not hasattr(self, attr) or getattr(self, attr) is None:
+                missing.append(name)
+
+        if missing:
+            raise RuntimeError(f"Composants manquants : {', '.join(missing)}")
+
+        return True
     
+    async def close_sessions(self):
+        """Ferme proprement toutes les sessions"""
+        try:
+            # Fermeture de la session client
+            if hasattr(self, 'client_session') and self.client_session:
+                if not self.client_session.closed:
+                    await self.client_session.close()
+                    await asyncio.sleep(0.1)  # Petit délai pour assurer la fermeture
+                self.client_session = None
+
+            # Fermeture du connector WebSocket
+            if hasattr(self, 'ws_manager') and self.ws_manager:
+                await self.ws_manager.cleanup()
+
+            # Fermeture de la session multi-stream
+            if hasattr(self, 'multi_stream') and self.multi_stream:
+                await self.multi_stream.close()
+
+            self.logger.info("✅ Sessions fermées avec succès")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"❌ Erreur fermeture sessions: {e}")
+            return False
+    
+    async def __aenter__(self):
+        """Support pour le gestionnaire de contexte async"""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Nettoyage automatique à la sortie du contexte"""
+        await self.cleanup()
+            
     def is_properly_initialized(self):
         """Vérifie si l'initialisation est complète"""
-        return (
-            self.initialized and 
-            hasattr(self, 'spot_client') and 
-            self.spot_client is not None and
-            hasattr(self, 'ws_connection') and 
-            self.ws_connection.get('enabled', False) and
-            self.ws_connection.get('status') == 'connected' and
-            hasattr(self, 'ws_manager') and
-            self.ws_manager is not None
-        )
+        try:
+            # Liste des vérifications critiques
+            checks = {
+                'spot_client': self.spot_client is not None,
+                'ws_connection': self.ws_connection.get('enabled', False),
+                'ws_status': self.ws_connection.get('status') == 'connected',
+                'ws_manager': hasattr(self, 'ws_manager') and self.ws_manager is not None,
+                'multi_stream': hasattr(self, 'multi_stream') and self.multi_stream is not None,
+                'exchange': hasattr(self, 'exchange') and self.exchange is not None,
+                'buffer': hasattr(self, 'buffer') and self.buffer is not None
+            }
+        
+            # Log détaillé des vérifications
+            self.logger.info(f"""
+╔═════════════════════════════════════════════════╗
+║           INITIALIZATION CHECK                   ║
+╠═════════════════════════════════════════════════╣
+║ spot_client: {checks['spot_client']}
+║ ws_connection: {checks['ws_connection']}
+║ ws_status: {checks['ws_status']}
+║ ws_manager: {checks['ws_manager']}
+║ multi_stream: {checks['multi_stream']}
+║ exchange: {checks['exchange']}
+║ buffer: {checks['buffer']}
+╚═════════════════════════════════════════════════╝
+            """)
+        
+            return all(checks.values())
+        
+        except Exception as e:
+            self.logger.error(f"Erreur vérification initialisation: {e}")
+            return False
         
     def get_latest_price(self, symbol):
         """
@@ -2125,7 +2249,7 @@ class TradingBotM4:
                 return False
             
             self._ws_initializing = True
-        
+    
             # Timeout de 10 secondes pour l'initialisation
             async with asyncio.timeout(10):
                 # Initialisation WebSocket avec retry
@@ -2139,15 +2263,15 @@ class TradingBotM4:
                         if retry_count == 3:
                             raise Exception(f"Échec démarrage WebSocket après 3 tentatives: {e}")
                         await asyncio.sleep(1)
-            
+        
                 # Configuration des composants
                 if not await self._setup_components():
                     raise Exception("Échec configuration composants")
-            
+        
                 self.initialized = True
                 logger.info("✅ Bot démarré avec succès")
                 return True
-            
+        
         except asyncio.TimeoutError:
             logger.error("Timeout démarrage bot")
             await self._cleanup()
@@ -2159,16 +2283,6 @@ class TradingBotM4:
         finally:
             self._ws_initializing = False
 
-        self.config = {
-            'NEWS': {
-                'enabled': True,
-                'TELEGRAM_TOKEN': os.getenv('TELEGRAM_TOKEN', '')
-            },
-            'BINANCE': {
-                'API_KEY': os.getenv('BINANCE_API_KEY', ''),
-                'API_SECRET': os.getenv('BINANCE_API_SECRET', '')
-            }
-        }
         self.spot_client = None
         self.ws_manager = None
         
