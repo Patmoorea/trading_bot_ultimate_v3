@@ -163,6 +163,25 @@ class StreamlitSessionManager:
             if self._initialize_session_state():
                 self._log_initialization()
 
+    # Ajoutez cette méthode
+    def _log_initialization(self):
+        """Log l'initialisation de la session"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION INITIALIZED                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {self.user}
+║ Session ID: {self.session_id}
+║ Status: Active
+╚═════════════════════════════════════════════════╝
+            """
+        )
+        st.session_state.last_update_time = (
+            "2025-06-23 22:38:31"  # Mise à jour avec votre timestamp
+        )
+
     def _initialize_session_state(self):
         """Initialisation centralisée des états"""
         try:
