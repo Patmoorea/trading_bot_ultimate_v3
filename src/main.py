@@ -2477,8 +2477,13 @@ class TradingBotM4:
         """Nettoie les ressources avant de fermer"""
         try:
             current_session = getattr(self, "session_id", "Unknown")
-            self.logger.info(
-                f"""
+            active_protections = st.session_state.protections.get(
+                current_session, set()
+            )
+
+            if active_protections:
+                self.logger.info(
+                    f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
 ╠═════════════════════════════════════════════════╣
@@ -2487,8 +2492,9 @@ class TradingBotM4:
 ║ Bot Status: {'Running' if hasattr(st.session_state, 'bot_running') and st.session_state.bot_running else 'Stopped'}
 ║ Session: {current_session}
 ╚═════════════════════════════════════════════════╝
-            """
-            )
+                """
+                )
+                return False
 
             # Vérification des protections de la session COURANTE uniquement
             if not hasattr(self, "session_id"):
