@@ -191,6 +191,7 @@ import pandas as pd
 import torch
 import telegram
 import ccxt
+import ccxt.async_support as ccxt
 import ta
 from dotenv import load_dotenv
 import gymnasium as gym
@@ -448,6 +449,17 @@ class WebSocketManager:
 
     async def start(self):
         """Démarre les WebSockets"""
+        # PATCH: Désactive le démarrage des WebSockets si testnet SPOT !
+        if (
+            getattr(self.bot.exchange, "testnet", False)
+            and self.bot.exchange._exchange.options.get("defaultType", "spot") == "spot"
+        ):
+            logger.warning(
+                "Binance SPOT testnet : PAS de WebSocket ! (WebSocketManager.start ignoré)"
+            )
+            self.running = False
+            return False
+
         async with self.lock:
             if self.running:
                 return True
@@ -832,28 +844,15 @@ def get_bot():
         return st.session_state.bot_instance
 
     try:
-        # Protection de la session
         session_manager.protect_session()
         logger.info("Creating new bot instance...")
 
-        # Création et configuration de la boucle d'événements
-        if not st.session_state.get("loop"):
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                nest_asyncio.apply()
-                st.session_state.loop = loop
-                logger.info("Event loop configured")
-            except Exception as loop_error:
-                logger.error(f"Event loop configuration error: {loop_error}")
-                raise
-
-        # Création du bot
         bot = TradingBotM4()
 
-        # Fonction d'initialisation asynchrone
         async def initialize_bot():
             try:
+                # -------- PATCH PRINCIPAL ICI --------
+                await bot.async_init()  # <-- On appelle la méthode async d'init qui gère bien le testnet spot
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
                 bot._initialized = True
@@ -863,45 +862,40 @@ def get_bot():
                 logger.error(f"Bot initialization error: {init_error}")
                 raise
 
-        # Initialisation avec gestion des erreurs de boucle
         try:
-            # Premier essai d'initialisation
-            try:
-                bot = st.session_state.loop.run_until_complete(initialize_bot())
-            except RuntimeError as e:
-                # Gestion du cas où la boucle est déjà en cours
-                if "This event loop is already running" in str(e):
-                    logger.warning("Event loop already running, applying nest_asyncio")
-                    nest_asyncio.apply()
-                    bot = st.session_state.loop.run_until_complete(initialize_bot())
-                else:
-                    raise
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        nest_asyncio.apply()
 
-            # Vérification de l'initialisation
-            if not bot or not getattr(bot, "_initialized", False):
-                raise Exception("Bot initialization incomplete")
+        try:
+            if loop.is_running():
+                # Streamlit: la boucle tourne déjà, donc on doit faire le call async autrement
+                import concurrent.futures
 
-            # Sauvegarde dans la session state
-            st.session_state.bot_instance = bot
-            logger.info(
-                f"Bot ready - Status: {bot.ws_connection.get('status', 'initializing')} - Mode: {getattr(bot, 'trading_mode', 'production')}"
-            )
+                future = asyncio.ensure_future(initialize_bot())
+                # On doit lever une erreur ici, car ce cache_resource ne supporte pas bien le pur async dans Streamlit
+                raise RuntimeError(
+                    "Impossible d'initialiser le bot dans le cache_resource de Streamlit en mode async pur. Solution : initialiser dans une fonction async native."
+                )
+            else:
+                bot = loop.run_until_complete(initialize_bot())
+        except RuntimeError as e:
+            logger.error(f"RuntimeError during bot init: {e}")
+            bot = loop.run_until_complete(initialize_bot())
 
-            return bot
+        if not bot or not getattr(bot, "_initialized", False):
+            raise Exception("Bot initialization incomplete")
 
-        except Exception as run_error:
-            logger.error(f"Runtime error: {run_error}")
-            # Nettoyage en cas d'erreur
-            if hasattr(bot, "_cleanup"):
-                try:
-                    st.session_state.loop.run_until_complete(bot._cleanup())
-                except Exception as cleanup_error:
-                    logger.error(f"Cleanup error: {cleanup_error}")
-            raise
+        st.session_state.bot_instance = bot
+        logger.info(
+            f"Bot ready - Status: {bot.ws_connection.get('status', 'initializing')} - Mode: {getattr(bot, 'trading_mode', 'production')}"
+        )
 
+        return bot
     except Exception as e:
         logger.error(f"Bot creation failed: {e}")
-        # Nettoyage de la session
         if "bot_instance" in st.session_state:
             del st.session_state.bot_instance
         if "loop" in st.session_state:
@@ -1889,11 +1883,11 @@ class TradingBotM4:
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         self.exchange = BinanceExchange(api_key, api_secret)
-        self.ws_manager = WebSocketManager(self)
+        self.ws_manager = None  # NE PAS initialiser ici !
+
         self.websocket = MultiStreamManager(
             pairs=self.config["TRADING"]["pairs"], config=self.stream_config
         )
-
         # Initialisation du client Binance
         try:
             self.spot_client = BinanceClient(
@@ -1980,6 +1974,19 @@ class TradingBotM4:
         self.last_news_check = 0
         self.news_refresh_interval = int(os.getenv("NEWS_REFRESH_INTERVAL", 60))
         self.client_session = None
+
+    async def async_init(self):
+        # On attend l'init async de l'exchange (sinon _exchange n'est pas prêt)
+        await self.exchange.initialize()
+        if (
+            getattr(self.exchange, "testnet", False)
+            and getattr(self.exchange, "_exchange", None) is not None
+            and self.exchange._exchange.options.get("defaultType", "spot") == "spot"
+        ):
+            self.logger.warning("Binance SPOT testnet : WebSockets désactivés")
+            self.ws_manager = None
+        else:
+            self.ws_manager = WebSocketManager(self)
 
     def get_latest_price(self, symbol):
         """Récupère le dernier prix pour un symbole donné via le spot_client."""
