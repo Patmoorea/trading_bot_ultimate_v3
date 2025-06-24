@@ -1966,7 +1966,6 @@ class TradingBotM4:
         self.client_session = None
 
     async def async_init(self):
-        # Initialisation asynchrone de l’exchange pour avoir ._exchange prêt
         await self.exchange.initialize()
         is_spot_testnet = (
             getattr(self.exchange, "testnet", False)
