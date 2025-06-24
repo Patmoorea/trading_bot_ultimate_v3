@@ -839,20 +839,17 @@ config = {
 
 @st.cache_resource(ttl=None)
 def get_bot():
-    """Create or get the bot instance with lifecycle protection"""
     if "bot_instance" in st.session_state and st.session_state.bot_instance is not None:
         return st.session_state.bot_instance
 
     try:
         session_manager.protect_session()
         logger.info("Creating new bot instance...")
-
         bot = TradingBotM4()
 
         async def initialize_bot():
             try:
-                # -------- PATCH PRINCIPAL ICI --------
-                await bot.async_init()  # <-- On appelle la méthode async d'init qui gère bien le testnet spot
+                await bot.async_init()  # <<== La ligne importante !
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
                 bot._initialized = True
@@ -871,11 +868,6 @@ def get_bot():
 
         try:
             if loop.is_running():
-                # Streamlit: la boucle tourne déjà, donc on doit faire le call async autrement
-                import concurrent.futures
-
-                future = asyncio.ensure_future(initialize_bot())
-                # On doit lever une erreur ici, car ce cache_resource ne supporte pas bien le pur async dans Streamlit
                 raise RuntimeError(
                     "Impossible d'initialiser le bot dans le cache_resource de Streamlit en mode async pur. Solution : initialiser dans une fonction async native."
                 )
@@ -1976,8 +1968,9 @@ class TradingBotM4:
         self.client_session = None
 
     async def async_init(self):
-        # On attend l'init async de l'exchange (sinon _exchange n'est pas prêt)
+        # Initialisation asynchrone de l’exchange pour avoir ._exchange prêt
         await self.exchange.initialize()
+        # PATCH FIABLE ICI
         if (
             getattr(self.exchange, "testnet", False)
             and getattr(self.exchange, "_exchange", None) is not None
