@@ -1,7 +1,14 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
+import os
+import sys
+import logging
+from datetime import datetime, timezone, timedelta
 
-VALID_TRADING_PAIRS = ["BTC/USDT", "ETH/USDT"]
+# 3. Constantes globales (DOIVENT ÊTRE DÉFINIES AVANT LEUR UTILISATION)
+CURRENT_TIME = "2025-06-24 05:20:29"  # UTC
+CURRENT_USER = "Patmoorea"
+
 # 3. Configuration Streamlit (DOIT ÊTRE LA PREMIÈRE COMMANDE)
 if "page_config_done" not in st.session_state:
     st.set_page_config(
@@ -11,6 +18,119 @@ if "page_config_done" not in st.session_state:
         initial_sidebar_state="expanded",
     )
     st.session_state.page_config_done = True
+
+# 5. Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("trading_bot.log"), logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
+
+
+class StreamlitSessionManager:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.init_time = datetime.now(timezone.utc)  # Ajout
+        self.user = CURRENT_USER  # Ajout
+        self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S_%f")
+        self._initialize_session_state()
+        self._log_initialization()  # Ajout de l'appel
+
+    def _initialize_session_state(self):
+        """Initialize session state variables"""
+        try:
+            if not st.session_state.get("session_initialized"):
+                st.session_state.update(
+                    {
+                        "session_id": self.session_id,
+                        "start_time": CURRENT_TIME,  # Utilisation de la constante
+                        "user": self.user,
+                        "initialization_time": self.init_time.strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
+                        "session_initialized": True,
+                        "bot_running": False,
+                        "portfolio": None,
+                        "latest_data": {},
+                        "indicators": None,
+                        "ws_status": "disconnected",
+                        "ws_initialized": False,
+                        "error_count": 0,
+                        "keep_alive": True,
+                        "prevent_cleanup": True,
+                        "force_cleanup": False,
+                        "cleanup_allowed": False,
+                    }
+                )
+                self.logger.info(f"Session initialized - ID: {self.session_id}")
+                return True
+        except Exception as e:
+            self.logger.error(f"Failed to initialize session state: {e}")
+            return False
+
+    def check_session_health(self):
+        """Vérifie l'état de santé de la session"""
+        try:
+            health_status = {
+                "healthy": True,
+                "errors": st.session_state.get("error_count", 0),
+                "ws_status": st.session_state.get("ws_status", "disconnected"),
+                "bot_status": (
+                    "running" if st.session_state.get("bot_running") else "stopped"
+                ),
+                "session_id": self.session_id,
+            }
+            return health_status
+        except Exception as e:
+            self.logger.error(f"Health check error: {e}")
+            return {"healthy": False, "error": str(e)}
+
+    def _log_initialization(self):
+        """Log initialization"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION INITIALIZED                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {self.user}
+║ Session ID: {self.session_id}
+║ Status: Active
+╚═════════════════════════════════════════════════╝
+            """
+        )
+
+    def protect_session(self) -> bool:
+        """Protect current session"""
+        try:
+            if not hasattr(self, "session_id"):
+                current_dt = datetime.now(timezone.utc)
+                self.session_id = current_dt.strftime("%Y%m%d_%H%M%S_%f")
+
+            self.logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION PROTECTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Session ID: {self.session_id}
+╚═════════════════════════════════════════════════╝
+                """
+            )
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to protect session: {e}")
+            return False
+
+
+# 5. Initialisation du gestionnaire de session
+try:
+    if "session_manager" not in st.session_state:
+        st.session_state.session_manager = StreamlitSessionManager()
+    session_manager = st.session_state.session_manager
+except Exception as e:
+    logger.error(f"Failed to initialize session manager: {e}")
+    st.error("Failed to initialize session. Please refresh the page.")
 
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
@@ -28,6 +148,8 @@ def auto_refresh(interval_ms=2000, key="js_autorefresh"):
     st.markdown(js_code, unsafe_allow_html=True)
 
 
+VALID_TRADING_PAIRS = ["BTC/USDT", "ETH/USDT"]
+
 # Initialisation des flags de protection
 for flag, default in [
     ("prevent_cleanup", True),
@@ -37,17 +159,13 @@ for flag, default in [
 ]:
     if flag not in st.session_state:
         st.session_state[flag] = default
+
 # 2. Imports système
-import os
-import sys
-import logging
 import json
 import re
 import time
 import signal
 import traceback
-from datetime import timedelta
-from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
@@ -63,13 +181,16 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
-# 4. Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("trading_bot.log"), logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
+
+
+# Fonction utilitaire pour obtenir l'heure actuelle au format UTC
+def get_current_time():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+# Variable globale pour l'heure actuelle
+current_time = get_current_time()
+
 # 5. Imports des bibliothèques externes
 import plotly.graph_objects as go
 import numpy as np
@@ -82,6 +203,7 @@ from dotenv import load_dotenv
 import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
+from src.monitoring.streamlit_ui import TradingDashboard
 
 # 6. Imports des modules internes (exchanges, core, etc.)
 from src.exchanges.binance_exchange import BinanceExchange
@@ -151,114 +273,57 @@ logger = logging.getLogger(__name__)
 
 
 class SessionState:
-    """Gestionnaire d'état de session centralisé"""
-
-    @staticmethod
-    def initialize():
-        if "session_initialized" in st.session_state:
-            return
-        st.session_state.update(
-            {
-                "session_initialized": True,
-                "bot_running": False,
-                "portfolio": None,
-                "latest_data": {},
-                "indicators": None,
-                "ws_status": "disconnected",
-                "ws_initialized": False,
-                "error_count": 0,
-                "keep_alive": True,
-                "prevent_cleanup": True,
-                "force_cleanup": False,
-                "cleanup_allowed": False,
-            }
-        )
-
-
-class StreamlitSessionManager:
-    """Gestionnaire de session Streamlit avec protection et logging améliorés"""
-
     def __init__(self):
-        """Initialisation du gestionnaire de session"""
         self.logger = logging.getLogger(__name__)
+        self.init_time = datetime.now(timezone.utc)
+        self.user = CURRENT_USER
+        self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S_%f")
+        self._initialize_state()
+        self._log_initialization()
 
-        # Ajout de la définition du session_id
-        self.session_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
-
-        # Initialisation unique de la session
+    def _initialize_state(self):
+        """Initialize internal state"""
         if not st.session_state.get("session_initialized"):
-            self._initialize_session_state()
-            self._log_initialization()
-
-    def _initialize_session_state(self):
-        """Initialise l'état de la session avec des valeurs sûres"""
-        try:
-            # États par défaut avec horodatage
             st.session_state.update(
                 {
-                    # États de base
                     "session_id": self.session_id,
-                    "initialized": True,
+                    "start_time": CURRENT_TIME,  # Using global constant
+                    "user": self.user,
+                    "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
                     "session_initialized": True,
-                    # États du bot
                     "bot_running": False,
                     "portfolio": None,
                     "latest_data": {},
                     "indicators": None,
-                    "refresh_count": 0,
-                    # États de la boucle événementielle
-                    "loop": None,
-                    "error_count": 0,
-                    # États WebSocket
                     "ws_status": "disconnected",
                     "ws_initialized": False,
-                    "ws_connection_status": "disconnected",
-                    # Protections
+                    "error_count": 0,
                     "keep_alive": True,
                     "prevent_cleanup": True,
                     "force_cleanup": False,
                     "cleanup_allowed": False,
                 }
             )
-            return True
-        except Exception as e:
-            self._log_error("Session state initialization error", e)
-            return False
+            self.logger.info(f"Session state initialized - ID: {self.session_id}")
 
-    def _log_error(self, message, error):
-        """Log unifié des erreurs"""
-        self.logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Error: {message}
-║ Details: {str(error)}
-║ Type: {type(error).__name__}
-║ Session ID: {self.session_id}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        # Incrément du compteur d'erreurs de manière sûre
-        st.session_state["error_count"] = st.session_state.get("error_count", 0) + 1
-
-    def _log_protection(self):
-        """Log de la protection de session"""
+    def _log_initialization(self):
+        """Log initialization"""
         self.logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
-║           SESSION PROTECTED                      ║
+║           SESSION INITIALIZED                    ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {self.user}
 ║ Session ID: {self.session_id}
+║ Status: Active
 ╚═════════════════════════════════════════════════╝
-        """
+            """
         )
 
-    def protect_session(self):
-        """Protection renforcée de la session"""
+    def protect_session(self) -> bool:
+        """Protect current session"""
         try:
-            # Mise à jour du timestamp
-            # Activation des protections
             st.session_state.update(
                 {
                     "prevent_cleanup": True,
@@ -273,14 +338,54 @@ class StreamlitSessionManager:
             self._log_error("Session protection error", e)
             return False
 
-    def allow_cleanup(self):
+    def _log_error(self, message, error):
+        """Log unifié des erreurs"""
+        self.logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION ERROR                          ║
+╠═════════════════════════════════════════════════╣
+║ Error: {message}
+║ Details: {str(error)}
+║ Type: {type(error).__name__}
+║ Session ID: {self.session_id}
+╚═════════════════════════════════════════════════╝
+            """
+        )
+        st.session_state["error_count"] = st.session_state.get("error_count", 0) + 1
+
+    def _log_protection(self):
+        """Log de la protection de session"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           SESSION PROTECTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Session ID: {self.session_id}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """
+        )
+
+    def _log_cleanup_authorization(self):
+        """Log de l'autorisation de nettoyage"""
+        self.logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP AUTHORIZED                     ║
+╠═════════════════════════════════════════════════╣
+║ Session ID: {self.session_id}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+╚═════════════════════════════════════════════════╝
+            """
+        )
+
+    def allow_cleanup(self) -> bool:
         """Autorisation sécurisée du nettoyage"""
         try:
-            # Vérification de l'état du bot
             if st.session_state.get("bot_running", False):
                 self.logger.warning("Cannot allow cleanup while bot is running")
                 return False
-            # Configuration du nettoyage
             st.session_state.update(
                 {
                     "cleanup_allowed": True,
@@ -295,7 +400,7 @@ class StreamlitSessionManager:
             self._log_error("Cleanup authorization error", e)
             return False
 
-    def get_session_info(self):
+    def get_session_info(self) -> dict:
         """Récupération des informations de session"""
         try:
             return {
@@ -306,12 +411,13 @@ class StreamlitSessionManager:
                 "bot_running": st.session_state.get("bot_running", False),
                 "ws_initialized": st.session_state.get("ws_initialized", False),
                 "error_count": st.session_state.get("error_count", 0),
+                "last_update": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             }
         except Exception as e:
             self._log_error("Session info retrieval error", e)
             return None
 
-    def check_session_health(self):
+    def check_session_health(self) -> dict:
         """Vérifie l'état de santé de la session"""
         try:
             health_status = {
@@ -321,6 +427,8 @@ class StreamlitSessionManager:
                 "bot_status": (
                     "running" if st.session_state.get("bot_running") else "stopped"
                 ),
+                "session_id": self.session_id,
+                "last_check": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             }
             return health_status
         except Exception as e:
@@ -448,9 +556,6 @@ class WebSocketManager:
                 self.bot.binance_ws = None
         except Exception as e:
             self.logger.error(f"Cleanup error: {e}")
-
-
-# Définition de la classe SessionManager
 
 
 def _setup_and_verify_event_loop():
@@ -5071,7 +5176,7 @@ def _initialize_session_state():
         # États par défaut avec horodatage
         default_state = {
             # États de base
-            "session_id": session_id,
+            "session_id": self.session_id,
             "initialized": True,
             # États du bot
             "bot_running": False,
@@ -5102,7 +5207,7 @@ def _initialize_session_state():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
-║ Session ID: {session_id}
+║ Session ID: {self.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """
