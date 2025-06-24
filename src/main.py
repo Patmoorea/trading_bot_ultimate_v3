@@ -1876,10 +1876,8 @@ class TradingBotM4:
         api_secret = self.config["BINANCE"]["API_SECRET"]
         self.exchange = BinanceExchange(api_key, api_secret)
         self.ws_manager = None  # NE PAS initialiser ici !
+        self.websocket = None
 
-        self.websocket = MultiStreamManager(
-            pairs=self.config["TRADING"]["pairs"], config=self.stream_config
-        )
         # Initialisation du client Binance
         try:
             self.spot_client = BinanceClient(
@@ -1970,16 +1968,22 @@ class TradingBotM4:
     async def async_init(self):
         # Initialisation asynchrone de l’exchange pour avoir ._exchange prêt
         await self.exchange.initialize()
-        # PATCH FIABLE ICI
-        if (
+        is_spot_testnet = (
             getattr(self.exchange, "testnet", False)
             and getattr(self.exchange, "_exchange", None) is not None
             and self.exchange._exchange.options.get("defaultType", "spot") == "spot"
-        ):
-            self.logger.warning("Binance SPOT testnet : WebSockets désactivés")
+        )
+        if is_spot_testnet:
+            self.logger.warning(
+                "Binance SPOT testnet : WebSockets et MultiStreamManager désactivés"
+            )
             self.ws_manager = None
+            self.websocket = None
         else:
             self.ws_manager = WebSocketManager(self)
+            self.websocket = MultiStreamManager(
+                pairs=self.config["TRADING"]["pairs"], config=self.stream_config
+            )
 
     def get_latest_price(self, symbol):
         """Récupère le dernier prix pour un symbole donné via le spot_client."""
