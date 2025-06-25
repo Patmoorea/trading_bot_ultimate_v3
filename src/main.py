@@ -1,129 +1,5 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
-import os
-import sys
-import logging
-from datetime import datetime, timezone, timedelta
-
-# 3. Constantes globales (DOIVENT ÊTRE DÉFINIES AVANT LEUR UTILISATION)
-CURRENT_TIME = "2025-06-24 05:20:29"  # UTC
-CURRENT_USER = "Patmoorea"
-
-# 3. Configuration Streamlit (DOIT ÊTRE LA PREMIÈRE COMMANDE)
-if "page_config_done" not in st.session_state:
-    st.set_page_config(
-        page_title="Trading Bot Ultimate v4",
-        page_icon="🤖",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
-    st.session_state.page_config_done = True
-
-# 5. Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("trading_bot.log"), logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
-
-
-class StreamlitSessionManager:
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.init_time = datetime.now(timezone.utc)
-        self.user = CURRENT_USER
-        self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S_%f")
-        self._initialize_state()
-        self.log_initialization()  # Changé de _log_initialization à log_initialization
-
-    def _initialize_state(self):
-        """Initialize internal state"""
-        if not st.session_state.get("session_initialized"):
-            st.session_state.update(
-                {
-                    "session_id": self.session_id,
-                    "start_time": CURRENT_TIME,
-                    "user": self.user,
-                    "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "session_initialized": True,
-                    "bot_running": False,
-                    "portfolio": None,
-                    "latest_data": {},
-                    "indicators": None,
-                    "ws_status": "disconnected",
-                    "ws_initialized": False,
-                    "error_count": 0,
-                    "keep_alive": True,
-                    "prevent_cleanup": True,
-                    "force_cleanup": False,
-                    "cleanup_allowed": False,
-                }
-            )
-            self.logger.info(f"Session initialized - ID: {self.session_id}")
-
-    def log_initialization(self):  # Changé de _log_initialization à log_initialization
-        """Log initialization"""
-        self.logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION INITIALIZED                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {self.init_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {self.user}
-║ Session ID: {self.session_id}
-║ Status: Active
-╚═════════════════════════════════════════════════╝
-            """
-        )
-
-    def check_session_health(self):
-        """Vérifie l'état de santé de la session"""
-        try:
-            health_status = {
-                "healthy": True,
-                "errors": st.session_state.get("error_count", 0),
-                "ws_status": st.session_state.get("ws_status", "disconnected"),
-                "bot_status": (
-                    "running" if st.session_state.get("bot_running") else "stopped"
-                ),
-                "session_id": self.session_id,
-            }
-            return health_status
-        except Exception as e:
-            self.logger.error(f"Health check error: {e}")
-            return {"healthy": False, "error": str(e)}
-
-    def protect_session(self) -> bool:
-        """Protect current session"""
-        try:
-            if not hasattr(self, "session_id"):
-                current_dt = datetime.now(timezone.utc)
-                self.session_id = current_dt.strftime("%Y%m%d_%H%M%S_%f")
-
-            self.logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION PROTECTED                      ║
-╠═════════════════════════════════════════════════╣
-║ Session ID: {self.session_id}
-╚═════════════════════════════════════════════════╝
-                """
-            )
-            return True
-        except Exception as e:
-            self.logger.error(f"Failed to protect session: {e}")
-            return False
-
-
-# 5. Initialisation du gestionnaire de session
-try:
-    if "session_manager" not in st.session_state:
-        st.session_state.session_manager = StreamlitSessionManager()
-    session_manager = st.session_state.session_manager
-except Exception as e:
-    logger.error(f"Failed to initialize session manager: {e}")
-    st.error("Failed to initialize session. Please refresh the page.")
 
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
@@ -141,8 +17,6 @@ def auto_refresh(interval_ms=2000, key="js_autorefresh"):
     st.markdown(js_code, unsafe_allow_html=True)
 
 
-VALID_TRADING_PAIRS = ["BTC/USDT", "ETH/USDT"]
-
 # Initialisation des flags de protection
 for flag, default in [
     ("prevent_cleanup", True),
@@ -153,12 +27,23 @@ for flag, default in [
     if flag not in st.session_state:
         st.session_state[flag] = default
 
+st.set_page_config(
+    page_title="Trading Bot Ultimate v4",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 # 2. Imports système
+import os
+import sys
+import logging
 import json
 import re
 import time
 import signal
-import traceback
+from datetime import timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
@@ -175,14 +60,13 @@ if parent_dir not in sys.path:
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
-
-# Fonction utilitaire pour obtenir l'heure actuelle au format UTC
-def get_current_time():
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-
-
-# Variable globale pour l'heure actuelle
-current_time = get_current_time()
+# 4. Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("trading_bot.log"), logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
 
 # 5. Imports des bibliothèques externes
 import plotly.graph_objects as go
@@ -191,13 +75,11 @@ import pandas as pd
 import torch
 import telegram
 import ccxt
-import ccxt.async_support as ccxt
 import ta
 from dotenv import load_dotenv
 import gymnasium as gym
 from gymnasium import spaces
 from binance import AsyncClient, BinanceSocketManager
-from src.monitoring.streamlit_ui import TradingDashboard
 
 # 6. Imports des modules internes (exchanges, core, etc.)
 from src.exchanges.binance_exchange import BinanceExchange
@@ -207,6 +89,7 @@ from src.core.buffer.circular_buffer import CircularBuffer
 from src.connectors.binance import BinanceConnector
 from src.portfolio.real_portfolio import RealPortfolio
 from src.regime_detection.hmm_kmeans import MarketRegimeDetector
+from src.monitoring.streamlit_ui import TradingDashboard
 from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 from src.indicators.advanced.multi_timeframe import (
     MultiTimeframeAnalyzer,
@@ -241,6 +124,7 @@ cleanup_lock = asyncio.Lock()
 cleanup_in_progress = False
 last_cleanup_time = 0
 CLEANUP_COOLDOWN = 5
+
 # 8. Constantes WebSocket globales
 WEBSOCKET_CONFIG = {
     "RECONNECT_DELAY": 1.0,
@@ -263,45 +147,67 @@ def setup_asyncio():
         return None
 
 
-logger = logging.getLogger(__name__)
+class StreamlitSessionManager:
+    """Gestionnaire de session Streamlit avec protection et logging améliorés"""
 
-
-class SessionState:
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        """Initialisation du gestionnaire de session"""
         self.init_time = datetime.now(timezone.utc)
-        self.user = CURRENT_USER
-        self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S_%f")
-        self._initialize_state()
-        self._log_initialization()
+        self.user = os.getenv("USER", "Patmoorea")
+        self.session_id = f"{self.user}_{int(self.init_time.timestamp())}"
+        self.logger = logging.getLogger(__name__)
 
-    def _initialize_state(self):
-        """Initialize internal state"""
-        if not st.session_state.get("session_initialized"):
-            st.session_state.update(
-                {
-                    "session_id": self.session_id,
-                    "start_time": CURRENT_TIME,  # Using global constant
-                    "user": self.user,
-                    "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "session_initialized": True,
-                    "bot_running": False,
-                    "portfolio": None,
-                    "latest_data": {},
-                    "indicators": None,
-                    "ws_status": "disconnected",
-                    "ws_initialized": False,
-                    "error_count": 0,
-                    "keep_alive": True,
-                    "prevent_cleanup": True,
-                    "force_cleanup": False,
-                    "cleanup_allowed": False,
-                }
-            )
-            self.logger.info(f"Session state initialized - ID: {self.session_id}")
+        # Initialisation immédiate de la session
+        if "session_initialized" not in st.session_state:
+            if self._initialize_session_state():
+                self._log_initialization()
+
+    def _initialize_session_state(self):
+        """Initialise l'état de la session avec des valeurs sûres"""
+        try:
+            # États par défaut avec horodatage
+            default_state = {
+                # États de base
+                "session_id": self.session_id,
+                "initialization_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "last_update_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "user": self.user,
+                "initialized": True,
+                "session_initialized": True,
+                # États du bot
+                "bot_running": False,
+                "portfolio": None,
+                "latest_data": {},
+                "indicators": None,
+                "refresh_count": 0,
+                # États de la boucle événementielle
+                "loop": None,
+                "error_count": 0,
+                # États WebSocket
+                "ws_status": "disconnected",
+                "ws_initialized": False,
+                "ws_connection_status": "disconnected",
+                "ws_last_heartbeat": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                # Protections
+                "keep_alive": True,
+                "prevent_cleanup": True,
+                "force_cleanup": False,
+                "cleanup_allowed": False,
+            }
+
+            # Initialisation des états manquants uniquement
+            for key, value in default_state.items():
+                if key not in st.session_state:
+                    st.session_state[key] = value
+
+            return True
+
+        except Exception as e:
+            self._log_error("Session state initialization error", e)
+            return False
 
     def _log_initialization(self):
-        """Log initialization"""
+        """Log de l'initialisation de la session"""
         self.logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
@@ -312,25 +218,8 @@ class SessionState:
 ║ Session ID: {self.session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
-            """
+        """
         )
-
-    def protect_session(self) -> bool:
-        """Protect current session"""
-        try:
-            st.session_state.update(
-                {
-                    "prevent_cleanup": True,
-                    "keep_alive": True,
-                    "force_cleanup": False,
-                    "cleanup_allowed": False,
-                }
-            )
-            self._log_protection()
-            return True
-        except Exception as e:
-            self._log_error("Session protection error", e)
-            return False
 
     def _log_error(self, message, error):
         """Log unifié des erreurs"""
@@ -339,14 +228,17 @@ class SessionState:
 ╔═════════════════════════════════════════════════╗
 ║           SESSION ERROR                          ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {message}
 ║ Details: {str(error)}
 ║ Type: {type(error).__name__}
 ║ Session ID: {self.session_id}
 ╚═════════════════════════════════════════════════╝
-            """
+        """
         )
-        st.session_state["error_count"] = st.session_state.get("error_count", 0) + 1
+
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
 
     def _log_protection(self):
         """Log de la protection de session"""
@@ -355,79 +247,184 @@ class SessionState:
 ╔═════════════════════════════════════════════════╗
 ║           SESSION PROTECTED                      ║
 ╠═════════════════════════════════════════════════╣
-║ Session ID: {self.session_id}
 ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Session ID: {self.session_id}
+║ Last Action: {st.session_state.get('last_action_time')}
 ╚═════════════════════════════════════════════════╝
-            """
+        """
         )
 
-    def _log_cleanup_authorization(self):
-        """Log de l'autorisation de nettoyage"""
-        self.logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP AUTHORIZED                     ║
-╠═════════════════════════════════════════════════╣
-║ Session ID: {self.session_id}
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-╚═════════════════════════════════════════════════╝
-            """
-        )
+    def protect_session(self):
+        """Protection renforcée de la session"""
+        try:
+            # Vérification et réinitialisation si nécessaire
+            if not st.session_state.get("session_initialized"):
+                self._initialize_session_state()
 
-    def allow_cleanup(self) -> bool:
+            # Mise à jour du timestamp
+            current_time = datetime.now(timezone.utc)
+            st.session_state.last_action_time = current_time.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+            # Activation des protections
+            st.session_state.prevent_cleanup = True
+            st.session_state.keep_alive = True
+            st.session_state.force_cleanup = False
+            st.session_state.cleanup_allowed = False
+
+            self._log_protection()
+            return True
+
+        except Exception as e:
+            self._log_error("Session protection error", e)
+            return False
+
+    def allow_cleanup(self):
         """Autorisation sécurisée du nettoyage"""
         try:
+            # Vérification de l'état du bot
             if st.session_state.get("bot_running", False):
-                self.logger.warning("Cannot allow cleanup while bot is running")
+                logger.warning("Cannot allow cleanup while bot is running")
                 return False
-            st.session_state.update(
-                {
-                    "cleanup_allowed": True,
-                    "force_cleanup": True,
-                    "prevent_cleanup": False,
-                    "keep_alive": False,
-                }
-            )
+
+            # Configuration du nettoyage
+            st.session_state.cleanup_allowed = True
+            st.session_state.force_cleanup = True
+            st.session_state.prevent_cleanup = False
+            st.session_state.keep_alive = False
+
             self._log_cleanup_authorization()
             return True
+
         except Exception as e:
             self._log_error("Cleanup authorization error", e)
             return False
 
-    def get_session_info(self) -> dict:
+    def get_session_info(self):
         """Récupération des informations de session"""
         try:
-            return {
+            info = {
+                "user": self.user,
                 "session_id": self.session_id,
+                "init_time": self.init_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "last_action": st.session_state.get("last_action_time"),
                 "session_initialized": st.session_state.get(
                     "session_initialized", False
                 ),
                 "bot_running": st.session_state.get("bot_running", False),
                 "ws_initialized": st.session_state.get("ws_initialized", False),
                 "error_count": st.session_state.get("error_count", 0),
-                "last_update": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
             }
+            return info
+
         except Exception as e:
             self._log_error("Session info retrieval error", e)
             return None
 
-    def check_session_health(self) -> dict:
-        """Vérifie l'état de santé de la session"""
-        try:
-            health_status = {
-                "healthy": True,
-                "errors": st.session_state.get("error_count", 0),
-                "ws_status": st.session_state.get("ws_status", "disconnected"),
-                "bot_status": (
-                    "running" if st.session_state.get("bot_running") else "stopped"
-                ),
-                "session_id": self.session_id,
-                "last_check": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-            }
-            return health_status
-        except Exception as e:
-            self._log_error("Health check error", e)
-            return {"healthy": False, "error": str(e)}
+
+def _setup_and_verify_event_loop():
+    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv("USER", "Patmoorea")
+
+    try:
+        # Vérification de l'existence d'une boucle
+        if not st.session_state.get("loop"):
+            # Création et configuration de la nouvelle boucle
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+
+            # Sauvegarde dans la session
+            st.session_state.loop = loop
+
+            # Log de succès d'initialisation
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Status: Successfully configured
+║ Loop ID: {id(loop)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return loop
+
+        # Vérification de la boucle existante
+        existing_loop = st.session_state.loop
+        if existing_loop.is_closed():
+            logger.warning(
+                f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP CLOSED                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Creating new loop
+║ Previous Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # Création d'une nouvelle boucle
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            nest_asyncio.apply()
+            st.session_state.loop = new_loop
+            return new_loop
+
+        # Retour de la boucle existante
+        logger.debug(
+            f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP VERIFIED                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Using existing loop
+║ Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        return existing_loop
+
+    except Exception as e:
+        # Log d'erreur détaillé
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ User: {current_user}
+║ Details: {traceback.format_exc()}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
+
+        return None
+
+    finally:
+        # Mise à jour du timestamp
+        st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+# Création de l'instance globale avec vérification
+try:
+    session_manager = StreamlitSessionManager()
+    logger.info("✅ Session manager initialized successfully")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize session manager: {e}")
+    session_manager = None
 
 
 class WebSocketManager:
@@ -449,33 +446,27 @@ class WebSocketManager:
 
     async def start(self):
         """Démarre les WebSockets"""
-        # PATCH: Désactive le démarrage des WebSockets si testnet SPOT !
-        if (
-            getattr(self.bot.exchange, "testnet", False)
-            and self.bot.exchange._exchange.options.get("defaultType", "spot") == "spot"
-        ):
-            logger.warning(
-                "Binance SPOT testnet : PAS de WebSocket ! (WebSocketManager.start ignoré)"
-            )
-            self.running = False
-            return False
-
         async with self.lock:
             if self.running:
                 return True
+
             try:
                 # Initialisation du client Binance
                 self.bot.binance_ws = await AsyncClient.create(
                     api_key=os.getenv("BINANCE_API_KEY"),
                     api_secret=os.getenv("BINANCE_API_SECRET"),
                 )
+
                 # Initialisation du socket manager
                 self.bot.socket_manager = BinanceSocketManager(self.bot.binance_ws)
+
                 # Configuration des streams
                 if not await self._setup_streams():
                     raise Exception("Failed to setup streams")
+
                 self.running = True
                 return True
+
             except Exception as e:
                 logger.error(f"WebSocket start error: {e}")
                 await self.cleanup()
@@ -490,18 +481,22 @@ class WebSocketManager:
                 self.streams[f"{pair}_trades"] = asyncio.create_task(
                     self._handle_stream(ts, "trade", pair)
                 )
+
                 # Stream d'orderbook
                 ds = self.bot.socket_manager.depth_socket(pair)
                 self.streams[f"{pair}_depth"] = asyncio.create_task(
                     self._handle_stream(ds, "depth", pair)
                 )
+
                 # Stream de klines
                 for tf in self.timeframes:
                     ks = self.bot.socket_manager.kline_socket(pair, tf)
                     self.streams[f"{pair}_kline_{tf}"] = asyncio.create_task(
                         self._handle_stream(ks, "kline", pair, tf)
                     )
+
             return True
+
         except Exception as e:
             logger.error(f"Stream setup error: {e}")
             return False
@@ -520,6 +515,7 @@ class WebSocketManager:
                             await self.bot._handle_orderbook(msg)
                         elif stream_type == "kline":
                             await self.bot._handle_kline(msg)
+
             except Exception as e:
                 if "shutdown" not in str(e).lower() and "closed" not in str(e).lower():
                     logger.error(f"Stream error ({stream_type}-{pair}): {e}")
@@ -530,128 +526,42 @@ class WebSocketManager:
 
     # Dans la méthode cleanup()
 
-    async def cleanup(self):
-        """Nettoie les ressources WebSocket"""
-        try:
-            self.running = False
-            # Annulation des tâches
-            for stream in self.streams.values():
-                if not stream.done():
-                    stream.cancel()
-                    try:
-                        await stream
-                    except asyncio.CancelledError:
-                        pass
-            self.streams.clear()
-            # Fermeture du socket manager
-            if hasattr(self.bot, "socket_manager") and self.bot.socket_manager:
-                try:
-                    # Modification pour utiliser stop_socket
-                    for socket in self.bot.socket_manager.sockets:
-                        await self.bot.socket_manager.stop_socket(socket)
-                    self.bot.socket_manager = None
-                except Exception as e:
-                    self.logger.warning(f"Error closing socket manager: {e}")
-            # Fermeture du client Binance
-            if hasattr(self.bot, "binance_ws") and self.bot.binance_ws:
-                try:
-                    await self.bot.binance_ws.close_connection()
-                except Exception as e:
-                    self.logger.warning(f"Error closing Binance client: {e}")
-                self.bot.binance_ws = None
-        except Exception as e:
-            self.logger.error(f"Cleanup error: {e}")
 
-
-def _setup_and_verify_event_loop():
-    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+async def cleanup(self):
+    """Nettoie les ressources WebSocket"""
     try:
-        # Vérification de l'existence d'une boucle
-        if not st.session_state.get("loop"):
-            # Création et configuration de la nouvelle boucle
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            # Sauvegarde dans la session
-            st.session_state.loop = loop
-            # Log de succès d'initialisation
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP INITIALIZED              ║
-╠═════════════════════════════════════════════════╣
-║ Status: Successfully configured
-║ Loop ID: {id(loop)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-            return loop
-        # Vérification de la boucle existante
-        existing_loop = st.session_state.loop
-        if existing_loop.is_closed():
-            logger.warning(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP CLOSED                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: Creating new loop
-║ Previous Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-            # Création d'une nouvelle boucle
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            nest_asyncio.apply()
-            st.session_state.loop = new_loop
-            return new_loop
-        # Retour de la boucle existante
-        logger.debug(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP VERIFIED                 ║
-╠═════════════════════════════════════════════════╣
-║ Status: Using existing loop
-║ Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        return existing_loop
+        self.running = False
+
+        # Annulation des tâches
+        for stream in self.streams.values():
+            if not stream.done():
+                stream.cancel()
+                try:
+                    await stream
+                except asyncio.CancelledError:
+                    pass
+
+        self.streams.clear()
+
+        # Fermeture du socket manager
+        if hasattr(self.bot, "socket_manager") and self.bot.socket_manager:
+            try:
+                # Modification pour utiliser stop_socket
+                for socket in self.bot.socket_manager.sockets:
+                    await self.bot.socket_manager.stop_socket(socket)
+                self.bot.socket_manager = None
+            except Exception as e:
+                self.logger.warning(f"Error closing socket manager: {e}")
+
+        # Fermeture du client Binance
+        if hasattr(self.bot, "binance_ws") and self.bot.binance_ws:
+            try:
+                await self.bot.binance_ws.close_connection()
+            except Exception as e:
+                self.logger.warning(f"Error closing Binance client: {e}")
+            self.bot.binance_ws = None
     except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ Details: {traceback.format_exc()}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        # Incrément du compteur d'erreurs
-        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
-        return None
-    finally:
-        # Mise à jour du timestamp
-        st.session_state.last_update_time = datetime.now(timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
-
-
-# 6. Initialisation de la session et vérifications
-try:
-    session_manager = StreamlitSessionManager()
-    # 7. Protection de la session
-    session_manager.protect_session()
-    # 8. Vérification de la santé
-    health = session_manager.check_session_health()
-    if not health["healthy"]:
-        st.error("Session health check failed!")
-except Exception as e:
-    logger.error(f"Failed to initialize session manager: {e}")
-    st.error("Failed to initialize session. Please refresh the page.")
+        self.logger.error(f"Cleanup error: {e}")
 
 
 # Définition de la classe SessionManager
@@ -686,6 +596,7 @@ class RegimeDetector:
                 trend_strength = 0
                 volatility = 0
                 volume = 0
+
                 for timeframe_data in indicators_analysis.values():
                     if "trend" in timeframe_data:
                         trend_strength += timeframe_data["trend"].get(
@@ -701,6 +612,7 @@ class RegimeDetector:
                             .get("volume_profile", {})
                             .get("strength", 0)
                         )
+
                 if trend_strength > 0.7:
                     regime = "Trending"
                 elif volatility > 0.7:
@@ -709,6 +621,7 @@ class RegimeDetector:
                     regime = "High Volume"
                 else:
                     regime = "Ranging"
+
             self.current_regime = regime
             self.logger.info(
                 f"""
@@ -720,6 +633,7 @@ class RegimeDetector:
             """
             )
             return regime
+
         except Exception as e:
             self.logger.error(f"❌ Erreur détection régime: {e}")
             return "Error"
@@ -754,6 +668,7 @@ def init_session_state():
         "ws_initialized": False,
         "cleanup_allowed": False,  # Nouveau flag
     }
+
     for var, default in session_vars.items():
         # Ne pas écraser les valeurs existantes pour keep_alive et prevent_cleanup
         if var in ["keep_alive", "prevent_cleanup"]:
@@ -839,59 +754,149 @@ config = {
 
 @st.cache_resource(ttl=None)
 def get_bot():
+    """Create or get the bot instance with lifecycle protection"""
     if "bot_instance" in st.session_state and st.session_state.bot_instance is not None:
         return st.session_state.bot_instance
 
     try:
-        session_manager.protect_session()
+        session_manager.protect_session()  # Protection explicite
         logger.info("Creating new bot instance...")
         bot = TradingBotM4()
+        st.session_state.bot_instance = bot
+        return bot
+    except Exception as e:
+        logger.error(f"Bot creation error: {e}")
+        return None
 
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║             CREATING BOT INSTANCE                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Création du bot
+        bot = TradingBotM4()
+
+        # Configuration de la boucle d'événements
+        if not st.session_state.get("loop"):
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                nest_asyncio.apply()
+                st.session_state.loop = loop
+                logger.info("✅ Event loop configured successfully")
+            except Exception as loop_error:
+                logger.error(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║             EVENT LOOP ERROR                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(loop_error)}
+╚═════════════════════════════════════════════════╝
+                """
+                )
+                raise
+
+        # Initialisation du bot
         async def initialize_bot():
             try:
-                await bot.async_init()  # <<== La ligne importante !
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
                 bot._initialized = True
-                logger.info("Bot initialized successfully")
+                logger.info("✅ Bot initialization successful")
                 return bot
             except Exception as init_error:
-                logger.error(f"Bot initialization error: {init_error}")
+                logger.error(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║             INITIALIZATION ERROR                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(init_error)}
+╚═════════════════════════════════════════════════╝
+                """
+                )
                 raise
 
         try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        nest_asyncio.apply()
+            # Initialisation avec gestion des erreurs de boucle
+            try:
+                bot = st.session_state.loop.run_until_complete(initialize_bot())
+            except RuntimeError as e:
+                if "This event loop is already running" in str(e):
+                    logger.warning(
+                        "⚠️ Event loop already running, applying nest_asyncio"
+                    )
+                    nest_asyncio.apply()
+                    bot = st.session_state.loop.run_until_complete(initialize_bot())
+                else:
+                    raise
 
-        try:
-            if loop.is_running():
-                raise RuntimeError(
-                    "Impossible d'initialiser le bot dans le cache_resource de Streamlit en mode async pur. Solution : initialiser dans une fonction async native."
-                )
-            else:
-                bot = loop.run_until_complete(initialize_bot())
-        except RuntimeError as e:
-            logger.error(f"RuntimeError during bot init: {e}")
-            bot = loop.run_until_complete(initialize_bot())
+            if not bot or not getattr(bot, "_initialized", False):
+                raise Exception("Bot initialization incomplete")
 
-        if not bot or not getattr(bot, "_initialized", False):
-            raise Exception("Bot initialization incomplete")
+            # Sauvegarde dans la session state
+            st.session_state.bot_instance = bot
 
-        st.session_state.bot_instance = bot
-        logger.info(
-            f"Bot ready - Status: {bot.ws_connection.get('status', 'initializing')} - Mode: {getattr(bot, 'trading_mode', 'production')}"
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║             BOT INSTANCE READY                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: {bot.ws_connection.get('status', 'initializing')}
+║ Trading Mode: {getattr(bot, 'trading_mode', 'production')}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return bot
+
+        except Exception as run_error:
+            logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║             RUNTIME ERROR                        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(run_error)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+            # Nettoyage sécurisé
+            if hasattr(bot, "_cleanup"):
+                try:
+                    st.session_state.loop.run_until_complete(bot._cleanup())
+                except:
+                    pass
+            raise
+
+    except Exception as e:
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║             BOT CREATION ERROR                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """
         )
 
-        return bot
-    except Exception as e:
-        logger.error(f"Bot creation failed: {e}")
+        # Nettoyage de la session
         if "bot_instance" in st.session_state:
             del st.session_state.bot_instance
         if "loop" in st.session_state:
             del st.session_state.loop
+
         return None
 
 
@@ -911,6 +916,7 @@ def setup_asyncio():
 ╔═════════════════════════════════════════════════╗
 ║             ASYNCIO SETUP ERROR                  ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ╚═════════════════════════════════════════════════╝
         """
@@ -932,6 +938,7 @@ async def setup_streams(bot):
                     logger.info(
                         f"Setting up {stream_type} stream (attempt {retry_count + 1}/{WEBSOCKET_CONFIG['MAX_RETRIES']})..."
                     )
+
                     # Création du socket avec le bon symbole
                     socket = None
                     if stream_type == "ticker":
@@ -940,14 +947,17 @@ async def setup_streams(bot):
                         socket = bot.socket_manager.depth_socket(symbol)
                     elif stream_type == "kline":
                         socket = bot.socket_manager.kline_socket(symbol, interval)
+
                     if socket:
                         task = asyncio.create_task(
                             handle_socket_message(bot, socket, stream_type)
                         )
                         task.set_name(f"{stream_type}_stream_{symbol}")
                         return task
+
                     retry_count += 1
                     await asyncio.sleep(WEBSOCKET_CONFIG["RETRY_DELAY"])
+
                 except Exception as e:
                     retry_count += 1
                     logger.error(f"Error setting up {stream_type} stream: {e}")
@@ -965,8 +975,10 @@ async def setup_streams(bot):
         )
         depth_task = await setup_single_stream("depth", bot.socket_manager.depth_socket)
         kline_task = await setup_single_stream("kline", bot.socket_manager.kline_socket)
+
         # Collecte des tâches réussies
         tasks = [t for t in [ticker_task, depth_task, kline_task] if t is not None]
+
         if len(tasks) > 0:
             logger.info(
                 f"✅ Successfully setup {len(tasks)}/{len(WEBSOCKET_CONFIG['STREAM_TYPES'])} streams"
@@ -975,6 +987,7 @@ async def setup_streams(bot):
         else:
             logger.error("❌ Failed to setup any streams")
             return None
+
     except Exception as e:
         logger.error(f"❌ Stream setup error: {e}")
         return None
@@ -992,13 +1005,16 @@ async def cleanup_existing_connections(bot):
                         socket = getattr(bot.socket_manager, socket_name)
                         if hasattr(socket, "close"):
                             await socket.close()
+
                 # Fermeture du socket manager lui-même
                 if hasattr(bot.socket_manager, "close_connection"):
                     await bot.socket_manager.close_connection()
+
             except Exception as e:
                 logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
                 bot.socket_manager = None
+
         # Fermeture du client WebSocket
         if hasattr(bot, "binance_ws") and bot.binance_ws:
             try:
@@ -1007,7 +1023,9 @@ async def cleanup_existing_connections(bot):
                 logger.warning(f"⚠️ Error closing Binance client: {e}")
             finally:
                 bot.binance_ws = None
+
         return True
+
     except Exception as e:
         logger.error(f"❌ Error during cleanup: {e}")
         return False
@@ -1016,6 +1034,7 @@ async def cleanup_existing_connections(bot):
 async def create_binance_client(bot):
     """
     Crée une nouvelle instance du client Binance
+
     Args:
         bot: Instance du bot de trading
     """
@@ -1025,9 +1044,12 @@ async def create_binance_client(bot):
             api_key=os.getenv("BINANCE_API_KEY"),
             api_secret=os.getenv("BINANCE_API_SECRET"),
         )
+
         # Création du socket manager
         bot.socket_manager = BinanceSocketManager(bot.binance_ws)
+
         return True
+
     except Exception as e:
         logger.error(f"❌ Error creating Binance client: {e}")
         return False
@@ -1037,6 +1059,7 @@ async def setup_websocket_streams(bot):
     """Configure les streams WebSocket"""
     try:
         tasks = []
+
         # Configuration des streams par paire
         for pair in bot.config["TRADING"]["pairs"]:
             # Stream de trades en temps réel
@@ -1044,11 +1067,13 @@ async def setup_websocket_streams(bot):
             tasks.append(
                 asyncio.create_task(handle_socket_message(bot, trade_socket, "trade"))
             )
+
             # Stream d'orderbook
             depth_socket = bot.socket_manager.depth_socket(pair)
             tasks.append(
                 asyncio.create_task(handle_socket_message(bot, depth_socket, "depth"))
             )
+
             # Stream de klines pour chaque timeframe
             for timeframe in bot.config["TRADING"]["timeframes"]:
                 kline_socket = bot.socket_manager.kline_socket(pair, timeframe)
@@ -1057,6 +1082,7 @@ async def setup_websocket_streams(bot):
                         handle_socket_message(bot, kline_socket, "kline")
                     )
                 )
+
         # Mise à jour du statut de connexion
         bot.ws_connection.update(
             {
@@ -1066,9 +1092,12 @@ async def setup_websocket_streams(bot):
                 "start_time": time.time(),
             }
         )
+
         # Attendre que tous les streams soient initialisés
         await asyncio.gather(*[asyncio.shield(task) for task in tasks])
+
         return True
+
     except Exception as e:
         logger.error(f"❌ Stream setup error: {e}")
         return False
@@ -1083,18 +1112,24 @@ async def initialize_websocket(bot):
         if getattr(bot, "_ws_initializing", False):
             logger.warning("⚠️ Initialisation WebSocket déjà en cours")
             return False
+
         bot._ws_initializing = True
+
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║         INITIALISATION WEBSOCKET                ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         # 1. Vérification des credentials
         api_key = os.getenv("BINANCE_API_KEY")
         api_secret = os.getenv("BINANCE_API_SECRET")
+
         if not api_key or not api_secret:
             logger.error(
                 """
@@ -1106,6 +1141,7 @@ async def initialize_websocket(bot):
             """
             )
             return False
+
         # 2. Nettoyage des connexions existantes si nécessaire
         if hasattr(bot, "binance_ws") and bot.binance_ws:
             try:
@@ -1115,6 +1151,7 @@ async def initialize_websocket(bot):
                 logger.warning(
                     f"⚠️ Erreur nettoyage connexion existante: {cleanup_error}"
                 )
+
         # 3. Création du client avec timeout et retry
         try:
             bot.binance_ws = await AsyncClient.create(
@@ -1124,6 +1161,7 @@ async def initialize_websocket(bot):
         except Exception as client_error:
             logger.error(f"❌ Erreur création client: {client_error}")
             return False
+
         # 4. Configuration du socket manager avec paramètres optimisés
         try:
             bot.socket_manager = BinanceSocketManager(
@@ -1133,6 +1171,7 @@ async def initialize_websocket(bot):
         except Exception as manager_error:
             logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
             return False
+
         # 5. Configuration des streams avec gestion d'erreur
         try:
             # Définition des streams
@@ -1141,32 +1180,42 @@ async def initialize_websocket(bot):
                 "btcusdt@depth",  # Stream d'orderbook
                 "btcusdt@kline_1m",  # Stream de klines 1m
             ]
+
             # Réinitialisation des tâches
             bot.ws_tasks = []
+
             # Création du socket multiplexé avec retry
             multiplex_socket = bot.socket_manager.multiplex_socket(streams)
+
             # Création de la tâche principale avec gestion d'erreur
             main_task = asyncio.create_task(
                 handle_socket_message(bot, multiplex_socket, "market_data")
             )
             main_task.set_name("main_market_data_stream")
             bot.ws_tasks.append(main_task)
+
             # Ajout d'un heartbeat pour maintenir la connexion
             heartbeat_task = asyncio.create_task(websocket_heartbeat(bot))
             heartbeat_task.set_name("websocket_heartbeat")
             bot.ws_tasks.append(heartbeat_task)
+
             logger.info("✅ Streams configurés")
+
         except Exception as stream_error:
             logger.error(f"❌ Erreur configuration streams: {stream_error}")
             return False
+
         # 6. Mise à jour du statut de connexion
         bot.ws_connection = {
             "enabled": True,
             "status": "connected",
             "tasks": bot.ws_tasks,
+            "last_heartbeat": datetime.now(timezone.utc),
             "reconnect_count": 0,
             "max_reconnects": 3,
+            "start_time": datetime.now(timezone.utc),
         }
+
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
@@ -1175,10 +1224,13 @@ async def initialize_websocket(bot):
 ║ Status: Connected
 ║ Streams: {len(streams)}
 ║ Tasks: {len(bot.ws_tasks)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         return True
+
     except Exception as e:
         logger.error(
             f"""
@@ -1186,9 +1238,11 @@ async def initialize_websocket(bot):
 ║         ERREUR INITIALISATION                   ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         # Nettoyage en cas d'erreur
         try:
             if hasattr(bot, "binance_ws") and bot.binance_ws:
@@ -1197,7 +1251,9 @@ async def initialize_websocket(bot):
                 bot.socket_manager = None
         except:
             pass
+
         return False
+
     finally:
         bot._ws_initializing = False
         # Vérification finale de la connexion
@@ -1211,8 +1267,12 @@ async def websocket_heartbeat(bot):
         try:
             if not bot.ws_connection["enabled"]:
                 break
+
             # Update heartbeat timestamp
+            bot.ws_connection["last_heartbeat"] = datetime.now(timezone.utc)
+
             await asyncio.sleep(30)  # Heartbeat toutes les 30 secondes
+
         except Exception as e:
             logger.error(f"Heartbeat error: {e}")
             await asyncio.sleep(5)
@@ -1226,15 +1286,21 @@ async def handle_socket_message(bot, socket, stream_name):
                 msg = await asyncio.wait_for(
                     tscm.recv(), timeout=60  # Timeout plus long pour la réception
                 )
+
                 if msg:
                     # Mise à jour des données
                     if "data" not in bot.latest_data:
                         bot.latest_data["data"] = {}
+
                     bot.latest_data["data"][stream_name] = msg
+
                     # Mise à jour du timestamp
+                    bot.ws_connection["last_message"] = datetime.now(timezone.utc)
+
             except asyncio.TimeoutError:
                 # Au lieu de se déconnecter, on continue
                 continue
+
             except Exception as e:
                 logger.error(f"Socket error ({stream_name}): {e}")
                 await asyncio.sleep(1)
@@ -1245,16 +1311,22 @@ async def cleanup_websocket(bot):
     """Clean WebSocket resources"""
     try:
         logger.info("🔄 Closing WebSocket...")
+
         if hasattr(bot, "ws_tasks"):
             for task in bot.ws_tasks:
                 task.cancel()
             bot.ws_tasks = []
+
         if hasattr(bot, "socket_manager"):
             await bot.socket_manager.close()
+
         if hasattr(bot, "binance_ws"):
             await bot.binance_ws.close_connection()
+
         bot.ws_connection = {"enabled": False, "status": "disconnected", "tasks": []}
+
         logger.info("✅ WebSocket closed successfully")
+
     except Exception as e:
         logger.error(f"❌ WebSocket cleanup error: {e}")
 
@@ -1262,21 +1334,28 @@ async def cleanup_websocket(bot):
 async def cleanup_resources(bot):
     """
     Nettoyage sécurisé des ressources avec protection de session et logging détaillé.
+
     Args:
         bot: Instance du bot de trading à nettoyer
+
     Returns:
         bool: True si le nettoyage a réussi, False sinon
     """
+    current_time = datetime.now(timezone.utc)
+
     # Log de début de tentative de nettoyage
     logger.info(
         f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
 ╚═════════════════════════════════════════════════╝
     """
     )
+
     # Vérification des conditions de protection
     protection_conditions = {
         "prevent_cleanup": st.session_state.get("prevent_cleanup", True),
@@ -1288,14 +1367,27 @@ async def cleanup_resources(bot):
         "force_cleanup": not st.session_state.get("force_cleanup", False),
         "cleanup_allowed": not st.session_state.get("cleanup_allowed", False),
     }
+
     # Si une condition de protection est active
     if any(protection_conditions.values()):
         # Log détaillé des conditions qui empêchent le nettoyage
         active_protections = [k for k, v in protection_conditions.items() if v]
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP PREVENTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Active Protections: {', '.join(active_protections)}
+║ Session ID: {st.session_state.get('session_id', 'Unknown')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
 
         # Renforcer la protection
         session_manager.protect_session()
         return False
+
     try:
         # Marquer le début du nettoyage
         bot.cleanup_in_progress = True
@@ -1304,23 +1396,28 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP STARTED                        ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ WebSocket Status: {bot.ws_connection.get('status', 'unknown')}
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         # Fermeture du WebSocket
         await close_websocket(bot)
+
         # Log de succès
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP SUCCESSFUL                     ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Resources Cleaned: WebSocket, Buffer, Data
 ╚═════════════════════════════════════════════════╝
         """
         )
         return True
+
     except Exception as e:
         # Log d'erreur détaillé
         logger.error(
@@ -1328,28 +1425,33 @@ async def cleanup_resources(bot):
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ERROR                          ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
         """
         )
         return False
+
     finally:
         # Nettoyage final et restauration de la protection
         try:
             bot.cleanup_in_progress = False
             session_manager.protect_session()
+
             # Log final
             logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP FINALIZED                      ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Protection Restored: True
 ║ Session Status: Protected
 ╚═════════════════════════════════════════════════╝
             """
             )
+
         except Exception as final_error:
             logger.error(f"Final cleanup error: {final_error}")
 
@@ -1360,14 +1462,18 @@ async def check_websocket_health(bot):
         # Vérifier si les streams sont actifs
         if not bot.ws_connection.get("tasks"):
             return await reset_websocket(bot)
+
         # Vérifier l'état des tâches
         active_tasks = [t for t in bot.ws_connection["tasks"] if not t.done()]
         if not active_tasks:
             return await reset_websocket(bot)
+
         # Vérifier si on reçoit des données
         if not bot.latest_data:
             return await reset_websocket(bot)
+
         return True
+
     except Exception as e:
         logger.error(f"❌ WebSocket health check error: {e}")
         await reset_websocket(bot)
@@ -1378,6 +1484,7 @@ async def close_websocket(bot):
     """Ferme proprement la connexion WebSocket"""
     try:
         logger.info("🔄 Closing WebSocket...")
+
         # Fermeture des tâches
         if bot.ws_connection and bot.ws_connection.get("tasks"):
             for task in bot.ws_connection["tasks"]:
@@ -1390,6 +1497,7 @@ async def close_websocket(bot):
                             pass
                 except:
                     pass
+
         # Fermeture du socket manager
         if hasattr(bot, "socket_manager") and bot.socket_manager:
             try:
@@ -1398,6 +1506,7 @@ async def close_websocket(bot):
                 pass
             finally:
                 bot.socket_manager = None
+
         # Fermeture du client websocket
         if hasattr(bot, "binance_ws") and bot.binance_ws:
             try:
@@ -1406,16 +1515,20 @@ async def close_websocket(bot):
                 pass
             finally:
                 bot.binance_ws = None
+
         # Fermeture explicite de la session client
         if hasattr(bot, "client_session") and bot.client_session:
             if not bot.client_session.closed:
                 await bot.client_session.close()
                 await asyncio.sleep(0.1)  # Petit délai pour assurer la fermeture
             bot.client_session = None
+
         # Réinitialisation de l'état
         bot.ws_connection = {"enabled": False, "status": "disconnected", "tasks": []}
+
         logger.info("✅ WebSocket closed successfully")
         return True
+
     except Exception as e:
         logger.error(f"❌ WebSocket close error: {e}")
         return False
@@ -1424,16 +1537,19 @@ async def close_websocket(bot):
 async def update_trading_data(bot):
     """Mise à jour des données de trading"""
     try:
+
         # Récupération des données BTC/USDC
         logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
+
         # Récupération des données ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data
+
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
 
@@ -1444,12 +1560,15 @@ async def handle_ticker_message(bot, msg):
         if "s" in msg and "p" in msg:
             symbol = msg["s"]
             price = float(msg["p"])
+
             # Mise à jour des données
             if not hasattr(bot, "latest_prices"):
                 bot.latest_prices = {}
             bot.latest_prices[symbol] = price
+
             # Mise à jour du timestamp
             bot.ws_connection["last_message"] = time.time()
+
     except Exception as e:
         logger.error(f"❌ Ticker message error: {e}")
 
@@ -1468,11 +1587,14 @@ async def handle_kline_message(bot, msg):
                     "close": float(kline["c"]),
                     "volume": float(kline["v"]),
                 }
+
                 if not hasattr(bot, "latest_klines"):
                     bot.latest_klines = []
                 bot.latest_klines.append(candle)
+
                 if len(bot.latest_klines) > 1000:
                     bot.latest_klines.pop(0)
+
     except Exception as e:
         logger.error(f"❌ Kline message error: {e}")
 
@@ -1486,9 +1608,11 @@ async def handle_depth_message(bot, msg):
                 "bids": [[float(price), float(qty)] for price, qty in msg["b"]],
                 "timestamp": time.time(),
             }
+
             if not hasattr(bot, "latest_orderbook"):
                 bot.latest_orderbook = {}
             bot.latest_orderbook = orderbook
+
     except Exception as e:
         logger.error(f"❌ Depth message error: {e}")
 
@@ -1499,10 +1623,12 @@ async def fetch_market_data(bot, symbol):
         # Configuration du timeframe par défaut si non défini
         if not hasattr(bot.config, "timeframe"):
             bot.config["timeframe"] = "1m"  # timeframe par défaut
+
         # Récupération des données via l'API Binance
         klines = await bot.binance_ws.get_klines(
             symbol=symbol, interval=bot.config["timeframe"]
         )
+
         # Conversion en format utilisable
         data = []
         for k in klines:
@@ -1515,7 +1641,9 @@ async def fetch_market_data(bot, symbol):
                 "volume": float(k[5]),
             }
             data.append(candle)
+
         return data
+
     except Exception as e:
         logger.error(f"❌ Erreur récupération données {symbol}: {e}")
         return None
@@ -1525,21 +1653,26 @@ async def update_market_data(bot):
     """Met à jour les données de marché"""
     try:
         data_received = False
+
         # Récupération BTC/USDC
         logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
             data_received = True
+
         # Récupération ETH/USDC
         logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data
             data_received = True
+
         if not data_received:
             logger.warning("⚠️ Aucune donnée reçue")
+
         return data_received
+
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
         return False
@@ -1551,15 +1684,19 @@ async def process_market_data(bot, symbol):
         data = bot.latest_data[symbol]
         if not data:
             return
+
         # Calcul des indicateurs
         if not hasattr(bot, "indicators"):
             bot.indicators = {}
         if symbol not in bot.indicators:
             bot.indicators[symbol] = {}
+
         # Mise à jour des indicateurs
         await update_indicators(bot, symbol, data)
+
         # Vérification des signaux
         await check_signals(bot, symbol)
+
     except Exception as e:
         logger.error(f"❌ Erreur traitement données {symbol}: {e}")
 
@@ -1567,20 +1704,25 @@ async def process_market_data(bot, symbol):
 async def cleanup_session(bot):
     """Nettoyage d'une session avec verrou et cooldown"""
     global cleanup_in_progress, last_cleanup_time
+
     try:
         # Vérification du cooldown
         current_time = time.time()
         if current_time - last_cleanup_time < CLEANUP_COOLDOWN:
             return
+
         # Utilisation d'un verrou pour éviter les nettoyages simultanés
         async with cleanup_lock:
             if cleanup_in_progress:
                 return
+
             cleanup_in_progress = True
             last_cleanup_time = current_time
+
             try:
                 # Nettoyage des ressources
                 await cleanup_resources(bot)
+
                 # Un seul message de log
                 logger.info("✅ Session cleaned successfully")
                 logger.info(
@@ -1592,8 +1734,10 @@ async def cleanup_session(bot):
 ╚═════════════════════════════════════════════════╝
                 """
                 )
+
             finally:
                 cleanup_in_progress = False
+
     except Exception as e:
         logger.error(f"❌ Cleanup error: {e}")
 
@@ -1604,18 +1748,22 @@ async def process_ws_message(bot, msg):
         if not msg:
             logger.warning("Empty message received")
             return
+
         if "e" not in msg:
             logger.warning(f"Invalid message format: {msg}")
             return
+
         if msg["e"] == "ticker":
             # Mise à jour du prix
             bot.latest_data["price"] = float(msg["c"])
             bot.latest_data["volume"] = float(msg["v"])
             logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
+
         elif msg["e"] == "depth":
             # Mise à jour de l'orderbook
             bot.latest_data["orderbook"] = {"bids": msg["b"][:5], "asks": msg["a"][:5]}
             logger.debug("📚 Orderbook updated")
+
         elif msg["e"] == "kline":
             # Mise à jour des klines
             k = msg["k"]
@@ -1627,9 +1775,11 @@ async def process_ws_message(bot, msg):
                 "volume": float(k["v"]),
             }
             logger.debug("📊 Klines updated")
+
         # Mise à jour du timestamp
         bot.latest_data["timestamp"] = msg.get("E", int(time.time() * 1000))
         bot.ws_connection["last_message"] = time.time()
+
     except Exception as e:
         logger.error(f"❌ Message processing error: {e}")
 
@@ -1641,6 +1791,7 @@ class TradingEnv(gym.Env):
         super().__init__()
         self.trading_pairs = trading_pairs
         self.timeframes = timeframes
+
         # Espace d'observation: 42 features par paire/timeframe
         self.observation_space = spaces.Box(
             low=-np.inf,
@@ -1648,14 +1799,17 @@ class TradingEnv(gym.Env):
             shape=(len(trading_pairs) * len(timeframes) * 42,),
             dtype=np.float32,
         )
+
         # Espace d'action: allocation par paire entre 0 et 1
         self.action_space = spaces.Box(
             low=0, high=1, shape=(len(trading_pairs),), dtype=np.float32
         )
+
         # Paramètres d'apprentissage
         self.reward_scale = 1.0
         self.position_history = []
         self.done_penalty = -1.0
+
         # Initialisation des métriques
         self.metrics = {
             "episode_rewards": [],
@@ -1675,15 +1829,20 @@ class TradingEnv(gym.Env):
         if not self.action_space.contains(action):
             logger.warning(f"Action invalide: {action}")
             action = np.clip(action, self.action_space.low, self.action_space.high)
+
         # Calcul de la récompense
         reward = self._calculate_reward(action)
+
         # Mise à jour de l'état
         self._update_state()
+
         # Vérification des conditions de fin
         done = self._check_done()
         truncated = False
+
         # Mise à jour des métriques
         self._update_metrics(action, reward)
+
         return self.state, reward, done, truncated, self._get_info()
 
     def _calculate_reward(self, action):
@@ -1691,11 +1850,15 @@ class TradingEnv(gym.Env):
         try:
             # Calcul du PnL
             pnl = self._calculate_pnl(action)
+
             # Pénalité pour le risque
             risk_penalty = self._calculate_risk_penalty(action)
+
             # Reward final
             reward = (pnl - risk_penalty) * self.reward_scale
+
             return float(reward)
+
         except Exception as e:
             logger.error(f"Erreur calcul reward: {e}")
             return None
@@ -1705,10 +1868,13 @@ class TradingEnv(gym.Env):
         try:
             # Mise à jour des features techniques
             technical_features = self._calculate_technical_features()
+
             # Mise à jour des features de marché
             market_features = self._calculate_market_features()
+
             # Combinaison des features
             self.state = np.concatenate([technical_features, market_features])
+
         except Exception as e:
             logger.error(f"Erreur mise à jour state: {e}")
             return None
@@ -1718,9 +1884,11 @@ class TradingEnv(gym.Env):
         # Vérification du stop loss
         if self._check_stop_loss():
             return True
+
         # Vérification de la durée max
         if len(self.position_history) >= self.max_steps:
             return True
+
         return False
 
     def _update_metrics(self, action, reward):
@@ -1782,6 +1950,7 @@ class TradingBotM4:
                     st.session_state.portfolio = portfolio
                     st.session_state.latest_data = market_data
                     st.session_state.indicators = indicators
+
                 # Appel périodique de l’analyseur de news
                 now = time.time()
                 news_result = None
@@ -1797,6 +1966,7 @@ class TradingBotM4:
                 elif news_result is not None:
                     st.session_state["news_score"] = None
                     st.session_state["important_news"] = []
+
         except Exception as e:
             logger.error(f"Erreur tick: {e}")
 
@@ -1817,6 +1987,36 @@ class TradingBotM4:
             "reconnect_on_error": True,
             "max_reconnect_attempts": 3,
         }
+
+        # Configuration des streams
+        self.stream_config = StreamConfig(
+            max_connections=12, reconnect_delay=1.0, buffer_size=10000
+        )
+
+        # État du WebSocket
+        self.ws_connection = {
+            "enabled": False,
+            "status": "disconnected",
+            "reconnect_count": 0,
+            "last_message": None,
+            "last_heartbeat": None,
+            "tasks": [],
+        }
+
+        # Initialisation des composants
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
+
+        # Configuration des streams (DOIT ÊTRE EN PREMIER)
+        self.stream_config = StreamConfig(
+            max_connections=12, reconnect_delay=1.0, buffer_size=10000
+        )
+
+        self.cleanup_in_progress = False
+        self.shutdown_requested = False
+        self.initialized = False
+        self.logger = logging.getLogger(__name__)
 
         # Configuration principale
         self.config = {
@@ -1844,56 +2044,46 @@ class TradingBotM4:
             },
         }
 
-        # Configuration des streams
-        self.stream_config = StreamConfig(
-            max_connections=12, reconnect_delay=1.0, buffer_size=10000
-        )
-
-        # État du WebSocket
-        self.ws_connection = {
-            "enabled": False,
-            "status": "disconnected",
-            "reconnect_count": 0,
-            "max_reconnects": 3,
-            "last_message": None,
-            "last_heartbeat": None,
-            "last_connection": None,
-            "last_error": None,
-            "tasks": [],
-        }
-
-        # Initialisation des composants de base
-        self.logger = logging.getLogger(__name__)
-        self.buffer = CircularBuffer(maxlen=1000)
-        self.indicators = {}
-        self.latest_data = {}
-        self.cleanup_in_progress = False
-        self.shutdown_requested = False
-        self.initialized = False
-
-        # Initialisation des clients et managers
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         self.exchange = BinanceExchange(api_key, api_secret)
-        self.ws_manager = None  # NE PAS initialiser ici !
-        self.websocket = None
+        # Initialisation du WebSocket Manager (AJOUT ICI)
+        self.ws_manager = WebSocketManager(self)
+
+        # Initialisation des buffers et données
+        self.buffer = CircularBuffer(maxlen=1000)
+        self.indicators = {}
+        self.latest_data = {}
 
         # Initialisation du client Binance
         try:
             self.spot_client = BinanceClient(
-                api_key=api_key,
-                api_secret=api_secret,
+                api_key=self.config["BINANCE"]["API_KEY"],
+                api_secret=self.config["BINANCE"]["API_SECRET"],
             )
             self.logger.info("✅ Spot client initialisé avec succès")
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation spot client: {e}")
             self.spot_client = None
 
-        # Configuration du mode de trading
+        # Configuration du WebSocket
+        self.websocket = MultiStreamManager(
+            pairs=self.config["TRADING"]["pairs"], config=self.stream_config
+        )
+
+        self.ws_connection = {
+            "enabled": False,
+            "reconnect_count": 0,
+            "max_reconnects": 3,
+            "last_connection": None,
+            "status": "disconnected",
+            "last_message": None,
+            "last_error": None,
+        }
+
+        # Mode de trading et composants
         self.trading_mode = os.getenv("TRADING_MODE", "production")
         self.testnet = False
-
-        # Activation des composants
         self.news_enabled = True
         self.arbitrage_enabled = True
         self.telegram_enabled = True
@@ -1906,7 +2096,7 @@ class TradingBotM4:
         # Interface et monitoring
         self.dashboard = TradingDashboard()
 
-        # Initialisation des composants d'analyse
+        # Composants principaux
         self.arbitrage_engine = ArbitrageEngine(
             exchanges=self.config["ARBITRAGE"]["exchanges"],
             pairs=self.config["ARBITRAGE"]["pairs"],
@@ -1955,37 +2145,20 @@ class TradingBotM4:
             },
         )
 
-        # Analyseurs
+        # Composants d'analyse
         self.news_analyzer = NewsAnalyzer()
+        self.last_news_check = 0
+        self.news_refresh_interval = int(
+            os.getenv("NEWS_REFRESH_INTERVAL", 60)
+        )  # secondes, configurable
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
-
-        # Autres configurations
-        self.last_news_check = 0
-        self.news_refresh_interval = int(os.getenv("NEWS_REFRESH_INTERVAL", 60))
         self.client_session = None
 
-    async def async_init(self):
-        await self.exchange.initialize()
-        is_spot_testnet = (
-            getattr(self.exchange, "testnet", False)
-            and getattr(self.exchange, "_exchange", None) is not None
-            and self.exchange._exchange.options.get("defaultType", "spot") == "spot"
-        )
-        if is_spot_testnet:
-            self.logger.warning(
-                "Binance SPOT testnet : WebSockets et MultiStreamManager désactivés"
-            )
-            self.ws_manager = None
-            self.websocket = None
-        else:
-            self.ws_manager = WebSocketManager(self)
-            self.websocket = MultiStreamManager(
-                pairs=self.config["TRADING"]["pairs"], config=self.stream_config
-            )
-
     def get_latest_price(self, symbol):
-        """Récupère le dernier prix pour un symbole donné via le spot_client."""
+        """
+        Récupère le dernier prix pour un symbole donné via le spot_client.
+        """
         if hasattr(self.spot_client, "get_ticker_price"):
             return self.spot_client.get_ticker_price(symbol)
         elif hasattr(self.spot_client, "fetch_ticker"):
@@ -1995,13 +2168,134 @@ class TradingBotM4:
         else:
             raise NotImplementedError("No method to get latest price")
 
+    async def start(self):
+        """Démarre le bot"""
+        try:
+            self.logger.info("Starting bot initialization...")
+
+            # Démarrage du WebSocket Manager
+            if not await self.ws_manager.start():
+                raise Exception("Failed to start WebSocket manager")
+
+            # Configuration des composants
+            if not await self._setup_components():
+                raise Exception("Failed to setup components")
+
+            # Mise à jour du statut
+            self.initialized = True
+            self.logger.info("✅ Bot initialized successfully")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"❌ Bot initialization error: {e}")
+            await self._cleanup()
+            return False
+
+        self.config = {
+            "NEWS": {
+                "enabled": True,
+                "TELEGRAM_TOKEN": os.getenv("TELEGRAM_TOKEN", ""),
+            },
+            "BINANCE": {
+                "API_KEY": os.getenv("BINANCE_API_KEY", ""),
+                "API_SECRET": os.getenv("BINANCE_API_SECRET", ""),
+            },
+        }
+        self.spot_client = None
+        self.ws_manager = None
+
+        self.news_analyzer = None
+        self.initialized = False
+
+        # Mode de trading
+        self.trading_mode = os.getenv("TRADING_MODE", "production")
+        self.testnet = False
+
+        # Activation des composants
+        self.news_enabled = True
+        self.arbitrage_enabled = True
+        self.telegram_enabled = True
+
+        # Configuration risque
+        self.max_drawdown = 0.05  # 5% max
+        self.daily_stop_loss = 0.02  # 2% par jour
+        self.max_position_size = 1000  # USDC
+
+        # Configuration des streams
+        self.stream_config = StreamConfig(
+            max_connections=12, reconnect_delay=1.0, buffer_size=10000
+        )
+
+        # Initialisation du MultiStreamManager
+        self.ws_manager = WebSocketManager(self)
+
+        # Configuration de l'exchange
+        self.websocket.setup_exchange("binance")
+        self.buffer = CircularBuffer()
+
+        # Interface et monitoring
+        self.dashboard = TradingDashboard()
+
+        # Composants principaux
+        self.arbitrage_engine = ArbitrageEngine(
+            exchanges=config["ARBITRAGE"]["exchanges"],
+            pairs=config["ARBITRAGE"]["pairs"],
+            min_profit=config["ARBITRAGE"]["min_profit"],
+            max_trade_size=config["ARBITRAGE"]["max_trade_size"],
+            timeout=config["ARBITRAGE"]["timeout"],
+            volume_filter=config["ARBITRAGE"]["volume_filter"],
+            price_check=config["ARBITRAGE"]["price_check"],
+            max_slippage=config["ARBITRAGE"]["max_slippage"],
+        )
+
+        # Configuration Telegram
+        self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        self.telegram = TelegramBot()
+
+        # IA et analyse
+        self.hybrid_model = HybridAI()
+        self.env = TradingEnv(
+            trading_pairs=config["TRADING"]["pairs"],
+            timeframes=config["TRADING"]["timeframes"],
+        )
+
+        # Gestionnaires de trading
+        self.position_manager = PositionManager(
+            account_balance=10000,
+            max_positions=5,
+            max_leverage=3.0,
+            min_position_size=0.001,
+        )
+        self.circuit_breaker = CircuitBreaker(
+            crash_threshold=0.1, liquidity_threshold=0.5, volatility_threshold=0.3
+        )
+
+        # Configuration timeframes
+        self.timeframe_config = TimeframeConfig(
+            timeframes=config["TRADING"]["timeframes"],
+            weights={
+                "1m": 0.1,
+                "5m": 0.15,
+                "15m": 0.2,
+                "1h": 0.25,
+                "4h": 0.15,
+                "1d": 0.15,
+            },
+        )
+        self.news_analyzer = NewsAnalyzer()
+        self.regime_detector = RegimeDetector()
+        self.client_session = None
+
     def _generate_recommendation(self, trend, momentum, volatility, volume):
         try:
             # Compteurs pour les signaux buy/sell (ancienne logique)
             buy_signals = 0
             sell_signals = 0
+
             # Système de points (nouvelle logique)
             points = 0
+
             # --- Analyse de la tendance ---
             if trend["primary_trend"] == "bullish":
                 buy_signals += 1
@@ -2012,6 +2306,7 @@ class TradingBotM4:
                 points += 1
             if trend.get("trend_direction", 0) == 1:
                 points += 1
+
             # --- Momentum ---
             if momentum.get("rsi_signal") == "oversold":
                 buy_signals += 1
@@ -2026,6 +2321,7 @@ class TradingBotM4:
                 sell_signals += 1
             if momentum.get("ultimate_signal") == "buy":
                 points += 1
+
             # --- Volatilité ---
             if volatility.get("bb_signal") == "oversold":
                 points += 1
@@ -2034,6 +2330,7 @@ class TradingBotM4:
                 sell_signals += 1
             if volatility.get("kc_signal") == "breakout":
                 points += 1
+
             # --- Volume ---
             if volume.get("mfi_signal") == "buy":
                 buy_signals += 1
@@ -2048,6 +2345,7 @@ class TradingBotM4:
                 buy_signals += 1
             elif volume.get("obv_trend") == "down":
                 sell_signals += 1
+
             # --- Génération de la recommandation finale ---
             # Par points (plus fin)
             if points >= 8:
@@ -2065,15 +2363,18 @@ class TradingBotM4:
             else:
                 action = "neutral"
                 confidence = 0.5
+
             # Par signaux purs (pour compatibilité)
             strength = abs(buy_signals - sell_signals)
             signals = {"buy": buy_signals, "sell": sell_signals}
+
             return {
                 "action": action,
                 "confidence": confidence,
                 "strength": strength,
                 "signals": signals,
             }
+
         except Exception as e:
             logger.error(f"❌ Erreur génération recommandation: {e}")
             return {
@@ -2093,6 +2394,7 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣    
 ║ Régime: {regime}                               ║
 ╚═════════════════════════════════════════════════╝
+
     📊 Analyse par Timeframe:
     """
             for timeframe, analysis in indicators_analysis.items():
@@ -2103,8 +2405,10 @@ class TradingBotM4:
 ├─ 📉 Volume: {analysis['volume']['volume_profile']['strength']}
 └─ 🎯 Signal dominant: {analysis['dominant_signal']}
     """
+
             logger.info("✅ Rapport d'analyse généré avec succès")
             return report
+
         except Exception as e:
             error_msg = f"""
 ╔═════════════════════════════════════════════════╗
@@ -2125,9 +2429,11 @@ class TradingBotM4:
                 len(config["TRADING"]["pairs"]),  # Nombre de paires
                 42,  # Nombre de features par candlestick
             )
+
             # Calcul des dimensions pour PPO-GTrXL
             state_dim = input_shape[0] * input_shape[1] * input_shape[2]
             action_dim = len(config["TRADING"]["pairs"])
+
             # Initialisation des modèles
             self.models = {
                 "ppo_gtrxl": PPOGTrXL(
@@ -2138,6 +2444,7 @@ class TradingBotM4:
                 ),
                 "cnn_lstm": CNNLSTM(input_shape=input_shape),
             }
+
             # Chargement des poids pré-entraînés
             models_path = os.path.join(current_dir, "models")
             if os.path.exists(models_path):
@@ -2146,8 +2453,10 @@ class TradingBotM4:
                     if os.path.exists(model_path):
                         model.load_state_dict(torch.load(model_path))
                         logger.info(f"Modèle {model_name} chargé avec succès")
+
             logger.info("✅ Modèles initialisés avec succès")
             return True
+
         except Exception as e:
             logger.error(f"❌ Erreur initialisation modèles: {e}")
             return False
@@ -2157,20 +2466,25 @@ class TradingBotM4:
         try:
             # Fermeture propre du WebSocket
             await close_websocket(self)
+
             # Nettoyage du buffer
             if hasattr(self, "buffer"):
                 try:
                     self.buffer = None  # Au lieu de clear()
                 except Exception as buffer_error:
                     logger.error(f"❌ Buffer cleanup error: {buffer_error}")
+
             # Nettoyage des données
             if hasattr(self, "latest_data"):
                 self.latest_data = {}
+
             if hasattr(self, "indicators"):
                 self.indicators = {}
+
             # Désactivation du mode trading
             if hasattr(st.session_state, "bot_running"):
                 st.session_state.bot_running = False
+
             logger.info(
                 """
 ╔═════════════════════════════════════════════════╗
@@ -2180,7 +2494,9 @@ class TradingBotM4:
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             return True
+
         except Exception as e:
             return False
 
@@ -2190,12 +2506,15 @@ class TradingBotM4:
             # Initialisation des WebSockets
             if not await self.ws_manager.start():
                 raise Exception("Failed to start WebSocket manager")
+
             # Initialisation des composants
             await self._setup_components()
+
             # Mise à jour du statut
             self.initialized = True
             logger.info("✅ Bot started successfully")
             return True
+
         except Exception as e:
             logger.error(f"❌ Bot start error: {e}")
             await self._cleanup()
@@ -2231,6 +2550,7 @@ class TradingBotM4:
                     api_key=os.getenv("BINANCE_API_KEY"),
                     api_secret=os.getenv("BINANCE_API_SECRET"),
                 )
+
             # Initialisation du WebSocket MANQUANTE :
             if not getattr(self, "initialized", False):
                 success = await self.start()
@@ -2239,16 +2559,20 @@ class TradingBotM4:
                         "❌ Impossible d'initialiser le WebSocket dans initialize()"
                     )
                     return False
+
             # Récupération initiale du portfolio
             portfolio = await self.get_real_portfolio()
             if portfolio:
                 st.session_state.portfolio = portfolio
                 logger.info("✅ Initial portfolio data loaded")
+
             # Mise à jour du statut
             self.ws_connection.update(
                 {"enabled": True, "status": "connected", "last_message": time.time()}
             )
+
             return True
+
         except Exception as e:
             logger.error(f"❌ Initialization error: {e}")
             return False
@@ -2258,8 +2582,10 @@ class TradingBotM4:
         try:
             # Interface et monitoring
             self.dashboard = TradingDashboard()
+
             # News Analyzer
             self.news_analyzer = NewsAnalyzer()
+
             # Composants principaux
             self.arbitrage_engine = ArbitrageEngine(
                 exchanges=config["ARBITRAGE"]["exchanges"],
@@ -2271,10 +2597,13 @@ class TradingBotM4:
                 price_check=config["ARBITRAGE"]["price_check"],
                 max_slippage=config["ARBITRAGE"]["max_slippage"],
             )
+
             # Configuration des analyseurs et modèles
             await self._initialize_analyzers()
             await self._initialize_models()
+
             return True
+
         except Exception as e:
             logger.error(f"Setup components error: {e}")
             return False
@@ -2301,6 +2630,7 @@ class TradingBotM4:
                 volume="volume",
                 fillna=True,
             )
+
             # Organisez les indicateurs par catégories
             indicators = {
                 "trend": {
@@ -2373,10 +2703,12 @@ class TradingBotM4:
                     "cr": df_with_indicators["others_cr"],
                 },
             }
+
             logger.info(
                 f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories"
             )
             return indicators
+
         except Exception as e:
             logger.error(f"❌ Erreur calcul indicateurs: {e}")
             return None
@@ -2398,12 +2730,14 @@ class TradingBotM4:
             if not msg:
                 logger.warning("Message vide reçu")
                 return
+
             if msg.get("e") == "trade":
                 await self._handle_trade(msg)
             elif msg.get("e") == "depthUpdate":
                 await self._handle_orderbook(msg)
             elif msg.get("e") == "kline":
                 await self._handle_kline(msg)
+
         except Exception as e:
             logger.error(f"Erreur traitement message: {e}")
             return None
@@ -2419,11 +2753,15 @@ class TradingBotM4:
                 "buyer": msg["b"],
                 "seller": msg["a"],
             }
+
             # Mise à jour du buffer
             self.buffer.update_trades(trade_data)
+
             # Analyse du volume
             self.volume_analysis.update(trade_data)
+
             return trade_data
+
         except Exception as e:
             logger.error(f"Erreur traitement trade: {e}")
             return None
@@ -2437,11 +2775,15 @@ class TradingBotM4:
                 "asks": [[float(p), float(q)] for p, q in msg["a"]],
                 "time": msg["T"],
             }
+
             # Mise à jour du buffer
             self.buffer.update_orderbook(orderbook_data)
+
             # Analyse de la liquidité
             await self._analyze_market_liquidity()
+
             return orderbook_data
+
         except Exception as e:
             logger.error(f"Erreur traitement orderbook: {e}")
             return None
@@ -2461,8 +2803,10 @@ class TradingBotM4:
                 "volume": float(kline["v"]),
                 "closed": kline["x"],
             }
+
             # Mise à jour du buffer
             self.buffer.update_klines(kline_data)
+
             # Analyse technique si la bougie est fermée
             if kline_data["closed"]:
                 await self.analyze_signals(
@@ -2470,6 +2814,7 @@ class TradingBotM4:
                     indicators=self.advanced_indicators.analyze_timeframe(kline_data),
                 )
             return kline_data
+
         except Exception as e:
             logger.error(f"Erreur traitement kline: {e}")
             return None
@@ -2487,13 +2832,16 @@ class TradingBotM4:
         try:
             # Calcul du stop loss
             stop_loss = self._calculate_stop_loss(decision)
+
             # Calcul du take profit
             take_profit = self._calculate_take_profit(decision)
+
             # Ajout trailing stop
             trailing_stop = {
                 "activation_price": stop_loss * 1.02,
                 "callback_rate": 0.01,
             }
+
             decision.update(
                 {
                     "stop_loss": stop_loss,
@@ -2501,7 +2849,9 @@ class TradingBotM4:
                     "trailing_stop": trailing_stop,
                 }
             )
+
             return decision
+
         except Exception as e:
             logger.error(f"[{timestamp}] Erreur risk management: {e}")
             return decision
@@ -2509,6 +2859,7 @@ class TradingBotM4:
     async def get_latest_data(self):
         try:
             data = {}
+
             # Vérification de la connexion WebSocket
             if not hasattr(self, "binance_ws") or self.binance_ws is None:
                 logger.warning(
@@ -2521,9 +2872,11 @@ class TradingBotM4:
                         "Impossible d'initialiser le WebSocket après tentative."
                     )
                     return None
+
             for pair in self.config["TRADING"]["pairs"]:
                 logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
+
                 try:
 
                     async def fetch_async():
@@ -2534,30 +2887,36 @@ class TradingBotM4:
                             "ticker": None,
                             "ohlcv": None,
                         }
+
                         # 1. Prix en temps réel via WebSocket (toujours async)
                         if hasattr(self.binance_ws, "get_symbol_ticker"):
                             result["ticker"] = await self.binance_ws.get_symbol_ticker(
                                 symbol=pair.replace("/", "")
                             )
+
                         # 2. & 3. Orderbook et Balance
                         if hasattr(self, "spot_client"):
                             ob_func = self.spot_client.get_order_book
                             bal_func = self.spot_client.get_balance
+
                             # Orderbook
                             if asyncio.iscoroutinefunction(ob_func):
                                 result["orderbook"] = await ob_func(pair)
                             else:
                                 result["orderbook"] = ob_func(pair)
+
                             # Balance
                             if asyncio.iscoroutinefunction(bal_func):
                                 result["balance"] = await bal_func()
                             else:
                                 result["balance"] = bal_func()
+
                         # 4. Volume 24h (toujours async)
                         if hasattr(self.binance_ws, "get_24h_ticker"):
                             result["ticker_24h"] = await self.binance_ws.get_24h_ticker(
                                 pair.replace("/", "")
                             )
+
                         # 5. HISTORIQUE OHLCV (pour le backtest !)
                         # PATCH : Ajout d'une vraie liste de dicts pour ohlcv
                         result["ohlcv"] = []
@@ -2596,10 +2955,12 @@ class TradingBotM4:
                                 ]
                         except Exception as hist_e:
                             logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
+
                         return result
 
                     async with asyncio.timeout(10.0):
                         result = await fetch_async()
+
                     # Traitement des résultats
                     if result["ticker"]:
                         data[pair]["price"] = float(result["ticker"]["price"])
@@ -2630,12 +2991,14 @@ class TradingBotM4:
                     logger.info(
                         f"📊 OHLCV récupéré ({len(data[pair]['ohlcv'])} bougies) pour {pair}"
                     )
+
                 except asyncio.TimeoutError:
                     logger.warning(f"⏱️ Timeout pour {pair}")
                     continue
                 except Exception as inner_e:
                     logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
                     continue
+
             # Mise en cache des données si disponibles
             if data and any(data.values()):
                 logger.info("✅ Données reçues, mise à jour du buffer")
@@ -2647,6 +3010,7 @@ class TradingBotM4:
             else:
                 logger.warning("⚠️ Aucune donnée reçue")
                 return None
+
         except Exception as e:
             logger.error(f"❌ Erreur critique get_latest_data: {e}")
             return None
@@ -2658,6 +3022,7 @@ class TradingBotM4:
             if not data:
                 logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
+
             # Calcul des indicateurs de base
             indicators = {
                 "price": data["price"],
@@ -2671,9 +3036,11 @@ class TradingBotM4:
                 f"Calcul indicateurs pour {symbol}: {data}"
             )  # Log des données reçues
             logger.info(f"Calcul indicateurs pour {symbol}: {data}")
+
             # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
+
         except Exception as e:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
@@ -2681,15 +3048,19 @@ class TradingBotM4:
     async def study_market(self, period="7d"):
         """Analyse initiale du marché"""
         logger.info("🔊 Étude du marché en cours...")
+
         try:
             # Récupération des données historiques
             if not getattr(self.exchange, "_initialized", False):
                 await self.exchange.initialize()
+
             historical_data = await self.exchange.get_historical_data(
                 config["TRADING"]["pairs"], config["TRADING"]["timeframes"], period
             )
+
             if not historical_data:
                 raise ValueError("Données historiques non disponibles")
+
             # Analyse des indicateurs par timeframe
             indicators_analysis = {}
             for timeframe in config["TRADING"]["timeframes"]:
@@ -2716,9 +3087,11 @@ class TradingBotM4:
                         "volume": {"volume_profile": {"strength": "N/A"}},
                         "dominant_signal": "Erreur",
                     }
+
             # Détection du régime de marché
             regime = self.regime_detector.predict(indicators_analysis)
             logger.info(f"🔈 Régime de marché détecté: {regime}")
+
             # Génération et envoi du rapport
             try:
                 analysis_report = self._generate_analysis_report(
@@ -2728,6 +3101,7 @@ class TradingBotM4:
                 await self.telegram.send_message(analysis_report)
             except Exception as report_error:
                 logger.error(f"Erreur génération rapport: {report_error}")
+
             # Mise à jour du dashboard
             try:
                 self.dashboard.update_market_analysis(
@@ -2737,7 +3111,9 @@ class TradingBotM4:
                 )
             except Exception as dash_error:
                 logger.error(f"Erreur mise à jour dashboard: {dash_error}")
+
             return regime, historical_data, indicators_analysis
+
         except Exception as e:
             logger.error(f"Erreur study_market: {e}")
             raise
@@ -2748,8 +3124,10 @@ class TradingBotM4:
             # Si les indicateurs ne sont pas fournis, on les calcule
             if indicators is None:
                 indicators = self.add_indicators(market_data)
+
             if not indicators:
                 return None
+
             # Analyse des tendances
             trend_analysis = {
                 "primary_trend": (
@@ -2769,6 +3147,7 @@ class TradingBotM4:
                     else "sell"
                 ),
             }
+
             # Analyse du momentum
             momentum_analysis = {
                 "rsi_signal": (
@@ -2796,6 +3175,7 @@ class TradingBotM4:
                     )
                 ),
             }
+
             # Analyse de la volatilité
             volatility_analysis = {
                 "bb_signal": (
@@ -2812,6 +3192,7 @@ class TradingBotM4:
                 ),
                 "atr_volatility": indicators["volatility"]["atr"].iloc[-1],
             }
+
             # Analyse du volume
             volume_analysis = {
                 "mfi_signal": (
@@ -2832,8 +3213,10 @@ class TradingBotM4:
                     "up" if indicators["volume"]["obv"].diff().iloc[-1] > 0 else "down"
                 ),
             }
+
             # Décision finale
             signal = {
+                "timestamp": pd.Timestamp.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                 "trend": trend_analysis,
                 "momentum": momentum_analysis,
                 "volatility": volatility_analysis,
@@ -2845,8 +3228,10 @@ class TradingBotM4:
                     volume_analysis,
                 ),
             }
+
             logger.info(f"✅ Analyse des signaux complétée: {signal['recommendation']}")
             return signal
+
         except Exception as e:
             logger.error(f"❌ Erreur analyse signaux: {e}")
             return None
@@ -2856,10 +3241,12 @@ class TradingBotM4:
         try:
             api_key = os.getenv("BINANCE_API_KEY")
             api_secret = os.getenv("BINANCE_API_SECRET")
+
             if not api_key or not api_secret:
                 raise ValueError(
                     "Clés API Binance manquantes dans les variables d'environnement"
                 )
+
             # Configuration de l'exchange avec ccxt
             self.exchange = ccxt.binance(
                 {
@@ -2873,6 +3260,7 @@ class TradingBotM4:
                     },
                 }
             )
+
             # Chargement des marchés de manière synchrone
             self.exchange.load_markets()
             self.spot_client = self.exchange
@@ -2886,8 +3274,10 @@ class TradingBotM4:
                 raise ValueError(
                     "Impossible de récupérer le solde - Vérifiez vos clés API"
                 )
+
             logger.info("Exchange configuré avec succès")
             return True
+
         except Exception as e:
             logger.error(f"Erreur configuration exchange: {e}")
             return False
@@ -2912,21 +3302,26 @@ class TradingBotM4:
         try:
             # Création de l'instance TelegramBot (l'initialisation se fait dans __init__)
             self.telegram = TelegramBot()
+
             if not self.telegram.enabled:
                 logger.warning("Telegram notifications désactivées")
                 return False
+
             # Démarrage du processeur de queue
             await self.telegram.start()
+
             # Test d'envoi d'un message
             success = await self.telegram.send_message(
                 "🤖 Bot de trading démarré", parse_mode="HTML"
             )
+
             if success:
                 logger.info("Telegram configuré avec succès")
                 return True
             else:
                 logger.error("Échec du test d'envoi Telegram")
                 return False
+
         except Exception as e:
             logger.error(f"Erreur configuration Telegram: {e}")
             return False
@@ -2958,6 +3353,7 @@ class TradingBotM4:
             # Mise à jour des données
             portfolio_value = self._get_portfolio_value()
             total_pnl = self._calculate_total_pnl()
+
             # Mise à jour de l'état de session
             st.session_state.portfolio = {
                 "total_value": portfolio_value,
@@ -2968,13 +3364,16 @@ class TradingBotM4:
                     else []
                 ),
             }
+
             st.session_state.latest_data = {
                 "price": self.current_price if hasattr(self, "current_price") else 0,
                 "volume": self.current_volume if hasattr(self, "current_volume") else 0,
             }
+
             st.session_state.indicators = (
                 self.get_indicators() if hasattr(self, "get_indicators") else None
             )
+
             return True
         except Exception as e:
             logger.error(f"Dashboard update error: {e}")
@@ -2992,20 +3391,27 @@ class TradingBotM4:
 ╔═════════════════════════════════════════════════╗
 ║         INITIALIZING SPOT CLIENT                 ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
             """
                 )
+
             self.spot_client = BinanceClient(
                 api_key=os.getenv("BINANCE_API_KEY"),
                 api_secret=os.getenv("BINANCE_API_SECRET"),
             )
+
             if not self.spot_client:
                 raise Exception("Failed to initialize spot client")
+
             # Récupération des balances de manière asynchrone
             balance = self.spot_client.get_balance()
             if not balance or "balances" not in balance:
                 raise Exception("No balance data available")
+
             logger.info("💰 Balance data received")
+
             # Traitement des balances
             portfolio = {
                 "total_value": 0.0,
@@ -3017,12 +3423,14 @@ class TradingBotM4:
                 "volume_change": 0.0,
                 "timestamp": int(time.time() * 1000),
             }
+
             # Traitement de chaque asset
             for asset_balance in balance["balances"]:
                 try:
                     asset = asset_balance["asset"]
                     free = float(asset_balance["free"])
                     locked = float(asset_balance["locked"])
+
                     if free > 0 or locked > 0:
                         # Traitement spécial pour USDC
                         if asset == "USDC":
@@ -3034,6 +3442,7 @@ class TradingBotM4:
                             try:
                                 price = self.get_latest_price(f"{asset}USDC")
                                 value = (free + locked) * price
+
                                 if value > 0:
                                     portfolio["total_value"] += value
                                     portfolio["positions"].append(
@@ -3052,18 +3461,22 @@ class TradingBotM4:
                                     f"⚠️ Cannot get price for {asset}: {price_error}"
                                 )
                                 continue
+
                 except Exception as asset_error:
                     logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
                     continue
+
             # Récupération des ordres ouverts
             try:
                 for pair in self.config["TRADING"]["pairs"]:
                     open_orders = self.spot_client.get_open_orders(pair)
+
                     if open_orders:
                         for order in open_orders:
                             try:
                                 amount = float(order["amount"])
                                 price = float(order["price"])
+
                                 if amount > 0:
                                     portfolio["positions"].append(
                                         {
@@ -3082,8 +3495,10 @@ class TradingBotM4:
                                     f"⚠️ Error processing order: {order_error}"
                                 )
                                 continue
+
             except Exception as orders_error:
                 logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
+
             # Calcul des métriques finales
             portfolio.update(
                 {
@@ -3095,6 +3510,7 @@ class TradingBotM4:
                     - sum(pos.get("value", 0) for pos in portfolio["positions"]),
                 }
             )
+
             # Récupération des données de volume sur 24h
             try:
                 for pair in self.config["TRADING"]["pairs"]:
@@ -3104,11 +3520,14 @@ class TradingBotM4:
                         portfolio["volume_change"] += float(
                             ticker_24h["priceChangePercent"]
                         )
+
                 # Moyenne du changement de volume
                 if len(self.config["TRADING"]["pairs"]) > 0:
                     portfolio["volume_change"] /= len(self.config["TRADING"]["pairs"])
+
             except Exception as volume_error:
                 logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
+
             # Log de succès
             logger.info(
                 f"""
@@ -3117,10 +3536,13 @@ class TradingBotM4:
 ╠═════════════════════════════════════════════════╣
 ║ Total Value: {portfolio['total_value']:.2f} USDC
 ║ Positions: {portfolio['position_count']}
+║ Time: {datetime.fromtimestamp(portfolio['timestamp']/1000).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             return portfolio
+
         except Exception as e:
             logger.error(
                 f"""
@@ -3128,9 +3550,11 @@ class TradingBotM4:
 ║         PORTFOLIO UPDATE ERROR                   ║
 ╠═════════════════════════════════════════════════╣
 ║ Error: {str(e)}
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             # Retourner un portfolio par défaut en cas d'erreur
             return {
                 "total_value": 100.59,
@@ -3154,9 +3578,11 @@ class TradingBotM4:
             if not balance or balance["free"] < signal["amount"] * signal["price"]:
                 logger.warning("Solde insuffisant pour le trade")
                 return None
+
             # Calcul stop loss et take profit
             stop_loss = signal["price"] * (1 - signal["risk_ratio"])
             take_profit = signal["price"] * (1 + signal["risk_ratio"] * 2)
+
             # Placement de l'ordre
             order = await self.exchange.create_order(
                 symbol=signal["symbol"],
@@ -3173,6 +3599,7 @@ class TradingBotM4:
                     "takeProfit": {"price": take_profit},
                 },
             )
+
             try:
                 await self.telegram.send_message(
                     chat_id=self.chat_id,
@@ -3187,7 +3614,9 @@ Take Profit: {take_profit}""",
                 )
             except Exception as msg_error:
                 logger.error(f"Erreur envoi notification trade: {msg_error}")
+
             return order
+
         except Exception as e:
             logger.error(f"Erreur trade: {e}")
             return None
@@ -3198,8 +3627,10 @@ Take Profit: {take_profit}""",
             # Configuration initiale
             if not await self.setup_real_exchange():
                 raise Exception("Échec configuration exchange")
+
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
+
             logger.info(
                 f"""
 ╔═════════════════════════════════════════════════════════════╗
@@ -3210,6 +3641,7 @@ Take Profit: {take_profit}""",
 ╚═════════════════════════════════════════════════════════════╝
                 """
             )
+
             # Mise à jour de l'état du bot
             st.session_state.bot_running = True
         except Exception as telegram_error:
@@ -3224,12 +3656,16 @@ Take Profit: {take_profit}""",
             if not portfolio:
                 st.error("Unable to fetch portfolio data")
                 return
+
             # En-tête
             st.title("Trading Bot Ultimate v4 🤖")
+            status_placeholder = st.empty()
+
             # Tabs pour organiser l'information
             tab1, tab2, tab3, tab4 = st.tabs(
                 ["Portfolio", "Trading", "Analysis", "Settings"]
             )
+
             # TAB 1: PORTFOLIO
             with tab1:
                 # Métriques principales sur 4 colonnes
@@ -3248,11 +3684,13 @@ Take Profit: {take_profit}""",
                     st.metric(
                         "Available Margin", f"${portfolio['available_margin']:,.2f}"
                     )
+
                 # Positions actuelles
                 st.subheader("📊 Active Positions")
                 positions_df = pd.DataFrame(portfolio["positions"])
                 if not positions_df.empty:
                     st.dataframe(positions_df, use_container_width=True)
+
             # TAB 2: TRADING (Signaux, Arbitrage, Ordres)
             with tab2:
                 col1, col2 = st.columns(2)
@@ -3283,6 +3721,7 @@ Take Profit: {take_profit}""",
                         orders = self.spot_client.get_open_orders("BTCUSDT")
                         if orders:
                             st.dataframe(pd.DataFrame(orders), use_container_width=True)
+
             # TAB 3: ANALYSIS (Indicateurs, Heatmap, News, Quantum, Regime)
             with tab3:
                 col1, col2 = st.columns(2)
@@ -3321,6 +3760,7 @@ Take Profit: {take_profit}""",
                             st.markdown(
                                 f"- [{news['title']}]({news['url']}) ({news['sentiment']}, {news['confidence']:.2f})"
                             )
+
                     # Signal Quantum
                     if "quantum_signal" in st.session_state:
                         st.subheader("Quantum SVM Signal")
@@ -3331,6 +3771,7 @@ Take Profit: {take_profit}""",
                     if "regime" in st.session_state:
                         st.subheader("Régime de marché")
                         st.info(f"{st.session_state['regime']}")
+
             # TAB 4: SETTINGS
             with tab4:
                 st.subheader("⚙️ Bot Configuration")
@@ -3350,8 +3791,10 @@ Take Profit: {take_profit}""",
         try:
             # Conversion policy en numpy pour le traitement
             policy_np = policy.detach().numpy()
+
             # Ne garder que les actions d'achat (long only)
             buy_actions = np.maximum(policy_np, 0)
+
             # Calculer la confiance basée sur value et les scores
             confidence = float(
                 np.mean(
@@ -3362,8 +3805,10 @@ Take Profit: {take_profit}""",
                     ]
                 )
             )
+
             # Trouver le meilleur actif à acheter
             best_pair_idx = np.argmax(buy_actions)
+
             # Construire la décision
             decision = {
                 "action": (
@@ -3380,7 +3825,9 @@ Take Profit: {take_profit}""",
                 "value_estimate": float(value.detach().numpy()),
                 "position_size": buy_actions[best_pair_idx],
             }
+
             return decision
+
         except Exception as e:
             logger.error(f"[{timestamp}] Erreur construction décision: {e}")
             return None
@@ -3394,14 +3841,18 @@ Take Profit: {take_profit}""",
             regime_tensor = torch.tensor(
                 self._encode_regime(regime), dtype=torch.float32
             )
+
             # Ajout de dimensions si nécessaire
             if news_tensor.dim() == 1:
                 news_tensor = news_tensor.unsqueeze(0)
             if regime_tensor.dim() == 1:
                 regime_tensor = regime_tensor.unsqueeze(0)
+
             # Combinaison
             features = torch.cat([technical_tensor, news_tensor, regime_tensor], dim=-1)
+
             return features
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             raise
@@ -3425,6 +3876,7 @@ Take Profit: {take_profit}""",
                 "⚠️ Trading suspendu: Circuit breaker activé\n"
             )
             return
+
         if decision and decision["confidence"] > config["AI"]["confidence_threshold"]:
             try:
                 # Vérification des opportunités d'arbitrage
@@ -3433,9 +3885,11 @@ Take Profit: {take_profit}""",
                     await self.telegram.send_message(
                         f"💰 Opportunité d'arbitrage détectée:\n" f"Details: {arb_ops}"
                     )
+
                 # Récupération du prix actuel
                 current_price = await self.exchange.get_price(decision["symbol"])
                 decision["entry_price"] = current_price
+
                 # Calcul de la taille de position avec gestion du risque
                 position_size = self.position_manager.calculate_position_size(
                     decision,
@@ -3443,9 +3897,11 @@ Take Profit: {take_profit}""",
                         config["TRADING"]["base_currency"]
                     ),
                 )
+
                 # Vérification finale avant l'ordre
                 if not self._validate_trade(decision, position_size):
                     return
+
                 # Placement de l'ordre avec stop loss
                 order = await self.exchange.create_order(
                     symbol=decision["symbol"],
@@ -3464,6 +3920,7 @@ Take Profit: {take_profit}""",
                         "takeProfit": {"price": decision["take_profit"]},
                     },
                 )
+
                 # Notification Telegram détaillée
                 await self.telegram.send_message(
                     f"📄 Ordre placé:\n"
@@ -3478,8 +3935,10 @@ Take Profit: {take_profit}""",
                     f"News Impact: {decision['news_impact']}\n"
                     f"Volume: {position_size} {config['TRADING']['base_currency']}"
                 )
+
                 # Mise à jour du dashboard
                 self.dashboard.update_trades(order)
+
             except Exception as e:
                 logger.error(f"Erreur: {e}")
                 await self.telegram.send_message(f"⚠️ Erreur d'exécution: {str(e)}\n")
@@ -3490,22 +3949,29 @@ Take Profit: {take_profit}""",
             # Vérification de la taille minimale
             if position_size < 0.001:  # Exemple de taille minimale
                 return False
+
             # Vérification du spread
             if self._check_spread_too_high(decision["symbol"]):
                 return False
+
             # Vérification de la liquidité
             if not self._check_sufficient_liquidity(decision["symbol"], position_size):
                 return False
+
             # Vérification des news à haut risque
             if self._check_high_risk_news():
                 return False
+
             # Vérification des limites de position
             if not self.position_manager.check_position_limits(position_size):
                 return False
+
             # Vérification du timing d'entrée
             if not self._check_entry_timing(decision):
                 return False
+
             return True
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return False
@@ -3516,8 +3982,10 @@ Take Profit: {take_profit}""",
             orderbook = self.buffer.get_orderbook(symbol)
             best_bid = orderbook["bids"][0][0]
             best_ask = orderbook["asks"][0][0]
+
             spread = (best_ask - best_bid) / best_bid
             return spread > 0.001  # 0.1% spread maximum
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return True  # Par sécurité
@@ -3526,11 +3994,15 @@ Take Profit: {take_profit}""",
         """Vérifie s'il y a assez de liquidité pour le trade"""
         try:
             orderbook = self.buffer.get_orderbook(symbol)
+
             # Calcul de la profondeur de marché nécessaire
             required_liquidity = position_size * 3  # 3x la taille pour la sécurité
+
             # Somme de la liquidité disponible
             available_liquidity = sum(vol for _, vol in orderbook["bids"][:10])
+
             return available_liquidity >= required_liquidity
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return False
@@ -3542,15 +4014,19 @@ Take Profit: {take_profit}""",
             momentum_signals = self._analyze_momentum_signals()
             if momentum_signals["strength"] < 0.5:
                 return False
+
             # Vérification de la volatilité
             volatility = self._analyze_volatility()
             if volatility["current"] > volatility["threshold"]:
                 return False
+
             # Vérification du volume
             volume_analysis = self._analyze_volume_profile()
             if not volume_analysis["supports_entry"]:
                 return False
+
             return True
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return False
@@ -3563,6 +4039,7 @@ Take Profit: {take_profit}""",
                 "macd": self._calculate_macd(self.buffer.get_latest()),
                 "stoch": self._calculate_stoch_rsi(self.buffer.get_latest()),
             }
+
             # Calcul de la force globale
             strengths = []
             if signals["rsi"]:
@@ -3571,10 +4048,12 @@ Take Profit: {take_profit}""",
                 strengths.append(abs(signals["macd"]["strength"]))
             if signals["stoch"]:
                 strengths.append(abs(signals["stoch"]["strength"]))
+
             return {
                 "signals": signals,
                 "strength": np.mean(strengths) if strengths else 0,
             }
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {"strength": 0, "signals": {}}
@@ -3585,17 +4064,20 @@ Take Profit: {take_profit}""",
             # Calcul des indicateurs de volatilité
             bbands = self._calculate_bbands(self.buffer.get_latest())
             atr = self._calculate_atr(self.buffer.get_latest())
+
             # Calcul de la volatilité normalisée
             current_volatility = 0
             if bbands and atr:
                 bb_width = bbands["bandwidth"]
                 atr_norm = atr["normalized"]
                 current_volatility = (bb_width + atr_norm) / 2
+
             return {
                 "current": current_volatility,
                 "threshold": 0.8,  # Seuil dynamique basé sur le régime
                 "indicators": {"bbands": bbands, "atr": atr},
             }
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {"current": float("inf"), "threshold": 0.8, "indicators": {}}
@@ -3606,14 +4088,17 @@ Take Profit: {take_profit}""",
             volume_data = self.buffer.get_volume_profile()
             if not volume_data:
                 return {"supports_entry": False}
+
             # Calcul des niveaux de support/résistance basés sur le volume
             poc_level = self._calculate_poc(volume_data)
             value_area = self._calculate_value_area(volume_data)
+
             # Analyse de la distribution du volume
             volume_distribution = {
                 "above_poc": sum(v for p, v in volume_data.items() if p > poc_level),
                 "below_poc": sum(v for p, v in volume_data.items() if p < poc_level),
             }
+
             # Calcul du ratio de support du volume
             current_price = self.buffer.get_latest_price()
             volume_support = (
@@ -3623,12 +4108,14 @@ Take Profit: {take_profit}""",
                 else volume_distribution["below_poc"]
                 / (volume_distribution["above_poc"] + volume_distribution["below_poc"])
             )
+
             return {
                 "supports_entry": volume_support > 0.6,
                 "poc": poc_level,
                 "value_area": value_area,
                 "distribution": volume_distribution,
             }
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {"supports_entry": False}
@@ -3648,22 +4135,27 @@ Take Profit: {take_profit}""",
         try:
             if not volume_profile:
                 return None
+
             # Trier les prix par volume décroissant
             sorted_prices = sorted(
                 volume_profile.items(), key=lambda x: x[1], reverse=True
             )
+
             # Calculer le volume total
             total_volume = sum(volume_profile.values())
             target_volume = total_volume * value_area_pct
             cumulative_volume = 0
             value_area_prices = []
+
             # Construire la value area
             for price, volume in sorted_prices:
                 cumulative_volume += volume
                 value_area_prices.append(price)
                 if cumulative_volume >= target_volume:
                     break
+
             return {"high": max(value_area_prices), "low": min(value_area_prices)}
+
         except Exception as e:
             logger.error(f"Erreur calcul Value Area: {e}")
             return None
@@ -3673,26 +4165,33 @@ Take Profit: {take_profit}""",
         try:
             # Configuration initiale
             await self.setup_streams()
+
             # Étude initiale du marché
             market_regime, historical_data, initial_analysis = await self.study_market()
+
             while True:
                 try:
                     # Mise à jour des données
                     market_data = await self.get_latest_data()
                     if not market_data:
                         continue
+
                     # Analyse technique
                     signals = await self.analyze_signals(market_data)
+
                     # Analyse des news
                     news_impact = await self.news_analyzer.analyze()
+
                     # Construction des features
                     features = self._combine_features(
                         technical_features=signals,
                         news_impact=news_impact,
                         regime=market_regime,
                     )
+
                     # Obtention de la politique et valeur
                     policy, value = self.decision_model(features)
+
                     if policy is not None and value is not None:
                         # Construction de la décision
                         decision = self._build_decision(
@@ -3703,15 +4202,20 @@ Take Profit: {take_profit}""",
                             regime=market_regime,
                             timestamp=pd.Timestamp.utcnow(),
                         )
+
                         # Ajout gestion des risques
                         decision = self._add_risk_management(decision)
+
                         # Exécution des trades
                         await self.execute_trades(decision)
+
                     # Attente avant la prochaine itération
                     await asyncio.sleep(config["TRADING"]["update_interval"])
+
                 except Exception as loop_error:
                     logger.error(f"Erreur dans la boucle principale: {loop_error}")
                     continue
+
         except Exception as e:
             logger.error(f"Erreur fatale: {e}")
             await self.telegram.send_message(f"🚨 Erreur critique du bot:\n{str(e)}\n")
@@ -3723,20 +4227,26 @@ Take Profit: {take_profit}""",
             # Vérification de la taille minimale des données
             if len(historical_data.get("1h", [])) < config["AI"]["min_training_size"]:
                 return False
+
             # Vérification de la dernière session d'entraînement
             return True
+
             return time_since_training.days >= 1  # Réentraînement quotidien
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return False
 
     async def _train_models(self, historical_data, initial_analysis):
         """Entraîne ou met à jour les modèles"""
+
         try:
+
             # Préparation des données d'entraînement
             X_train, y_train = self._prepare_training_data(
                 historical_data, initial_analysis
             )
+
             # Entraînement du modèle hybride
             self.hybrid_model.train(
                 market_data=historical_data,
@@ -3745,6 +4255,7 @@ Take Profit: {take_profit}""",
                 batch_size=config["AI"]["batch_size"],
                 learning_rate=config["AI"]["learning_rate"],
             )
+
             # Entraînement du PPO-GTrXL
             self.models["ppo_gtrxl"].train(
                 env=self.env,
@@ -3753,6 +4264,7 @@ Take Profit: {take_profit}""",
                 learning_rate=config["AI"]["learning_rate"],
                 gradient_clip=config["AI"]["gradient_clip"],
             )
+
             # Entraînement du CNN-LSTM
             self.models["cnn_lstm"].train(
                 X_train,
@@ -3761,124 +4273,162 @@ Take Profit: {take_profit}""",
                 batch_size=config["AI"]["batch_size"],
                 validation_split=0.2,
             )
+
             # Mise à jour du timestamp d'entraînement
+
             # Sauvegarde des modèles
             self._save_models()
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             raise
 
     def _prepare_training_data(self, historical_data, initial_analysis):
         """Prépare les données pour l'entraînement"""
+
         try:
             features = []
             labels = []
+
             # Pour chaque timeframe
             for timeframe in config["TRADING"]["timeframes"]:
                 tf_data = historical_data[timeframe]
                 tf_analysis = initial_analysis[timeframe]
+
                 # Extraction des features
                 technical_features = self._extract_technical_features(tf_data)
                 market_features = self._extract_market_features(tf_data)
                 indicator_features = self._extract_indicator_features(tf_analysis)
+
                 # Combinaison des features
                 combined_features = np.concatenate(
                     [technical_features, market_features, indicator_features], axis=1
                 )
+
                 features.append(combined_features)
+
                 # Création des labels (returns futurs)
                 future_returns = self._calculate_future_returns(tf_data)
                 labels.append(future_returns)
+
             # Fusion des données de différents timeframes
             X = np.concatenate(features, axis=1)
             y = np.mean(labels, axis=0)
+
             return X, y
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             raise
 
     def _extract_technical_features(self, data):
         """Extrait les features techniques des données"""
+
         try:
             features = []
+
             # Features de tendance
             trend_data = self._calculate_trend_features(data)
             if trend_data:
                 features.append(trend_data)
+
             # Features de momentum
             if momentum_data := self._calculate_momentum_features(data):
                 features.append(momentum_data)
+
             # Features de volatilité
             if volatility_data := self._calculate_volatility_features(data):
                 features.append(volatility_data)
+
             # Features de volume
             if volume_data := self._calculate_volume_features(data):
                 features.append(volume_data)
+
             # Features d'orderflow
             if orderflow_data := self._calculate_orderflow_features(data):
                 features.append(orderflow_data)
+
             return np.concatenate(features, axis=1)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_market_features(self, data):
         """Extrait les features de marché"""
+
         try:
             features = []
+
             # Prix relatifs
             close = data["close"].values
             features.append(close[1:] / close[:-1] - 1)  # Returns
+
             # Volumes relatifs
             volume = data["volume"].values
             features.append(volume[1:] / volume[:-1] - 1)  # Volume change
+
             # Spread
             features.append((data["high"] - data["low"]) / data["close"])
+
             # Gap analysis
             features.append(self._calculate_gap_features(data))
+
             # Liquidité
             features.append(self._calculate_liquidity_features(data))
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_indicator_features(self, analysis):
         """Extrait les features des indicateurs"""
+
         try:
             features = []
+
             # Features de tendance
             if "trend" in analysis:
                 trend_strength = analysis["trend"].get("trend_strength", 0)
                 features.append(trend_strength)
+
             # Features de volatilité
             if "volatility" in analysis:
                 volatility = analysis["volatility"].get("current_volatility", 0)
                 features.append(volatility)
+
             # Features de volume
             if "volume" in analysis:
                 volume_profile = analysis["volume"].get("volume_profile", {})
                 strength = float(volume_profile.get("strength", 0))
                 features.append(strength)
+
             # Signal dominant
             if "dominant_signal" in analysis:
                 signal_mapping = {"Bullish": 1, "Bearish": -1, "Neutral": 0}
                 signal = signal_mapping.get(analysis["dominant_signal"], 0)
                 features.append(signal)
+
             return np.array(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_trend_features(self, data):
         """Calcule les features de tendance"""
+
         try:
             features = []
+
             # Supertrend
             if st_data := self._calculate_supertrend(data):
                 features.append(st_data["value"])
                 features.append(st_data["direction"])
                 features.append(st_data["strength"])
+
             # Ichimoku
             if ichi_data := self._calculate_ichimoku(data):
                 features.append(ichi_data["tenkan"] / data["close"])
@@ -3886,32 +4436,39 @@ Take Profit: {take_profit}""",
                 features.append(ichi_data["senkou_a"] / data["close"])
                 features.append(ichi_data["senkou_b"] / data["close"])
                 features.append(ichi_data["cloud_strength"])
+
             # EMA Ribbon
             if ema_data := self._calculate_ema_ribbon(data):
                 features.append(ema_data["trend"])
                 features.append(ema_data["strength"])
                 for ema in ema_data["emas"].values():
                     features.append(ema / data["close"])
+
             # Parabolic SAR
             if psar_data := self._calculate_psar(data):
                 features.append(psar_data["value"] / data["close"])
                 features.append(psar_data["trend"])
                 features.append(psar_data["strength"])
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_momentum_features(self, data):
         """Calcule les features de momentum"""
+
         try:
             features = []
+
             # RSI
             if rsi_data := self._calculate_rsi(data):
                 features.append(rsi_data["value"])
                 features.append(float(rsi_data["overbought"]))
                 features.append(float(rsi_data["oversold"]))
                 features.append(rsi_data["divergence"])
+
             # Stochastic RSI
             if stoch_data := self._calculate_stoch_rsi(data):
                 features.append(stoch_data["k_line"])
@@ -3919,6 +4476,7 @@ Take Profit: {take_profit}""",
                 features.append(float(stoch_data["overbought"]))
                 features.append(float(stoch_data["oversold"]))
                 features.append(stoch_data["crossover"])
+
             # MACD
             if macd_data := self._calculate_macd(data):
                 features.append(macd_data["macd"])
@@ -3926,27 +4484,33 @@ Take Profit: {take_profit}""",
                 features.append(macd_data["histogram"])
                 features.append(macd_data["crossover"])
                 features.append(macd_data["strength"])
+
             # Awesome Oscillator
             if ao_data := self._calculate_ao(data):
                 features.append(ao_data["value"])
                 features.append(ao_data["momentum_shift"])
                 features.append(ao_data["strength"])
                 features.append(float(ao_data["zero_cross"]))
+
             # TSI
             if tsi_data := self._calculate_tsi(data):
                 features.append(tsi_data["tsi"])
                 features.append(tsi_data["signal"])
                 features.append(tsi_data["histogram"])
                 features.append(tsi_data["divergence"])
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_volatility_features(self, data):
         """Calcule les features de volatilité"""
+
         try:
             features = []
+
             # Bollinger Bands
             if bb_data := self._calculate_bbands(data):
                 features.append((bb_data["upper"] - data["close"]) / data["close"])
@@ -3955,6 +4519,7 @@ Take Profit: {take_profit}""",
                 features.append(bb_data["bandwidth"])
                 features.append(bb_data["percent_b"])
                 features.append(float(bb_data["squeeze"]))
+
             # Keltner Channels
             if kc_data := self._calculate_keltner(data):
                 features.append((kc_data["upper"] - data["close"]) / data["close"])
@@ -3962,50 +4527,63 @@ Take Profit: {take_profit}""",
                 features.append((kc_data["lower"] - data["close"]) / data["close"])
                 features.append(kc_data["width"])
                 features.append(kc_data["position"])
+
             # ATR
             if atr_data := self._calculate_atr(data):
                 features.append(atr_data["value"])
                 features.append(atr_data["normalized"])
                 features.append(atr_data["trend"])
                 features.append(atr_data["volatility_regime"])
+
             # VIX Fix
             if vix_data := self._calculate_vix_fix(data):
                 features.append(vix_data["value"])
                 features.append(vix_data["regime"])
                 features.append(vix_data["trend"])
                 features.append(vix_data["percentile"])
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_gap_features(self, data):
         """Calcule les features de gaps"""
+
         try:
             features = []
+
             # Prix d'ouverture vs clôture précédente
             open_close_gap = (data["open"] - data["close"].shift(1)) / data[
                 "close"
             ].shift(1)
             features.append(open_close_gap)
+
             # Gap haussier/baissier
             features.append(np.where(open_close_gap > 0, 1, -1))
+
             # Force du gap
             features.append(abs(open_close_gap))
+
             # Gap comblé
             gap_filled = (data["low"] <= data["close"].shift(1)) & (
                 data["high"] >= data["open"]
             )
             features.append(gap_filled.astype(float))
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_liquidity_features(self, data):
         """Calcule les features de liquidité"""
+
         try:
             features = []
+
             # Analyse du carnet d'ordres
             if orderbook := self.buffer.get_orderbook(data.name):
                 # Déséquilibre bid/ask
@@ -4013,29 +4591,36 @@ Take Profit: {take_profit}""",
                 ask_volume = sum(vol for _, vol in orderbook["asks"][:10])
                 imbalance = (bid_volume - ask_volume) / (bid_volume + ask_volume)
                 features.append(imbalance)
+
                 # Profondeur de marché
                 depth = (bid_volume + ask_volume) / data["volume"].mean()
                 features.append(depth)
+
                 # Spread relatif
                 spread = (
                     orderbook["asks"][0][0] - orderbook["bids"][0][0]
                 ) / orderbook["bids"][0][0]
                 features.append(spread)
+
                 # Clusters de liquidité
                 clusters = self._detect_liquidity_clusters(orderbook)
                 features.append(len(clusters["bid_clusters"]))
                 features.append(len(clusters["ask_clusters"]))
+
                 # Score de résistance à l'impact
                 impact_resistance = self._calculate_impact_resistance(orderbook)
                 features.append(impact_resistance)
+
             # Métriques historiques
             # Volume moyen sur 24h
             vol_24h = data["volume"].rolling(window=1440).mean()  # 1440 minutes = 24h
             features.append(data["volume"] / vol_24h)
+
             # Ratio de liquidité de Amihud
             daily_returns = data["close"].pct_change()
             amihud = abs(daily_returns) / (data["volume"] * data["close"])
             features.append(amihud)
+
             # Ratio de turnover
             turnover = (
                 data["volume"]
@@ -4043,19 +4628,24 @@ Take Profit: {take_profit}""",
                 / data["volume"].rolling(window=20).mean()
             )
             features.append(turnover)
+
             return np.column_stack(features)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _detect_liquidity_clusters(self, orderbook):
         """Détecte les clusters de liquidité dans le carnet d'ordres"""
+
         try:
             bid_clusters = []
             ask_clusters = []
+
             # Paramètres de clustering
             min_volume = 1.0  # Volume minimum pour un cluster
             price_threshold = 0.001  # Distance maximale entre prix pour un même cluster
+
             # Détection des clusters côté bid
             current_cluster = {"start_price": None, "total_volume": 0}
             for price, volume in orderbook["bids"]:
@@ -4068,6 +4658,7 @@ Take Profit: {take_profit}""",
                         if current_cluster["total_volume"] >= min_volume:
                             bid_clusters.append(current_cluster)
                         current_cluster = {"start_price": price, "total_volume": volume}
+
             # Détection des clusters côté ask
             current_cluster = {"start_price": None, "total_volume": 0}
             for price, volume in orderbook["asks"]:
@@ -4080,15 +4671,18 @@ Take Profit: {take_profit}""",
                         if current_cluster["total_volume"] >= min_volume:
                             ask_clusters.append(current_cluster)
                         current_cluster = {"start_price": price, "total_volume": volume}
+
             return {
                 "bid_clusters": bid_clusters,
                 "ask_clusters": ask_clusters,
             }
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
 
     def _calculate_impact_resistance(self, orderbook, impact_size=1.0):
         """Calcule la résistance à l'impact de marché"""
+
         try:
             # Calcul de l'impact sur les bids
             cumulative_bid_volume = 0
@@ -4100,6 +4694,7 @@ Take Profit: {take_profit}""",
                         0
                     ][0]
                     break
+
             # Calcul de l'impact sur les asks
             cumulative_ask_volume = 0
             ask_impact = 0
@@ -4110,30 +4705,37 @@ Take Profit: {take_profit}""",
                         0
                     ][0]
                     break
+
             # Score de résistance
             resistance_score = (
                 1 / (bid_impact + ask_impact)
                 if (bid_impact + ask_impact) > 0
                 else float("inf")
             )
+
             return resistance_score
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return
 
     def _calculate_future_returns(self, data, horizons=[1, 5, 10, 20]):
         """Calcule les returns futurs pour différents horizons"""
+
         try:
             returns = []
+
             for horizon in horizons:
                 # Calcul du return futur
                 future_return = data["close"].shift(-horizon) / data["close"] - 1
                 returns.append(future_return)
+
                 # Calcul de la volatilité future
                 future_volatility = (
                     data["close"].rolling(window=horizon).std().shift(-horizon)
                 )
                 returns.append(future_volatility)
+
                 # Calcul du volume futur normalisé
                 future_volume = (
                     (data["volume"].shift(-horizon) / data["volume"])
@@ -4141,26 +4743,33 @@ Take Profit: {take_profit}""",
                     .mean()
                 )
                 returns.append(future_volume)
+
             return np.column_stack(returns)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _save_models(self):
         """Sauvegarde les modèles entraînés"""
+
         try:
             # Création du dossier de sauvegarde
             save_dir = os.path.join(current_dir, "models")
             os.makedirs(save_dir, exist_ok=True)
+
             # Sauvegarde du modèle hybride
             hybrid_path = os.path.join(save_dir, "hybrid_model.pt")
             torch.save(self.hybrid_model.state_dict(), hybrid_path)
+
             # Sauvegarde du PPO-GTrXL
             ppo_path = os.path.join(save_dir, "ppo_gtrxl.pt")
             torch.save(self.models["ppo_gtrxl"].state_dict(), ppo_path)
+
             # Sauvegarde du CNN-LSTM
             cnn_lstm_path = os.path.join(save_dir, "cnn_lstm.pt")
             torch.save(self.models["cnn_lstm"].state_dict(), cnn_lstm_path)
+
             # Sauvegarde des métadonnées
             metadata = {
                 "model_versions": {
@@ -4170,15 +4779,18 @@ Take Profit: {take_profit}""",
                 },
                 "training_metrics": self._get_training_metrics(),
             }
+
             metadata_path = os.path.join(save_dir, "metadata.json")
             with open(metadata_path, "w") as f:
                 json.dump(metadata, f, indent=4)
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             raise
 
     def _get_training_metrics(self):
         """Récupère les métriques d'entraînement"""
+
         try:
             metrics = {
                 "hybrid_model": {
@@ -4199,62 +4811,77 @@ Take Profit: {take_profit}""",
                     "mae": self.models["cnn_lstm"].history["mae"],
                 },
             }
+
             return metrics
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {}
 
     async def _should_stop_trading(self):
         """Vérifie les conditions d'arrêt du trading"""
+
         try:
             # Vérification du circuit breaker
             if await self.circuit_breaker.should_stop_trading():
                 return True
+
             # Vérification du drawdown maximum
             current_drawdown = self.position_manager.calculate_drawdown()
             if current_drawdown > config["RISK"]["max_drawdown"]:
                 return True
+
             # Vérification de la perte journalière
             daily_loss = self.position_manager.calculate_daily_loss()
             if daily_loss > config["RISK"]["daily_stop_loss"]:
                 return True
+
             # Vérification des conditions de marché
             market_conditions = await self._check_market_conditions()
             if not market_conditions["safe_to_trade"]:
                 return True
+
             return False
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     async def _check_market_conditions(self):
         """Vérifie les conditions de marché"""
+
         try:
             conditions = {"safe_to_trade": True, "reason": None}
+
             # Vérification de la volatilité
             volatility = self._analyze_volatility()
             if volatility["current"] > volatility["threshold"] * 2:
                 conditions["safe_to_trade"] = False
                 conditions["reason"] = "Volatilité excessive"
                 return conditions
+
             # Vérification de la liquidité
             liquidity = await self._analyze_market_liquidity()
             if liquidity["status"] == "insufficient":
                 conditions["safe_to_trade"] = False
                 conditions["reason"] = "Liquidité insuffisante"
                 return conditions
+
             # Vérification des news à haut risque
             if await self._check_high_risk_news():
                 conditions["safe_to_trade"] = False
                 conditions["reason"] = "News à haut risque"
                 return conditions
+
             # Vérification des conditions techniques
             technical_check = self._check_technical_conditions()
             if not technical_check["safe"]:
                 conditions["safe_to_trade"] = False
                 conditions["reason"] = technical_check["reason"]
                 return conditions
+
             return conditions
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {"safe_to_trade": False, "reason": "Erreur système"}
@@ -4266,16 +4893,20 @@ Take Profit: {take_profit}""",
                 "status": "sufficient",
                 "metrics": {},
             }
+
             # Analyse du carnet d'ordres
             for pair in config["TRADING"]["pairs"]:
                 orderbook = self.buffer.get_orderbook(pair)
                 if orderbook:
                     # Profondeur de marché
                     depth = self._calculate_market_depth(orderbook)
+
                     # Ratio bid/ask
                     bid_ask_ratio = self._calculate_bid_ask_ratio(orderbook)
+
                     # Spread moyen
                     avg_spread = self._calculate_average_spread(orderbook)
+
                     # Résistance à l'impact
                     impact_resistance = self._calculate_impact_resistance(orderbook)
                     liquidity_status["metrics"][pair] = {
@@ -4284,6 +4915,7 @@ Take Profit: {take_profit}""",
                         "avg_spread": avg_spread,
                         "impact_resistance": impact_resistance,
                     }
+
                     # Vérification des seuils
                     if (
                         depth < 100000  # Exemple de seuil
@@ -4292,17 +4924,22 @@ Take Profit: {take_profit}""",
                         or impact_resistance < 0.5
                     ):
                         liquidity_status["status"] = "insufficient"
+
             return liquidity_status
+
         except Exception as e:
             logger.error(f"Erreur analyse liquidité: {e}")
             return {"status": "insufficient", "metrics": {}}
 
     def _check_technical_conditions(self):
         """Vérifie les conditions techniques du marché"""
+
         try:
             conditions = {"safe": True, "reason": None, "details": {}}
+
             for pair in config["TRADING"]["pairs"]:
                 pair_data = self.buffer.get_latest_ohlcv(pair)
+
                 # Vérification des divergences
                 divergences = self._check_divergences(pair_data)
                 if divergences["critical"]:
@@ -4310,6 +4947,7 @@ Take Profit: {take_profit}""",
                     conditions["reason"] = f"Divergence critique sur {pair}"
                     conditions["details"][pair] = divergences
                     return conditions
+
                 # Vérification des patterns critiques
                 patterns = self._check_critical_patterns(pair_data)
                 if patterns["detected"]:
@@ -4319,6 +4957,7 @@ Take Profit: {take_profit}""",
                     )
                     conditions["details"][pair] = patterns
                     return conditions
+
                 # Vérification des niveaux clés
                 levels = self._check_key_levels(pair_data)
                 if levels["breach"]:
@@ -4326,61 +4965,76 @@ Take Profit: {take_profit}""",
                     conditions["reason"] = f"Rupture niveau clé sur {pair}"
                     conditions["details"][pair] = levels
                     return conditions
+
                 conditions["details"][pair] = {
                     "divergences": divergences,
                     "patterns": patterns,
                     "levels": levels,
                 }
+
             return conditions
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
             return {"safe": False, "reason": "Erreur système", "details": {}}
 
     def _check_divergences(self, data):
         """Détecte les divergences entre prix et indicateurs"""
+
         try:
             divergences = {
                 "critical": False,
                 "types": [],
             }
+
             # RSI Divergence
             rsi = self._calculate_rsi(data)
             if rsi:
                 price_peaks = self._find_peaks(data["close"])
                 rsi_peaks = self._find_peaks(rsi["value"])
+
                 if self._is_bearish_divergence(price_peaks, rsi_peaks):
                     divergences["critical"] = True
                     divergences["types"].append("RSI_BEARISH")
+
                 if self._is_bullish_divergence(price_peaks, rsi_peaks):
                     divergences["types"].append("RSI_BULLISH")
+
             # MACD Divergence
             macd = self._calculate_macd(data)
             if macd:
                 price_peaks = self._find_peaks(data["close"])
                 macd_peaks = self._find_peaks(macd["histogram"])
+
                 if self._is_bearish_divergence(price_peaks, macd_peaks):
                     divergences["critical"] = True
                     divergences["types"].append("MACD_BEARISH")
+
                 if self._is_bullish_divergence(price_peaks, macd_peaks):
                     divergences["types"].append("MACD_BULLISH")
+
             return divergences
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
 
     def _check_critical_patterns(self, data):
         """Détecte les patterns techniques critiques"""
+
         try:
             patterns = {
                 "detected": False,
                 "pattern": None,
                 "confidence": 0,
             }
+
             # Head and Shoulders
             if self._detect_head_shoulders(data):
                 patterns["detected"] = True
                 patterns["pattern"] = "HEAD_AND_SHOULDERS"
                 patterns["confidence"] = 0.85
                 return patterns
+
             # Double Top/Bottom
             if self._detect_double_pattern(data):
                 patterns["detected"] = True
@@ -4391,6 +5045,7 @@ Take Profit: {take_profit}""",
                 )
                 patterns["confidence"] = 0.80
                 return patterns
+
             # Rising/Falling Wedge
             if self._detect_wedge(data):
                 patterns["detected"] = True
@@ -4401,33 +5056,24 @@ Take Profit: {take_profit}""",
                 )
                 patterns["confidence"] = 0.75
                 return patterns
+
             return patterns
+
         except Exception as e:
             logger.error(f"Erreur: {e}")
 
-    def update_trading_status(
-        regime, strategy, signals, news, arbitrage_opps, last_trade
-    ):
-        st.session_state["live_status"] = {
-            "Régime": regime,
-            "Stratégie": strategy,
-            "Signal": signals,
-            "News": news,
-            "Arbitrage": arbitrage_opps,
-            "Dernier Trade": last_trade,
-        }
-
     async def run_adaptive_trading(self, period="7d"):
+        # 1. Étudier le marché sur la période définie (ex: 7j)
         regime, historical_data, indicators_analysis = await self.study_market(
             period=period
         )
+        # 2. Établir un plan/stratégie selon le régime détecté
         strategy = self.choose_strategy(regime, indicators_analysis)
         await self.telegram.send_message(
             f"📊 Plan établi : {strategy} | Régime détecté : {regime}"
         )
         self.current_regime = regime
         self.current_strategy = strategy
-        last_trade = None
         while st.session_state.get("bot_running", True):
             # 3. Mise à jour continue du marché
             market_data = await self.get_latest_data()
@@ -4447,7 +5093,6 @@ Take Profit: {take_profit}""",
                 if hasattr(self, "regime_detector")
                 else self.current_regime
             )
-
             # 4. Adaptation : news, arbitrage, changement de régime
             if news and news.get("impact", 0) > 0.7:
                 await self.telegram.send_message(f"📰 News critique détectée : {news}")
@@ -4470,17 +5115,7 @@ Take Profit: {take_profit}""",
             if decision and decision.get("action") in ["buy", "sell"]:
                 order = await self.execute_real_trade(decision)
                 await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
-                last_trade = decision
-            # --- NOUVEAU : MAJ de l'affichage live dans la session state pour Streamlit
-            update_trading_status(
-                regime=self.current_regime,
-                strategy=self.current_strategy,
-                signals=signals,
-                news=news,
-                arbitrage_opps=arbitrage_opps,
-                last_trade=last_trade,
-            )
-            await asyncio.sleep(2)
+            await asyncio.sleep(2)  # ajustable selon besoins
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -4513,9 +5148,12 @@ Take Profit: {take_profit}""",
 ╔═════════════════════════════════════════════════╗
 ║           CALCULATING SUPERTREND                 ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             # Vérification de la configuration
             if not (
                 self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})
@@ -4525,26 +5163,31 @@ Take Profit: {take_profit}""",
                     "Supertrend", "DISABLED - Missing config"
                 )
                 return None
+
             # Récupération des paramètres
             try:
                 period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
                 multiplier = self.config["INDICATORS"]["trend"]["supertrend"][
                     "multiplier"
                 ]
+
                 logger.info(
                     f"Using parameters: period={period}, multiplier={multiplier}"
                 )
+
             except KeyError as ke:
                 logger.error(f"Missing parameter: {ke}")
                 self.dashboard.update_indicator_status(
                     "Supertrend", "DISABLED - Missing parameters"
                 )
                 return None
+
             # Vérification des données d'entrée
             if data is None or data.empty:
                 logger.error("No input data provided")
                 self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
                 return None
+
             required_columns = ["high", "low", "close"]
             if not all(col in data.columns for col in required_columns):
                 logger.error(f"Missing required columns: {required_columns}")
@@ -4552,25 +5195,31 @@ Take Profit: {take_profit}""",
                     "Supertrend", "ERROR - Missing columns"
                 )
                 return None
+
             # Extraction des séries de prix
             high = data["high"]
             low = data["low"]
             close = data["close"]
+
             # Calcul du True Range (TR)
             tr = pd.DataFrame()
             tr["h-l"] = high - low
             tr["h-pc"] = abs(high - close.shift(1))
             tr["l-pc"] = abs(low - close.shift(1))
             tr["tr"] = tr[["h-l", "h-pc", "l-pc"]].max(axis=1)
+
             # Calcul de l'ATR
             atr = tr["tr"].rolling(window=period, min_periods=1).mean()
+
             # Calcul des bandes
             hl2 = (high + low) / 2
             final_upperband = hl2 + (multiplier * atr)
             final_lowerband = hl2 - (multiplier * atr)
+
             # Initialisation des séries Supertrend
             supertrend = pd.Series(index=data.index, dtype=float)
             direction = pd.Series(index=data.index, dtype=float)
+
             # Calcul du Supertrend
             for i in range(period, len(data)):
                 try:
@@ -4586,10 +5235,13 @@ Take Profit: {take_profit}""",
                 except IndexError as idx_error:
                     logger.error(f"Index error at position {i}: {idx_error}")
                     continue
+
             # Calcul de la force du signal
             strength = abs(close - supertrend) / close
+
             # Mise à jour du statut
             self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+
             # Log de succès
             logger.info(
                 f"""
@@ -4602,18 +5254,20 @@ Take Profit: {take_profit}""",
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             return {
                 "value": supertrend,
                 "direction": direction,
                 "strength": strength,
                 "parameters": {"period": period, "multiplier": multiplier},
                 "metadata": {
-                    "timestamp": datetime.now().strftime(
+                    "calculation_time": datetime.now(timezone.utc).strftime(
                         "%Y-%m-%d %H:%M:%S"
-                    ),  # Correction ici
+                    ),
                     "status": "SUCCESS",
                 },
             }
+
         except Exception as e:
             # Log d'erreur détaillé
             logger.error(
@@ -4621,16 +5275,19 @@ Take Profit: {take_profit}""",
 ╔═════════════════════════════════════════════════╗
 ║           SUPERTREND ERROR                       ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
             """
             )
+
             # Mise à jour du statut dans le dashboard
             self.dashboard.update_indicator_status(
                 "Supertrend", f"ERROR - {type(e).__name__}"
             )
             return None
+
         finally:
             # Nettoyage et libération des ressources si nécessaire
             try:
@@ -4652,11 +5309,13 @@ async def run_trading_bot():
             st.metric("Active Positions", "2", "Open")
         with col3:
             st.metric("24h P&L", "+123 USDC", "+1.23%")
+
         # Bouton de démarrage
         if st.button("Start Trading Bot", type="primary"):
             try:
                 # Récupère (ou crée) une seule instance du bot si nécessaire
                 bot = get_bot()
+
                 # On lance la tâche de trading adaptatif si elle n'existe pas déjà
                 if (
                     "trading_task" not in st.session_state
@@ -4671,6 +5330,7 @@ async def run_trading_bot():
                     st.success("🚀 Trading adaptatif lancé.")
                 else:
                     st.info("Le bot est déjà en cours d’exécution.")
+
             except Exception as e:
                 logger.error(f"Trading bot runtime error: {e}")
                 st.error(f"❌ Runtime error: {str(e)}")
@@ -4691,12 +5351,19 @@ async def run_trading_bot():
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
+
+    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    current_user = "Patmoorea"
+
     try:
         session_manager.protect_session()
-        st.title("Trading Bot Ultimate v4 🤖")
+
         if "initialization_time" not in st.session_state:
             st.session_state.initialization_time = current_time
+
         default_session_state = {
+            "session_id": f"{current_user}_{int(datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S').timestamp())}",
+            "user": current_user,
             "portfolio": None,
             "latest_data": None,
             "indicators": None,
@@ -4713,10 +5380,12 @@ async def main_async():
         for key, value in default_session_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
+
         bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
+
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
         # --- CORRIGE ici pour toujours refléter l'état session_state ---
@@ -4728,6 +5397,7 @@ async def main_async():
             if latest_data
             else "Aucune donnée"
         )
+
         # 5. Interface principale - État et contrôles
         status_col1, status_col2 = st.columns([2, 1])
         with status_col1:
@@ -4738,15 +5408,16 @@ async def main_async():
                 "initializing": "🔄",
                 "error": "⚠️",
             }.get(ws_status, "🔴")
+
             status_info = f"""
             ### Bot Status
             - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
             - 📡 WebSocket: {ws_icon} {ws_status.title()}
             - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
             - ⏰ Last Update: {st.session_state.last_update_time}
+            - 👤 User: {st.session_state.user}
             """
             st.info(status_info)
-            status_placeholder = st.empty()
 
         # 6. Contrôles de la barre latérale avec gestion améliorée
         with st.sidebar:
@@ -4782,16 +5453,19 @@ async def main_async():
                         st.session_state.trading_task.cancel()
                         st.session_state.trading_task = None
                     st.warning("Trading stoppé.")
+
+            # --- AFFICHAGE LIVE ---
+            if "live_status" in st.session_state and st.session_state["live_status"]:
+                status_placeholder.markdown("### 🟢 Trading Live Status")
+                for k, v in st.session_state["live_status"].items():
+                    status_placeholder.write(f"**{k}** : {v}")
+
             # --- GESTION DES DONNEES ET BACKTEST ---
             # TOUJOURS lire depuis session_state !
             latest_data = st.session_state.get("latest_data")
             if not isinstance(latest_data, dict):
                 latest_data = {}
             st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
-            if "live_status" in st.session_state and st.session_state["live_status"]:
-                status_placeholder.markdown("### 🟢 Trading Live Status")
-                for k, v in st.session_state["live_status"].items():
-                    status_placeholder.write(f"**{k}** : {v}")
 
             def _has_valid_ohlcv(item):
                 return (
@@ -4807,6 +5481,7 @@ async def main_async():
                 )
 
             data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
+
             if not data_ready:
                 st.warning(
                     "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
@@ -4890,11 +5565,13 @@ async def main_async():
                         st.success("Backtest terminé ✅")
                     except Exception as batch_exc:
                         st.error(f"Erreur lors du backtest: {batch_exc}")
+
                 # Résultats
                 if st.session_state.get("all_backtest_results"):
                     st.markdown("**Résultats Backtest Classique :**")
                     for symbol, res in st.session_state["all_backtest_results"].items():
                         st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
                     if st.button(
                         "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
                     ):
@@ -4941,32 +5618,39 @@ async def main_async():
                             st.write("DEBUG - Résultats quantum :", results)
                         except Exception as batch_exc:
                             st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+
                 # Affichage des résultats
                 if st.session_state.get("all_backtest_results"):
                     st.markdown("**Résultats Backtest Classique :**")
                     for symbol, res in st.session_state["all_backtest_results"].items():
                         st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
                 if st.session_state.get("all_quantum_results"):
                     st.markdown("**Résultats Backtest Quantique :**")
                     for symbol, res in st.session_state["all_quantum_results"].items():
                         st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
         # 8. Onglets principaux avec gestion d'erreur
         try:
             portfolio_tab, trading_tab, analysis_tab = st.tabs(
                 ["📈 Portfolio", "🎯 Trading", "📊 Analysis"]
             )
+
             # Onglet Portfolio
             with portfolio_tab:
                 await _render_portfolio_tab(bot)
+
             # Onglet Trading
             with trading_tab:
                 await _render_trading_tab(bot)
+
             # Onglet Analysis
             with analysis_tab:
                 await _render_analysis_tab(bot)
         except Exception as tab_error:
             logger.error(f"Tab rendering error: {tab_error}")
             st.error("Error rendering tabs")
+
     except Exception as e:
         logger.error(f"❌ Application error: {str(e)}")
         st.error(f"❌ Application error: {str(e)}")
@@ -4974,7 +5658,7 @@ async def main_async():
         # Protection finale avec timestamp
         try:
             session_manager.protect_session()
-            st.session_state.last_update_time = datetime.now(timezone.utc).strftime(
+            st.session_state.last_update_time = datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
         except Exception as protect_error:
@@ -5008,6 +5692,7 @@ async def _render_portfolio_tab(bot):
                         str(len(positions)),
                         f"{len(positions)} active",
                     )
+
                 if positions:
                     st.subheader("Active Positions")
                     st.dataframe(pd.DataFrame(positions), use_container_width=True)
@@ -5040,6 +5725,7 @@ async def _render_trading_tab(bot):
                         if prev_price
                         else 0
                     )
+
                     st.metric(
                         "BTC/USDC Price",
                         f"{current_price:.2f}",
@@ -5055,9 +5741,11 @@ async def _render_trading_tab(bot):
                     vol_change = (
                         ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
                     )
+
                     st.metric(
                         "Trading Volume", f"{current_vol:.2f}", f"{vol_change:+.2f}%"
                     )
+
             if bot.indicators:
                 st.subheader("Trading Signals")
                 st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
@@ -5075,8 +5763,10 @@ async def _render_analysis_tab(bot):
         try:
             if bot.latest_data and bot.indicators:
                 st.subheader("Technical Analysis")
+
                 for symbol in bot.latest_data:
                     await process_market_data(bot, symbol)
+
                 if hasattr(bot, "advanced_indicators"):
                     analysis = bot.advanced_indicators.get_all_signals()
                     st.dataframe(pd.DataFrame(analysis), use_container_width=True)
@@ -5088,6 +5778,7 @@ async def _render_analysis_tab(bot):
             st.error(f"❌ Analysis error: {str(e)}")
     else:
         st.warning("⚠️ Start trading to view analysis")
+
     # --- Signal Quantum SVM ---
     if hasattr(bot, "qsvm") and bot.qsvm is not None:
         try:
@@ -5111,10 +5802,12 @@ async def shutdown():
             for t in asyncio.all_tasks()
             if t is not asyncio.current_task() and not t.done()
         ]
+
         if tasks:
             # Annulation des tâches
             for task in tasks:
                 task.cancel()
+
             # Attente de la fin des tâches avec timeout
             try:
                 await asyncio.wait_for(
@@ -5122,12 +5815,15 @@ async def shutdown():
                 )
             except asyncio.TimeoutError:
                 logger.warning("Timeout during tasks cancellation")
+
         # Nettoyage via le gestionnaire de sessions
         await session_manager.cleanup()
+
         # Nettoyage des ressources du bot
         if "bot_instance" in st.session_state:
             bot = st.session_state.bot_instance
             await cleanup_resources(bot)
+
         logger.info(
             """
 ╔═════════════════════════════════════════════════╗
@@ -5137,67 +5833,91 @@ async def shutdown():
 ╚═════════════════════════════════════════════════╝
         """
         )
+
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
 
 
 def main():
     """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv("USER", "Patmoorea")
+
     try:
         # 1. Initialisation et protection de la session
         global session_manager
         session_manager = StreamlitSessionManager()
         session_manager.protect_session()
+
         # 2. Log de démarrage
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              STARTING APPLICATION                ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
 ║ Session: {session_manager.session_id}
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         # 3. Initialisation de l'état de session
         _initialize_session_state()
+
         # 4. Configuration et vérification de la boucle d'événements
         event_loop = _setup_and_verify_event_loop()
         if not event_loop:
             raise RuntimeError("Failed to initialize event loop")
+
         # 5. Exécution de la coroutine principale
         event_loop.run_until_complete(main_async())
+
     except asyncio.CancelledError:
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              GRACEFUL SHUTDOWN                   ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
         """
         )
+
     except Exception as e:
         logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              RUNTIME ERROR                       ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
+║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
         """
         )
         st.error(f"❌ Application error: {str(e)}")
+
     finally:
         _perform_cleanup()
 
 
 def _initialize_session_state():
     """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv("USER", "Patmoorea")
+    session_id = f"{current_user}_{int(current_time.timestamp())}"
+
     try:
         # États par défaut avec horodatage
         default_state = {
             # États de base
-            "session_id": session_manager.session_id,
+            "session_id": session_id,
+            "initialization_time": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "last_update_time": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "user": current_user,
             "initialized": True,
             # États du bot
             "bot_running": False,
@@ -5212,28 +5932,35 @@ def _initialize_session_state():
             "ws_status": "disconnected",
             "ws_initialized": False,
             "ws_connection_status": "disconnected",
+            "ws_last_heartbeat": current_time.strftime("%Y-%m-%d %H:%M:%S"),
             # Protections
             "keep_alive": True,
             "prevent_cleanup": True,
             "force_cleanup": False,
             "cleanup_allowed": False,
         }
+
         # Initialisation des états manquants uniquement
         for key, value in default_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
+
         # Log de succès
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
 ╠═════════════════════════════════════════════════╣
-║ Session ID: {st.session_state.session_id}
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Session ID: {session_id}
 ║ Status: Active
 ╚═════════════════════════════════════════════════╝
         """
         )
+
         return True
+
     except Exception as e:
         # Log d'erreur
         logger.error(
@@ -5241,12 +5968,109 @@ def _initialize_session_state():
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE ERROR                    ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
+║ User: {current_user}
 ╚═════════════════════════════════════════════════╝
         """
         )
         return False
+
+
+def _setup_and_verify_event_loop():
+    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
+    current_time = datetime.now(timezone.utc)
+    current_user = os.getenv("USER", "Patmoorea")
+
+    try:
+        # Vérification de l'existence d'une boucle
+        if not st.session_state.get("loop"):
+            # Création et configuration de la nouvelle boucle
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            nest_asyncio.apply()
+
+            # Sauvegarde dans la session
+            st.session_state.loop = loop
+
+            # Log de succès d'initialisation
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP INITIALIZED              ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {current_user}
+║ Status: Successfully configured
+║ Loop ID: {id(loop)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return loop
+
+        # Vérification de la boucle existante
+        existing_loop = st.session_state.loop
+        if existing_loop.is_closed():
+            logger.warning(
+                f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP CLOSED                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Creating new loop
+║ Previous Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # Création d'une nouvelle boucle
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            nest_asyncio.apply()
+            st.session_state.loop = new_loop
+            return new_loop
+
+        # Retour de la boucle existante
+        logger.debug(
+            f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP VERIFIED                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: Using existing loop
+║ Loop ID: {id(existing_loop)}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        return existing_loop
+
+    except Exception as e:
+        # Log d'erreur détaillé
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║              EVENT LOOP ERROR                    ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+║ User: {current_user}
+║ Details: {traceback.format_exc()}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Incrément du compteur d'erreurs
+        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
+
+        return None
+
+    finally:
+        # Mise à jour du timestamp
+        st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _perform_cleanup():
@@ -5254,6 +6078,7 @@ def _perform_cleanup():
     try:
         # 1. Protection de la session
         session_manager.protect_session()
+
         # 2. Nettoyage de la boucle d'événements
         if st.session_state.get("loop"):
             loop = st.session_state.loop
@@ -5273,6 +6098,7 @@ def _perform_cleanup():
                 finally:
                     # On ne détruit pas la boucle ici non plus
                     pass
+
         logger.info(
             """
 ╔═════════════════════════════════════════════════╗
@@ -5282,6 +6108,7 @@ def _perform_cleanup():
 ╚═════════════════════════════════════════════════╝
         """
         )
+
     except Exception as e:
         logger.error(
             f"""
@@ -5306,9 +6133,12 @@ def ensure_event_loop():
             asyncio.set_event_loop(loop)
             nest_asyncio.apply()
             st.session_state.loop = loop
+
             logger.info("✅ New event loop created and configured")
             return loop
+
         return st.session_state.loop
+
     except Exception as e:
         logger.error(
             f"""
@@ -5326,28 +6156,35 @@ def ensure_event_loop():
 if __name__ == "__main__":
     try:
         main()
+
     except KeyboardInterrupt:
         logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              KEYBOARD INTERRUPT                  ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: Graceful shutdown initiated
 ╚═════════════════════════════════════════════════╝
         """
         )
+
     except Exception as e:
         logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              CRITICAL ERROR                      ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(e)}
 ║ Type: {type(e).__name__}
 ╚═════════════════════════════════════════════════╝
         """
         )
         sys.exit(1)
+
     finally:
         try:
             # Nettoyage final avec nouvelle boucle si nécessaire
@@ -5362,21 +6199,27 @@ if __name__ == "__main__":
                     cleanup_loop.close()
                 except Exception as e:
                     logger.error(f"Final cleanup error: {e}")
+
             logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              FINAL CLEANUP                       ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: All resources cleaned
 ╚═════════════════════════════════════════════════╝
             """
             )
+
         except Exception as cleanup_error:
             logger.error(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              CLEANUP ERROR                       ║
 ╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(cleanup_error)}
 ╚═════════════════════════════════════════════════╝
             """
