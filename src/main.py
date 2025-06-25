@@ -5093,6 +5093,7 @@ Take Profit: {take_profit}""",
                 if hasattr(self, "regime_detector")
                 else self.current_regime
             )
+
             # 4. Adaptation : news, arbitrage, changement de régime
             if news and news.get("impact", 0) > 0.7:
                 await self.telegram.send_message(f"📰 News critique détectée : {news}")
@@ -5108,13 +5109,32 @@ Take Profit: {take_profit}""",
                 await self.telegram.send_message(
                     f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
                 )
+
             # 5. Prendre position selon la stratégie courante
             decision = self.make_trade_decision(
                 signals, self.current_strategy, news, arbitrage_opps
             )
+            trade_status = None
             if decision and decision.get("action") in ["buy", "sell"]:
                 order = await self.execute_real_trade(decision)
+                trade_status = f"{decision['action'].upper()} {decision.get('symbol', '')} {decision.get('amount', '')}"
                 await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
+
+            # MISE À JOUR DU STATUT LIVE POUR STREAMLIT
+            st.session_state["live_status"] = {
+                "Régime": self.current_regime,
+                "Stratégie": self.current_strategy,
+                "Signal": (
+                    signals["recommendation"]["action"]
+                    if signals and "recommendation" in signals
+                    else "N/A"
+                ),
+                "News": news["summary"] if news and "summary" in news else "N/A",
+                "Arbitrage": str(arbitrage_opps) if arbitrage_opps else "N/A",
+                "Dernier Trade": trade_status or "Aucun",
+                "Heure": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+
             await asyncio.sleep(2)  # ajustable selon besoins
 
     def choose_strategy(self, regime, indicators):
