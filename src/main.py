@@ -2194,102 +2194,6 @@ class TradingBotM4:
             await self._cleanup()
             return False
 
-        self.config = {
-            "NEWS": {
-                "enabled": True,
-                "TELEGRAM_TOKEN": os.getenv("TELEGRAM_TOKEN", ""),
-            },
-            "BINANCE": {
-                "API_KEY": os.getenv("BINANCE_API_KEY", ""),
-                "API_SECRET": os.getenv("BINANCE_API_SECRET", ""),
-            },
-        }
-        self.spot_client = None
-        self.ws_manager = None
-
-        self.news_analyzer = None
-        self.initialized = False
-
-        # Mode de trading
-        self.trading_mode = os.getenv("TRADING_MODE", "production")
-        self.testnet = False
-
-        # Activation des composants
-        self.news_enabled = True
-        self.arbitrage_enabled = True
-        self.telegram_enabled = True
-
-        # Configuration risque
-        self.max_drawdown = 0.05  # 5% max
-        self.daily_stop_loss = 0.02  # 2% par jour
-        self.max_position_size = 1000  # USDC
-
-        # Configuration des streams
-        self.stream_config = StreamConfig(
-            max_connections=12, reconnect_delay=1.0, buffer_size=10000
-        )
-
-        # Initialisation du MultiStreamManager
-        self.ws_manager = WebSocketManager(self)
-
-        # Configuration de l'exchange
-        self.websocket.setup_exchange("binance")
-        self.buffer = CircularBuffer()
-
-        # Interface et monitoring
-        self.dashboard = TradingDashboard()
-
-        # Composants principaux
-        self.arbitrage_engine = ArbitrageEngine(
-            exchanges=config["ARBITRAGE"]["exchanges"],
-            pairs=config["ARBITRAGE"]["pairs"],
-            min_profit=config["ARBITRAGE"]["min_profit"],
-            max_trade_size=config["ARBITRAGE"]["max_trade_size"],
-            timeout=config["ARBITRAGE"]["timeout"],
-            volume_filter=config["ARBITRAGE"]["volume_filter"],
-            price_check=config["ARBITRAGE"]["price_check"],
-            max_slippage=config["ARBITRAGE"]["max_slippage"],
-        )
-
-        # Configuration Telegram
-        self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
-        self.telegram = TelegramBot()
-
-        # IA et analyse
-        self.hybrid_model = HybridAI()
-        self.env = TradingEnv(
-            trading_pairs=config["TRADING"]["pairs"],
-            timeframes=config["TRADING"]["timeframes"],
-        )
-
-        # Gestionnaires de trading
-        self.position_manager = PositionManager(
-            account_balance=10000,
-            max_positions=5,
-            max_leverage=3.0,
-            min_position_size=0.001,
-        )
-        self.circuit_breaker = CircuitBreaker(
-            crash_threshold=0.1, liquidity_threshold=0.5, volatility_threshold=0.3
-        )
-
-        # Configuration timeframes
-        self.timeframe_config = TimeframeConfig(
-            timeframes=config["TRADING"]["timeframes"],
-            weights={
-                "1m": 0.1,
-                "5m": 0.15,
-                "15m": 0.2,
-                "1h": 0.25,
-                "4h": 0.15,
-                "1d": 0.15,
-            },
-        )
-        self.news_analyzer = NewsAnalyzer()
-        self.regime_detector = RegimeDetector()
-        self.client_session = None
-
     def _generate_recommendation(self, trend, momentum, volatility, volume):
         try:
             # Compteurs pour les signaux buy/sell (ancienne logique)
@@ -2428,22 +2332,22 @@ class TradingBotM4:
         try:
             # Calcul des dimensions pour CNNLSTM
             input_shape = (
-                len(config["TRADING"]["timeframes"]),  # Nombre de timeframes
-                len(config["TRADING"]["pairs"]),  # Nombre de paires
+                len(self.config["TRADING"]["timeframes"]),  # Nombre de timeframes
+                len(self.config["TRADING"]["pairs"]),  # Nombre de paires
                 42,  # Nombre de features par candlestick
             )
 
             # Calcul des dimensions pour PPO-GTrXL
             state_dim = input_shape[0] * input_shape[1] * input_shape[2]
-            action_dim = len(config["TRADING"]["pairs"])
+            action_dim = len(self.config["TRADING"]["pairs"])
 
             # Initialisation des modèles
             self.models = {
                 "ppo_gtrxl": PPOGTrXL(
                     state_dim=state_dim,
                     action_dim=action_dim,
-                    num_layers=config["AI"]["gtrxl_layers"],
-                    d_model=config["AI"]["embedding_dim"],
+                    num_layers=self.config["AI"]["gtrxl_layers"],
+                    d_model=self.config["AI"]["embedding_dim"],
                 ),
                 "cnn_lstm": CNNLSTM(input_shape=input_shape),
             }
@@ -2591,14 +2495,14 @@ class TradingBotM4:
 
             # Composants principaux
             self.arbitrage_engine = ArbitrageEngine(
-                exchanges=config["ARBITRAGE"]["exchanges"],
-                pairs=config["ARBITRAGE"]["pairs"],
-                min_profit=config["ARBITRAGE"]["min_profit"],
-                max_trade_size=config["ARBITRAGE"]["max_trade_size"],
-                timeout=config["ARBITRAGE"]["timeout"],
-                volume_filter=config["ARBITRAGE"]["volume_filter"],
-                price_check=config["ARBITRAGE"]["price_check"],
-                max_slippage=config["ARBITRAGE"]["max_slippage"],
+                exchanges=self.config["ARBITRAGE"]["exchanges"],
+                pairs=self.config["ARBITRAGE"]["pairs"],
+                min_profit=self.config["ARBITRAGE"]["min_profit"],
+                max_trade_size=self.config["ARBITRAGE"]["max_trade_size"],
+                timeout=self.config["ARBITRAGE"]["timeout"],
+                volume_filter=self.config["ARBITRAGE"]["volume_filter"],
+                price_check=self.config["ARBITRAGE"]["price_check"],
+                max_slippage=self.config["ARBITRAGE"]["max_slippage"],
             )
 
             # Configuration des analyseurs et modèles
@@ -3062,7 +2966,9 @@ class TradingBotM4:
                     "[study_market] Après initialize, avant get_historical_data"
                 )
                 historical_data = await self.exchange.get_historical_data(
-                    config["TRADING"]["pairs"], config["TRADING"]["timeframes"], period
+                    self.config["TRADING"]["pairs"],
+                    self.config["TRADING"]["timeframes"],
+                    period,
                 )
                 logger.info("⬅️ [study_market] Après get_historical_data")
             except Exception as e:
@@ -3077,7 +2983,7 @@ class TradingBotM4:
 
             # ... (reste inchangé : analyse, régime, dashboard...)
             indicators_analysis = {}
-            for timeframe in config["TRADING"]["timeframes"]:
+            for timeframe in self.config["TRADING"]["timeframes"]:
                 try:
                     tf_data = historical_data[timeframe]
                     result = self.advanced_indicators.analyze_timeframe(
@@ -3824,10 +3730,10 @@ Take Profit: {take_profit}""",
             decision = {
                 "action": (
                     "buy"
-                    if confidence > config["AI"]["confidence_threshold"]
+                    if confidence > self.config["AI"]["confidence_threshold"]
                     else "wait"
                 ),
-                "symbol": config["TRADING"]["pairs"][best_pair_idx],
+                "symbol": self.config["TRADING"]["pairs"][best_pair_idx],
                 "confidence": confidence,
                 "timestamp": timestamp,
                 "regime": regime,
@@ -3888,7 +3794,10 @@ Take Profit: {take_profit}""",
             )
             return
 
-        if decision and decision["confidence"] > config["AI"]["confidence_threshold"]:
+        if (
+            decision
+            and decision["confidence"] > self.config["AI"]["confidence_threshold"]
+        ):
             try:
                 # Vérification des opportunités d'arbitrage
                 arb_ops = await self.arbitrage_engine.find_opportunities()
@@ -3905,7 +3814,7 @@ Take Profit: {take_profit}""",
                 position_size = self.position_manager.calculate_position_size(
                     decision,
                     available_balance=await self.exchange.get_balance(
-                        config["TRADING"]["base_currency"]
+                        self.config["TRADING"]["base_currency"]
                     ),
                 )
 
@@ -3944,7 +3853,7 @@ Take Profit: {take_profit}""",
                     f"Confiance: {decision['confidence']:.2%}\n"
                     f"Régime: {decision['regime']}\n"
                     f"News Impact: {decision['news_impact']}\n"
-                    f"Volume: {position_size} {config['TRADING']['base_currency']}"
+                    f"Volume: {position_size} {self.config['TRADING']['base_currency']}"
                 )
 
                 # Mise à jour du dashboard
@@ -4221,7 +4130,7 @@ Take Profit: {take_profit}""",
                         await self.execute_trades(decision)
 
                     # Attente avant la prochaine itération
-                    await asyncio.sleep(config["TRADING"]["update_interval"])
+                    await asyncio.sleep(self.config["TRADING"]["update_interval"])
 
                 except Exception as loop_error:
                     logger.error(f"Erreur dans la boucle principale: {loop_error}")
@@ -4236,7 +4145,10 @@ Take Profit: {take_profit}""",
         """Détermine si les modèles doivent être réentraînés"""
         try:
             # Vérification de la taille minimale des données
-            if len(historical_data.get("1h", [])) < config["AI"]["min_training_size"]:
+            if (
+                len(historical_data.get("1h", []))
+                < self.config["AI"]["min_training_size"]
+            ):
                 return False
 
             # Vérification de la dernière session d'entraînement
@@ -4262,26 +4174,26 @@ Take Profit: {take_profit}""",
             self.hybrid_model.train(
                 market_data=historical_data,
                 indicators=initial_analysis,
-                epochs=config["AI"]["n_epochs"],
-                batch_size=config["AI"]["batch_size"],
-                learning_rate=config["AI"]["learning_rate"],
+                epochs=self.config["AI"]["n_epochs"],
+                batch_size=self.config["AI"]["batch_size"],
+                learning_rate=self.config["AI"]["learning_rate"],
             )
 
             # Entraînement du PPO-GTrXL
             self.models["ppo_gtrxl"].train(
                 env=self.env,
                 total_timesteps=100000,
-                batch_size=config["AI"]["batch_size"],
-                learning_rate=config["AI"]["learning_rate"],
-                gradient_clip=config["AI"]["gradient_clip"],
+                batch_size=self.config["AI"]["batch_size"],
+                learning_rate=self.config["AI"]["learning_rate"],
+                gradient_clip=self.config["AI"]["gradient_clip"],
             )
 
             # Entraînement du CNN-LSTM
             self.models["cnn_lstm"].train(
                 X_train,
                 y_train,
-                epochs=config["AI"]["n_epochs"],
-                batch_size=config["AI"]["batch_size"],
+                epochs=self.config["AI"]["n_epochs"],
+                batch_size=self.config["AI"]["batch_size"],
                 validation_split=0.2,
             )
 
@@ -4302,7 +4214,7 @@ Take Profit: {take_profit}""",
             labels = []
 
             # Pour chaque timeframe
-            for timeframe in config["TRADING"]["timeframes"]:
+            for timeframe in self.config["TRADING"]["timeframes"]:
                 tf_data = historical_data[timeframe]
                 tf_analysis = initial_analysis[timeframe]
 
@@ -4839,12 +4751,12 @@ Take Profit: {take_profit}""",
 
             # Vérification du drawdown maximum
             current_drawdown = self.position_manager.calculate_drawdown()
-            if current_drawdown > config["RISK"]["max_drawdown"]:
+            if current_drawdown > self.config["RISK"]["max_drawdown"]:
                 return True
 
             # Vérification de la perte journalière
             daily_loss = self.position_manager.calculate_daily_loss()
-            if daily_loss > config["RISK"]["daily_stop_loss"]:
+            if daily_loss > self.config["RISK"]["daily_stop_loss"]:
                 return True
 
             # Vérification des conditions de marché
@@ -4906,7 +4818,7 @@ Take Profit: {take_profit}""",
             }
 
             # Analyse du carnet d'ordres
-            for pair in config["TRADING"]["pairs"]:
+            for pair in self.config["TRADING"]["pairs"]:
                 orderbook = self.buffer.get_orderbook(pair)
                 if orderbook:
                     # Profondeur de marché
@@ -4948,7 +4860,7 @@ Take Profit: {take_profit}""",
         try:
             conditions = {"safe": True, "reason": None, "details": {}}
 
-            for pair in config["TRADING"]["pairs"]:
+            for pair in self.config["TRADING"]["pairs"]:
                 pair_data = self.buffer.get_latest_ohlcv(pair)
 
                 # Vérification des divergences
