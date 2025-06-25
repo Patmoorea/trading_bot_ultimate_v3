@@ -1,8 +1,6 @@
 """
 Pattern Detector Module
-Version 1.0.0 - Created: 2025-05-19 02:39:37 by Patmoorea
 """
-
 import pandas as pd
 import numpy as np
 import pandas_ta as ta
@@ -10,14 +8,12 @@ from typing import Dict, List, Union
 import logging
 from src.utils.datetime_utils import format_timestamp, get_utc_now
 from src.config.constants import TIMEZONE
-
 class Pattern:
     DOUBLE_TOP = "double_top"
     DOUBLE_BOTTOM = "double_bottom"
     HEAD_SHOULDERS = "head_shoulders"
     TRIANGLE = "triangle"
     BREAKOUT = "breakout"
-
 class PatternDetector:
     def __init__(self):
         """Initialize pattern detector"""
@@ -30,12 +26,10 @@ class PatternDetector:
             Pattern.BREAKOUT: self._detect_breakout
         }
         self.volume_threshold = 1.5  # Volume should be 50% above average
-
     def detect_all(self, df: pd.DataFrame) -> List[Dict]:
         """Detect all patterns in the data"""
         if not self._validate_data(df):
             raise ValueError("Invalid data format")
-
         patterns_found = []
         for pattern_name, detect_func in self.patterns.items():
             try:
@@ -46,39 +40,30 @@ class PatternDetector:
                     patterns_found.extend(patterns)
             except Exception as e:
                 logging.error(f"Error detecting {pattern_name}: {str(e)}")
-
         return sorted(patterns_found, key=lambda x: x['timestamp'], reverse=True)
-
     def _validate_data(self, df: pd.DataFrame) -> bool:
         """Validate input data"""
         return all(col in df.columns for col in self.required_columns)
-
     def _calculate_volume_profile(self, df: pd.DataFrame) -> pd.Series:
         """Calculate volume profile"""
         return df['volume'].rolling(window=20).mean()
-
     def confirm_volume(self, df: pd.DataFrame, pattern: Dict) -> bool:
         """Confirm pattern with volume analysis"""
         try:
             if df.empty or 'volume' not in df.columns:
                 return False
-
             # Calculate average volume
             volume_ma = self._calculate_volume_profile(df)
             if volume_ma.empty:
                 return False
-
             # Get current volume
             current_volume = df['volume'].iloc[-1]
             avg_volume = volume_ma.iloc[-1]
-
             # Volume should be above threshold
             return bool(current_volume > self.volume_threshold * avg_volume)
-
         except Exception as e:
             logging.error(f"Error in volume confirmation: {str(e)}")
             return False
-
     def _detect_double_top(self, df: pd.DataFrame) -> List[Dict]:
         """Detect double top pattern"""
         patterns = []
@@ -87,7 +72,6 @@ class PatternDetector:
             df['peaks'] = df['high'].rolling(window=5, center=True).apply(
                 lambda x: 1 if x.iloc[2] == max(x) else 0
             )
-
             # Find consecutive peaks
             peaks = df[df['peaks'] == 1].index
             for i in range(len(peaks)-1):
@@ -99,12 +83,9 @@ class PatternDetector:
                         'confidence': 0.8,
                         'price_level': df.loc[peak2, 'high']
                     })
-
         except Exception as e:
             logging.error(f"Error in double top detection: {str(e)}")
-
         return patterns
-
     def _detect_double_bottom(self, df: pd.DataFrame) -> List[Dict]:
         """Detect double bottom pattern"""
         patterns = []
@@ -113,7 +94,6 @@ class PatternDetector:
             df['troughs'] = df['low'].rolling(window=5, center=True).apply(
                 lambda x: 1 if x.iloc[2] == min(x) else 0
             )
-
             # Find consecutive troughs
             troughs = df[df['troughs'] == 1].index
             for i in range(len(troughs)-1):
@@ -125,12 +105,9 @@ class PatternDetector:
                         'confidence': 0.8,
                         'price_level': df.loc[trough2, 'low']
                     })
-
         except Exception as e:
             logging.error(f"Error in double bottom detection: {str(e)}")
-
         return patterns
-
     def _detect_head_shoulders(self, df: pd.DataFrame) -> List[Dict]:
         """Detect head and shoulders pattern"""
         patterns = []
@@ -139,7 +116,6 @@ class PatternDetector:
             df['peaks'] = df['high'].rolling(window=5, center=True).apply(
                 lambda x: 1 if x.iloc[2] == max(x) else 0
             )
-
             peaks = df[df['peaks'] == 1].index
             for i in range(len(peaks)-2):
                 if len(peaks[i:i+3]) == 3:
@@ -154,12 +130,9 @@ class PatternDetector:
                             'confidence': 0.7,
                             'price_level': df.loc[right, 'high']
                         })
-
         except Exception as e:
             logging.error(f"Error in head and shoulders detection: {str(e)}")
-
         return patterns
-
     def _detect_triangle(self, df: pd.DataFrame) -> List[Dict]:
         """Detect triangle patterns"""
         patterns = []
@@ -171,11 +144,9 @@ class PatternDetector:
             lows = df['low'].rolling(window=window).apply(
                 lambda x: np.polyfit(range(len(x)), x, 1)[0]
             )
-
             if not highs.empty and not lows.empty:
                 last_high_slope = highs.iloc[-1]
                 last_low_slope = lows.iloc[-1]
-
                 if abs(last_high_slope) < 0.001 and abs(last_low_slope) < 0.001:
                     patterns.append({
                         'pattern': Pattern.TRIANGLE,
@@ -183,12 +154,9 @@ class PatternDetector:
                         'confidence': 0.6,
                         'price_level': df['close'].iloc[-1]
                     })
-
         except Exception as e:
             logging.error(f"Error in triangle detection: {str(e)}")
-
         return patterns
-
     def _detect_breakout(self, df: pd.DataFrame) -> List[Dict]:
         """Detect breakout patterns"""
         patterns = []
@@ -196,7 +164,6 @@ class PatternDetector:
             window = 20
             resistance = df['high'].rolling(window=window).max()
             support = df['low'].rolling(window=window).min()
-
             if df['close'].iloc[-1] > resistance.iloc[-2]:
                 patterns.append({
                     'pattern': Pattern.BREAKOUT,
@@ -213,8 +180,6 @@ class PatternDetector:
                     'confidence': 0.75,
                     'price_level': df['close'].iloc[-1]
                 })
-
         except Exception as e:
             logging.error(f"Error in breakout detection: {str(e)}")
-
         return patterns

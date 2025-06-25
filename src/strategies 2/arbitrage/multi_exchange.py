@@ -1,7 +1,6 @@
 class MultiExchangeArbitrage:
     def __init__(self):
         self.exchanges = ['binance', 'kraken', 'bybit']
-        
     def get_best_spread(self):
         """Retourne un exemple de spread pour tester"""
         return {

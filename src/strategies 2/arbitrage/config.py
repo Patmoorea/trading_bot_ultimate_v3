@@ -1,9 +1,7 @@
 import os
 from decimal import Decimal
 from dotenv import load_dotenv
-
 load_dotenv()
-
 PAIRS = {
     'BTC': {
         'binance': 'BTC/USDT',
@@ -27,7 +25,6 @@ PAIRS = {
         'blofin': 'SOL-USDT'
     }
 }
-
 SETTINGS = {
     'profit_threshold': Decimal('0.005'),
     'max_order_value': Decimal('100'),
@@ -36,7 +33,6 @@ SETTINGS = {
     'price_expiry': 5,
     'max_slippage': Decimal('0.008')
 }
-
 FEES = {
     'binance': {'maker': Decimal('0.001'), 'taker': Decimal('0.001')},
     'gateio': {'maker': Decimal('0.002'), 'taker': Decimal('0.002')},

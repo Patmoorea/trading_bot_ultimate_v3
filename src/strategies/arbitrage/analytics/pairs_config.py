@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # Configuration précise par exchange
-
 PAIRS_CONFIG = {
     'binance': {
         'format': '{base}/USDC',  # Binance en USDC
@@ -19,12 +18,10 @@ PAIRS_CONFIG = {
         'assets': ['BTC', 'ETH']
     }
 }
-
 def get_symbol(exchange: str, base_asset: str) -> str:
     """Génère le symbol exact pour chaque exchange"""
     if exchange not in PAIRS_CONFIG:
         raise ValueError(f"Exchange {exchange} non configuré")
     if base_asset not in PAIRS_CONFIG[exchange]['assets']:
         raise ValueError(f"Asset {base_asset} non supporté sur {exchange}")
-    
     return PAIRS_CONFIG[exchange]['format'].format(base=base_asset)

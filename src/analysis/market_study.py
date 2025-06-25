@@ -4,20 +4,17 @@ from typing import Dict, List
 from dataclasses import dataclass
 from sklearn.cluster import KMeans
 from hmmlearn import hmm
-
 @dataclass
 class MarketStudyConfig:
     study_period: str = "1M"  # 1 mois
     min_data_points: int = 1000
     regime_count: int = 5
     confidence_threshold: float = 0.75
-
 class MarketStudySystem:
     def __init__(self, config: MarketStudyConfig = MarketStudyConfig()):
         self.config = config
         self.market_regimes = self._init_regime_detector()
         self.current_plan = None
-        
     def _init_regime_detector(self):
         """Initialise le détecteur de régimes"""
         return {
@@ -30,12 +27,10 @@ class MarketStudySystem:
                 random_state=42
             )
         }
-        
     def analyze_market(self, data: pd.DataFrame) -> Dict:
         """Analyse complète du marché"""
         if len(data) < self.config.min_data_points:
             raise ValueError("Insufficient data for analysis")
-            
         results = {
             'regime': self._detect_regime(data),
             'volatility': self._analyze_volatility(data),
@@ -43,10 +38,8 @@ class MarketStudySystem:
             'support_resistance': self._find_levels(data),
             'correlation': self._analyze_correlation(data)
         }
-        
         self.current_plan = self._generate_trading_plan(results)
         return results
-        
     def _detect_regime(self, data: pd.DataFrame) -> Dict:
         """Détecte le régime de marché actuel"""
         # Préparation des features
@@ -54,14 +47,11 @@ class MarketStudySystem:
             data['returns'].values,
             data['volatility'].values
         ])
-        
         # Détection HMM
         self.market_regimes['hmm'].fit(features)
         hmm_state = self.market_regimes['hmm'].predict(features)[-1]
-        
         # Clustering KMeans
         kmeans_state = self.market_regimes['kmeans'].fit_predict(features)[-1]
-        
         # Mapping des régimes
         regime_map = {
             0: 'High Volatility Bull',
@@ -70,13 +60,11 @@ class MarketStudySystem:
             3: 'Low Volatility Bear',
             4: 'Sideways'
         }
-        
         return {
             'current_regime': regime_map[hmm_state],
             'confidence': float(self.market_regimes['hmm'].score(features)),
             'alternative_regime': regime_map[kmeans_state]
         }
-        
     def _analyze_volatility(self, data: pd.DataFrame) -> Dict:
         """Analyse la volatilité"""
         returns = data['close'].pct_change()
@@ -85,7 +73,6 @@ class MarketStudySystem:
             'historical_vol': float(returns.rolling(20).std() * np.sqrt(252)),
             'regime_change_prob': self._calc_regime_change_prob(returns)
         }
-        
     def _analyze_trends(self, data: pd.DataFrame) -> Dict:
         """Analyse les tendances"""
         trends = {}
@@ -97,7 +84,6 @@ class MarketStudySystem:
                 'strength': float(abs(ma.iloc[-1] - ma.iloc[-2]) / ma.iloc[-2])
             }
         return trends
-        
     def _find_levels(self, data: pd.DataFrame) -> Dict:
         """Trouve les niveaux de support et résistance"""
         # Utilisation de KMeans pour identifier les clusters de prix
@@ -105,16 +91,13 @@ class MarketStudySystem:
         n_clusters = min(5, len(prices) // 100)
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
         kmeans.fit(prices)
-        
         levels = sorted(kmeans.cluster_centers_.flatten())
         current_price = float(data['close'].iloc[-1])
-        
         return {
             'supports': [l for l in levels if l < current_price],
             'resistances': [l for l in levels if l > current_price],
             'strength': self._calculate_level_strength(levels, data)
         }
-        
     def _generate_trading_plan(self, analysis: Dict) -> Dict:
         """Génère un plan de trading basé sur l'analyse"""
         return {
@@ -123,7 +106,6 @@ class MarketStudySystem:
             'position_sizing': self._calculate_position_sizing(analysis),
             'risk_parameters': self._define_risk_parameters(analysis)
         }
-        
     def _get_regime_strategy(self, regime: Dict) -> Dict:
         """Définit la stratégie en fonction du régime"""
         strategies = {

@@ -5,7 +5,6 @@ class VoiceCommandProcessor:
             'position': self.get_position,
             'execute': self.execute_trade
         }
-        
     def process_command(self, audio_input):
         command = self.recognize_speech(audio_input)
         if command in self.commands:

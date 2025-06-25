@@ -1,16 +1,11 @@
 """
-Service de gestion des ordres - Created: 2025-05-17 23:18:55
-@author: Patmoorea
 """
 from typing import Dict, List
 import ccxt
 from datetime import datetime
-
 class OrderService:
     def __init__(self, exchanges: Dict[str, ccxt.Exchange]):
         self.exchanges = exchanges
-        self.last_update = "2025-05-17 23:18:55"
-
     async def place_orders(self, orders: List[Dict]) -> List[Dict]:
         results = []
         for order in orders:

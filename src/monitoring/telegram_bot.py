@@ -1,4 +1,3 @@
-
 def send_sentiment_alert(chat_id, text):
     from analysis.sentiment import analyze_with_finbert
     result = analyze_with_finbert(text)

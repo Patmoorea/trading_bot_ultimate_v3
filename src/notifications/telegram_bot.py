@@ -1,7 +1,4 @@
 # src/notifications/telegram_bot.py VERSION 1.0.0
-# Created: 2025-05-30 04:41:16 UTC
-# Author: Patmoorea
-
 import os
 import logging
 import asyncio
@@ -9,10 +6,8 @@ from typing import List, Dict, Any, Optional
 from decimal import Decimal, InvalidOperation
 import aiohttp
 from dotenv import load_dotenv
-
 load_dotenv()
 logger = logging.getLogger(__name__)
-
 class TelegramBot:
     def __init__(self, queue_size: int = 100):
         self.token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -25,26 +20,21 @@ class TelegramBot:
         self._queue_task = None
         self._batch_size = 10
         self.session = None
-
         if not self.enabled:
             logger.warning("⚠️ Configuration Telegram incomplète")
-
     async def _init_session(self):
         if not self.session:
             self.session = aiohttp.ClientSession()
-
     async def _close_session(self):
         if self.session:
             await self.session.close()
             self.session = None
-
     async def send_message(self, 
                           message: str, 
                           parse_mode: str = 'HTML',
                           silent: bool = False) -> bool:
         if not self.enabled:
             return False
-
         try:
             await self._init_session()
             url = f"https://api.telegram.org/bot{self.token}/sendMessage"
@@ -54,7 +44,6 @@ class TelegramBot:
                 "parse_mode": parse_mode,
                 "disable_notification": silent
             }
-            
             async with self.session.post(url, json=data) as response:
                 success = response.status == 200
                 if success:
@@ -62,11 +51,9 @@ class TelegramBot:
                 else:
                     logger.error(f"Erreur Telegram {response.status}: {await response.text()}")
                 return success
-                
         except Exception as e:
             logger.error(f"Erreur envoi Telegram: {str(e)}")
             return False
-
     async def send_trade_alert(self,
                              symbol: str,
                              action: str,
@@ -84,28 +71,23 @@ class TelegramBot:
             f"Prix: {price}\n"
             f"Volume: {volume}"
         )
-        
         if reason:
             message += f"\nRaison: {reason}"
         if confidence:
             message += f"\nConfiance: {confidence:.2%}"
-            
         return await self.send_message(message)
-
     def _validate_decimal(self, value: Any) -> bool:
         try:
             decimal_value = Decimal(str(value))
             return decimal_value > 0 and not decimal_value.is_nan() and not decimal_value.is_infinite()
         except (InvalidOperation, ValueError, TypeError):
             return False
-
     async def start(self):
         """Démarre le processeur de queue"""
         if self._running:
             return
         self._running = True
         self._queue_task = asyncio.create_task(self._process_queue())
-
     async def stop(self):
         """Arrête le processeur de queue"""
         self._running = False
@@ -113,7 +95,6 @@ class TelegramBot:
             await self._queue_task
             self._queue_task = None
         await self._close_session()
-
     async def _process_queue(self):
         """Traite les messages en attente"""
         while self._running:

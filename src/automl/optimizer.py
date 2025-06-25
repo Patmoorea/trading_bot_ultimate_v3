@@ -1,10 +1,8 @@
 import optuna
 from tensorflow.keras import layers
-
 class HyperparameterOptimizer:
     def __init__(self):
         self.study = optuna.create_study(direction='maximize')
-    
     def optimize_cnn_lstm(self, trial):
         # Architecture optimisée pour M1/M4
         params = {

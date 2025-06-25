@@ -1,7 +1,6 @@
 import streamlit as st
 import json
 from pathlib import Path
-
 def display_live_metrics():
     cache_path = Path("cache/live_data.json")
     if cache_path.exists():

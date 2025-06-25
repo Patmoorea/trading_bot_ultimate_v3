@@ -3,7 +3,6 @@ class ParallelOptimizer:
         self.study = optuna.create_study(
             pruner=optuna.pruners.HyperbandPruner()
         )
-        
     async def optimize_parallel(self, n_trials=200):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [

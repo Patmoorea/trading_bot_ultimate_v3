@@ -1,7 +1,6 @@
 import ccxt
 import os
 from time import sleep
-
 class IndependentUSDCArbitrage:
     def __init__(self):
         self.exchange = ccxt.binance({
@@ -10,7 +9,6 @@ class IndependentUSDCArbitrage:
             'enableRateLimit': True
         })
         self.threshold = float(os.getenv('ARBITRAGE_THRESHOLD', 0.5))
-
     def check(self):
         try:
             usdc = self.exchange.fetch_order_book('BTC/USDC')

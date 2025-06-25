@@ -1,13 +1,10 @@
 """
 Sentiment Analyzer Module
-Version 1.0.0 - Created: 2025-05-19 01:59:47 by Patmoorea
 """
-
 from typing import Dict, List, Union
 from datetime import datetime
 import logging
 import random
-
 class SentimentAnalyzer:
     def __init__(self):
         """Initialize sentiment analyzer"""
@@ -17,7 +14,6 @@ class SentimentAnalyzer:
             'news': True
         }
         logging.info("Sentiment Analyzer initialized")
-
     def analyze_text(self, text: str) -> Dict[str, Union[str, float]]:
         """Analyze sentiment of a single text"""
         # Simplified sentiment analysis for testing
@@ -28,33 +24,26 @@ class SentimentAnalyzer:
             'polarity': 0.5,
             'subjectivity': 0.5
         }
-
     def analyze_batch(self, texts: List[str]) -> List[Dict[str, Union[str, float]]]:
         """Analyze sentiment for a batch of texts"""
         return [self.analyze_text(text) for text in texts]
-
     def get_aggregated_sentiment(self, symbol: str) -> Dict[str, Union[str, float, Dict]]:
         """Get aggregated sentiment from all sources"""
         all_sentiments = []
         source_stats = {'twitter': 0, 'reddit': 0, 'news': 0}
-        
         if self.sources['twitter']:
             twitter_sentiments = self._get_twitter_sentiment(symbol)
             all_sentiments.extend(twitter_sentiments)
             source_stats['twitter'] = len(twitter_sentiments)
-            
         if self.sources['reddit']:
             reddit_sentiments = self._get_reddit_sentiment(symbol)
             all_sentiments.extend(reddit_sentiments)
             source_stats['reddit'] = len(reddit_sentiments)
-            
         if self.sources['news']:
             news_sentiments = self._get_news_sentiment(symbol)
             all_sentiments.extend(news_sentiments)
             source_stats['news'] = len(news_sentiments)
-            
         sample_size = len(all_sentiments)
-        
         if sample_size == 0:
             return {
                 'symbol': symbol,
@@ -65,11 +54,9 @@ class SentimentAnalyzer:
                 'source_stats': source_stats,
                 'sample_size': 0
             }
-        
         positive_count = sum(1 for s in all_sentiments if s['sentiment'] == 'positive')
         confidence = positive_count / sample_size
         weighted_score = sum(s['score'] for s in all_sentiments) / sample_size
-        
         return {
             'symbol': symbol,
             'timestamp': datetime.utcnow().isoformat(),
@@ -79,7 +66,6 @@ class SentimentAnalyzer:
             'source_stats': source_stats,
             'sample_size': sample_size
         }
-
     def _get_twitter_sentiment(self, symbol: str) -> List[Dict]:
         """Get sentiment from Twitter"""
         texts = [
@@ -88,7 +74,6 @@ class SentimentAnalyzer:
             f"Not sure about {symbol}'s movement"
         ]
         return self.analyze_batch(texts)
-
     def _get_reddit_sentiment(self, symbol: str) -> List[Dict]:
         """Get sentiment from Reddit"""
         texts = [
@@ -97,7 +82,6 @@ class SentimentAnalyzer:
             f"{symbol} technical analysis"
         ]
         return self.analyze_batch(texts)
-
     def _get_news_sentiment(self, symbol: str) -> List[Dict]:
         """Get sentiment from news sources"""
         texts = [
@@ -106,7 +90,6 @@ class SentimentAnalyzer:
             f"Expert opinion on {symbol}"
         ]
         return self.analyze_batch(texts)
-
     def toggle_source(self, source: str, enabled: bool = True):
         """Enable or disable a sentiment source"""
         if source not in self.sources:

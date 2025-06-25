@@ -4,20 +4,16 @@ from decimal import Decimal
 from utils.logger import get_logger
 from .service import ArbitrageEngine
 from .config import SETTINGS
-
 logger = get_logger()
-
 class ArbitrageBot:
     def __init__(self):
         self.engine = ArbitrageEngine()
         self.total_profit = Decimal(0)
-
     async def run(self):
         logger.info("Starting arbitrage bot...")
         try:
             while True:
                 start_time = time.time()
-                
                 try:
                     opportunities = await self.engine.scan_opportunities()
                     if opportunities:
@@ -30,19 +26,15 @@ class ArbitrageBot:
                             )
                     else:
                         logger.info("No arbitrage opportunities found")
-                
                 except Exception as e:
                     logger.error(f"Error scanning opportunities: {str(e)}")
-                
                 elapsed = time.time() - start_time
                 await asyncio.sleep(max(0, SETTINGS['price_expiry'] - elapsed))
-                
         except asyncio.CancelledError:
             logger.info("Stopping bot...")
         finally:
             await self.engine.close()
             logger.info("Bot stopped successfully")
-
 if __name__ == "__main__":
     bot = ArbitrageBot()
     try:

@@ -2,9 +2,7 @@ import ccxt
 import os
 import time
 from dotenv import load_dotenv
-
 load_dotenv()
-
 class MultiExchangeArbitrage:
     def __init__(self):
         self.exchanges = {
@@ -28,24 +26,19 @@ class MultiExchangeArbitrage:
             })
         }
         self.threshold = float(os.getenv('ARBITRAGE_THRESHOLD', 0.3))
-
     def check_arbitrage(self, base='BTC', quote1='USDC', quote2='USDT'):
         opportunities = []
-        
         for name, exchange in self.exchanges.items():
             try:
                 # Récupération des order books
                 pair1 = f"{base}/{quote1}"
                 pair2 = f"{base}/{quote2}"
-                
                 book1 = exchange.fetch_order_book(pair1)
                 book2 = exchange.fetch_order_book(pair2)
-                
                 # Calcul du spread
                 bid = book1['bids'][0][0]
                 ask = book2['asks'][0][0]
                 spread = (bid / ask - 1) * 100
-                
                 if spread > self.threshold:
                     opportunities.append({
                         'exchange': name,
@@ -55,23 +48,17 @@ class MultiExchangeArbitrage:
                         'bid': bid,
                         'ask': ask
                     })
-                    
             except Exception as e:
                 print(f"Erreur sur {name}: {str(e)}")
-        
         return opportunities
-
     def monitor(self, interval=30):
         print("\n=== Surveillance Multi-Plateforme ===")
         print(f"Seuil: {self.threshold}% | Intervalle: {interval}s")
         print("Plateformes actives: Binance, Gate.io, BingX, OKX")
         print("Appuyez sur Ctrl+C pour quitter\n")
-        
         while True:
             try:
-                timestamp = time.strftime("%H:%M:%S")
                 opportunities = self.check_arbitrage()
-                
                 if opportunities:
                     for opp in opportunities:
                         print(f"[{timestamp}] {opp['exchange'].upper()}:")
@@ -81,13 +68,10 @@ class MultiExchangeArbitrage:
                         print("-"*40)
                 else:
                     print(f"[{timestamp}] Aucune opportunité > {self.threshold}%", end='\r')
-                
                 time.sleep(interval)
-                
             except KeyboardInterrupt:
                 print("\nArrêt du monitoring")
                 break
-
 def send_arbitrage_alert(opportunity):
     """Nouvelle fonction pour les alertes Telegram"""
     from utils.telegram_notifications import notifier
@@ -99,7 +83,6 @@ def send_arbitrage_alert(opportunity):
         f"• {opportunity['pair2']} ask: {opportunity['ask']}"
     )
     return notifier.send(message)
-
 # Modification de la méthode monitor (ajout à la fin existante)
 def monitor(self, interval=30):
     """Version étendue avec notifications"""

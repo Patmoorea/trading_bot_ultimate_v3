@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 import talib
 from talib import abstract
-
 @dataclass
 class TimeframeConfig:
     timeframes: List[str] = field(default_factory=lambda: ["1m", "5m", "15m", "1h", "4h", "1d"])
@@ -12,12 +11,10 @@ class TimeframeConfig:
         "1m": 0.1, "5m": 0.15, "15m": 0.2,
         "1h": 0.25, "4h": 0.15, "1d": 0.15
     })
-
 class MultiTimeframeAnalyzer:
     def __init__(self, config: TimeframeConfig = TimeframeConfig()):
         self.config = config
         self.indicators = self._init_indicators()
-        
     def _init_indicators(self) -> Dict:
         """Initialise les indicateurs techniques"""
         return {
@@ -42,7 +39,6 @@ class MultiTimeframeAnalyzer:
                 "ad": self._calculate_ad
             }
         }
-        
     def _calculate_sma(self, data: pd.DataFrame, period: int = 20) -> float:
         """Calcule la Simple Moving Average"""
         try:
@@ -52,7 +48,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur SMA: {str(e)}")
             return None
-            
     def _calculate_ema(self, data: pd.DataFrame, period: int = 20) -> float:
         """Calcule l'Exponential Moving Average"""
         try:
@@ -62,7 +57,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur EMA: {str(e)}")
             return None
-
     def _calculate_macd(self, data: pd.DataFrame) -> dict:
         """Calcule le MACD"""
         try:
@@ -76,7 +70,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur MACD: {str(e)}")
             return None
-
     def _calculate_rsi(self, data: pd.DataFrame, period: int = 14) -> float:
         """Calcule le RSI"""
         try:
@@ -86,7 +79,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur RSI: {str(e)}")
             return None
-
     def _calculate_stoch(self, data: pd.DataFrame) -> dict:
         """Calcule le Stochastic"""
         try:
@@ -101,7 +93,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur Stochastic: {str(e)}")
             return None
-
     def _calculate_bbands(self, data: pd.DataFrame) -> dict:
         """Calcule les Bollinger Bands"""
         try:
@@ -115,7 +106,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur BBands: {str(e)}")
             return None
-
     def _calculate_atr(self, data: pd.DataFrame, period: int = 14) -> float:
         """Calcule l'Average True Range"""
         try:
@@ -127,7 +117,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur ATR: {str(e)}")
             return None
-
     def _calculate_adx(self, data: pd.DataFrame, period: int = 14) -> float:
         """Calcule l'Average Directional Index"""
         try:
@@ -139,7 +128,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur ADX: {str(e)}")
             return None
-
     def _calculate_willr(self, data: pd.DataFrame, period: int = 14) -> float:
         """Calcule le Williams %R"""
         try:
@@ -151,7 +139,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur WILLR: {str(e)}")
             return None
-
     def _calculate_mom(self, data: pd.DataFrame, period: int = 10) -> float:
         """Calcule le Momentum"""
         try:
@@ -161,7 +148,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur Momentum: {str(e)}")
             return None
-
     def _calculate_obv(self, data: pd.DataFrame) -> float:
         """Calcule l'On Balance Volume"""
         try:
@@ -172,7 +158,6 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur OBV: {str(e)}")
             return None
-
     def _calculate_ad(self, data: pd.DataFrame) -> float:
         """Calcule l'Accumulation/Distribution"""
         try:
@@ -185,19 +170,15 @@ class MultiTimeframeAnalyzer:
         except Exception as e:
             print(f"Erreur A/D: {str(e)}")
             return None
-
     def analyze_timeframe(self, data: Dict[str, pd.DataFrame], timeframe: str) -> Dict[str, Dict]:
         """Analyse un timeframe spécifique"""
         results = {}
-        
         # Pour chaque symbole dans les données
         for symbol, df in data.items():
             results[symbol] = {}
-            
             # Pour chaque catégorie d'indicateurs
             for category, indicators in self.indicators.items():
                 results[symbol][category] = {}
-                
                 # Pour chaque indicateur dans la catégorie
                 for name, func in indicators.items():
                     try:
@@ -210,9 +191,7 @@ class MultiTimeframeAnalyzer:
                     except Exception as e:
                         print(f"Erreur calcul {name} pour {symbol}: {str(e)}")
                         results[symbol][category][name] = None
-
         return results
-
     def merge_timeframes(self, analyses: Dict[str, Dict]) -> Dict:
         """Fusionne les analyses de tous les timeframes"""
         merged = {}
@@ -221,15 +200,12 @@ class MultiTimeframeAnalyzer:
                 for symbol, symbol_data in analyses[tf].items():
                     if symbol not in merged:
                         merged[symbol] = {}
-                    
                     for category, indicators in symbol_data.items():
                         if category not in merged[symbol]:
                             merged[symbol][category] = {}
-                            
                         for name, value in indicators.items():
                             if value is not None:
                                 if name not in merged[symbol][category]:
                                     merged[symbol][category][name] = 0
                                 merged[symbol][category][name] += value * weight
-                                
         return merged

@@ -1,7 +1,6 @@
 import torch
 import warnings
 import types
-
 def apply_torch_fixes():
     """Solution ultime pour les problèmes Torch"""
     try:
@@ -17,7 +16,6 @@ def apply_torch_fixes():
             )
             new_func.__doc__ = "Torch function patch"
             torch._C._VariableFunctions._has_torch_function = new_func
-        
         return True
     except Exception as e:
         warnings.warn(f"Torch patch error: {str(e)}")

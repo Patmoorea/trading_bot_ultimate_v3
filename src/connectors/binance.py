@@ -3,9 +3,7 @@ import asyncio
 from decimal import Decimal
 from ccxt.async_support import binance
 from dotenv import load_dotenv
-
 load_dotenv()
-
 class BinanceConnector:
     def __init__(self):
         self.exchange = binance({
@@ -17,7 +15,6 @@ class BinanceConnector:
             },
             'enableRateLimit': True
         })
-    
     async def get_order_book(self, symbol: str) -> tuple[Decimal, Decimal]:
         """Récupère le carnet d'ordres de Binance"""
         try:
@@ -27,7 +24,6 @@ class BinanceConnector:
             return bid, ask
         except Exception as e:
             raise Exception(f"Binance error: {str(e)}")
-    
     async def create_order(self, symbol: str, side: str, amount: Decimal, price: Decimal = None):
         """Crée un ordre sur Binance"""
         try:
@@ -39,7 +35,6 @@ class BinanceConnector:
             return await self.exchange.create_order(symbol, 'market', side, float(amount), params)
         except Exception as e:
             raise Exception(f"Binance order error: {str(e)}")
-    
     async def close(self):
         """Ferme la connexion"""
         await self.exchange.close()

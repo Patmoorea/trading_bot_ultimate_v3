@@ -1,27 +1,21 @@
-
 # ===== INTEGRATION FINBERT =====
 from transformers import pipeline
-
 def analyze_with_finbert(text):
     """Extension du module existant"""
     analyzer = pipeline("text-classification", model="yiyanghkust/finbert-tone")
     return analyzer(text)[0]
 from transformers import pipeline
-
 def analyze_news(text):
     """Analyse de sentiment avec FinBERT"""
     analyzer = pipeline("text-classification", 
                       model="yiyanghkust/finbert-tone")
     return analyzer(text)[0]['label']
-
 def get_news_impact_score(headline):
     """Extension de l'analyse existante"""
     sentiment = analyze_news(headline)
     return 1.0 if sentiment == 'POSITIVE' else -1.0 if sentiment == 'NEGATIVE' else 0.0
-
 class AdvancedSentimentAnalyzer:
     """Complément d'analyse avec FinBERT sans écraser l'existant"""
-    
     def __init__(self):
         try:
             from transformers import BertForSequenceClassification, BertTokenizer
@@ -30,7 +24,6 @@ class AdvancedSentimentAnalyzer:
             self.available = True
         except ImportError:
             self.available = False
-    
     def analyze(self, text):
         if not self.available:
             return None
@@ -40,9 +33,7 @@ class AdvancedSentimentAnalyzer:
             'finbert_scores': outputs.logits.softmax(dim=1).tolist()[0],
             'version': 'finbert-v1'
         }
-
 # ===== NOUVEAUX COMPOSANTS ===== #
-
 def check_finbert_availability():
     """Vérifie si FinBERT peut être chargé"""
     try:
@@ -50,12 +41,10 @@ def check_finbert_availability():
         return True
     except:
         return False
-
 if check_finbert_availability():
     FinBERT = AdvancedSentimentAnalyzer()
 else:
     logging.warning("FinBERT non disponible - utilisation du analyseur de base")
-
 def get_enhanced_sentiment(text):
     """Version optimisée utilisant le core"""
     from src.core_merged.news.sentiment import EnhancedNewsAnalyzer

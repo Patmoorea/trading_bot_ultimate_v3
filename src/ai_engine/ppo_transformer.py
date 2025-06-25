@@ -4,7 +4,6 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 import torch
 import torch.nn as nn
 from typing import Dict, Any, List
-
 class CustomNetwork(BaseFeaturesExtractor):
     def __init__(self, observation_space, features_dim=512):
         super().__init__(observation_space, features_dim)
@@ -14,21 +13,17 @@ class CustomNetwork(BaseFeaturesExtractor):
             nn.Linear(256, features_dim),
             nn.ReLU()
         )
-        
     def forward(self, observations):
         return self.layers(observations)
-
 class CustomPolicy(ActorCriticPolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.features_extractor = CustomNetwork(self.observation_space)
-
 def create_ppo_model(env):
     policy_kwargs = {
         'features_extractor_class': CustomNetwork,
         'net_arch': [dict(pi=[256, 128], vf=[256, 128])]
     }
-    
     return PPO(
         CustomPolicy,
         env,

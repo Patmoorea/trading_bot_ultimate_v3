@@ -2,7 +2,6 @@ from telegram import Bot
 from typing import Dict, Optional
 import logging
 import asyncio
-
 class EnhancedTelegramBot:
     def __init__(self, token: str, chat_id: str):
         self.bot = Bot(token)
@@ -14,7 +13,6 @@ class EnhancedTelegramBot:
             "PROFIT": "💰",
             "LOSS": "🔻"
         }
-        
     async def send_trade_alert(self, trade: dict):
         try:
             msg = f"""
@@ -30,10 +28,8 @@ class EnhancedTelegramBot:
 ⚡ Volatilité: {trade.get('volatility', 'N/A')}
             """
             await self.bot.send_message(self.chat_id, msg)
-            
         except Exception as e:
             logging.error(f"Erreur envoi Telegram: {str(e)}")
-            
     async def send_market_update(self, data: Dict):
         msg = f"""
 {self.alert_types['INFO']} Mise à jour Marché
@@ -43,7 +39,6 @@ class EnhancedTelegramBot:
 🌊 Liquidité: {data['liquidity']}
         """
         await self.bot.send_message(self.chat_id, msg)
-        
     async def send_risk_alert(self, alert: Dict):
         msg = f"""
 {self.alert_types['RISK']} Alerte Risque
@@ -52,7 +47,6 @@ class EnhancedTelegramBot:
 🔍 Détails: {alert['details']}
         """
         await self.bot.send_message(self.chat_id, msg)
-
     async def send_performance_update(self, perf: Dict):
         msg = f"""
 {self.alert_types['PROFIT' if perf['daily_pnl'] > 0 else 'LOSS']} Bilan Performance

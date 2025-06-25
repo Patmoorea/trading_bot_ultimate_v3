@@ -1,14 +1,12 @@
 from typing import Dict, List
 from dataclasses import dataclass
 import numpy as np
-
 @dataclass
 class BrokerConstraint:
     quote_asset: str
     fee: float
     min_volume: float
     adjustment_factor: float = 1.0
-
 class CrossExchangeOptimizer:
     def __init__(self, brokers):
         self.brokers = brokers
@@ -30,23 +28,18 @@ class CrossExchangeOptimizer:
                 min_volume=0.005
             )
         }
-
     def get_optimal_pair(self, base_asset: str) -> Dict:
         """Trouve la meilleure paire cross-exchange"""
         opportunities = []
-        
         for broker_name, broker in self.brokers.items():
             if broker_name not in self.constraints:
                 continue
-                
             constraint = self.constraints[broker_name]
             symbol = f"{base_asset}/{constraint.quote_asset}"
-            
             try:
                 orderbook = broker.fetch_order_book(symbol)
                 effective_bid = orderbook['bids'][0][0] * constraint.adjustment_factor * (1 - constraint.fee)
                 effective_ask = orderbook['asks'][0][0] * (1 + constraint.fee)
-                
                 opportunities.append({
                     'broker': broker_name,
                     'bid': effective_bid,
@@ -57,13 +50,10 @@ class CrossExchangeOptimizer:
             except Exception as e:
                 print(f"Error processing {broker_name}: {str(e)}")
                 continue
-                
         if not opportunities:
             return {}
-            
         best_buy = min(opportunities, key=lambda x: x['ask'])
         best_sell = max(opportunities, key=lambda x: x['bid'])
-        
         return {
             'spread': best_sell['bid'] - best_buy['ask'],
             'buy': best_buy,

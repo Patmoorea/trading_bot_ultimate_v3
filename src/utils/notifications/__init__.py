@@ -1,14 +1,9 @@
-
-# Evolution du 2025-05-30 05:02:37 par Patmoorea
 # Ajout de la fonction send_arbitrage_alert pour le module arbitrage
-
 from typing import Dict, Any
 from decimal import Decimal
 import logging
 from datetime import datetime
-
 logger = logging.getLogger(__name__)
-
 async def send_arbitrage_alert(opportunity: Dict[str, Any]) -> None:
     """
     Envoie une alerte d'arbitrage
@@ -16,7 +11,6 @@ async def send_arbitrage_alert(opportunity: Dict[str, Any]) -> None:
         opportunity: Dictionnaire contenant les détails de l'opportunité
     """
     try:
-        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         message = (
             f"🔄 Opportunité d'arbitrage [{current_time} UTC]\n\n"
             f"Spread: {Decimal(str(opportunity.get('spread', 0))) * 100:.2f}%\n"
@@ -32,6 +26,4 @@ async def send_arbitrage_alert(opportunity: Dict[str, Any]) -> None:
     except Exception as e:
         logger.error(f"Erreur lors de l'envoi de l'alerte d'arbitrage: {e}")
         raise
-
 __all__ = ['send_arbitrage_alert']
-

@@ -1,6 +1,5 @@
 from typing import Dict
 from .telegram_notifications import TelegramNotifier
-
 def send_arbitrage_alert(opportunity: Dict) -> bool:
     """Envoie une alerte réelle via Telegram"""
     notifier = TelegramNotifier()

@@ -1,4 +1,3 @@
-
 class RealKellyCalculator:
     """Calcul de position size selon le critère de Kelly"""
     @staticmethod

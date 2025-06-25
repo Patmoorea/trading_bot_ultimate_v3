@@ -13,16 +13,9 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+
 class BinanceExchange:
     def __init__(self, api_key: str, api_secret: str, testnet: bool = False):
-        """
-        Initialise BinanceExchange
-        
-        Args:
-            api_key: API key for authentication
-            api_secret: API secret for authentication
-            testnet: If True, use testnet instead of mainnet
-        """
         self.api_key = api_key
         self.api_secret = api_secret
         self.testnet = testnet
@@ -31,57 +24,65 @@ class BinanceExchange:
 
     async def initialize(self):
         try:
-            self._exchange = ccxt.binance({
-                'apiKey': self.api_key,
-                'secret': self.api_secret,
-                'enableRateLimit': True,
-                'options': {
-                    'defaultType': 'spot',
-                    'adjustForTimeDifference': True,
-                    'testnet': self.testnet
+            self._exchange = ccxt.binance(
+                {
+                    "apiKey": self.api_key,
+                    "secret": self.api_secret,
+                    "enableRateLimit": True,
+                    "options": {
+                        "defaultType": "spot",
+                        "adjustForTimeDifference": True,
+                        "testnet": self.testnet,
+                    },
                 }
-            })
-
-            # On SPOT TESTNET, do NOT call load_markets!
-            if self.testnet and self._exchange.options.get('defaultType') == 'spot':
-                print(">>> TESTNET SPOT: PAS de load_markets()", flush=True)
-                # PAS de load_markets ici !
+            )
+            # Spot testnet: PAS de load_markets, PAS de WebSocket
+            if self.testnet and self._exchange.options.get("defaultType") == "spot":
+                logger.warning(
+                    "Binance spot testnet: pas de WebSocket, ni load_markets!"
+                )
+                # Optionnel: définis l’URL REST testnet pour ccxt
+                self._exchange.urls["api"] = {
+                    "web": "https://testnet.binance.vision",
+                    "rest": "https://testnet.binance.vision",
+                }
             else:
-                print(">>> AVANT load_markets", flush=True)
+                logger.info(">>> AVANT load_markets")
                 await self._exchange.load_markets()
-                print(">>> APRES load_markets", flush=True)
+                logger.info(">>> APRES load_markets")
 
             self._initialized = True
             logger.info("BinanceExchange initialized successfully")
+
         except Exception as e:
             import traceback
-            logger.error(f"Failed to initialize BinanceExchange: {e}\n{traceback.format_exc()}")
+
+            logger.error(
+                f"Failed to initialize BinanceExchange: {e}\n{traceback.format_exc()}"
+            )
             raise
 
     async def get_ticker(self, symbol: str) -> Dict[str, Any]:
         """
         Get current ticker data
-        
         Args:
             symbol: Trading pair symbol (e.g., 'BTC/USDT')
-        
         Returns:
             Dict containing ticker data
         """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             ticker = await self._exchange.fetch_ticker(symbol)
             return {
-                'last': str(ticker.get('last', 0)),
-                'bid': str(ticker.get('bid', 0)),
-                'ask': str(ticker.get('ask', 0)),
-                'high': str(ticker.get('high', 0)),
-                'low': str(ticker.get('low', 0)),
-                'baseVolume': str(ticker.get('baseVolume', 0)),
-                'quoteVolume': str(ticker.get('quoteVolume', 0)),
-                'timestamp': ticker.get('timestamp', 0)
+                "last": str(ticker.get("last", 0)),
+                "bid": str(ticker.get("bid", 0)),
+                "ask": str(ticker.get("ask", 0)),
+                "high": str(ticker.get("high", 0)),
+                "low": str(ticker.get("low", 0)),
+                "baseVolume": str(ticker.get("baseVolume", 0)),
+                "quoteVolume": str(ticker.get("quoteVolume", 0)),
+                "timestamp": ticker.get("timestamp", 0),
             }
         except Exception as e:
             logger.error(f"Error fetching ticker for {symbol}: {e}")
@@ -90,20 +91,18 @@ class BinanceExchange:
     async def get_balance(self) -> Dict[str, Any]:
         """
         Get account balance
-        
         Returns:
             Dict containing balance information
         """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             balance = await self._exchange.fetch_balance()
             # Filter only assets with non-zero balances
             return {
                 currency: data
                 for currency, data in balance.items()
-                if isinstance(data, dict) and float(data.get('total', 0)) > 0
+                if isinstance(data, dict) and float(data.get("total", 0)) > 0
             }
         except Exception as e:
             logger.error(f"Error fetching balance: {e}")
@@ -114,10 +113,11 @@ class BinanceExchange:
             await self._exchange.close()
             self._initialized = False
 
-    async def get_klines(self, symbol: str, timeframe: str, limit: int = 100) -> List[List[float]]:
+    async def get_klines(
+        self, symbol: str, timeframe: str, limit: int = 100
+    ) -> List[List[float]]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             klines = await self._exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             return klines
@@ -128,13 +128,9 @@ class BinanceExchange:
     async def get_orderbook(self, symbol: str) -> Dict[str, List[List[float]]]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             orderbook = await self._exchange.fetch_order_book(symbol)
-            return {
-                'bids': orderbook['bids'],
-                'asks': orderbook['asks']
-            }
+            return {"bids": orderbook["bids"], "asks": orderbook["asks"]}
         except Exception as e:
             logger.error(f"Error fetching orderbook for {symbol}: {e}")
             raise
@@ -142,7 +138,6 @@ class BinanceExchange:
     async def get_my_trades(self, symbol: str) -> List[Dict[str, Any]]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             trades = await self._exchange.fetch_my_trades(symbol)
             return trades
@@ -150,17 +145,21 @@ class BinanceExchange:
             logger.error(f"Error fetching trades for {symbol}: {e}")
             raise
 
-    async def create_order(self, symbol: str, order_type: str, side: str,
-                          amount: str, price: Optional[str] = None) -> Dict[str, Any]:
+    async def create_order(
+        self,
+        symbol: str,
+        order_type: str,
+        side: str,
+        amount: str,
+        price: Optional[str] = None,
+    ) -> Dict[str, Any]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             params = {}
             if float(amount) <= 0:
                 raise ValueError("Amount must be positive")
-            
-            if order_type == 'limit':
+            if order_type == "limit":
                 if not price or float(price) <= 0:
                     raise ValueError("Valid price required for limit orders")
                 order = await self._exchange.create_limit_order(
@@ -170,7 +169,6 @@ class BinanceExchange:
                 order = await self._exchange.create_market_order(
                     symbol, side, float(amount), None, params
                 )
-            
             return order
         except Exception as e:
             logger.error(f"Error creating order: {e}")
@@ -179,7 +177,6 @@ class BinanceExchange:
     async def cancel_order(self, symbol: str, order_id: str) -> bool:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             await self._exchange.cancel_order(order_id, symbol)
             return True
@@ -190,7 +187,6 @@ class BinanceExchange:
     async def get_order(self, symbol: str, order_id: str) -> Dict[str, Any]:
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
-        
         try:
             order = await self._exchange.fetch_order(order_id, symbol)
             return order
@@ -198,7 +194,9 @@ class BinanceExchange:
             logger.error(f"Error fetching order {order_id}: {e}")
             raise
 
-    async def get_historical_data(self, pairs: List[str], timeframes: List[str], period: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+    async def get_historical_data(
+        self, pairs: List[str], timeframes: List[str], period: str
+    ) -> Dict[str, Dict[str, pd.DataFrame]]:
         """
         Récupère les données OHLCV historiques pour chaque paire/timeframe sur la période demandée.
         Retourne {timeframe: {pair: pd.DataFrame}}
@@ -210,7 +208,9 @@ class BinanceExchange:
             # Parse period (ex: "7d" -> 7 jours)
             if period.endswith("d"):
                 days = int(period.replace("d", ""))
-                since = int((datetime.utcnow() - timedelta(days=days)).timestamp() * 1000)
+                since = int(
+                    (datetime.utcnow() - timedelta(days=days)).timestamp() * 1000
+                )
             else:
                 # Fallback: 1 jour
                 since = int((datetime.utcnow() - timedelta(days=1)).timestamp() * 1000)
@@ -219,7 +219,17 @@ class BinanceExchange:
                 for pair in pairs:
                     try:
                         ohlcv = await self._exchange.fetch_ohlcv(pair, tf, since=since)
-                        df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+                        df = pd.DataFrame(
+                            ohlcv,
+                            columns=[
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            ],
+                        )
                         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                         tf_result[pair] = df
                     except Exception as e:

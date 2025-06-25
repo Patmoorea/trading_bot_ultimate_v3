@@ -2,7 +2,6 @@ import optuna
 from optuna.integration import TFKerasPruningCallback
 import tensorflow as tf
 from .cnn_lstm_model import create_cnn_lstm_model
-
 class HyperparameterOptimizer:
     def __init__(self, X_train, y_train, X_val, y_val, n_trials=200):
         self.X_train = X_train
@@ -10,7 +9,6 @@ class HyperparameterOptimizer:
         self.X_val = X_val
         self.y_val = y_val
         self.n_trials = n_trials
-        
     def optimize(self):
         study = optuna.create_study(
             direction='maximize',
@@ -18,7 +16,6 @@ class HyperparameterOptimizer:
         )
         study.optimize(self._objective, n_trials=self.n_trials)
         return study.best_params
-    
     def _objective(self, trial):
         # Hyperparameters to optimize
         params = {
@@ -29,7 +26,6 @@ class HyperparameterOptimizer:
             'dropout_rate': trial.suggest_float('dropout_rate', 0.1, 0.5),
             'l2_reg': trial.suggest_float('l2_reg', 1e-6, 1e-3, log=True)
         }
-        
         # Model creation
         model = create_cnn_lstm_model()
         model.compile(
@@ -37,7 +33,6 @@ class HyperparameterOptimizer:
             loss='binary_crossentropy',
             metrics=['accuracy']
         )
-        
         # Training with pruning
         history = model.fit(
             self.X_train,
@@ -48,5 +43,4 @@ class HyperparameterOptimizer:
             callbacks=[TFKerasPruningCallback(trial, 'val_accuracy')],
             verbose=0
         )
-        
         return history.history['val_accuracy'][-1]

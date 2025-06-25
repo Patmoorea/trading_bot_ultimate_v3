@@ -4,7 +4,6 @@ class AdvancedIndicators:
             'parkinson': self._parkinson_volatility,
             'yang_zhang': self._yang_zhang_volatility
         }
-        
     def calculate_all(self, data):
         results = {}
         for name, func in self.volatility_indicators.items():

@@ -4,24 +4,18 @@ from decimal import Decimal
 from utils.logger import get_logger
 from .service import MoteurArbitrage
 from .config import SETTINGS
-
 logger = get_logger()
-
 class BotArbitrage:
     def __init__(self):
         self.moteur = MoteurArbitrage()
         self.profit_total = Decimal(0)
         self.debut = time.time()
-    
     async def executer(self):
         logger.info("Démarrage du bot d'arbitrage...")
-        
         while True:
             debut_iteration = time.time()
-            
             try:
                 opportunites = await self.moteur.scanner_opportunites()
-                
                 if not opportunites:
                     logger.info("Aucune opportunité d'arbitrage trouvée")
                 else:
@@ -34,16 +28,12 @@ class BotArbitrage:
                         except Exception as e:
                             logger.error(f"Échec exécution arbitrage: {str(e)}")
                             continue
-                        
                         await asyncio.sleep(1)
-                
             except Exception as e:
                 logger.error(f"Erreur boucle principale: {str(e)}")
-            
             ecoule = time.time() - debut_iteration
             attente = max(0, SETTINGS['price_expiry'] - ecoule)
             await asyncio.sleep(attente)
-
 if __name__ == "__main__":
     bot = BotArbitrage()
     try:

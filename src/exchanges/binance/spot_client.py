@@ -1,7 +1,6 @@
 from decimal import Decimal
 from typing import Dict, Optional
 from ..base_exchange import BaseExchange
-
 class BinanceClient(BaseExchange):
     def get_ticker(self, symbol: str) -> Dict:
         # Simulated response for testing
@@ -11,7 +10,6 @@ class BinanceClient(BaseExchange):
             'ask': Decimal('50100.00'),
             'last': Decimal('50050.00')
         }
-
     def get_balance(self) -> Dict:
         # Simulated response for testing
         return {
@@ -21,7 +19,6 @@ class BinanceClient(BaseExchange):
                 'total': Decimal('1.0')
             }
         }
-
     def place_order(self, symbol: str, side: str, amount: Decimal, 
                    price: Optional[Decimal] = None) -> Dict:
         # Simulated response for testing

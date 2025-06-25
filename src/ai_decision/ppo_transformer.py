@@ -1,7 +1,6 @@
 import torch
 from stable_baselines3 import PPO
 from torch.nn import TransformerEncoderLayer
-
 class PPOTradingAgent:
     def __init__(self, env):
         self.policy_kwargs = {
@@ -24,7 +23,6 @@ class PPOTradingAgent:
             learning_rate=3e-4,
             verbose=1
         )
-
     def train(self, timesteps=1_000_000):
         self.model.learn(total_timesteps=timesteps)
         self.model.save("ppo_trading_transformer")

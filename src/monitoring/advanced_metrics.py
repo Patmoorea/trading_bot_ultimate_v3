@@ -5,7 +5,6 @@ class PerformanceTracker:
             'memory': MemoryMonitor(),
             'throughput': ThroughputAnalyzer()
         }
-        
     def track_all(self):
         return {
             name: tracker.get_current()

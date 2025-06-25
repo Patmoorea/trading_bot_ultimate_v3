@@ -1,9 +1,7 @@
 import os
 from decimal import Decimal
 from dotenv import load_dotenv
-
 load_dotenv()
-
 # Configuration des paires SPOT (corrigée)
 PAIRS = {
     'BTC': {
@@ -21,7 +19,6 @@ PAIRS = {
         'blofin': 'ETH-USDT'
     }
 }
-
 SETTINGS = {
     'profit_threshold': Decimal('0.01'),  # Seuil à 1% pour plus de résultats
     'max_order_value': Decimal('500'),    # Montant réduit pour tests
@@ -30,7 +27,6 @@ SETTINGS = {
     'price_expiry': 10,                   # Intervalle augmenté
     'max_slippage': Decimal('0.01')       # Slippage augmenté
 }
-
 FEES = {
     'binance': {'maker': Decimal('0.001'), 'taker': Decimal('0.001')},
     'gateio': {'maker': Decimal('0.002'), 'taker': Decimal('0.002')},

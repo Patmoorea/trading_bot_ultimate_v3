@@ -2,13 +2,11 @@ import asyncio
 import aiohttp
 from typing import Optional
 from src.config.settings import Settings
-
 class TelegramNotifier:
     def __init__(self, bot_token: str, chat_id: str):
         self.bot_token = bot_token
         self.chat_id = chat_id
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
-
     async def send_message(self, message: str) -> bool:
         async with aiohttp.ClientSession() as session:
             try:
@@ -23,7 +21,6 @@ class TelegramNotifier:
             except Exception as e:
                 print(f"Erreur envoi Telegram: {str(e)}")
                 return False
-
     def send_trade_alert(self, trade_info: dict):
         message = (
             f"🚨 <b>Alert Trading</b>\n"
