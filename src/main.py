@@ -2931,6 +2931,18 @@ class TradingBotM4:
             logger.error(f"Erreur configuration Telegram: {e}")
             return False
 
+    def update_trading_status(
+        regime, strategy, signals, news, arbitrage_opps, last_trade
+    ):
+        st.session_state["live_status"] = {
+            "Régime": regime,
+            "Stratégie": strategy,
+            "Signal": signals,
+            "News": news,
+            "Arbitrage": arbitrage_opps,
+            "Dernier Trade": last_trade,
+        }
+
     def _get_portfolio_value(self):
         """Récupère la valeur actuelle du portfolio"""
         try:
@@ -3224,9 +3236,7 @@ Take Profit: {take_profit}""",
             if not portfolio:
                 st.error("Unable to fetch portfolio data")
                 return
-            # En-tête
-            st.title("Trading Bot Ultimate v4 🤖")
-            # Tabs pour organiser l'information
+
             tab1, tab2, tab3, tab4 = st.tabs(
                 ["Portfolio", "Trading", "Analysis", "Settings"]
             )
@@ -4406,20 +4416,16 @@ Take Profit: {take_profit}""",
             logger.error(f"Erreur: {e}")
 
     async def run_adaptive_trading(self, period="7d"):
-        """
-        Boucle principale adaptative : étude du marché, stratégie, trading auto.
-        """
-        # 1. Étudier le marché sur la période définie (ex: 7j)
         regime, historical_data, indicators_analysis = await self.study_market(
             period=period
         )
-        # 2. Établir un plan/stratégie selon le régime détecté
         strategy = self.choose_strategy(regime, indicators_analysis)
         await self.telegram.send_message(
             f"📊 Plan établi : {strategy} | Régime détecté : {regime}"
         )
         self.current_regime = regime
         self.current_strategy = strategy
+        last_trade = None
         while st.session_state.get("bot_running", True):
             # 3. Mise à jour continue du marché
             market_data = await self.get_latest_data()
@@ -4439,6 +4445,7 @@ Take Profit: {take_profit}""",
                 if hasattr(self, "regime_detector")
                 else self.current_regime
             )
+
             # 4. Adaptation : news, arbitrage, changement de régime
             if news and news.get("impact", 0) > 0.7:
                 await self.telegram.send_message(f"📰 News critique détectée : {news}")
@@ -4461,7 +4468,17 @@ Take Profit: {take_profit}""",
             if decision and decision.get("action") in ["buy", "sell"]:
                 order = await self.execute_real_trade(decision)
                 await self.telegram.send_message(f"✅ Trade exécuté : {decision}")
-            await asyncio.sleep(2)  # ajustable selon besoins
+                last_trade = decision
+            # --- NOUVEAU : MAJ de l'affichage live dans la session state pour Streamlit
+            update_trading_status(
+                regime=self.current_regime,
+                strategy=self.current_strategy,
+                signals=signals,
+                news=news,
+                arbitrage_opps=arbitrage_opps,
+                last_trade=last_trade,
+            )
+            await asyncio.sleep(2)
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -4675,6 +4692,7 @@ async def main_async():
     try:
         session_manager.protect_session()
         st.title("Trading Bot Ultimate v4 🤖")
+        status_placeholder = st.empty()
         if "initialization_time" not in st.session_state:
             st.session_state.initialization_time = current_time
         default_session_state = {
