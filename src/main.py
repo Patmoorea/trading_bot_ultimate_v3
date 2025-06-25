@@ -4686,15 +4686,24 @@ async def run_trading_bot():
         logger.error(f"Trading bot error: {e}")
         st.error(f"❌ Trading bot error: {str(e)}")
 
+    if "live_status" in st.session_state and st.session_state["live_status"]:
+        status_placeholder.markdown("### 🟢 Trading Live Status")
+        for k, v in st.session_state["live_status"].items():
+            status_placeholder.write(f"**{k}** : {v}")
+
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
+
     try:
         session_manager.protect_session()
         st.title("Trading Bot Ultimate v4 🤖")
         status_placeholder = st.empty()
+
+        # --- Initialisation session_state ---
         if "initialization_time" not in st.session_state:
             st.session_state.initialization_time = current_time
+
         default_session_state = {
             "portfolio": None,
             "latest_data": None,
@@ -4712,152 +4721,197 @@ async def main_async():
         for key, value in default_session_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
+
         bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
-        # --- DEBUG données disponibles ---
-        st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-        # --- CORRIGE ici pour toujours refléter l'état session_state ---
-        latest_data = st.session_state.get("latest_data", {})
-        if not isinstance(latest_data, dict):
-            latest_data = {}
-        st.sidebar.write(
-            {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()}
-            if latest_data
-            else "Aucune donnée"
-        )
-        # 5. Interface principale - État et contrôles
-        status_col1, status_col2 = st.columns([2, 1])
-        with status_col1:
-            ws_status = st.session_state.get("ws_connection_status", "disconnected")
-            ws_icon = {
-                "connected": "🟢",
-                "disconnected": "🔴",
-                "initializing": "🔄",
-                "error": "⚠️",
-            }.get(ws_status, "🔴")
-            status_info = f"""
-            ### Bot Status
-            - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
-            - 📡 WebSocket: {ws_icon} {ws_status.title()}
-            - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
-            - ⏰ Last Update: {st.session_state.last_update_time}
-            """
-            st.info(status_info)
-        # 6. Contrôles de la barre latérale avec gestion améliorée
-        with st.sidebar:
-            st.header("🛠️ Bot Controls")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low",
-                key=f"risk_level_slider_{st.session_state.session_id}",
-            )
-            st.divider()
-            if not st.session_state.get("bot_running", False):
-                if st.button(
-                    "🟢 Start Trading", key="start_button", use_container_width=True
-                ):
-                    st.session_state.bot_running = True
-                    # Protection pour éviter plusieurs tâches concurrentes
-                    if not st.session_state.get("trading_task"):
+
+        # --- BOUTON DYNAMIQUE START/STOP ---
+        st.divider()
+        if not st.session_state.get("bot_running", False):
+            if st.button("🟢 Start Trading Bot", key="start_button"):
+                try:
+                    if (
+                        "trading_task" not in st.session_state
+                        or st.session_state.trading_task is None
+                        or st.session_state.trading_task.done()
+                    ):
                         loop = st.session_state.loop or asyncio.get_event_loop()
                         st.session_state.trading_task = loop.create_task(
                             bot.run_adaptive_trading(period="7d")
                         )
-                    st.success(
-                        "Trading adaptatif lancé (étude marché + stratégie auto)."
-                    )
-            else:
-                if st.button(
-                    "🔴 Stop Trading", key="stop_button", use_container_width=True
-                ):
-                    st.session_state.bot_running = False
-                    # Arrêt propre de la tâche si elle existe
-                    if st.session_state.get("trading_task"):
-                        st.session_state.trading_task.cancel()
-                        st.session_state.trading_task = None
-                    st.warning("Trading stoppé.")
-            # --- GESTION DES DONNEES ET BACKTEST ---
-            # TOUJOURS lire depuis session_state !
-            latest_data = st.session_state.get("latest_data")
-            if not isinstance(latest_data, dict):
-                latest_data = {}
-            st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
-
-            def _has_valid_ohlcv(item):
-                return (
-                    isinstance(item, dict)
-                    and "ohlcv" in item
-                    and isinstance(item["ohlcv"], list)
-                    and len(item["ohlcv"]) > 0
-                    and isinstance(item["ohlcv"][0], dict)
-                    and all(
-                        k in item["ohlcv"][0]
-                        for k in ["timestamp", "open", "high", "low", "close", "volume"]
-                    )
-                )
-
-            data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
-            if not data_ready:
-                st.warning(
-                    "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
-                )
-                if st.button("Charger les données", key="load_data_btn"):
-                    with st.spinner("Chargement des données..."):
-                        loaded = False
+                        st.session_state.bot_running = True
+                        st.success("🚀 Trading adaptatif lancé.")
+                    else:
+                        st.info("Le bot est déjà en cours d’exécution.")
+                except Exception as e:
+                    logger.error(f"Trading bot runtime error: {e}")
+                    st.error(f"❌ Runtime error: {str(e)}")
+                finally:
+                    if hasattr(bot, "_cleanup"):
                         try:
-                            if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
-                                st.info("Initialisation de la WebSocket…")
-                                await bot.initialize()
-                            if hasattr(bot, "get_latest_data"):
-                                data = await bot.get_latest_data()
-                                st.write("DEBUG - Résultat get_latest_data:", data)
-                                if data and isinstance(data, dict) and len(data) > 0:
-                                    st.session_state["latest_data"] = (
-                                        data  # <-- SYNC dans la session
-                                    )
-                                    loaded = True
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
-                            elif hasattr(bot, "load_all_data"):
-                                await bot.load_all_data()
-                                latest_data = getattr(bot, "latest_data", {}) or {}
-                                if not isinstance(latest_data, dict):
-                                    latest_data = {}
-                                st.write(
-                                    "DEBUG - latest_data après load_all_data:",
-                                    latest_data,
-                                )
-                                loaded = (
-                                    isinstance(latest_data, dict)
-                                    and len(latest_data) > 0
-                                )
-                                if loaded:
-                                    st.session_state["latest_data"] = latest_data
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
+                            cleanup_coro = bot._cleanup()
+                            if asyncio.iscoroutine(cleanup_coro):
+                                loop = st.session_state.loop or asyncio.get_event_loop()
+                                loop.run_until_complete(cleanup_coro)
+                        except Exception as cleanup_error:
+                            logger.error(f"Cleanup error: {cleanup_error}")
+        else:
+            if st.button("🔴 Stop Trading Bot", key="stop_button"):
+                st.session_state.bot_running = False
+                if st.session_state.get("trading_task"):
+                    st.session_state.trading_task.cancel()
+                    st.session_state.trading_task = None
+                st.warning("Trading stoppé.")
+
+        # --- AFFICHAGE LIVE DU STATUT ---
+        if "live_status" in st.session_state and st.session_state["live_status"]:
+            status_placeholder.markdown("### 🟢 Trading Live Status")
+            for k, v in st.session_state["live_status"].items():
+                status_placeholder.write(f"**{k}** : {v}")
+
+        # --- INFOS STATUT BOT ---
+        st.divider()
+        ws_status = st.session_state.get("ws_connection_status", "disconnected")
+        ws_icon = {
+            "connected": "🟢",
+            "disconnected": "🔴",
+            "initializing": "🔄",
+            "error": "⚠️",
+        }.get(ws_status, "🔴")
+        status_info = f"""
+        ### Bot Status
+        - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
+        - 📡 WebSocket: {ws_icon} {ws_status.title()}
+        - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
+        - ⏰ Last Update: {st.session_state.last_update_time}
+        """
+        st.info(status_info)
+
+        st.divider()
+
+        # --- GESTION DONNÉES MARCHÉ & BACKTEST ---
+        latest_data = st.session_state.get("latest_data", {})
+        if not isinstance(latest_data, dict):
+            latest_data = {}
+
+        def _has_valid_ohlcv(item):
+            return (
+                isinstance(item, dict)
+                and "ohlcv" in item
+                and isinstance(item["ohlcv"], list)
+                and len(item["ohlcv"]) > 0
+                and isinstance(item["ohlcv"][0], dict)
+                and all(
+                    k in item["ohlcv"][0]
+                    for k in ["timestamp", "open", "high", "low", "close", "volume"]
+                )
+            )
+
+        data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
+
+        if not data_ready:
+            st.warning(
+                "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
+            )
+            if st.button("Charger les données", key="load_data_btn"):
+                with st.spinner("Chargement des données..."):
+                    loaded = False
+                    try:
+                        if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
+                            st.info("Initialisation de la WebSocket…")
+                            await bot.initialize()
+                        if hasattr(bot, "get_latest_data"):
+                            data = await bot.get_latest_data()
+                            st.write("DEBUG - Résultat get_latest_data:", data)
+                            if data and isinstance(data, dict) and len(data) > 0:
+                                st.session_state["latest_data"] = data
+                                loaded = True
                             else:
                                 st.error(
-                                    "Aucune méthode de chargement trouvée sur le bot."
+                                    "La récupération a retourné None ou un dict vide : pas de données."
                                 )
-                        except Exception as exc:
-                            st.error(f"Erreur lors du chargement des données : {exc}")
-                        if loaded:
-                            st.success("Données chargées ! Tu peux lancer un backtest.")
-                            st.rerun()
-            else:
-                # --- BACKTEST CLASSIQUE ---
-                if st.button("Lancer Backtest", key="backtest_all_btn"):
+                        elif hasattr(bot, "load_all_data"):
+                            await bot.load_all_data()
+                            latest_data = getattr(bot, "latest_data", {}) or {}
+                            if not isinstance(latest_data, dict):
+                                latest_data = {}
+                            st.write(
+                                "DEBUG - latest_data après load_all_data:", latest_data
+                            )
+                            loaded = (
+                                isinstance(latest_data, dict) and len(latest_data) > 0
+                            )
+                            if loaded:
+                                st.session_state["latest_data"] = latest_data
+                            else:
+                                st.error(
+                                    "La récupération a retourné None ou un dict vide : pas de données."
+                                )
+                        else:
+                            st.error("Aucune méthode de chargement trouvée sur le bot.")
+                    except Exception as exc:
+                        st.error(f"Erreur lors du chargement des données : {exc}")
+                    if loaded:
+                        st.success("Données chargées ! Tu peux lancer un backtest.")
+                        st.rerun()
+
+        else:
+            # --- BACKTEST CLASSIQUE ---
+            if st.button("Lancer Backtest", key="backtest_all_btn"):
+                results = {}
+                st.info("Backtest en cours sur toutes les paires...")
+                try:
+                    for symbol, data in latest_data.items():
+                        try:
+                            if _has_valid_ohlcv(data):
+                                import pandas as pd
+
+                                df = pd.DataFrame(data["ohlcv"])
+
+                                def strategy_func(df, **params):
+                                    return (
+                                        df["close"] > df["close"].rolling(5).mean()
+                                    ).astype(int)
+
+                                engine = BacktestEngine(initial_capital=10000)
+                                results[symbol] = engine.run_backtest(df, strategy_func)
+                            else:
+                                st.warning(
+                                    f"Aucune donnée OHLCV exploitable pour {symbol}"
+                                )
+                        except Exception as pair_exc:
+                            st.warning(f"Erreur sur {symbol}: {pair_exc}")
+                    st.session_state["all_backtest_results"] = results
+                    st.success("Backtest terminé ✅")
+                except Exception as batch_exc:
+                    st.error(f"Erreur lors du backtest: {batch_exc}")
+
+            # --- Résultats Backtest Classique ---
+            if st.session_state.get("all_backtest_results"):
+                st.markdown("**Résultats Backtest Classique :**")
+                for symbol, res in st.session_state["all_backtest_results"].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
+                # --- BACKTEST QUANTIQUE ---
+                if st.button(
+                    "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
+                ):
+                    st.info("Backtest quantique en cours sur toutes les paires...")
                     results = {}
-                    st.info("Backtest en cours sur toutes les paires...")
+                    if not isinstance(latest_data, dict):
+                        latest_data = {}
+                    st.write(
+                        "DEBUG - Paire/Data dispo :",
+                        {
+                            k: getattr(v, "shape", str(type(v)))
+                            for k, v in latest_data.items()
+                        },
+                    )
                     try:
                         for symbol, data in latest_data.items():
+                            st.write(f"Test {symbol} ...")
                             try:
                                 if _has_valid_ohlcv(data):
                                     import pandas as pd
@@ -4878,91 +4932,39 @@ async def main_async():
                                         f"Aucune donnée OHLCV exploitable pour {symbol}"
                                     )
                             except Exception as pair_exc:
-                                st.warning(f"Erreur sur {symbol}: {pair_exc}")
-                        st.session_state["all_backtest_results"] = results
-                        st.success("Backtest terminé ✅")
+                                st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                        st.session_state["all_quantum_results"] = results
+                        st.success("Backtest quantique terminé ✅")
+                        st.write("DEBUG - Résultats quantum :", results)
                     except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest: {batch_exc}")
-                # Résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-                    if st.button(
-                        "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
-                    ):
-                        st.info("Backtest quantique en cours sur toutes les paires...")
-                        results = {}
-                        if not isinstance(latest_data, dict):
-                            latest_data = {}
-                        st.write(
-                            "DEBUG - Paire/Data dispo :",
-                            {
-                                k: getattr(v, "shape", str(type(v)))
-                                for k, v in latest_data.items()
-                            },
-                        )
-                        try:
-                            for symbol, data in latest_data.items():
-                                st.write(f"Test {symbol} ...")
-                                try:
-                                    if _has_valid_ohlcv(data):
-                                        import pandas as pd
+                        st.error(f"Erreur lors du backtest quantique: {batch_exc}")
 
-                                        df = pd.DataFrame(data["ohlcv"])
+            # --- Résultats Backtest Quantique ---
+            if st.session_state.get("all_quantum_results"):
+                st.markdown("**Résultats Backtest Quantique :**")
+                for symbol, res in st.session_state["all_quantum_results"].items():
+                    st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
-                                        def strategy_func(df, **params):
-                                            return (
-                                                df["close"]
-                                                > df["close"].rolling(5).mean()
-                                            ).astype(int)
-
-                                        engine = BacktestEngine(initial_capital=10000)
-                                        results[symbol] = engine.run_backtest(
-                                            df, strategy_func
-                                        )
-                                    else:
-                                        st.warning(
-                                            f"Aucune donnée OHLCV exploitable pour {symbol}"
-                                        )
-                                except Exception as pair_exc:
-                                    st.warning(
-                                        f"Erreur quantique sur {symbol}: {pair_exc}"
-                                    )
-                            st.session_state["all_quantum_results"] = results
-                            st.success("Backtest quantique terminé ✅")
-                            st.write("DEBUG - Résultats quantum :", results)
-                        except Exception as batch_exc:
-                            st.error(f"Erreur lors du backtest quantique: {batch_exc}")
-                # Affichage des résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-                if st.session_state.get("all_quantum_results"):
-                    st.markdown("**Résultats Backtest Quantique :**")
-                    for symbol, res in st.session_state["all_quantum_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-        # 8. Onglets principaux avec gestion d'erreur
+        # --- PORTFOLIO, TRADING, ANALYSIS TABS ---
+        st.divider()
         try:
             portfolio_tab, trading_tab, analysis_tab = st.tabs(
                 ["📈 Portfolio", "🎯 Trading", "📊 Analysis"]
             )
-            # Onglet Portfolio
             with portfolio_tab:
                 await _render_portfolio_tab(bot)
-            # Onglet Trading
             with trading_tab:
                 await _render_trading_tab(bot)
-            # Onglet Analysis
             with analysis_tab:
                 await _render_analysis_tab(bot)
         except Exception as tab_error:
             logger.error(f"Tab rendering error: {tab_error}")
             st.error("Error rendering tabs")
+
     except Exception as e:
         logger.error(f"❌ Application error: {str(e)}")
         st.error(f"❌ Application error: {str(e)}")
+
     finally:
         # Protection finale avec timestamp
         try:
