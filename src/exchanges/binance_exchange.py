@@ -24,6 +24,7 @@ class BinanceExchange:
 
     async def initialize(self):
         try:
+            # Création de l'exchange ccxt
             self._exchange = ccxt.binance(
                 {
                     "apiKey": self.api_key,
@@ -36,16 +37,16 @@ class BinanceExchange:
                     },
                 }
             )
-            # Spot testnet: PAS de load_markets, PAS de WebSocket
             if self.testnet and self._exchange.options.get("defaultType") == "spot":
                 logger.warning(
-                    "Binance spot testnet: pas de WebSocket, ni load_markets!"
+                    "Binance spot testnet: PAS de load_markets, PAS de WebSocket!"
                 )
-                # Optionnel: définis l’URL REST testnet pour ccxt
+                # URLs Testnet obligatoires pour Binance Spot Testnet
                 self._exchange.urls["api"] = {
                     "web": "https://testnet.binance.vision",
                     "rest": "https://testnet.binance.vision",
                 }
+                # NE PAS faire load_markets ici!
             else:
                 logger.info(">>> AVANT load_markets")
                 await self._exchange.load_markets()
