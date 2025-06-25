@@ -1,5 +1,8 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
+import os
+
+USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
@@ -35,7 +38,6 @@ st.set_page_config(
 )
 
 # 2. Imports système
-import os
 import sys
 import logging
 import json
@@ -75,13 +77,14 @@ import pandas as pd
 import torch
 import telegram
 import ccxt
+import ccxt.async_support as ccxt
 import ta
 from dotenv import load_dotenv
 import gymnasium as gym
 from gymnasium import spaces
-from binance import AsyncClient, BinanceSocketManager
 
 # 6. Imports des modules internes (exchanges, core, etc.)
+from binance import AsyncClient, BinanceSocketManager
 from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
 from src.core.exchange import ExchangeInterface as Exchange
@@ -2049,6 +2052,14 @@ class TradingBotM4:
         self.exchange = BinanceExchange(api_key, api_secret)
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
+
+        # Patch pour éviter le blocage load_markets en testnet
+        if use_testnet and hasattr(self.exchange, "exchange"):
+            # ccxt ne supporte pas load_markets en testnet Binance
+            self.exchange.exchange.load_markets = lambda: None  # override, fait rien
+            self.logger.warning(
+                "⚠️ Binance testnet détecté : load_markets() patché (désactivé)"
+            )
 
         # Initialisation du WebSocket Manager (AJOUT ICI)
         self.ws_manager = WebSocketManager(self)
