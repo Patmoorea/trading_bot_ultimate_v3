@@ -5518,6 +5518,19 @@ async def run_trading_bot():
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
 
+    # --- DEBUG state au tout début ---
+    def debug_state(when):
+        import streamlit as st
+
+        st.write(
+            f"DEBUG [{when}] bot_running={st.session_state.get('bot_running')}, should_launch_bot={st.session_state.get('should_launch_bot')}, trading_task={st.session_state.get('trading_task')}"
+        )
+        print(
+            f"DEBUG [{when}] bot_running={st.session_state.get('bot_running')}, should_launch_bot={st.session_state.get('should_launch_bot')}, trading_task={st.session_state.get('trading_task')}"
+        )
+
+    debug_state("DEBUT")
+
     # ---- 1. Initialisation des flags et objets critiques AVANT tout le reste ----
     if "bot" not in st.session_state or st.session_state["bot"] is None:
         st.session_state["bot"] = get_bot()
@@ -5537,6 +5550,7 @@ async def main_async():
             st.session_state["trading_task"] = loop.create_task(
                 bot.run_adaptive_trading(period="7d")
             )
+    debug_state("APRES_LA_GESTION_LAUNCH_BOT")
 
     # ---- 3. Initialisation du reste du state par défaut ----
     current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
@@ -5554,7 +5568,7 @@ async def main_async():
             "portfolio": None,
             "latest_data": None,
             "indicators": None,
-            "bot_running": False,
+            # ATTENTION : on ne reset PAS bot_running ici pour ne pas casser le flag !
             "refresh_count": 0,
             "ws_status": "disconnected",
             "ws_initialized": False,
@@ -5563,7 +5577,6 @@ async def main_async():
             "needs_update": False,
             "update_interval": 2.0,
             "last_refresh": time.time(),
-            # PAS DE RESET ICI pour should_launch_bot, trading_task, bot !
         }
         for key, value in default_session_state.items():
             if key not in st.session_state:
@@ -5580,7 +5593,6 @@ async def main_async():
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
 
-        # --- CORRIGE ici pour toujours refléter l'état session_state ---
         latest_data = st.session_state.get("latest_data", {})
         if not isinstance(latest_data, dict):
             latest_data = {}
@@ -5603,7 +5615,7 @@ async def main_async():
 
             status_info = f"""
             ### Bot Status
-            - 🚦 Trading: {'🟢 Active' if st.session_state.bot_running else '🔴 Stopped'}
+            - 🚦 Trading: {'🟢 Active' if st.session_state.get('bot_running') else '🔴 Stopped'}
             - 📡 WebSocket: {ws_icon} {ws_status.title()}
             - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
             - ⏰ Last Update: {st.session_state.last_update_time}
@@ -5628,6 +5640,7 @@ async def main_async():
                     "🟢 Start Trading", key="start_button", use_container_width=True
                 ):
                     st.session_state["should_launch_bot"] = True
+                    st.rerun()  # ←←← AJOUT OBLIGATOIRE
                 st.success("Cliquez pour démarrer le bot.")
             else:
                 if st.button(
@@ -5639,6 +5652,8 @@ async def main_async():
                         st.session_state["trading_task"] = None
                     st.warning("Trading stoppé.")
 
+            debug_state("APRES_BOUTONS")
+
             # --- AFFICHAGE LIVE ---
             if "live_status" in st.session_state and st.session_state["live_status"]:
                 status_placeholder.markdown("### 🟢 Trading Live Status")
@@ -5646,7 +5661,6 @@ async def main_async():
                     status_placeholder.write(f"**{k}** : {v}")
 
             # --- GESTION DES DONNEES ET BACKTEST ---
-            # TOUJOURS lire depuis session_state !
             latest_data = st.session_state.get("latest_data")
             if not isinstance(latest_data, dict):
                 latest_data = {}
@@ -5682,9 +5696,7 @@ async def main_async():
                                 data = await bot.get_latest_data()
                                 st.write("DEBUG - Résultat get_latest_data:", data)
                                 if data and isinstance(data, dict) and len(data) > 0:
-                                    st.session_state["latest_data"] = (
-                                        data  # <-- SYNC dans la session
-                                    )
+                                    st.session_state["latest_data"] = data
                                     loaded = True
                                 else:
                                     st.error(
@@ -5842,6 +5854,8 @@ async def main_async():
             )
         except Exception as protect_error:
             logger.error(f"Session protection error: {protect_error}")
+
+    debug_state("FIN")
 
 
 # Fonctions auxiliaires pour le rendu des onglets
