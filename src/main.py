@@ -2339,7 +2339,6 @@ class TradingBotM4:
             }
 
     def _generate_analysis_report(self, indicators_analysis, regime):
-        """Génère un rapport d'analyse du marché"""
         try:
             report = f"""
 ╔═════════════════════════════════════════════════╗
@@ -2348,30 +2347,21 @@ class TradingBotM4:
 ║ Régime: {regime}                               ║
 ╚═════════════════════════════════════════════════╝
 
-    📊 Analyse par Timeframe:
+    📊 Analyse par Timeframe/Paire :
     """
-            for timeframe, analysis in indicators_analysis.items():
-                report += f"""
-🕒 {timeframe}:
-├─ 📈 Tendance: {analysis['trend']['trend_strength']}
-├─ 📊 Volatilité: {analysis['volatility']['current_volatility']}
-├─ 📉 Volume: {analysis['volume']['volume_profile']['strength']}
-└─ 🎯 Signal dominant: {analysis['dominant_signal']}
+            for timeframe, pairs_dict in indicators_analysis.items():
+                for pair, analysis in pairs_dict.items():
+                    report += f"""
+    🕒 {timeframe} | {pair} :
+    ├─ 📈 Tendance: {analysis.get('trend', {}).get('trend_strength', 'N/A')}
+    ├─ 📊 Volatilité: {analysis.get('volatility', {}).get('current_volatility', 'N/A')}
+    ├─ 📉 Volume: {analysis.get('volume', {}).get('volume_profile', {}).get('strength', 'N/A')}
+    └─ 🎯 Signal dominant: {analysis.get('dominant_signal', 'N/A')}
     """
-
-            logger.info("✅ Rapport d'analyse généré avec succès")
             return report
-
         except Exception as e:
-            error_msg = f"""
-╔═════════════════════════════════════════════════╗
-║                ERREUR RAPPORT                    ║
-╠═════════════════════════════════════════════════╣
-║ {str(e)}
-╚═════════════════════════════════════════════════╝
-    """
             logger.error(f"❌ Erreur génération rapport: {e}")
-            return error_msg
+            return f"Erreur lors de la génération du rapport : {e}"
 
     async def _initialize_models(self):
         """Initialise les modèles d'IA"""
@@ -5080,13 +5070,16 @@ Take Profit: {take_profit}""",
             "🟢 [run_adaptive_trading] Lancement de la boucle de trading adaptatif."
         )
 
-        # 1. Étudier le marché sur la période définie (ex : 7j)
+        # 1. Étudier le marché sur la période définie (ex : 7j)
         try:
             logger.info("📊 [run_adaptive_trading] Étude du marché initiale...")
             regime, historical_data, indicators_analysis = await self.study_market(
                 period=period
             )
             logger.info(f"✅ [run_adaptive_trading] Régime détecté: {regime}")
+            logger.debug(
+                f"📝 [run_adaptive_trading] Résumé analyse initiale: {indicators_analysis}"
+            )
 
             # 2. Établir un plan/stratégie selon le régime détecté
             strategy = self.choose_strategy(regime, indicators_analysis)
@@ -5113,60 +5106,82 @@ Take Profit: {take_profit}""",
                 await self.send_telegram_message(
                     f"❌ Erreur initiale run_adaptive_trading : {e}"
                 )
-            except:
-                pass
+            except Exception as e2:
+                logger.error(
+                    f"❌ [run_adaptive_trading] Erreur Telegram lors de l'init: {e2}"
+                )
             return
 
+        cycle = 0
         # 3. Boucle principale
         while st.session_state.get("bot_running", True):
+            cycle += 1
+            logger.info(f"🔁 [run_adaptive_trading] Début du cycle {cycle}")
             try:
                 logger.info(
                     "🔄 [run_adaptive_trading] TOP boucle, récupération des données marché..."
                 )
                 market_data = await self.get_latest_data()
                 logger.info(
-                    f"🔍 [run_adaptive_trading] market_data: {str(market_data)[:500]}"
-                )  # trunc pour éviter log énorme
+                    f"🔍 [run_adaptive_trading] market_data (trunc): {str(market_data)[:500]}"
+                )
+                logger.debug(
+                    f"🔍 [run_adaptive_trading] market_data (full): {market_data}"
+                )
 
                 signals = await self.analyze_signals(market_data)
-                logger.info(f"🔍 [run_adaptive_trading] signals: {str(signals)[:500]}")
+                logger.info(
+                    f"🧭 [run_adaptive_trading] signals (trunc): {str(signals)[:500]}"
+                )
+                logger.debug(f"🧭 [run_adaptive_trading] signals (full): {signals}")
 
                 news = None
                 try:
-                    news = (
-                        await self.news_analyzer.analyze()
-                        if hasattr(self, "news_analyzer")
-                        else None
-                    )
-                    logger.info(f"📰 [run_adaptive_trading] news: {news}")
+                    logger.info("📰 [run_adaptive_trading] Analyse des news...")
+                    if hasattr(self, "news_analyzer"):
+                        news = await self.news_analyzer.analyze()
+                        logger.info(f"📰 [run_adaptive_trading] Résultat news: {news}")
+                    else:
+                        logger.info(
+                            "📰 [run_adaptive_trading] Aucun news_analyzer disponible."
+                        )
                 except Exception as e:
                     logger.error(f"❌ [run_adaptive_trading] Erreur news_analyzer: {e}")
 
                 arbitrage_opps = None
                 try:
-                    arbitrage_opps = (
-                        await self.arbitrage_engine.find_opportunities()
-                        if hasattr(self, "arbitrage_engine")
-                        else None
-                    )
                     logger.info(
-                        f"💱 [run_adaptive_trading] arbitrage_opps: {arbitrage_opps}"
+                        "💱 [run_adaptive_trading] Recherche d'opportunités d'arbitrage..."
                     )
+                    if hasattr(self, "arbitrage_engine"):
+                        arbitrage_opps = (
+                            await self.arbitrage_engine.find_opportunities()
+                        )
+                        logger.info(
+                            f"💱 [run_adaptive_trading] arbitrage_opps: {arbitrage_opps}"
+                        )
+                    else:
+                        logger.info(
+                            "💱 [run_adaptive_trading] Aucun arbitrage_engine disponible."
+                        )
                 except Exception as e:
                     logger.error(
                         f"❌ [run_adaptive_trading] Erreur arbitrage_engine: {e}"
                     )
 
-                new_regime = (
-                    self.regime_detector.predict(signals)
-                    if hasattr(self, "regime_detector")
-                    else self.current_regime
-                )
+                if hasattr(self, "regime_detector"):
+                    new_regime = self.regime_detector.predict(signals)
+                else:
+                    new_regime = self.current_regime
+                    logger.warning(
+                        "[run_adaptive_trading] Aucun regime_detector disponible, on conserve le régime courant."
+                    )
+
                 logger.info(f"🟠 [run_adaptive_trading] new_regime: {new_regime}")
 
-                # 4. Adaptation : news, arbitrage, changement de régime
+                # 4. Adaptation : news, arbitrage, changement de régime
                 if news and news.get("impact", 0) > 0.7:
-                    logger.warning(f"⚠️ [run_adaptive_trading] NEWS CRITIQUE : {news}")
+                    logger.warning(f"⚠️ [run_adaptive_trading] NEWS CRITIQUE : {news}")
                     try:
                         await self.send_telegram_message(
                             f"📰 News critique détectée : {news}"
@@ -5178,7 +5193,7 @@ Take Profit: {take_profit}""",
                     self.current_strategy = "Defensive/No Trade"
                 elif arbitrage_opps:
                     logger.info(
-                        f"💰 [run_adaptive_trading] Arbitrage détecté : {arbitrage_opps}"
+                        f"💰 [run_adaptive_trading] Arbitrage détecté : {arbitrage_opps}"
                     )
                     try:
                         await self.send_telegram_message(
@@ -5191,13 +5206,13 @@ Take Profit: {take_profit}""",
                     self.current_strategy = "Arbitrage"
                 elif new_regime != self.current_regime:
                     logger.info(
-                        f"🔄 [run_adaptive_trading] Changement de régime : {self.current_regime} → {new_regime}"
+                        f"🔄 [run_adaptive_trading] Changement de régime : {self.current_regime} → {new_regime}"
                     )
                     self.current_regime = new_regime
                     self.current_strategy = self.choose_strategy(new_regime, signals)
                     try:
                         await self.send_telegram_message(
-                            f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
+                            f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
                         )
                     except Exception as e:
                         logger.error(
@@ -5205,17 +5220,23 @@ Take Profit: {take_profit}""",
                         )
 
                 # 5. Prendre position selon la stratégie courante
+                logger.info(
+                    f"🧮 [run_adaptive_trading] Décision en cours avec stratégie: {self.current_strategy}"
+                )
                 decision = self.make_trade_decision(
                     signals, self.current_strategy, news, arbitrage_opps
                 )
                 trade_status = None
                 if decision and decision.get("action") in ["buy", "sell"]:
                     logger.info(
-                        f"🟢 [run_adaptive_trading] Décision de trade : {decision}"
+                        f"🟢 [run_adaptive_trading] Décision de trade : {decision}"
                     )
                     try:
                         order = await self.execute_real_trade(decision)
-                        trade_status = f"{decision['action'].upper()} {decision.get('symbol', '')} {decision.get('amount', '')}"
+                        trade_status = f"{decision['action'].upper()} {decision.get('symbol', '')} {decision.get('amount', '')} (Order: {order})"
+                        logger.info(
+                            f"📈 [run_adaptive_trading] Trade exécuté : {order}"
+                        )
                         await self.send_telegram_message(
                             f"✅ Trade exécuté : {decision}"
                         )
@@ -5227,8 +5248,10 @@ Take Profit: {take_profit}""",
                             await self.send_telegram_message(
                                 f"❌ Erreur exécution trade: {e}"
                             )
-                        except:
-                            pass
+                        except Exception as e2:
+                            logger.error(
+                                f"❌ [run_adaptive_trading] Erreur secondaire Telegram: {e2}"
+                            )
                 else:
                     logger.info(
                         "🟡 [run_adaptive_trading] Aucune décision de trade prise ce cycle."
@@ -5237,6 +5260,7 @@ Take Profit: {take_profit}""",
                 # 6. MISE À JOUR DU STATUT LIVE POUR STREAMLIT
                 try:
                     st.session_state["live_status"] = {
+                        "Cycle": cycle,
                         "Régime": self.current_regime,
                         "Stratégie": self.current_strategy,
                         "Signal": (
@@ -5252,13 +5276,16 @@ Take Profit: {take_profit}""",
                         "Heure": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                     }
                     logger.info(
-                        f"🖥️ [run_adaptive_trading] Statut mis à jour dans Streamlit: {st.session_state['live_status']}"
+                        f"🖥️ [run_adaptive_trading] Statut live mis à jour dans Streamlit: {st.session_state['live_status']}"
                     )
                 except Exception as e:
                     logger.error(
                         f"❌ [run_adaptive_trading] Erreur update dashboard: {e}"
                     )
 
+                logger.info(
+                    f"🔁 [run_adaptive_trading] Fin du cycle {cycle}, attente avant prochaine itération"
+                )
                 await asyncio.sleep(2)  # ajustable selon besoins
 
             except Exception as loop_error:
@@ -5269,15 +5296,17 @@ Take Profit: {take_profit}""",
                     await self.send_telegram_message(
                         f"❌ Exception dans la boucle: {loop_error}"
                     )
-                except:
-                    pass
+                except Exception as e2:
+                    logger.error(
+                        f"❌ [run_adaptive_trading] Erreur Telegram exception boucle : {e2}"
+                    )
                 await asyncio.sleep(2)  # Pause avant retry
 
         logger.info("🔴 [run_adaptive_trading] Boucle stoppée (bot_running à False)")
         try:
             await self.send_telegram_message("🛑 Boucle run_adaptive_trading stoppée.")
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"❌ [run_adaptive_trading] Erreur Telegram arrêt boucle: {e}")
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
