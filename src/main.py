@@ -5554,8 +5554,22 @@ async def main_async():
 
         await bot._initialize_analyzers()
 
+        # ---- Lancement du bot trading si flag actif ----
+        if st.session_state.get("should_launch_bot", False):
+            st.session_state["bot_running"] = True
+            st.session_state["should_launch_bot"] = False  # reset le flag
+            # Protection pour éviter plusieurs tâches concurrentes
+            if not st.session_state.get("trading_task"):
+                loop = st.session_state.get("loop") or asyncio.get_event_loop()
+                st.session_state["trading_task"] = loop.create_task(
+                    bot.run_adaptive_trading(period="7d")
+                )
+
+        status_placeholder = st.sidebar.empty()
+
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
+
         # --- CORRIGE ici pour toujours refléter l'état session_state ---
         latest_data = st.session_state.get("latest_data", {})
         if not isinstance(latest_data, dict):
@@ -5597,29 +5611,28 @@ async def main_async():
                 key=f"risk_level_slider_{st.session_state.session_id}",
             )
             st.divider()
+
+            # --- CONTROLES BOT TRADING ---
+            # Place au tout début de la sidebar !
+            if "trading_task" not in st.session_state:
+                st.session_state["trading_task"] = None
+            if "should_launch_bot" not in st.session_state:
+                st.session_state["should_launch_bot"] = False
+
             if not st.session_state.get("bot_running", False):
                 if st.button(
                     "🟢 Start Trading", key="start_button", use_container_width=True
                 ):
-                    st.session_state.bot_running = True
-                    # Protection pour éviter plusieurs tâches concurrentes
-                    if not st.session_state.get("trading_task"):
-                        loop = st.session_state.loop or asyncio.get_event_loop()
-                        st.session_state.trading_task = loop.create_task(
-                            bot.run_adaptive_trading(period="7d")
-                        )
-                    st.success(
-                        "Trading adaptatif lancé (étude marché + stratégie auto)."
-                    )
+                    st.session_state["should_launch_bot"] = True
+                st.success("Cliquez pour démarrer le bot.")
             else:
                 if st.button(
                     "🔴 Stop Trading", key="stop_button", use_container_width=True
                 ):
-                    st.session_state.bot_running = False
-                    # Arrêt propre de la tâche si elle existe
+                    st.session_state["bot_running"] = False
                     if st.session_state.get("trading_task"):
-                        st.session_state.trading_task.cancel()
-                        st.session_state.trading_task = None
+                        st.session_state["trading_task"].cancel()
+                        st.session_state["trading_task"] = None
                     st.warning("Trading stoppé.")
 
             # --- AFFICHAGE LIVE ---
@@ -5786,12 +5799,6 @@ async def main_async():
                             st.write("DEBUG - Résultats quantum :", results)
                         except Exception as batch_exc:
                             st.error(f"Erreur lors du backtest quantique: {batch_exc}")
-
-                # Affichage des résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
                 if st.session_state.get("all_quantum_results"):
                     st.markdown("**Résultats Backtest Quantique :**")
