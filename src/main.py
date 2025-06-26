@@ -2003,17 +2003,6 @@ class TradingBotM4:
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
 
-        self.advanced_indicators = MultiTimeframeAnalyzer(
-            config=TimeframeConfig(
-                timeframes=(
-                    self.config["TRADING"]["timeframes"]
-                    if "TRADING" in self.config
-                    and "timeframes" in self.config["TRADING"]
-                    else ["1m", "5m", "15m", "1h", "4h", "1d"]
-                )
-            )
-        )
-
         # Flags de contrôle
         self._ws_initializing = False
         self._cleanup_requested = False
