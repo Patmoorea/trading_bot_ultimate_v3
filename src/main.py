@@ -2999,6 +2999,8 @@ class TradingBotM4:
     async def study_market(self, period="7d"):
         logger = logging.getLogger(__name__)
         logger.info("🔊 Étude du marché en cours...")
+        if not hasattr(self, "advanced_indicators") or self.advanced_indicators is None:
+            await self._initialize_analyzers()
         try:
             # -- Bloc critique avec logs détaillés et traceback sur erreur --
             try:
