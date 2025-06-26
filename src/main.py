@@ -172,6 +172,16 @@ class StreamlitSessionManager:
             if self._initialize_session_state():
                 self._log_initialization()
 
+        # Initialisation de advanced_indicators
+        self.advanced_indicators = {}
+
+    # Ajoute cette fonction utilitaire
+    def safe_float(self, val, default=0.0):
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
     def _initialize_session_state(self):
         """Initialise l'état de la session avec des valeurs sûres"""
         try:
@@ -443,6 +453,7 @@ class WebSocketManager:
         self.streams = {}
         self.running = False
         self.lock = asyncio.Lock()
+        self.advanced_indicators = {}
         # Correction des valeurs par défaut
         self.pairs = bot.config.get("TRADING", {}).get(
             "pairs", ["BTC/USDT", "ETH/USDT"]
@@ -2976,6 +2987,12 @@ class TradingBotM4:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
 
+    def safe_float(val, default=0.0):
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
     async def study_market(self, period="7d"):
         logger = logging.getLogger(__name__)
         logger.info("🔊 Étude du marché en cours...")
@@ -3005,14 +3022,21 @@ class TradingBotM4:
             if not historical_data:
                 raise ValueError("Données historiques non disponibles")
 
-            # ... (reste inchangé : analyse, régime, dashboard...)
             indicators_analysis = {}
             for timeframe in self.config["TRADING"]["timeframes"]:
                 try:
                     tf_data = historical_data[timeframe]
-                    result = self.advanced_indicators.analyze_timeframe(
-                        tf_data, timeframe
-                    )
+                    # Vérifie que self.advanced_indicators existe
+                    if (
+                        not hasattr(self, "advanced_indicators")
+                        or self.advanced_indicators is None
+                    ):
+                        logger.error("advanced_indicators n'est pas initialisé")
+                        result = None
+                    else:
+                        result = self.advanced_indicators.analyze_timeframe(
+                            tf_data, timeframe
+                        )
                     indicators_analysis[timeframe] = (
                         {
                             "trend": {"trend_strength": 0},
@@ -3031,6 +3055,19 @@ class TradingBotM4:
                         "volume": {"volume_profile": {"strength": "N/A"}},
                         "dominant_signal": "Erreur",
                     }
+
+            # Sécurise la conversion float des volumes
+            for timeframe, tf_analysis in indicators_analysis.items():
+                if (
+                    "volume" in tf_analysis
+                    and "volume_profile" in tf_analysis["volume"]
+                ):
+                    strength = tf_analysis["volume"]["volume_profile"].get(
+                        "strength", 0
+                    )
+                    tf_analysis["volume"]["volume_profile"]["strength"] = safe_float(
+                        strength, 0.0
+                    )
 
             regime = self.regime_detector.predict(indicators_analysis)
             logger.info(f"🔈 Régime de marché détecté: {regime}")
