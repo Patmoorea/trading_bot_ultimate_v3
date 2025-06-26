@@ -5518,6 +5518,24 @@ async def run_trading_bot():
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
 
+    # ---- 1. Initialisation des flags critiques AVANT tout le reste ----
+    if "trading_task" not in st.session_state:
+        st.session_state["trading_task"] = None
+    if "should_launch_bot" not in st.session_state:
+        st.session_state["should_launch_bot"] = False
+
+    # ---- 2. Lancement du bot trading si flag actif (AVANT tout reset de state) ----
+    if st.session_state.get("should_launch_bot", False):
+        st.session_state["bot_running"] = True
+        st.session_state["should_launch_bot"] = False  # reset le flag
+        if not st.session_state.get("trading_task"):
+            bot = get_bot()
+            loop = st.session_state.get("loop") or asyncio.get_event_loop()
+            st.session_state["trading_task"] = loop.create_task(
+                bot.run_adaptive_trading(period="7d")
+            )
+
+    # ---- 3. Initialisation du reste du state par défaut ----
     current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     current_user = "Patmoorea"
 
@@ -5542,6 +5560,7 @@ async def main_async():
             "needs_update": False,
             "update_interval": 2.0,
             "last_refresh": time.time(),
+            # PAS DE RESET ICI pour should_launch_bot ou trading_task !
         }
         for key, value in default_session_state.items():
             if key not in st.session_state:
@@ -5553,17 +5572,6 @@ async def main_async():
             return
 
         await bot._initialize_analyzers()
-
-        # ---- Lancement du bot trading si flag actif ----
-        if st.session_state.get("should_launch_bot", False):
-            st.session_state["bot_running"] = True
-            st.session_state["should_launch_bot"] = False  # reset le flag
-            # Protection pour éviter plusieurs tâches concurrentes
-            if not st.session_state.get("trading_task"):
-                loop = st.session_state.get("loop") or asyncio.get_event_loop()
-                st.session_state["trading_task"] = loop.create_task(
-                    bot.run_adaptive_trading(period="7d")
-                )
 
         status_placeholder = st.sidebar.empty()
 
@@ -5613,12 +5621,6 @@ async def main_async():
             st.divider()
 
             # --- CONTROLES BOT TRADING ---
-            # Place au tout début de la sidebar !
-            if "trading_task" not in st.session_state:
-                st.session_state["trading_task"] = None
-            if "should_launch_bot" not in st.session_state:
-                st.session_state["should_launch_bot"] = False
-
             if not st.session_state.get("bot_running", False):
                 if st.button(
                     "🟢 Start Trading", key="start_button", use_container_width=True
