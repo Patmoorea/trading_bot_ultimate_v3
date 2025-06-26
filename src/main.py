@@ -474,6 +474,7 @@ class WebSocketManager:
         self.retry_delay = WEBSOCKET_CONFIG["RETRY_DELAY"]
 
     async def start(self):
+        await self._initialize_analyzers()
         """Démarre les WebSockets"""
         async with self.lock:
             if self.running:
@@ -3000,7 +3001,9 @@ class TradingBotM4:
         logger = logging.getLogger(__name__)
         logger.info("🔊 Étude du marché en cours...")
         if not hasattr(self, "advanced_indicators") or self.advanced_indicators is None:
-            await self._initialize_analyzers()
+            raise RuntimeError(
+                "advanced_indicators non initialisé : appelle _initialize_analyzers() d'abord"
+            )
         try:
             # -- Bloc critique avec logs détaillés et traceback sur erreur --
             try:
