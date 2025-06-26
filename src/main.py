@@ -3023,6 +3023,7 @@ class TradingBotM4:
                 logger.info("⬅️ [study_market] Après get_historical_data")
             except Exception as e:
                 logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
+                import traceback
 
                 logger.error(traceback.format_exc())
                 raise
@@ -3035,86 +3036,68 @@ class TradingBotM4:
                     "Données historiques non disponibles ou format inattendu"
                 )
 
-            for tf in self.config["TRADING"]["timeframes"]:
-                if (
-                    tf not in historical_data
-                    or historical_data[tf] is None
-                    or len(historical_data[tf]) == 0
-                ):
-                    logger.error(f"❌ Données manquantes pour le timeframe {tf}")
-                    raise ValueError(f"Données manquantes pour le timeframe {tf}")
-                # Vérification des colonnes attendues (pour pandas DataFrame)
-                d = historical_data[tf]
-                if hasattr(d, "columns"):
-                    for col in ["open", "high", "low", "close", "volume"]:
-                        if col not in d.columns:
-                            logger.error(
-                                f"❌ Colonne '{col}' manquante dans les données {tf}"
-                            )
-                            raise ValueError(
-                                f"Colonne '{col}' manquante dans les données {tf}"
-                            )
-                elif isinstance(d, list) and d and isinstance(d[0], dict):
-                    for col in ["open", "high", "low", "close", "volume"]:
-                        if col not in d[0]:
-                            logger.error(
-                                f"❌ Clé '{col}' manquante dans les données {tf} (format dict)"
-                            )
-                            raise ValueError(
-                                f"Clé '{col}' manquante dans les données {tf}"
-                            )
-
-            if not historical_data:
-                raise ValueError("Données historiques non disponibles")
-
             indicators_analysis = {}
+            # Analyse sécurisée pour chaque timeframe/paire
             for timeframe in self.config["TRADING"]["timeframes"]:
-                try:
-                    tf_data = historical_data[timeframe]
-                    # Vérifie que self.advanced_indicators existe
-                    if (
-                        not hasattr(self, "advanced_indicators")
-                        or self.advanced_indicators is None
-                    ):
-                        logger.error("advanced_indicators n'est pas initialisé")
-                        result = None
-                    else:
-                        result = self.advanced_indicators.analyze_timeframe(
-                            tf_data, timeframe
+                tf_data = historical_data.get(timeframe, {})
+                indicators_analysis[timeframe] = {}
+                for pair in self.config["TRADING"]["pairs"]:
+                    df = tf_data.get(pair)
+                    if not isinstance(df, pd.DataFrame) or df.empty:
+                        logger.warning(
+                            f"Données OHLCV absentes ou vides pour {pair} {timeframe}, skip analyse."
                         )
-                    indicators_analysis[timeframe] = (
-                        {
+                        indicators_analysis[timeframe][pair] = {
                             "trend": {"trend_strength": 0},
                             "volatility": {"current_volatility": 0},
                             "volume": {"volume_profile": {"strength": "N/A"}},
-                            "dominant_signal": "Neutre",
+                            "dominant_signal": "Aucune donnée",
                         }
-                        if result is None
-                        else result
-                    )
-                except Exception as tf_error:
-                    logger.error(f"Erreur analyse timeframe {timeframe}: {tf_error}")
-                    indicators_analysis[timeframe] = {
-                        "trend": {"trend_strength": 0},
-                        "volatility": {"current_volatility": 0},
-                        "volume": {"volume_profile": {"strength": "N/A"}},
-                        "dominant_signal": "Erreur",
-                    }
+                        continue
+                    try:
+                        result = self.advanced_indicators.analyze_timeframe(
+                            df, timeframe
+                        )
+                        indicators_analysis[timeframe][pair] = (
+                            result
+                            if result
+                            else {
+                                "trend": {"trend_strength": 0},
+                                "volatility": {"current_volatility": 0},
+                                "volume": {"volume_profile": {"strength": "N/A"}},
+                                "dominant_signal": "Analyse échouée",
+                            }
+                        )
+                    except Exception as tf_error:
+                        logger.error(f"Erreur analyse {pair} {timeframe}: {tf_error}")
+                        indicators_analysis[timeframe][pair] = {
+                            "trend": {"trend_strength": 0},
+                            "volatility": {"current_volatility": 0},
+                            "volume": {"volume_profile": {"strength": "N/A"}},
+                            "dominant_signal": "Erreur",
+                        }
 
             # Sécurise la conversion float des volumes
-            for timeframe, tf_analysis in indicators_analysis.items():
-                if (
-                    "volume" in tf_analysis
-                    and "volume_profile" in tf_analysis["volume"]
-                ):
-                    strength = tf_analysis["volume"]["volume_profile"].get(
-                        "strength", 0
-                    )
-                    tf_analysis["volume"]["volume_profile"]["strength"] = safe_float(
-                        strength, 0.0
-                    )
+            for timeframe, tf_pairs in indicators_analysis.items():
+                for pair, tf_analysis in tf_pairs.items():
+                    if (
+                        "volume" in tf_analysis
+                        and "volume_profile" in tf_analysis["volume"]
+                    ):
+                        strength = tf_analysis["volume"]["volume_profile"].get(
+                            "strength", 0
+                        )
+                        tf_analysis["volume"]["volume_profile"]["strength"] = (
+                            safe_float(strength, 0.0)
+                        )
 
-            regime = self.regime_detector.predict(indicators_analysis)
+            # Pour le calcul du régime, on peut agréger (par exemple sur le premier pair)
+            regime = self.regime_detector.predict(
+                {
+                    tf: next(iter(tf_pairs.values()), {})
+                    for tf, tf_pairs in indicators_analysis.items()
+                }
+            )
             logger.info(f"🔈 Régime de marché détecté: {regime}")
 
             try:
