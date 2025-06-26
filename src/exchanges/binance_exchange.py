@@ -202,6 +202,7 @@ class BinanceExchange:
         """
         Récupère les données OHLCV historiques pour chaque paire/timeframe sur la période demandée.
         Retourne {timeframe: {pair: pd.DataFrame}}
+        PATCH: Ne retourne jamais None, toujours un DataFrame (éventuellement vide), jamais d'objet non-attendu.
         """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
@@ -220,9 +221,30 @@ class BinanceExchange:
                 tf_result = {}
                 for pair in pairs:
                     try:
-                        ohlcv = await self._exchange.fetch_ohlcv(pair, tf, since=since)
+                        # PATCH: Vérifie si fetch_ohlcv est awaitable
+                        fetch_ohlcv = getattr(self._exchange, "fetch_ohlcv", None)
+                        klines = None
+                        if fetch_ohlcv is not None:
+                            if asyncio.iscoroutinefunction(fetch_ohlcv):
+                                klines = await fetch_ohlcv(pair, tf, since=since)
+                            else:
+                                klines = fetch_ohlcv(pair, tf, since=since)
+                        if not klines or len(klines) == 0:
+                            logger.error(f"Aucune donnée historique pour {pair} {tf}")
+                            tf_result[pair] = pd.DataFrame(
+                                columns=[
+                                    "timestamp",
+                                    "open",
+                                    "high",
+                                    "low",
+                                    "close",
+                                    "volume",
+                                ]
+                            )
+                            continue
+
                         df = pd.DataFrame(
-                            ohlcv,
+                            klines,
                             columns=[
                                 "timestamp",
                                 "open",
@@ -236,9 +258,34 @@ class BinanceExchange:
                         tf_result[pair] = df
                     except Exception as e:
                         logger.error(f"Erreur historique {pair} {tf}: {e}")
-                        tf_result[pair] = pd.DataFrame()
+                        tf_result[pair] = pd.DataFrame(
+                            columns=[
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            ]
+                        )
                 result[tf] = tf_result
             return result
         except Exception as e:
             logger.error(f"Erreur get_historical_data: {e}")
-            raise
+            # PATCH: Ne jamais raise ici, toujours retourner un dict avec DataFrame vides
+            for tf in timeframes:
+                if tf not in result:
+                    result[tf] = {}
+                for pair in pairs:
+                    if pair not in result[tf]:
+                        result[tf][pair] = pd.DataFrame(
+                            columns=[
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            ]
+                        )
+            return result
