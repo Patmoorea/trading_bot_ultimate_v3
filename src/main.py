@@ -45,6 +45,14 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
+def safe_float(val, default=0.0):
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
 # 2. Imports système
 import sys
 import logging
@@ -1994,6 +2002,18 @@ class TradingBotM4:
 
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
+
+        self.advanced_indicators = MultiTimeframeAnalyzer(
+            config=TimeframeConfig(
+                timeframes=(
+                    self.config["TRADING"]["timeframes"]
+                    if "TRADING" in self.config
+                    and "timeframes" in self.config["TRADING"]
+                    else ["1m", "5m", "15m", "1h", "4h", "1d"]
+                )
+            )
+        )
+
         # Flags de contrôle
         self._ws_initializing = False
         self._cleanup_requested = False
@@ -2986,12 +3006,6 @@ class TradingBotM4:
         except Exception as e:
             logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
-
-    def safe_float(val, default=0.0):
-        try:
-            return float(val)
-        except (ValueError, TypeError):
-            return default
 
     async def study_market(self, period="7d"):
         logger = logging.getLogger(__name__)
