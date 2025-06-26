@@ -69,6 +69,7 @@ from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
 import nest_asyncio
 import aiohttp
+import traceback
 
 # 3. Configuration des chemins
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -3022,10 +3023,46 @@ class TradingBotM4:
                 logger.info("⬅️ [study_market] Après get_historical_data")
             except Exception as e:
                 logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
-                import traceback
 
                 logger.error(traceback.format_exc())
                 raise
+
+            if not historical_data or not isinstance(historical_data, dict):
+                logger.error(
+                    "❌ Données historiques non disponibles ou mauvais format (None ou pas dict)"
+                )
+                raise ValueError(
+                    "Données historiques non disponibles ou format inattendu"
+                )
+
+            for tf in self.config["TRADING"]["timeframes"]:
+                if (
+                    tf not in historical_data
+                    or historical_data[tf] is None
+                    or len(historical_data[tf]) == 0
+                ):
+                    logger.error(f"❌ Données manquantes pour le timeframe {tf}")
+                    raise ValueError(f"Données manquantes pour le timeframe {tf}")
+                # Vérification des colonnes attendues (pour pandas DataFrame)
+                d = historical_data[tf]
+                if hasattr(d, "columns"):
+                    for col in ["open", "high", "low", "close", "volume"]:
+                        if col not in d.columns:
+                            logger.error(
+                                f"❌ Colonne '{col}' manquante dans les données {tf}"
+                            )
+                            raise ValueError(
+                                f"Colonne '{col}' manquante dans les données {tf}"
+                            )
+                elif isinstance(d, list) and d and isinstance(d[0], dict):
+                    for col in ["open", "high", "low", "close", "volume"]:
+                        if col not in d[0]:
+                            logger.error(
+                                f"❌ Clé '{col}' manquante dans les données {tf} (format dict)"
+                            )
+                            raise ValueError(
+                                f"Clé '{col}' manquante dans les données {tf}"
+                            )
 
             if not historical_data:
                 raise ValueError("Données historiques non disponibles")
