@@ -5518,7 +5518,11 @@ async def run_trading_bot():
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
 
-    # ---- 1. Initialisation des flags critiques AVANT tout le reste ----
+    # ---- 1. Initialisation des flags et objets critiques AVANT tout le reste ----
+    if "bot" not in st.session_state or st.session_state["bot"] is None:
+        st.session_state["bot"] = get_bot()
+    bot = st.session_state["bot"]
+
     if "trading_task" not in st.session_state:
         st.session_state["trading_task"] = None
     if "should_launch_bot" not in st.session_state:
@@ -5529,7 +5533,6 @@ async def main_async():
         st.session_state["bot_running"] = True
         st.session_state["should_launch_bot"] = False  # reset le flag
         if not st.session_state.get("trading_task"):
-            bot = get_bot()
             loop = st.session_state.get("loop") or asyncio.get_event_loop()
             st.session_state["trading_task"] = loop.create_task(
                 bot.run_adaptive_trading(period="7d")
@@ -5560,13 +5563,12 @@ async def main_async():
             "needs_update": False,
             "update_interval": 2.0,
             "last_refresh": time.time(),
-            # PAS DE RESET ICI pour should_launch_bot ou trading_task !
+            # PAS DE RESET ICI pour should_launch_bot, trading_task, bot !
         }
         for key, value in default_session_state.items():
             if key not in st.session_state:
                 st.session_state[key] = value
 
-        bot = get_bot()
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
