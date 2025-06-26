@@ -2,6 +2,14 @@
 import streamlit as st
 import os
 
+# Charger les variables d'env
+from dotenv import load_dotenv
+
+load_dotenv()
+
+print("BINANCE_TESTNET (os.environ):", os.environ.get("BINANCE_TESTNET"))
+print("BINANCE_TESTNET (os.getenv):", os.getenv("BINANCE_TESTNET"))
+
 USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
 
@@ -79,7 +87,6 @@ import telegram
 import ccxt
 import ccxt.async_support as ccxt
 import ta
-from dotenv import load_dotenv
 import gymnasium as gym
 from gymnasium import spaces
 
@@ -681,12 +688,13 @@ def init_session_state():
 
 
 # Configuration du bot
-load_dotenv()
+
 config = {
     "NEWS": {"enabled": True, "TELEGRAM_TOKEN": os.getenv("TELEGRAM_TOKEN", "")},
     "BINANCE": {
         "API_KEY": os.getenv("BINANCE_API_KEY"),
         "API_SECRET": os.getenv("BINANCE_API_SECRET"),
+        "TESTNET": USE_TESTNET,
     },
     "ARBITRAGE": {
         "exchanges": ["binance", "bitfinex", "kraken"],
@@ -2049,7 +2057,6 @@ class TradingBotM4:
 
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
-        self.exchange = BinanceExchange(api_key, api_secret)
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
 
