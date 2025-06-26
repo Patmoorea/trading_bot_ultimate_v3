@@ -2038,6 +2038,7 @@ class TradingBotM4:
             "BINANCE": {
                 "API_KEY": os.getenv("BINANCE_API_KEY", ""),
                 "API_SECRET": os.getenv("BINANCE_API_SECRET", ""),
+                "TESTNET": USE_TESTNET,  # AJOUTE CETTE LIGNE !
             },
             "TRADING": {
                 "pairs": ["BTC/USDT", "ETH/USDT"],
@@ -2058,6 +2059,11 @@ class TradingBotM4:
         api_key = self.config["BINANCE"]["API_KEY"]
         api_secret = self.config["BINANCE"]["API_SECRET"]
         use_testnet = self.config["BINANCE"].get("TESTNET", False)
+
+        self.logger.info(
+            f"BinanceExchange: testnet={use_testnet} (type: {type(use_testnet)})"
+        )
+
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
 
         # Patch pour éviter le blocage load_markets en testnet
