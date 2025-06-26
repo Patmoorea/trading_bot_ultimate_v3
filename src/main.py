@@ -5439,7 +5439,7 @@ Take Profit: {take_profit}""",
 
 
 async def run_trading_bot():
-    """Point d'entrée synchrone pour le bot de trading"""
+    """Point d'entrée synchrone pour le bot de trading (statistiques uniquement, pas de bouton Start)"""
     try:
         # Stats en temps réel
         col1, col2, col3 = st.columns(3)
@@ -5452,40 +5452,15 @@ async def run_trading_bot():
         with col3:
             st.metric("24h P&L", "+123 USDC", "+1.23%")
 
-        # Bouton de démarrage
-        if st.button("Start Trading Bot", type="primary"):
-            try:
-                # Récupère (ou crée) une seule instance du bot si nécessaire
-                bot = get_bot()
+        # SUPPRESSION DU BOUTON Start Trading Bot !
+        # Toute la logique de démarrage du bot doit être pilotée via la sidebar (main_async).
 
-                # On lance la tâche de trading adaptatif si elle n'existe pas déjà
-                if (
-                    "trading_task" not in st.session_state
-                    or st.session_state.trading_task is None
-                    or st.session_state.trading_task.done()
-                ):
-                    loop = st.session_state.loop or asyncio.get_event_loop()
-                    st.session_state.trading_task = loop.create_task(
-                        bot.run_adaptive_trading(period="7d")
-                    )
-                    st.session_state.bot_running = True
-                    st.success("🚀 Trading adaptatif lancé.")
-                else:
-                    st.info("Le bot est déjà en cours d’exécution.")
+        # Tu peux afficher ici d'autres informations, ou l'état du bot, mais SANS bouton de démarrage.
+        if st.session_state.get("bot_running"):
+            st.success("🚀 Le trading bot est en cours d'exécution.")
+        else:
+            st.info("Le trading bot est arrêté. Utilise la sidebar pour le démarrer.")
 
-            except Exception as e:
-                logger.error(f"Trading bot runtime error: {e}")
-                st.error(f"❌ Runtime error: {str(e)}")
-            finally:
-                # Nettoyage des ressources si le bot a crashé
-                if "bot" in locals() and hasattr(bot, "_cleanup"):
-                    try:
-                        cleanup_coro = bot._cleanup()
-                        if asyncio.iscoroutine(cleanup_coro):
-                            loop = st.session_state.loop or asyncio.get_event_loop()
-                            loop.run_until_complete(cleanup_coro)
-                    except Exception as cleanup_error:
-                        logger.error(f"Cleanup error: {cleanup_error}")
     except Exception as e:
         logger.error(f"Trading bot error: {e}")
         st.error(f"❌ Trading bot error: {str(e)}")
@@ -5527,6 +5502,8 @@ async def main_async():
         if bot is None:
             st.error("❌ Failed to initialize bot")
             return
+
+        await bot._initialize_analyzers()
 
         # --- DEBUG données disponibles ---
         st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
