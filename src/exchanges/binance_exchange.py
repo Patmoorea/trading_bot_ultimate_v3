@@ -37,16 +37,17 @@ class BinanceExchange:
                     },
                 }
             )
-            if self.testnet and self._exchange.options.get("defaultType") == "spot":
-                logger.warning(
-                    "Binance spot testnet: PAS de load_markets, PAS de WebSocket!"
-                )
-                # URLs Testnet obligatoires pour Binance Spot Testnet
+            logger.info(
+                f"BinanceExchange: testnet={self.testnet}, defaultType={self._exchange.options.get('defaultType')}"
+            )
+            if self.testnet:
+                logger.warning("Binance testnet: PAS de load_markets !")
                 self._exchange.urls["api"] = {
                     "web": "https://testnet.binance.vision",
                     "rest": "https://testnet.binance.vision",
                 }
-                # NE PAS faire load_markets ici!
+                # PATCH: override load_markets pour éviter tout appel accidentel
+                self._exchange.load_markets = lambda *a, **k: None
             else:
                 logger.info(">>> AVANT load_markets")
                 await self._exchange.load_markets()
