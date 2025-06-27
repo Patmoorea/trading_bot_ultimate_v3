@@ -23,6 +23,8 @@ from binance import AsyncClient, BinanceSocketManager
 from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
 from src.data.realtime.websocket.client import MultiStreamManager
+from src.monitoring.streamlit_ui import TradingDashboard
+from .dashboard import TradingDashboard
 
 # ccxt (si utilisé pour l'exchange)
 import ccxt

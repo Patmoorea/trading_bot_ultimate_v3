@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 import websockets
 import json
+from .utils import WEBSOCKET_CONFIG
 
 
 class WebSocketManager:

@@ -1,7 +1,17 @@
 import logging
 from datetime import datetime, timezone
 import os
+import asyncio
 from asyncio import AbstractEventLoop
+import traceback
+
+# Pour Streamlit
+import streamlit as st
+
+# Pour nest_asyncio (si tu utilises Streamlit avec asyncio)
+import nest_asyncio
+
+USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
 # Configuration du logging
 logging.basicConfig(
