@@ -5130,134 +5130,6 @@ async def run_trading_bot():
         st.error(f"❌ Trading bot error: {str(e)}")
 
 
-# Fonctions auxiliaires pour le rendu des onglets
-async def _render_portfolio_tab(bot):
-    """Rendu de l'onglet Portfolio"""
-    if st.session_state.bot_running:
-        try:
-            portfolio = st.session_state.get("portfolio")
-            if portfolio:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "💰 Total Value",
-                        f"{portfolio.get('total_value', 0):.2f} USDC",
-                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC",
-                    )
-                with col2:
-                    st.metric(
-                        "📈 24h Volume",
-                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                        f"{portfolio.get('volume_change', 0):+.2f}%",
-                    )
-                with col3:
-                    positions = portfolio.get("positions", [])
-                    st.metric(
-                        "🔄 Active Positions",
-                        str(len(positions)),
-                        f"{len(positions)} active",
-                    )
-
-                if positions:
-                    st.subheader("Active Positions")
-                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
-                else:
-                    st.info("💡 No active positions")
-            else:
-                st.warning("⚠️ Waiting for portfolio data...")
-        except Exception as e:
-            st.error(f"❌ Portfolio error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view portfolio")
-
-
-async def _render_trading_tab(bot):
-    """Rendu de l'onglet Trading"""
-    if st.session_state.bot_running:
-        try:
-            latest_data = bot.latest_data.get("BTCUSDT", {})
-            if latest_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    current_price = latest_data[-1]["close"]
-                    prev_price = (
-                        latest_data[-2]["close"]
-                        if len(latest_data) > 1
-                        else current_price
-                    )
-                    price_change = (
-                        ((current_price - prev_price) / prev_price * 100)
-                        if prev_price
-                        else 0
-                    )
-
-                    st.metric(
-                        "BTC/USDC Price",
-                        f"{current_price:.2f}",
-                        f"{price_change:+.2f}%",
-                    )
-                with col2:
-                    current_vol = latest_data[-1]["volume"]
-                    prev_vol = (
-                        latest_data[-2]["volume"]
-                        if len(latest_data) > 1
-                        else current_vol
-                    )
-                    vol_change = (
-                        ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                    )
-
-                    st.metric(
-                        "Trading Volume", f"{current_vol:.2f}", f"{vol_change:+.2f}%"
-                    )
-
-            if bot.indicators:
-                st.subheader("Trading Signals")
-                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
-            else:
-                st.info("💡 Waiting for signals...")
-        except Exception as e:
-            st.error(f"❌ Trading data error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view signals")
-
-
-async def _render_analysis_tab(bot):
-    """Rendu de l'onglet Analysis"""
-    if st.session_state.bot_running:
-        try:
-            if bot.latest_data and bot.indicators:
-                st.subheader("Technical Analysis")
-
-                for symbol in bot.latest_data:
-                    await process_market_data(bot, symbol)
-
-                if hasattr(bot, "advanced_indicators"):
-                    analysis = bot.advanced_indicators.get_all_signals()
-                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
-                else:
-                    st.info("💡 Processing analysis...")
-            else:
-                st.info("💡 Waiting for market data...")
-        except Exception as e:
-            st.error(f"❌ Analysis error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view analysis")
-
-    # --- Signal Quantum SVM ---
-    if hasattr(bot, "qsvm") and bot.qsvm is not None:
-        try:
-            # Prépare les features à passer à predict (adapte cette ligne selon ta logique)
-            features = (
-                bot.latest_data
-            )  # ou bot.indicators ou ton dataframe, adapte selon besoin
-            quantum_signal = bot.qsvm.predict(features)
-            st.subheader("Quantum SVM Signal")
-            st.metric("Quantum SVM Signal", quantum_signal)
-        except Exception as e:
-            st.warning(f"Erreur Quantum SVM : {e}")
-
-
 async def shutdown():
     """Arrêt propre de l'application"""
     try:
@@ -5396,3 +5268,46 @@ def _setup_and_verify_event_loop():
     finally:
         # Mise à jour du timestamp
         st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+STATUS_FILE = "bot_status.json"
+
+
+def load_status():
+    if os.path.exists(STATUS_FILE):
+        with open(STATUS_FILE, "r") as f:
+            try:
+                return json.load(f)
+            except Exception as e:
+                st.error(f"Erreur de lecture du status : {e}")
+                return {}
+    return {}
+
+
+st.title("Trading Bot Ultimate v4 - Dashboard")
+
+status = load_status()
+
+if not status:
+    st.warning(
+        "Aucun status du bot trouvé. Le bot tourne-t-il ? (python bot_runner.py)"
+    )
+elif "error" in status:
+    st.error(f"[BOT ERROR] {status['error']}")
+else:
+    st.success(f"Cycle : {status.get('cycle', '?')}")
+    st.markdown(f"**Régime détecté :** {status.get('regime', '?')}")
+    st.markdown(f"**Stratégie actuelle :** {status.get('strategy', '?')}")
+    st.markdown(f"**Date/Heure :** {status.get('datetime', '?')}")
+    st.markdown("**Signaux :**")
+    st.json(status.get("signals", {}))
+
+st.divider()
+st.info(
+    "Ce dashboard ne pilote pas le bot : il affiche uniquement le status en temps réel généré par le process autonome.\n\n"
+    "Pour démarrer le bot : `python bot_runner.py`\n"
+    "Pour surveiller, rafraîchez cette page."
+)
+
+if st.button("🔄 Rafraîchir le status"):
+    st.experimental_rerun()
