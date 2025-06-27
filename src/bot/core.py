@@ -46,6 +46,8 @@ class TradingBotM4:
 
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
+        self.logger = logging.getLogger(__name__)
+        self.ws_manager = None
 
         # Flags de contrôle
         self._ws_initializing = False
