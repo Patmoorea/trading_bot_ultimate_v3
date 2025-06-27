@@ -1,6 +1,7 @@
 # 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
 import streamlit as st
 import os
+
 # Charger les variables d'env
 from dotenv import load_dotenv
 
@@ -36,7 +37,7 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
-    
+
 st.set_page_config(
     page_title="Trading Bot Ultimate v4 - Dashboard",
     page_icon="📈",
@@ -85,6 +86,8 @@ st.info(
 
 if st.button("🔄 Rafraîchir le status"):
     st.rerun()
+
+
 def main():
     """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
     current_time = datetime.now(timezone.utc)
@@ -620,14 +623,15 @@ async def _render_analysis_tab(bot):
             st.metric("Quantum SVM Signal", quantum_signal)
         except Exception as e:
             st.warning(f"Erreur Quantum SVM : {e}")
-  
-   st.set_page_config(
-    page_title="Trading Bot Ultimate v4",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-            
+
+    st.set_page_config(
+        page_title="Trading Bot Ultimate v4",
+        page_icon="📈",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+
+
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
     """Inject JS code for auto-refresh in Streamlit."""
@@ -652,7 +656,7 @@ for flag, default in [
 ]:
     if flag not in st.session_state:
         st.session_state[flag] = default
-        
+
 if __name__ == "__main__":
     try:
         main()

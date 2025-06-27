@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from src.main import TradingBotM4  # Assure-toi que ton PYTHONPATH est bien configuré !
+from src.bot.core import TradingBotM4
 
 STATUS_PATH = "bot_status.json"
 
