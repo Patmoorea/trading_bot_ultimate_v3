@@ -154,18 +154,6 @@ WEBSOCKET_CONFIG = {
 }
 
 
-def setup_asyncio():
-    """Configure l'environnement asyncio pour Streamlit."""
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        nest_asyncio.apply()
-        return loop
-    except Exception as e:
-        logger.error(f"Error setting up asyncio: {e}")
-        return None
-
-
 class StreamlitSessionManager:
     """Gestionnaire de session Streamlit avec protection et logging améliorés"""
 
@@ -350,110 +338,6 @@ class StreamlitSessionManager:
         except Exception as e:
             self._log_error("Session info retrieval error", e)
             return None
-
-
-def _setup_and_verify_event_loop():
-    """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv("USER", "Patmoorea")
-
-    try:
-        # Vérification de l'existence d'une boucle
-        if not st.session_state.get("loop"):
-            # Création et configuration de la nouvelle boucle
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-
-            # Sauvegarde dans la session
-            st.session_state.loop = loop
-
-            # Log de succès d'initialisation
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP INITIALIZED              ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-║ Status: Successfully configured
-║ Loop ID: {id(loop)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-            return loop
-
-        # Vérification de la boucle existante
-        existing_loop = st.session_state.loop
-        if existing_loop.is_closed():
-            logger.warning(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP CLOSED                   ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: Creating new loop
-║ Previous Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-            # Création d'une nouvelle boucle
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            nest_asyncio.apply()
-            st.session_state.loop = new_loop
-            return new_loop
-
-        # Retour de la boucle existante
-        logger.debug(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP VERIFIED                 ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: Using existing loop
-║ Loop ID: {id(existing_loop)}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        return existing_loop
-
-    except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
-║ Details: {traceback.format_exc()}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Incrément du compteur d'erreurs
-        st.session_state.error_count = st.session_state.get("error_count", 0) + 1
-
-        return None
-
-    finally:
-        # Mise à jour du timestamp
-        st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-
-
-# Création de l'instance globale avec vérification
-try:
-    session_manager = StreamlitSessionManager()
-    logger.info("✅ Session manager initialized successfully")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize session manager: {e}")
-    session_manager = None
 
 
 class WebSocketManager:
@@ -668,268 +552,6 @@ class RegimeDetector:
         except Exception as e:
             self.logger.error(f"❌ Erreur détection régime: {e}")
             return "Error"
-
-
-def setup_event_loop() -> AbstractEventLoop:
-    """Configure l'event loop pour Streamlit"""
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    nest_asyncio.apply()
-    return loop
-
-
-def init_session_state():
-    """Initialize session state variables with strong defaults"""
-    session_vars = {
-        "initialized": False,
-        "bot_running": False,
-        "portfolio": None,
-        "latest_data": {},
-        "indicators": None,
-        "refresh_count": 0,
-        "loop": None,
-        "ws_status": "disconnected",
-        "error_count": 0,
-        "keep_alive": True,  # Force à True
-        "prevent_cleanup": True,  # Force à True
-        "force_cleanup": False,  # Force à False
-        "ws_initialized": False,
-        "cleanup_allowed": False,  # Nouveau flag
-    }
-
-    for var, default in session_vars.items():
-        # Ne pas écraser les valeurs existantes pour keep_alive et prevent_cleanup
-        if var in ["keep_alive", "prevent_cleanup"]:
-            st.session_state.setdefault(var, True)
-        else:
-            st.session_state[var] = default
-
-
-# Configuration du bot
-
-config = {
-    "NEWS": {"enabled": True, "TELEGRAM_TOKEN": os.getenv("TELEGRAM_TOKEN", "")},
-    "BINANCE": {
-        "API_KEY": os.getenv("BINANCE_API_KEY"),
-        "API_SECRET": os.getenv("BINANCE_API_SECRET"),
-        "TESTNET": USE_TESTNET,
-    },
-    "ARBITRAGE": {
-        "exchanges": ["binance", "bitfinex", "kraken"],
-        "min_profit": 0.001,
-        "max_trade_size": 1000,
-        "pairs": ["BTC/USDC", "ETH/USDC"],
-        "timeout": 5,
-        "volume_filter": 1000,
-        "price_check": True,
-        "max_slippage": 0.0005,
-    },
-    "TRADING": {
-        "base_currency": "USDC",
-        "pairs": ["BTC/USDC", "ETH/USDC"],
-        "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-        "study_period": "7d",
-    },
-    "RISK": {
-        "max_drawdown": 0.05,
-        "daily_stop_loss": 0.02,
-        "position_sizing": "volatility_based",
-        "circuit_breaker": {
-            "market_crash": True,
-            "liquidity_shock": True,
-            "black_swan": True,
-        },
-    },
-    "AI": {
-        "confidence_threshold": 0.75,
-        "min_training_size": 1000,
-        "learning_rate": 0.0001,
-        "batch_size": 32,
-        "n_epochs": 10,
-        "gtrxl_layers": 6,
-        "embedding_dim": 512,
-        "dropout": 0.1,
-        "gradient_clip": 0.5,
-    },
-    "INDICATORS": {
-        "trend": {
-            "supertrend": {"period": 10, "multiplier": 3},
-            "ichimoku": {"tenkan": 9, "kijun": 26, "senkou": 52},
-            "ema_ribbon": [5, 10, 20, 50, 100, 200],
-        },
-        "momentum": {
-            "rsi": {"period": 14, "overbought": 70, "oversold": 30},
-            "stoch_rsi": {"period": 14, "k": 3, "d": 3},
-            "macd": {"fast": 12, "slow": 26, "signal": 9},
-        },
-        "volatility": {
-            "bbands": {"period": 20, "std_dev": 2},
-            "keltner": {"period": 20, "atr_mult": 2},
-            "atr": {"period": 14},
-        },
-        "volume": {
-            "vwap": {"anchor": "session"},
-            "obv": {"signal": 20},
-            "volume_profile": {"price_levels": 100},
-        },
-        "orderflow": {
-            "delta": {"window": 100},
-            "cvd": {"smoothing": 20},
-            "imbalance": {"threshold": 0.2},
-        },
-    },
-}
-
-
-@st.cache_resource(ttl=None)
-def get_bot():
-    """Create or get the bot instance with lifecycle protection"""
-    if "bot_instance" in st.session_state and st.session_state.bot_instance is not None:
-        return st.session_state.bot_instance
-
-    try:
-        session_manager.protect_session()  # Protection explicite
-        logger.info("Creating new bot instance...")
-        bot = TradingBotM4()
-        st.session_state.bot_instance = bot
-        return bot
-    except Exception as e:
-        logger.error(f"Bot creation error: {e}")
-        return None
-
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║             CREATING BOT INSTANCE                ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Création du bot
-        bot = TradingBotM4()
-
-        # Configuration de la boucle d'événements
-        if not st.session_state.get("loop"):
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                nest_asyncio.apply()
-                st.session_state.loop = loop
-                logger.info("✅ Event loop configured successfully")
-            except Exception as loop_error:
-                logger.error(
-                    f"""
-╔═════════════════════════════════════════════════╗
-║             EVENT LOOP ERROR                     ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(loop_error)}
-╚═════════════════════════════════════════════════╝
-                """
-                )
-                raise
-
-        # Initialisation du bot
-        async def initialize_bot():
-            try:
-                if not await bot.start():
-                    raise Exception("Bot initialization failed")
-                bot._initialized = True
-                logger.info("✅ Bot initialization successful")
-                return bot
-            except Exception as init_error:
-                logger.error(
-                    f"""
-╔═════════════════════════════════════════════════╗
-║             INITIALIZATION ERROR                 ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(init_error)}
-╚═════════════════════════════════════════════════╝
-                """
-                )
-                raise
-
-        try:
-            # Initialisation avec gestion des erreurs de boucle
-            try:
-                bot = st.session_state.loop.run_until_complete(initialize_bot())
-            except RuntimeError as e:
-                if "This event loop is already running" in str(e):
-                    logger.warning(
-                        "⚠️ Event loop already running, applying nest_asyncio"
-                    )
-                    nest_asyncio.apply()
-                    bot = st.session_state.loop.run_until_complete(initialize_bot())
-                else:
-                    raise
-
-            if not bot or not getattr(bot, "_initialized", False):
-                raise Exception("Bot initialization incomplete")
-
-            # Sauvegarde dans la session state
-            st.session_state.bot_instance = bot
-
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║             BOT INSTANCE READY                   ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Status: {bot.ws_connection.get('status', 'initializing')}
-║ Trading Mode: {getattr(bot, 'trading_mode', 'production')}
-║ User: {os.getenv('USER', 'Patmoorea')}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-            return bot
-
-        except Exception as run_error:
-            logger.error(
-                f"""
-╔═════════════════════════════════════════════════╗
-║             RUNTIME ERROR                        ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(run_error)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
-            # Nettoyage sécurisé
-            if hasattr(bot, "_cleanup"):
-                try:
-                    st.session_state.loop.run_until_complete(bot._cleanup())
-                except:
-                    pass
-            raise
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║             BOT CREATION ERROR                   ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ User: {os.getenv('USER', 'Patmoorea')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Nettoyage de la session
-        if "bot_instance" in st.session_state:
-            del st.session_state.bot_instance
-        if "loop" in st.session_state:
-            del st.session_state.loop
-
-        return None
 
 
 # Fonction d'aide pour la configuration asyncio
@@ -5066,30 +4688,28 @@ Take Profit: {take_profit}""",
 
     async def run_adaptive_trading(self, period="7d"):
         logger = logging.getLogger(__name__)
-        logger.info(
-            "🟢 [run_adaptive_trading] Lancement de la boucle de trading adaptatif."
-        )
-
-        # 1. Étudier le marché sur la période définie (ex : 7j)
+        logger.info("[DEBUG] Début run_adaptive_trading")
+        print("[DEBUG] Début run_adaptive_trading")
         try:
-            logger.info("📊 [run_adaptive_trading] Étude du marché initiale...")
+            logger.info("[DEBUG] Avant study_market")
+            print("[DEBUG] Avant study_market")
             regime, historical_data, indicators_analysis = await self.study_market(
                 period=period
             )
-            logger.info(f"✅ [run_adaptive_trading] Régime détecté: {regime}")
-            logger.debug(
-                f"📝 [run_adaptive_trading] Résumé analyse initiale: {indicators_analysis}"
-            )
+            logger.info("[DEBUG] Après study_market")
+            print("[DEBUG] Après study_market")
 
-            # 2. Établir un plan/stratégie selon le régime détecté
+            logger.info("[DEBUG] Avant choose_strategy")
             strategy = self.choose_strategy(regime, indicators_analysis)
-            logger.info(f"✅ [run_adaptive_trading] Stratégie initiale: {strategy}")
+            logger.info("[DEBUG] Après choose_strategy")
 
             # Test Telegram dès le début
             try:
+                logger.info("[DEBUG] Avant send_telegram_message (Lancement bot)")
                 await self.send_telegram_message(
                     f"🚦 Bot lancé : {strategy}, régime : {regime}"
                 )
+                logger.info("[DEBUG] Après send_telegram_message (Lancement bot)")
             except Exception as e:
                 logger.error(
                     f"❌ [run_adaptive_trading] Erreur Telegram démarrage: {e}"
@@ -5102,6 +4722,7 @@ Take Profit: {take_profit}""",
             logger.error(
                 f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}"
             )
+            print(f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}")
             try:
                 await self.send_telegram_message(
                     f"❌ Erreur initiale run_adaptive_trading : {e}"
@@ -5113,62 +4734,50 @@ Take Profit: {take_profit}""",
             return
 
         cycle = 0
-        # 3. Boucle principale
         while st.session_state.get("bot_running", True):
             cycle += 1
-            logger.info(f"🔁 [run_adaptive_trading] Début du cycle {cycle}")
+            logger.info(f"[DEBUG] Début du cycle {cycle}")
+            print(f"[DEBUG] Début du cycle {cycle}")
             try:
-                logger.info(
-                    "🔄 [run_adaptive_trading] TOP boucle, récupération des données marché..."
-                )
+                # 1. Données marché
+                logger.info("[DEBUG] Avant get_latest_data")
                 market_data = await self.get_latest_data()
-                logger.info(
-                    f"🔍 [run_adaptive_trading] market_data (trunc): {str(market_data)[:500]}"
-                )
-                logger.debug(
-                    f"🔍 [run_adaptive_trading] market_data (full): {market_data}"
-                )
+                logger.info("[DEBUG] Après get_latest_data")
 
+                # 2. Signaux
+                logger.info("[DEBUG] Avant analyze_signals")
                 signals = await self.analyze_signals(market_data)
-                logger.info(
-                    f"🧭 [run_adaptive_trading] signals (trunc): {str(signals)[:500]}"
-                )
-                logger.debug(f"🧭 [run_adaptive_trading] signals (full): {signals}")
+                logger.info("[DEBUG] Après analyze_signals")
 
+                # 3. News
                 news = None
                 try:
-                    logger.info("📰 [run_adaptive_trading] Analyse des news...")
+                    logger.info("[DEBUG] Avant analyse news_analyzer")
                     if hasattr(self, "news_analyzer"):
                         news = await self.news_analyzer.analyze()
-                        logger.info(f"📰 [run_adaptive_trading] Résultat news: {news}")
+                        logger.info("[DEBUG] Après analyse news_analyzer")
                     else:
-                        logger.info(
-                            "📰 [run_adaptive_trading] Aucun news_analyzer disponible."
-                        )
+                        logger.info("[DEBUG] Aucun news_analyzer")
                 except Exception as e:
                     logger.error(f"❌ [run_adaptive_trading] Erreur news_analyzer: {e}")
 
+                # 4. Arbitrage
                 arbitrage_opps = None
                 try:
-                    logger.info(
-                        "💱 [run_adaptive_trading] Recherche d'opportunités d'arbitrage..."
-                    )
+                    logger.info("[DEBUG] Avant arbitrage_engine")
                     if hasattr(self, "arbitrage_engine"):
                         arbitrage_opps = (
                             await self.arbitrage_engine.find_opportunities()
                         )
-                        logger.info(
-                            f"💱 [run_adaptive_trading] arbitrage_opps: {arbitrage_opps}"
-                        )
+                        logger.info("[DEBUG] Après arbitrage_engine")
                     else:
-                        logger.info(
-                            "💱 [run_adaptive_trading] Aucun arbitrage_engine disponible."
-                        )
+                        logger.info("[DEBUG] Aucun arbitrage_engine")
                 except Exception as e:
                     logger.error(
                         f"❌ [run_adaptive_trading] Erreur arbitrage_engine: {e}"
                     )
 
+                # 5. Régime
                 if hasattr(self, "regime_detector"):
                     new_regime = self.regime_detector.predict(signals)
                 else:
@@ -5176,10 +4785,9 @@ Take Profit: {take_profit}""",
                     logger.warning(
                         "[run_adaptive_trading] Aucun regime_detector disponible, on conserve le régime courant."
                     )
+                logger.info(f"[DEBUG] new_regime = {new_regime}")
 
-                logger.info(f"🟠 [run_adaptive_trading] new_regime: {new_regime}")
-
-                # 4. Adaptation : news, arbitrage, changement de régime
+                # 6. Adaptation
                 if news and news.get("impact", 0) > 0.7:
                     logger.warning(f"⚠️ [run_adaptive_trading] NEWS CRITIQUE : {news}")
                     try:
@@ -5219,9 +4827,9 @@ Take Profit: {take_profit}""",
                             f"❌ [run_adaptive_trading] Erreur Telegram changement de régime: {e}"
                         )
 
-                # 5. Prendre position selon la stratégie courante
+                # 7. Décision de trade
                 logger.info(
-                    f"🧮 [run_adaptive_trading] Décision en cours avec stratégie: {self.current_strategy}"
+                    f"[DEBUG] Avant make_trade_decision (stratégie: {self.current_strategy})"
                 )
                 decision = self.make_trade_decision(
                     signals, self.current_strategy, news, arbitrage_opps
@@ -5257,7 +4865,7 @@ Take Profit: {take_profit}""",
                         "🟡 [run_adaptive_trading] Aucune décision de trade prise ce cycle."
                     )
 
-                # 6. MISE À JOUR DU STATUT LIVE POUR STREAMLIT
+                # 8. Statut UI Streamlit
                 try:
                     st.session_state["live_status"] = {
                         "Cycle": cycle,
@@ -5284,12 +4892,18 @@ Take Profit: {take_profit}""",
                     )
 
                 logger.info(
-                    f"🔁 [run_adaptive_trading] Fin du cycle {cycle}, attente avant prochaine itération"
+                    f"[DEBUG] Fin du cycle {cycle}, attente avant prochaine itération"
                 )
-                await asyncio.sleep(2)  # ajustable selon besoins
+                print(
+                    f"[DEBUG] Fin du cycle {cycle}, attente avant prochaine itération"
+                )
+                await asyncio.sleep(2)
 
             except Exception as loop_error:
                 logger.error(
+                    f"❌ [run_adaptive_trading] Exception dans la boucle: {loop_error}"
+                )
+                print(
                     f"❌ [run_adaptive_trading] Exception dans la boucle: {loop_error}"
                 )
                 try:
@@ -5300,9 +4914,10 @@ Take Profit: {take_profit}""",
                     logger.error(
                         f"❌ [run_adaptive_trading] Erreur Telegram exception boucle : {e2}"
                     )
-                await asyncio.sleep(2)  # Pause avant retry
+                await asyncio.sleep(2)
 
         logger.info("🔴 [run_adaptive_trading] Boucle stoppée (bot_running à False)")
+        print("🔴 [run_adaptive_trading] Boucle stoppée (bot_running à False)")
         try:
             await self.send_telegram_message("🛑 Boucle run_adaptive_trading stoppée.")
         except Exception as e:
@@ -5515,349 +5130,6 @@ async def run_trading_bot():
         st.error(f"❌ Trading bot error: {str(e)}")
 
 
-async def main_async():
-    """Point d'entrée principal de l'application avec gestion améliorée des états"""
-
-    # --- DEBUG state au tout début ---
-    def debug_state(when):
-        import streamlit as st
-
-        st.write(
-            f"DEBUG [{when}] bot_running={st.session_state.get('bot_running')}, should_launch_bot={st.session_state.get('should_launch_bot')}, trading_task={st.session_state.get('trading_task')}"
-        )
-        print(
-            f"DEBUG [{when}] bot_running={st.session_state.get('bot_running')}, should_launch_bot={st.session_state.get('should_launch_bot')}, trading_task={st.session_state.get('trading_task')}"
-        )
-
-    debug_state("DEBUT")
-
-    # ---- 1. Initialisation des flags et objets critiques AVANT tout le reste ----
-    if "bot" not in st.session_state or st.session_state["bot"] is None:
-        st.session_state["bot"] = get_bot()
-    bot = st.session_state["bot"]
-
-    if "trading_task" not in st.session_state:
-        st.session_state["trading_task"] = None
-    if "should_launch_bot" not in st.session_state:
-        st.session_state["should_launch_bot"] = False
-
-    # ---- 2. Lancement du bot trading si flag actif (AVANT tout reset de state) ----
-    if st.session_state.get("should_launch_bot", False):
-        st.session_state["bot_running"] = True
-        st.session_state["should_launch_bot"] = False  # reset le flag
-        if not st.session_state.get("trading_task"):
-            loop = st.session_state.get("loop") or asyncio.get_event_loop()
-            st.session_state["trading_task"] = loop.create_task(
-                bot.run_adaptive_trading(period="7d")
-            )
-    debug_state("APRES_LA_GESTION_LAUNCH_BOT")
-
-    # ---- 3. Initialisation du reste du state par défaut ----
-    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    current_user = "Patmoorea"
-
-    try:
-        session_manager.protect_session()
-
-        if "initialization_time" not in st.session_state:
-            st.session_state.initialization_time = current_time
-
-        default_session_state = {
-            "session_id": f"{current_user}_{int(datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S').timestamp())}",
-            "user": current_user,
-            "portfolio": None,
-            "latest_data": None,
-            "indicators": None,
-            # ATTENTION : on ne reset PAS bot_running ici pour ne pas casser le flag !
-            "refresh_count": 0,
-            "ws_status": "disconnected",
-            "ws_initialized": False,
-            "ws_connection_status": "disconnected",
-            "last_update_time": current_time,
-            "needs_update": False,
-            "update_interval": 2.0,
-            "last_refresh": time.time(),
-        }
-        for key, value in default_session_state.items():
-            if key not in st.session_state:
-                st.session_state[key] = value
-
-        if bot is None:
-            st.error("❌ Failed to initialize bot")
-            return
-
-        await bot._initialize_analyzers()
-
-        status_placeholder = st.sidebar.empty()
-
-        # --- DEBUG données disponibles ---
-        st.sidebar.markdown("#### Données présentes dans bot.latest_data :")
-
-        latest_data = st.session_state.get("latest_data", {})
-        if not isinstance(latest_data, dict):
-            latest_data = {}
-        st.sidebar.write(
-            {k: getattr(v, "shape", str(type(v))) for k, v in latest_data.items()}
-            if latest_data
-            else "Aucune donnée"
-        )
-
-        # 5. Interface principale - État et contrôles
-        status_col1, status_col2 = st.columns([2, 1])
-        with status_col1:
-            ws_status = st.session_state.get("ws_connection_status", "disconnected")
-            ws_icon = {
-                "connected": "🟢",
-                "disconnected": "🔴",
-                "initializing": "🔄",
-                "error": "⚠️",
-            }.get(ws_status, "🔴")
-
-            status_info = f"""
-            ### Bot Status
-            - 🚦 Trading: {'🟢 Active' if st.session_state.get('bot_running') else '🔴 Stopped'}
-            - 📡 WebSocket: {ws_icon} {ws_status.title()}
-            - 💼 Portfolio: {'✅ Available' if st.session_state.portfolio else '⚠️ Not Available'}
-            - ⏰ Last Update: {st.session_state.last_update_time}
-            - 👤 User: {st.session_state.user}
-            """
-            st.info(status_info)
-
-        # 6. Contrôles de la barre latérale avec gestion améliorée
-        with st.sidebar:
-            st.header("🛠️ Bot Controls")
-            risk_level = st.select_slider(
-                "Risk Level",
-                options=["Low", "Medium", "High"],
-                value="Low",
-                key=f"risk_level_slider_{st.session_state.session_id}",
-            )
-            st.divider()
-
-            # --- CONTROLES BOT TRADING ---
-            if not st.session_state.get("bot_running", False):
-                if st.button(
-                    "🟢 Start Trading", key="start_button", use_container_width=True
-                ):
-                    st.session_state["should_launch_bot"] = True
-                    st.rerun()  # ←←← AJOUT OBLIGATOIRE
-                st.success("Cliquez pour démarrer le bot.")
-            else:
-                if st.button(
-                    "🔴 Stop Trading", key="stop_button", use_container_width=True
-                ):
-                    st.session_state["bot_running"] = False
-                    if st.session_state.get("trading_task"):
-                        st.session_state["trading_task"].cancel()
-                        st.session_state["trading_task"] = None
-                    st.warning("Trading stoppé.")
-
-            debug_state("APRES_BOUTONS")
-
-            # --- AFFICHAGE LIVE ---
-            if "live_status" in st.session_state and st.session_state["live_status"]:
-                status_placeholder.markdown("### 🟢 Trading Live Status")
-                for k, v in st.session_state["live_status"].items():
-                    status_placeholder.write(f"**{k}** : {v}")
-
-            # --- GESTION DES DONNEES ET BACKTEST ---
-            latest_data = st.session_state.get("latest_data")
-            if not isinstance(latest_data, dict):
-                latest_data = {}
-            st.write("DEBUG - latest_data:", latest_data)  # <-- À enlever ensuite
-
-            def _has_valid_ohlcv(item):
-                return (
-                    isinstance(item, dict)
-                    and "ohlcv" in item
-                    and isinstance(item["ohlcv"], list)
-                    and len(item["ohlcv"]) > 0
-                    and isinstance(item["ohlcv"][0], dict)
-                    and all(
-                        k in item["ohlcv"][0]
-                        for k in ["timestamp", "open", "high", "low", "close", "volume"]
-                    )
-                )
-
-            data_ready = any(_has_valid_ohlcv(item) for item in latest_data.values())
-
-            if not data_ready:
-                st.warning(
-                    "Aucune donnée OHLCV disponible. Clique sur le bouton ci-dessous pour charger les données de marché."
-                )
-                if st.button("Charger les données", key="load_data_btn"):
-                    with st.spinner("Chargement des données..."):
-                        loaded = False
-                        try:
-                            if not hasattr(bot, "binance_ws") or bot.binance_ws is None:
-                                st.info("Initialisation de la WebSocket…")
-                                await bot.initialize()
-                            if hasattr(bot, "get_latest_data"):
-                                data = await bot.get_latest_data()
-                                st.write("DEBUG - Résultat get_latest_data:", data)
-                                if data and isinstance(data, dict) and len(data) > 0:
-                                    st.session_state["latest_data"] = data
-                                    loaded = True
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
-                            elif hasattr(bot, "load_all_data"):
-                                await bot.load_all_data()
-                                latest_data = getattr(bot, "latest_data", {}) or {}
-                                if not isinstance(latest_data, dict):
-                                    latest_data = {}
-                                st.write(
-                                    "DEBUG - latest_data après load_all_data:",
-                                    latest_data,
-                                )
-                                loaded = (
-                                    isinstance(latest_data, dict)
-                                    and len(latest_data) > 0
-                                )
-                                if loaded:
-                                    st.session_state["latest_data"] = latest_data
-                                else:
-                                    st.error(
-                                        "La récupération a retourné None ou un dict vide : pas de données."
-                                    )
-                            else:
-                                st.error(
-                                    "Aucune méthode de chargement trouvée sur le bot."
-                                )
-                        except Exception as exc:
-                            st.error(f"Erreur lors du chargement des données : {exc}")
-                        if loaded:
-                            st.success("Données chargées ! Tu peux lancer un backtest.")
-                            st.rerun()
-            else:
-                # --- BACKTEST CLASSIQUE ---
-                if st.button("Lancer Backtest", key="backtest_all_btn"):
-                    results = {}
-                    st.info("Backtest en cours sur toutes les paires...")
-                    try:
-                        for symbol, data in latest_data.items():
-                            try:
-                                if _has_valid_ohlcv(data):
-                                    import pandas as pd
-
-                                    df = pd.DataFrame(data["ohlcv"])
-
-                                    def strategy_func(df, **params):
-                                        return (
-                                            df["close"] > df["close"].rolling(5).mean()
-                                        ).astype(int)
-
-                                    engine = BacktestEngine(initial_capital=10000)
-                                    results[symbol] = engine.run_backtest(
-                                        df, strategy_func
-                                    )
-                                else:
-                                    st.warning(
-                                        f"Aucune donnée OHLCV exploitable pour {symbol}"
-                                    )
-                            except Exception as pair_exc:
-                                st.warning(f"Erreur sur {symbol}: {pair_exc}")
-                        st.session_state["all_backtest_results"] = results
-                        st.success("Backtest terminé ✅")
-                    except Exception as batch_exc:
-                        st.error(f"Erreur lors du backtest: {batch_exc}")
-
-                # Résultats
-                if st.session_state.get("all_backtest_results"):
-                    st.markdown("**Résultats Backtest Classique :**")
-                    for symbol, res in st.session_state["all_backtest_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-                    if st.button(
-                        "Lancer Backtest Quantique", key="quantum_backtest_all_btn"
-                    ):
-                        st.info("Backtest quantique en cours sur toutes les paires...")
-                        results = {}
-                        if not isinstance(latest_data, dict):
-                            latest_data = {}
-                        st.write(
-                            "DEBUG - Paire/Data dispo :",
-                            {
-                                k: getattr(v, "shape", str(type(v)))
-                                for k, v in latest_data.items()
-                            },
-                        )
-                        try:
-                            for symbol, data in latest_data.items():
-                                st.write(f"Test {symbol} ...")
-                                try:
-                                    if _has_valid_ohlcv(data):
-                                        import pandas as pd
-
-                                        df = pd.DataFrame(data["ohlcv"])
-
-                                        def strategy_func(df, **params):
-                                            return (
-                                                df["close"]
-                                                > df["close"].rolling(5).mean()
-                                            ).astype(int)
-
-                                        engine = BacktestEngine(initial_capital=10000)
-                                        results[symbol] = engine.run_backtest(
-                                            df, strategy_func
-                                        )
-                                    else:
-                                        st.warning(
-                                            f"Aucune donnée OHLCV exploitable pour {symbol}"
-                                        )
-                                except Exception as pair_exc:
-                                    st.warning(
-                                        f"Erreur quantique sur {symbol}: {pair_exc}"
-                                    )
-                            st.session_state["all_quantum_results"] = results
-                            st.success("Backtest quantique terminé ✅")
-                            st.write("DEBUG - Résultats quantum :", results)
-                        except Exception as batch_exc:
-                            st.error(f"Erreur lors du backtest quantique: {batch_exc}")
-
-                if st.session_state.get("all_quantum_results"):
-                    st.markdown("**Résultats Backtest Quantique :**")
-                    for symbol, res in st.session_state["all_quantum_results"].items():
-                        st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
-
-        # 8. Onglets principaux avec gestion d'erreur
-        try:
-            portfolio_tab, trading_tab, analysis_tab = st.tabs(
-                ["📈 Portfolio", "🎯 Trading", "📊 Analysis"]
-            )
-
-            # Onglet Portfolio
-            with portfolio_tab:
-                await _render_portfolio_tab(bot)
-
-            # Onglet Trading
-            with trading_tab:
-                await _render_trading_tab(bot)
-
-            # Onglet Analysis
-            with analysis_tab:
-                await _render_analysis_tab(bot)
-        except Exception as tab_error:
-            logger.error(f"Tab rendering error: {tab_error}")
-            st.error("Error rendering tabs")
-
-    except Exception as e:
-        logger.error(f"❌ Application error: {str(e)}")
-        st.error(f"❌ Application error: {str(e)}")
-    finally:
-        # Protection finale avec timestamp
-        try:
-            session_manager.protect_session()
-            st.session_state.last_update_time = datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-        except Exception as protect_error:
-            logger.error(f"Session protection error: {protect_error}")
-
-    debug_state("FIN")
-
-
 # Fonctions auxiliaires pour le rendu des onglets
 async def _render_portfolio_tab(bot):
     """Rendu de l'onglet Portfolio"""
@@ -6031,146 +5303,6 @@ async def shutdown():
         logger.error(f"Shutdown error: {e}")
 
 
-def main():
-    """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv("USER", "Patmoorea")
-
-    try:
-        # 1. Initialisation et protection de la session
-        global session_manager
-        session_manager = StreamlitSessionManager()
-        session_manager.protect_session()
-
-        # 2. Log de démarrage
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              STARTING APPLICATION                ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-║ Session: {session_manager.session_id}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # 3. Initialisation de l'état de session
-        _initialize_session_state()
-
-        # 4. Configuration et vérification de la boucle d'événements
-        event_loop = _setup_and_verify_event_loop()
-        if not event_loop:
-            raise RuntimeError("Failed to initialize event loop")
-
-        # 5. Exécution de la coroutine principale
-        event_loop.run_until_complete(main_async())
-
-    except asyncio.CancelledError:
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              GRACEFUL SHUTDOWN                   ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              RUNTIME ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        st.error(f"❌ Application error: {str(e)}")
-
-    finally:
-        _perform_cleanup()
-
-
-def _initialize_session_state():
-    """Initialise l'état de la session avec des valeurs sûres et logging détaillé"""
-    current_time = datetime.now(timezone.utc)
-    current_user = os.getenv("USER", "Patmoorea")
-    session_id = f"{current_user}_{int(current_time.timestamp())}"
-
-    try:
-        # États par défaut avec horodatage
-        default_state = {
-            # États de base
-            "session_id": session_id,
-            "initialization_time": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "last_update_time": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "user": current_user,
-            "initialized": True,
-            # États du bot
-            "bot_running": False,
-            "portfolio": None,
-            "latest_data": {},
-            "indicators": None,
-            "refresh_count": 0,
-            # États de la boucle événementielle
-            "loop": None,
-            "error_count": 0,
-            # États WebSocket
-            "ws_status": "disconnected",
-            "ws_initialized": False,
-            "ws_connection_status": "disconnected",
-            "ws_last_heartbeat": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-            # Protections
-            "keep_alive": True,
-            "prevent_cleanup": True,
-            "force_cleanup": False,
-            "cleanup_allowed": False,
-        }
-
-        # Initialisation des états manquants uniquement
-        for key, value in default_state.items():
-            if key not in st.session_state:
-                st.session_state[key] = value
-
-        # Log de succès
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION STATE INITIALIZED              ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {current_user}
-║ Session ID: {session_id}
-║ Status: Active
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        return True
-
-    except Exception as e:
-        # Log d'erreur
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           SESSION STATE ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-║ User: {current_user}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        return False
-
-
 def _setup_and_verify_event_loop():
     """Configure et vérifie la boucle d'événements avec gestion d'erreur améliorée"""
     current_time = datetime.now(timezone.utc)
@@ -6264,156 +5396,3 @@ def _setup_and_verify_event_loop():
     finally:
         # Mise à jour du timestamp
         st.session_state.last_update_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-
-
-def _perform_cleanup():
-    """Effectue le nettoyage final de l'application"""
-    try:
-        # 1. Protection de la session
-        session_manager.protect_session()
-
-        # 2. Nettoyage de la boucle d'événements
-        if st.session_state.get("loop"):
-            loop = st.session_state.loop
-            if not loop.is_closed():
-                try:
-                    # Nettoyage conditionnel des ressources
-                    if st.session_state.get(
-                        "force_cleanup", False
-                    ) and st.session_state.get("cleanup_allowed", False):
-                        if "bot_instance" in st.session_state:
-                            loop.run_until_complete(
-                                cleanup_resources(st.session_state.bot_instance)
-                            )
-                    # NE PAS FERMER LA BOUCLE ! On ne fait PAS loop.close()
-                except Exception as e:
-                    logger.error(f"Loop cleanup error: {e}")
-                finally:
-                    # On ne détruit pas la boucle ici non plus
-                    pass
-
-        logger.info(
-            """
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: All resources cleaned
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-    finally:
-        # Protection finale absolue
-        session_manager.protect_session()
-
-
-def ensure_event_loop():
-    """Vérifie et assure l'existence d'une boucle d'événements valide"""
-    try:
-        if not st.session_state.get("loop"):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            nest_asyncio.apply()
-            st.session_state.loop = loop
-
-            logger.info("✅ New event loop created and configured")
-            return loop
-
-        return st.session_state.loop
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              EVENT LOOP ERROR                    ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        return None
-
-
-if __name__ == "__main__":
-    try:
-        main()
-
-    except KeyboardInterrupt:
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              KEYBOARD INTERRUPT                  ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Status: Graceful shutdown initiated
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              CRITICAL ERROR                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        sys.exit(1)
-
-    finally:
-        try:
-            # Nettoyage final avec nouvelle boucle si nécessaire
-            if "bot_instance" in st.session_state:
-                try:
-                    # Création d'une nouvelle boucle pour le nettoyage final
-                    cleanup_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(cleanup_loop)
-                    cleanup_loop.run_until_complete(
-                        cleanup_resources(st.session_state.bot_instance)
-                    )
-                    cleanup_loop.close()
-                except Exception as e:
-                    logger.error(f"Final cleanup error: {e}")
-
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              FINAL CLEANUP                       ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Status: All resources cleaned
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-        except Exception as cleanup_error:
-            logger.error(
-                f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Error: {str(cleanup_error)}
-╚═════════════════════════════════════════════════╝
-            """
-            )
