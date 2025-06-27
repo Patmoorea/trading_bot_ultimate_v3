@@ -12,6 +12,7 @@ import gym
 import gymnasium as gym
 from gymnasium import spaces
 
+from .ws import WebSocketManager
 from src.data.realtime.websocket.client import StreamConfig
 from src.core.buffer.circular_buffer import CircularBuffer
 
@@ -37,6 +38,7 @@ from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 
 # (Optionnel) nest_asyncio si tu utilises dans Streamlit ou Jupyter
 import nest_asyncio
+from .utils import WEBSOCKET_CONFIG
 
 
 class TradingBotM4:
@@ -138,7 +140,7 @@ class TradingBotM4:
             "BINANCE": {
                 "API_KEY": os.getenv("BINANCE_API_KEY", ""),
                 "API_SECRET": os.getenv("BINANCE_API_SECRET", ""),
-                "TESTNET": USE_TESTNET,  # AJOUTE CETTE LIGNE !
+                "TESTNET": os.getenv("BINANCE_TESTNET", "False") == "True",
             },
             "TRADING": {
                 "pairs": ["BTC/USDT", "ETH/USDT"],

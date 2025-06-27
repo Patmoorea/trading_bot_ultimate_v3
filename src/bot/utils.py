@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timezone
 import os
+from asyncio import AbstractEventLoop
 
 # Configuration du logging
 logging.basicConfig(
