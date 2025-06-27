@@ -1,43 +1,13 @@
+import logging
+import numpy as np
+import pandas as pd
+import gym
+
+
 class TradingBotM4:
-    """Classe principale du bot de trading v4"""
-
-    async def tick(self):
-        """Effectue une itération de trading (une fois par refresh)"""
-        try:
-            # Récupération des données
-            market_data = await self.get_latest_data()
-            if market_data:
-                for pair in self.config["TRADING"]["pairs"]:
-                    indicators = await self.calculate_indicators(pair)
-                    if indicators:
-                        signals = await self.analyze_signals(market_data, indicators)
-                        # Ici tu peux gérer l’exécution réelle du trade si besoin
-                        # if signals and signals.get('should_trade', False):
-                        #     await self.execute_real_trade(signals)
-                portfolio = await self.get_real_portfolio()
-                if portfolio:
-                    st.session_state.portfolio = portfolio
-                    st.session_state.latest_data = market_data
-                    st.session_state.indicators = indicators
-
-                # Appel périodique de l’analyseur de news
-                now = time.time()
-                news_result = None
-                if now - self.last_news_check > self.news_refresh_interval:
-                    news_result = await self.news_analyzer.analyze_news()
-                    self.last_news_check = now
-                if news_result and news_result.get("status") == "success":
-                    st.session_state["news_score"] = news_result["sentiment_summary"]
-                    st.session_state["important_news"] = news_result["important_news"]
-                    self.logger.info(
-                        f"News sentiment: {news_result['sentiment_summary']}"
-                    )
-                elif news_result is not None:
-                    st.session_state["news_score"] = None
-                    st.session_state["important_news"] = []
-
-        except Exception as e:
-            logger.error(f"Erreur tick: {e}")
+    """
+    Bot principal : analyse de marché, prise de décision, gestion du portefeuille.
+    """
 
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
@@ -240,6 +210,105 @@ class TradingBotM4:
         self.regime_detector = RegimeDetector()
         self.qsvm = QuantumSVM()
         self.client_session = None
+
+    def update_market_data(self, data: pd.DataFrame):
+        """Met à jour les données de marché internes du bot."""
+        if data is not None and not data.empty:
+            self.market_data = data.copy()
+            self.logger.debug("Market data updated.")
+        else:
+            self.logger.warning("No new market data to update.")
+
+    def decide(self, signals: dict) -> str:
+        """
+        Prend une décision (buy/sell/hold) à partir des signaux techniques.
+        Args:
+            signals: dict résultant de l'analyse de signaux (voir signals.py)
+        Returns:
+            str: 'buy', 'sell', or 'hold'
+        """
+        action = signals.get("recommendation", "hold")
+        self.last_signal = signals
+        self.last_action = action
+        self.logger.info(f"Decision taken: {action}")
+        return action
+
+    def execute_trade(self, action: str, price: float, qty: float = 1.0):
+        """
+        Simule ou exécute une opération de trading.
+        Args:
+            action: 'buy', 'sell', or 'hold'
+            price: float, prix d'exécution
+            qty: float, quantité à trader
+        """
+        if action == "buy" and self.position is None:
+            self.position = "long"
+            self.entry_price = price
+            self.logger.info(f"BUY at {price}")
+            self.trade_history.append({"type": "buy", "price": price, "qty": qty})
+        elif action == "sell" and self.position == "long":
+            pnl = (price - self.entry_price) * qty
+            self.pnl += pnl
+            self.logger.info(f"SELL at {price} | PnL: {pnl:.2f}")
+            self.trade_history.append(
+                {"type": "sell", "price": price, "qty": qty, "pnl": pnl}
+            )
+            self.position = None
+            self.entry_price = None
+        else:
+            self.logger.debug("No trade executed.")
+
+    def report(self) -> dict:
+        """Retourne un résumé de la performance du bot."""
+        return {
+            "balance": self.balance,
+            "position": self.position,
+            "pnl": self.pnl,
+            "trade_count": len(self.trade_history),
+            "last_action": self.last_action,
+        }
+
+
+class TradingBotM4:
+    """Classe principale du bot de trading v4"""
+
+    async def tick(self):
+        """Effectue une itération de trading (une fois par refresh)"""
+        try:
+            # Récupération des données
+            market_data = await self.get_latest_data()
+            if market_data:
+                for pair in self.config["TRADING"]["pairs"]:
+                    indicators = await self.calculate_indicators(pair)
+                    if indicators:
+                        signals = await self.analyze_signals(market_data, indicators)
+                        # Ici tu peux gérer l’exécution réelle du trade si besoin
+                        # if signals and signals.get('should_trade', False):
+                        #     await self.execute_real_trade(signals)
+                portfolio = await self.get_real_portfolio()
+                if portfolio:
+                    st.session_state.portfolio = portfolio
+                    st.session_state.latest_data = market_data
+                    st.session_state.indicators = indicators
+
+                # Appel périodique de l’analyseur de news
+                now = time.time()
+                news_result = None
+                if now - self.last_news_check > self.news_refresh_interval:
+                    news_result = await self.news_analyzer.analyze_news()
+                    self.last_news_check = now
+                if news_result and news_result.get("status") == "success":
+                    st.session_state["news_score"] = news_result["sentiment_summary"]
+                    st.session_state["important_news"] = news_result["important_news"]
+                    self.logger.info(
+                        f"News sentiment: {news_result['sentiment_summary']}"
+                    )
+                elif news_result is not None:
+                    st.session_state["news_score"] = None
+                    st.session_state["important_news"] = []
+
+        except Exception as e:
+            logger.error(f"Erreur tick: {e}")
 
     def get_latest_price(self, symbol):
         """
@@ -2804,3 +2873,148 @@ Take Profit: {take_profit}""",
             return "Arbitrage"
         else:
             return "Range/Scalping"
+
+
+class TradingEnv(gym.Env):
+    """Environment d'apprentissage par renforcement pour le trading"""
+
+    def __init__(self, trading_pairs, timeframes):
+        super().__init__()
+        self.trading_pairs = trading_pairs
+        self.timeframes = timeframes
+
+        # Espace d'observation: 42 features par paire/timeframe
+        self.observation_space = spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(len(trading_pairs) * len(timeframes) * 42,),
+            dtype=np.float32,
+        )
+
+        # Espace d'action: allocation par paire entre 0 et 1
+        self.action_space = spaces.Box(
+            low=0, high=1, shape=(len(trading_pairs),), dtype=np.float32
+        )
+
+        # Paramètres d'apprentissage
+        self.reward_scale = 1.0
+        self.position_history = []
+        self.done_penalty = -1.0
+
+        # Initialisation des métriques
+        self.metrics = {
+            "episode_rewards": [],
+            "portfolio_values": [],
+            "positions": [],
+            "actions": [],
+        }
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.state = np.zeros(self.observation_space.shape)
+        self.position_history.clear()
+        return self.state, {}
+
+    def step(self, action):
+        # Validation de l'action
+        if not self.action_space.contains(action):
+            logger.warning(f"Action invalide: {action}")
+            action = np.clip(action, self.action_space.low, self.action_space.high)
+
+        # Calcul de la récompense
+        reward = self._calculate_reward(action)
+
+        # Mise à jour de l'état
+        self._update_state()
+
+        # Vérification des conditions de fin
+        done = self._check_done()
+        truncated = False
+
+        # Mise à jour des métriques
+        self._update_metrics(action, reward)
+
+        return self.state, reward, done, truncated, self._get_info()
+
+    def _calculate_reward(self, action):
+        """Calcule la récompense basée sur le PnL et le risque"""
+        try:
+            # Calcul du PnL
+            pnl = self._calculate_pnl(action)
+
+            # Pénalité pour le risque
+            risk_penalty = self._calculate_risk_penalty(action)
+
+            # Reward final
+            reward = (pnl - risk_penalty) * self.reward_scale
+
+            return float(reward)
+
+        except Exception as e:
+            logger.error(f"Erreur calcul reward: {e}")
+            return None
+
+    def _update_state(self):
+        """Mise à jour de l'état avec les dernières données de marché"""
+        try:
+            # Mise à jour des features techniques
+            technical_features = self._calculate_technical_features()
+
+            # Mise à jour des features de marché
+            market_features = self._calculate_market_features()
+
+            # Combinaison des features
+            self.state = np.concatenate([technical_features, market_features])
+
+        except Exception as e:
+            logger.error(f"Erreur mise à jour state: {e}")
+            return None
+
+    def _check_done(self):
+        """Vérifie les conditions de fin d'épisode"""
+        # Vérification du stop loss
+        if self._check_stop_loss():
+            return True
+
+        # Vérification de la durée max
+        if len(self.position_history) >= self.max_steps:
+            return True
+
+        return False
+
+    def _update_metrics(self, action, reward):
+        """Mise à jour des métriques de l'épisode"""
+        self.metrics["episode_rewards"].append(reward)
+        self.metrics["portfolio_values"].append(self._get_portfolio_value())
+        self.metrics["positions"].append(self.position_history[-1])
+        self.metrics["actions"].append(action)
+
+    def _get_info(self):
+        """Retourne les informations additionnelles"""
+        return {
+            "portfolio_value": self._get_portfolio_value(),
+            "current_positions": (
+                self.position_history[-1] if self.position_history else None
+            ),
+            "metrics": self.metrics,
+        }
+
+    def render(self):
+        """Affichage de l'environnement"""
+        # Affichage des métriques principales
+        print(f"\nPortfolio Value: {self._get_portfolio_value():.2f}")
+        print(f"Total Reward: {sum(self.metrics['episode_rewards']):.2f}")
+        print(f"Number of Trades: {len(self.position_history)}")
+
+
+class MultiStreamManager:
+    def __init__(self, pairs=None, config=None):
+        """Initialise le gestionnaire de flux multiples"""
+        self.pairs = pairs or []
+        self.config = config
+        self.exchange = None  # Initialisé plus tard
+        self.buffer = CircularBuffer()
+
+    def setup_exchange(self, exchange_id="binance"):
+        """Configure l'exchange"""
+        self.exchange = Exchange(exchange_id=exchange_id)

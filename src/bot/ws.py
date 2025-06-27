@@ -1,3 +1,10 @@
+import asyncio
+import logging
+from datetime import datetime, timezone
+import websockets
+import json
+
+
 class WebSocketManager:
     def __init__(self, bot):
         self.bot = bot
