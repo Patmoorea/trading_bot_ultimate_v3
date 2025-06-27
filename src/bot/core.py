@@ -3018,3 +3018,415 @@ class MultiStreamManager:
     def setup_exchange(self, exchange_id="binance"):
         """Configure l'exchange"""
         self.exchange = Exchange(exchange_id=exchange_id)
+
+
+@st.cache_resource(ttl=None)
+def get_bot():
+    """Create or get the bot instance with lifecycle protection"""
+    if "bot_instance" in st.session_state and st.session_state.bot_instance is not None:
+        return st.session_state.bot_instance
+
+    try:
+        session_manager.protect_session()  # Protection explicite
+        logger.info("Creating new bot instance...")
+        bot = TradingBotM4()
+        st.session_state.bot_instance = bot
+        return bot
+    except Exception as e:
+        logger.error(f"Bot creation error: {e}")
+        return None
+
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║             CREATING BOT INSTANCE                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Création du bot
+        bot = TradingBotM4()
+
+        # Configuration de la boucle d'événements
+        if not st.session_state.get("loop"):
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                nest_asyncio.apply()
+                st.session_state.loop = loop
+                logger.info("✅ Event loop configured successfully")
+            except Exception as loop_error:
+                logger.error(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║             EVENT LOOP ERROR                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(loop_error)}
+╚═════════════════════════════════════════════════╝
+                """
+                )
+                raise
+
+        # Initialisation du bot
+        async def initialize_bot():
+            try:
+                if not await bot.start():
+                    raise Exception("Bot initialization failed")
+                bot._initialized = True
+                logger.info("✅ Bot initialization successful")
+                return bot
+            except Exception as init_error:
+                logger.error(
+                    f"""
+╔═════════════════════════════════════════════════╗
+║             INITIALIZATION ERROR                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(init_error)}
+╚═════════════════════════════════════════════════╝
+                """
+                )
+                raise
+
+        try:
+            # Initialisation avec gestion des erreurs de boucle
+            try:
+                bot = st.session_state.loop.run_until_complete(initialize_bot())
+            except RuntimeError as e:
+                if "This event loop is already running" in str(e):
+                    logger.warning(
+                        "⚠️ Event loop already running, applying nest_asyncio"
+                    )
+                    nest_asyncio.apply()
+                    bot = st.session_state.loop.run_until_complete(initialize_bot())
+                else:
+                    raise
+
+            if not bot or not getattr(bot, "_initialized", False):
+                raise Exception("Bot initialization incomplete")
+
+            # Sauvegarde dans la session state
+            st.session_state.bot_instance = bot
+
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║             BOT INSTANCE READY                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Status: {bot.ws_connection.get('status', 'initializing')}
+║ Trading Mode: {getattr(bot, 'trading_mode', 'production')}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return bot
+
+        except Exception as run_error:
+            logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║             RUNTIME ERROR                        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(run_error)}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+            # Nettoyage sécurisé
+            if hasattr(bot, "_cleanup"):
+                try:
+                    st.session_state.loop.run_until_complete(bot._cleanup())
+                except:
+                    pass
+            raise
+
+    except Exception as e:
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║             BOT CREATION ERROR                   ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Nettoyage de la session
+        if "bot_instance" in st.session_state:
+            del st.session_state.bot_instance
+        if "loop" in st.session_state:
+            del st.session_state.loop
+
+        return None
+
+
+async def update_trading_data(bot):
+    """Mise à jour des données de trading"""
+    try:
+
+        # Récupération des données BTC/USDC
+        logger.info("📊 Récupération données pour BTC/USDC")
+        btc_data = await fetch_market_data(bot, "BTCUSDT")
+        if btc_data:
+            bot.latest_data["BTCUSDT"] = btc_data
+
+        # Récupération des données ETH/USDC
+        logger.info("📊 Récupération données pour ETH/USDC")
+        eth_data = await fetch_market_data(bot, "ETHUSDT")
+        if eth_data:
+            bot.latest_data["ETHUSDT"] = eth_data
+
+    except Exception as e:
+        logger.error(f"❌ Erreur mise à jour données: {e}")
+
+
+async def fetch_market_data(bot, symbol):
+    """Récupère les données de marché de manière asynchrone"""
+    try:
+        # Configuration du timeframe par défaut si non défini
+        if not hasattr(bot.config, "timeframe"):
+            bot.config["timeframe"] = "1m"  # timeframe par défaut
+
+        # Récupération des données via l'API Binance
+        klines = await bot.binance_ws.get_klines(
+            symbol=symbol, interval=bot.config["timeframe"]
+        )
+
+        # Conversion en format utilisable
+        data = []
+        for k in klines:
+            candle = {
+                "timestamp": k[0],
+                "open": float(k[1]),
+                "high": float(k[2]),
+                "low": float(k[3]),
+                "close": float(k[4]),
+                "volume": float(k[5]),
+            }
+            data.append(candle)
+
+        return data
+
+    except Exception as e:
+        logger.error(f"❌ Erreur récupération données {symbol}: {e}")
+        return None
+
+
+async def update_market_data(bot):
+    """Met à jour les données de marché"""
+    try:
+        data_received = False
+
+        # Récupération BTC/USDC
+        logger.info("📊 Récupération données pour BTC/USDC")
+        btc_data = await fetch_market_data(bot, "BTCUSDT")
+        if btc_data:
+            bot.latest_data["BTCUSDT"] = btc_data
+            data_received = True
+
+        # Récupération ETH/USDC
+        logger.info("📊 Récupération données pour ETH/USDC")
+        eth_data = await fetch_market_data(bot, "ETHUSDT")
+        if eth_data:
+            bot.latest_data["ETHUSDT"] = eth_data
+            data_received = True
+
+        if not data_received:
+            logger.warning("⚠️ Aucune donnée reçue")
+
+        return data_received
+
+    except Exception as e:
+        logger.error(f"❌ Erreur mise à jour données: {e}")
+        return False
+
+
+async def process_market_data(bot, symbol):
+    """Traite les données de marché pour un symbole"""
+    try:
+        data = bot.latest_data[symbol]
+        if not data:
+            return
+
+        # Calcul des indicateurs
+        if not hasattr(bot, "indicators"):
+            bot.indicators = {}
+        if symbol not in bot.indicators:
+            bot.indicators[symbol] = {}
+
+        # Mise à jour des indicateurs
+        await update_indicators(bot, symbol, data)
+
+        # Vérification des signaux
+        await check_signals(bot, symbol)
+
+    except Exception as e:
+        logger.error(f"❌ Erreur traitement données {symbol}: {e}")
+
+
+async def run_trading_bot():
+    """Point d'entrée synchrone pour le bot de trading (statistiques uniquement, pas de bouton Start)"""
+    try:
+        # Stats en temps réel
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric(
+                "Portfolio Value", f"{portfolio_value:.2f} USDC", f"{pnl:+.2f} USDC"
+            )
+        with col2:
+            st.metric("Active Positions", "2", "Open")
+        with col3:
+            st.metric("24h P&L", "+123 USDC", "+1.23%")
+
+        # SUPPRESSION DU BOUTON Start Trading Bot !
+        # Toute la logique de démarrage du bot doit être pilotée via la sidebar (main_async).
+
+        # Tu peux afficher ici d'autres informations, ou l'état du bot, mais SANS bouton de démarrage.
+        if st.session_state.get("bot_running"):
+            st.success("🚀 Le trading bot est en cours d'exécution.")
+        else:
+            st.info("Le trading bot est arrêté. Utilise la sidebar pour le démarrer.")
+
+    except Exception as e:
+        logger.error(f"Trading bot error: {e}")
+        st.error(f"❌ Trading bot error: {str(e)}")
+
+
+class TradingEnv(gym.Env):
+    """Environment d'apprentissage par renforcement pour le trading"""
+
+    def __init__(self, trading_pairs, timeframes):
+        super().__init__()
+        self.trading_pairs = trading_pairs
+        self.timeframes = timeframes
+
+        # Espace d'observation: 42 features par paire/timeframe
+        self.observation_space = spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(len(trading_pairs) * len(timeframes) * 42,),
+            dtype=np.float32,
+        )
+
+        # Espace d'action: allocation par paire entre 0 et 1
+        self.action_space = spaces.Box(
+            low=0, high=1, shape=(len(trading_pairs),), dtype=np.float32
+        )
+
+        # Paramètres d'apprentissage
+        self.reward_scale = 1.0
+        self.position_history = []
+        self.done_penalty = -1.0
+
+        # Initialisation des métriques
+        self.metrics = {
+            "episode_rewards": [],
+            "portfolio_values": [],
+            "positions": [],
+            "actions": [],
+        }
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.state = np.zeros(self.observation_space.shape)
+        self.position_history.clear()
+        return self.state, {}
+
+    def step(self, action):
+        # Validation de l'action
+        if not self.action_space.contains(action):
+            logger.warning(f"Action invalide: {action}")
+            action = np.clip(action, self.action_space.low, self.action_space.high)
+
+        # Calcul de la récompense
+        reward = self._calculate_reward(action)
+
+        # Mise à jour de l'état
+        self._update_state()
+
+        # Vérification des conditions de fin
+        done = self._check_done()
+        truncated = False
+
+        # Mise à jour des métriques
+        self._update_metrics(action, reward)
+
+        return self.state, reward, done, truncated, self._get_info()
+
+    def _calculate_reward(self, action):
+        """Calcule la récompense basée sur le PnL et le risque"""
+        try:
+            # Calcul du PnL
+            pnl = self._calculate_pnl(action)
+
+            # Pénalité pour le risque
+            risk_penalty = self._calculate_risk_penalty(action)
+
+            # Reward final
+            reward = (pnl - risk_penalty) * self.reward_scale
+
+            return float(reward)
+
+        except Exception as e:
+            logger.error(f"Erreur calcul reward: {e}")
+            return None
+
+    def _update_state(self):
+        """Mise à jour de l'état avec les dernières données de marché"""
+        try:
+            # Mise à jour des features techniques
+            technical_features = self._calculate_technical_features()
+
+            # Mise à jour des features de marché
+            market_features = self._calculate_market_features()
+
+            # Combinaison des features
+            self.state = np.concatenate([technical_features, market_features])
+
+        except Exception as e:
+            logger.error(f"Erreur mise à jour state: {e}")
+            return None
+
+    def _check_done(self):
+        """Vérifie les conditions de fin d'épisode"""
+        # Vérification du stop loss
+        if self._check_stop_loss():
+            return True
+
+        # Vérification de la durée max
+        if len(self.position_history) >= self.max_steps:
+            return True
+
+        return False
+
+    def _update_metrics(self, action, reward):
+        """Mise à jour des métriques de l'épisode"""
+        self.metrics["episode_rewards"].append(reward)
+        self.metrics["portfolio_values"].append(self._get_portfolio_value())
+        self.metrics["positions"].append(self.position_history[-1])
+        self.metrics["actions"].append(action)
+
+    def _get_info(self):
+        """Retourne les informations additionnelles"""
+        return {
+            "portfolio_value": self._get_portfolio_value(),
+            "current_positions": (
+                self.position_history[-1] if self.position_history else None
+            ),
+            "metrics": self.metrics,
+        }
+
+    def render(self):
+        """Affichage de l'environnement"""
+        # Affichage des métriques principales
+        print(f"\nPortfolio Value: {self._get_portfolio_value():.2f}")
+        print(f"Total Reward: {sum(self.metrics['episode_rewards']):.2f}")
+        print(f"Number of Trades: {len(self.position_history)}")
