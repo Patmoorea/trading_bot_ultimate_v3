@@ -40,15 +40,48 @@ import nest_asyncio
 
 
 class TradingBotM4:
-    """
-    Bot principal : analyse de marché, prise de décision, gestion du portefeuille.
-    """
+    """Classe principale du bot de trading v4"""
+
+    async def tick(self):
+        """Effectue une itération de trading (une fois par refresh)"""
+        try:
+            # Récupération des données
+            market_data = await self.get_latest_data()
+            if market_data:
+                for pair in self.config["TRADING"]["pairs"]:
+                    indicators = await self.calculate_indicators(pair)
+                    if indicators:
+                        signals = await self.analyze_signals(market_data, indicators)
+                        # Ici tu peux gérer l’exécution réelle du trade si besoin
+                        # if signals and signals.get('should_trade', False):
+                        #     await self.execute_real_trade(signals)
+                portfolio = await self.get_real_portfolio()
+                if portfolio:
+                    st.session_state.portfolio = portfolio
+                    st.session_state.latest_data = market_data
+                    st.session_state.indicators = indicators
+
+                # Appel périodique de l’analyseur de news
+                now = time.time()
+                news_result = None
+                if now - self.last_news_check > self.news_refresh_interval:
+                    news_result = await self.news_analyzer.analyze_news()
+                    self.last_news_check = now
+                if news_result and news_result.get("status") == "success":
+                    st.session_state["news_score"] = news_result["sentiment_summary"]
+                    st.session_state["important_news"] = news_result["important_news"]
+                    self.logger.info(
+                        f"News sentiment: {news_result['sentiment_summary']}"
+                    )
+                elif news_result is not None:
+                    st.session_state["news_score"] = None
+                    st.session_state["important_news"] = []
+
+        except Exception as e:
+            logger.error(f"Erreur tick: {e}")
 
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
-        print("DEBUG INIT TradingBotM4 !")
-        self.logger = logging.getLogger(__name__)
-        self.ws_manager = None
 
         # Flags de contrôle
         self._ws_initializing = False
@@ -249,105 +282,6 @@ class TradingBotM4:
         self.qsvm = QuantumSVM()
         self.client_session = None
 
-    def update_market_data(self, data: pd.DataFrame):
-        """Met à jour les données de marché internes du bot."""
-        if data is not None and not data.empty:
-            self.market_data = data.copy()
-            self.logger.debug("Market data updated.")
-        else:
-            self.logger.warning("No new market data to update.")
-
-    def decide(self, signals: dict) -> str:
-        """
-        Prend une décision (buy/sell/hold) à partir des signaux techniques.
-        Args:
-            signals: dict résultant de l'analyse de signaux (voir signals.py)
-        Returns:
-            str: 'buy', 'sell', or 'hold'
-        """
-        action = signals.get("recommendation", "hold")
-        self.last_signal = signals
-        self.last_action = action
-        self.logger.info(f"Decision taken: {action}")
-        return action
-
-    def execute_trade(self, action: str, price: float, qty: float = 1.0):
-        """
-        Simule ou exécute une opération de trading.
-        Args:
-            action: 'buy', 'sell', or 'hold'
-            price: float, prix d'exécution
-            qty: float, quantité à trader
-        """
-        if action == "buy" and self.position is None:
-            self.position = "long"
-            self.entry_price = price
-            self.logger.info(f"BUY at {price}")
-            self.trade_history.append({"type": "buy", "price": price, "qty": qty})
-        elif action == "sell" and self.position == "long":
-            pnl = (price - self.entry_price) * qty
-            self.pnl += pnl
-            self.logger.info(f"SELL at {price} | PnL: {pnl:.2f}")
-            self.trade_history.append(
-                {"type": "sell", "price": price, "qty": qty, "pnl": pnl}
-            )
-            self.position = None
-            self.entry_price = None
-        else:
-            self.logger.debug("No trade executed.")
-
-    def report(self) -> dict:
-        """Retourne un résumé de la performance du bot."""
-        return {
-            "balance": self.balance,
-            "position": self.position,
-            "pnl": self.pnl,
-            "trade_count": len(self.trade_history),
-            "last_action": self.last_action,
-        }
-
-
-class TradingBotM4:
-    """Classe principale du bot de trading v4"""
-
-    async def tick(self):
-        """Effectue une itération de trading (une fois par refresh)"""
-        try:
-            # Récupération des données
-            market_data = await self.get_latest_data()
-            if market_data:
-                for pair in self.config["TRADING"]["pairs"]:
-                    indicators = await self.calculate_indicators(pair)
-                    if indicators:
-                        signals = await self.analyze_signals(market_data, indicators)
-                        # Ici tu peux gérer l’exécution réelle du trade si besoin
-                        # if signals and signals.get('should_trade', False):
-                        #     await self.execute_real_trade(signals)
-                portfolio = await self.get_real_portfolio()
-                if portfolio:
-                    st.session_state.portfolio = portfolio
-                    st.session_state.latest_data = market_data
-                    st.session_state.indicators = indicators
-
-                # Appel périodique de l’analyseur de news
-                now = time.time()
-                news_result = None
-                if now - self.last_news_check > self.news_refresh_interval:
-                    news_result = await self.news_analyzer.analyze_news()
-                    self.last_news_check = now
-                if news_result and news_result.get("status") == "success":
-                    st.session_state["news_score"] = news_result["sentiment_summary"]
-                    st.session_state["important_news"] = news_result["important_news"]
-                    self.logger.info(
-                        f"News sentiment: {news_result['sentiment_summary']}"
-                    )
-                elif news_result is not None:
-                    st.session_state["news_score"] = None
-                    st.session_state["important_news"] = []
-
-        except Exception as e:
-            self.logger.error(f"Erreur tick: {e}")
-
     def get_latest_price(self, symbol):
         """
         Récupère le dernier prix pour un symbole donné via le spot_client.
@@ -384,6 +318,129 @@ class TradingBotM4:
             await self._cleanup()
             return False
 
+    def _generate_recommendation(self, trend, momentum, volatility, volume):
+        try:
+            # Compteurs pour les signaux buy/sell (ancienne logique)
+            buy_signals = 0
+            sell_signals = 0
+
+            # Système de points (nouvelle logique)
+            points = 0
+
+            # --- Analyse de la tendance ---
+            if trend["primary_trend"] == "bullish":
+                buy_signals += 1
+                points += 2
+            elif trend["primary_trend"] == "bearish":
+                sell_signals += 1
+            if trend.get("trend_strength", 0) > 25:
+                points += 1
+            if trend.get("trend_direction", 0) == 1:
+                points += 1
+
+            # --- Momentum ---
+            if momentum.get("rsi_signal") == "oversold":
+                buy_signals += 1
+                points += 2
+            elif momentum.get("rsi_signal") == "overbought":
+                sell_signals += 1
+            if momentum.get("stoch_signal") == "buy":
+                points += 1
+            if momentum.get("stoch_signal") == "buy":
+                buy_signals += 1
+            if momentum.get("stoch_signal") == "sell":
+                sell_signals += 1
+            if momentum.get("ultimate_signal") == "buy":
+                points += 1
+
+            # --- Volatilité ---
+            if volatility.get("bb_signal") == "oversold":
+                points += 1
+                buy_signals += 1
+            elif volatility.get("bb_signal") == "overbought":
+                sell_signals += 1
+            if volatility.get("kc_signal") == "breakout":
+                points += 1
+
+            # --- Volume ---
+            if volume.get("mfi_signal") == "buy":
+                buy_signals += 1
+                points += 1
+            elif volume.get("mfi_signal") == "sell":
+                sell_signals += 1
+            if volume.get("cmf_trend") == "positive":
+                points += 1
+                buy_signals += 1
+            if volume.get("obv_trend") == "up":
+                points += 1
+                buy_signals += 1
+            elif volume.get("obv_trend") == "down":
+                sell_signals += 1
+
+            # --- Génération de la recommandation finale ---
+            # Par points (plus fin)
+            if points >= 8:
+                action = "strong_buy"
+                confidence = points / 12
+            elif points >= 6:
+                action = "buy"
+                confidence = points / 12
+            elif points <= 2:
+                action = "strong_sell"
+                confidence = 1 - (points / 12)
+            elif points <= 4:
+                action = "sell"
+                confidence = 1 - (points / 12)
+            else:
+                action = "neutral"
+                confidence = 0.5
+
+            # Par signaux purs (pour compatibilité)
+            strength = abs(buy_signals - sell_signals)
+            signals = {"buy": buy_signals, "sell": sell_signals}
+
+            return {
+                "action": action,
+                "confidence": confidence,
+                "strength": strength,
+                "signals": signals,
+            }
+
+        except Exception as e:
+            logger.error(f"❌ Erreur génération recommandation: {e}")
+            return {
+                "action": "error",
+                "confidence": 0,
+                "strength": 0,
+                "signals": {"buy": 0, "sell": 0},
+                "error": str(e),
+            }
+
+    def _generate_analysis_report(self, indicators_analysis, regime):
+        try:
+            report = f"""
+╔═════════════════════════════════════════════════╗
+║           RAPPORT D'ANALYSE DE MARCHÉ           ║
+╠═════════════════════════════════════════════════╣    
+║ Régime: {regime}                               ║
+╚═════════════════════════════════════════════════╝
+
+    📊 Analyse par Timeframe/Paire :
+    """
+            for timeframe, pairs_dict in indicators_analysis.items():
+                for pair, analysis in pairs_dict.items():
+                    report += f"""
+    🕒 {timeframe} | {pair} :
+    ├─ 📈 Tendance: {analysis.get('trend', {}).get('trend_strength', 'N/A')}
+    ├─ 📊 Volatilité: {analysis.get('volatility', {}).get('current_volatility', 'N/A')}
+    ├─ 📉 Volume: {analysis.get('volume', {}).get('volume_profile', {}).get('strength', 'N/A')}
+    └─ 🎯 Signal dominant: {analysis.get('dominant_signal', 'N/A')}
+    """
+            return report
+        except Exception as e:
+            logger.error(f"❌ Erreur génération rapport: {e}")
+            return f"Erreur lors de la génération du rapport : {e}"
+
     async def _initialize_models(self):
         """Initialise les modèles d'IA"""
         try:
@@ -418,11 +475,11 @@ class TradingBotM4:
                         model.load_state_dict(torch.load(model_path))
                         logger.info(f"Modèle {model_name} chargé avec succès")
 
-            self.logger.info("✅ Modèles initialisés avec succès")
+            logger.info("✅ Modèles initialisés avec succès")
             return True
 
         except Exception as e:
-            self.logger.error(f"❌ Erreur initialisation modèles: {e}")
+            logger.error(f"❌ Erreur initialisation modèles: {e}")
             return False
 
     async def _cleanup(self):
@@ -436,7 +493,7 @@ class TradingBotM4:
                 try:
                     self.buffer = None  # Au lieu de clear()
                 except Exception as buffer_error:
-                    self.logger.error(f"❌ Buffer cleanup error: {buffer_error}")
+                    logger.error(f"❌ Buffer cleanup error: {buffer_error}")
 
             # Nettoyage des données
             if hasattr(self, "latest_data"):
@@ -480,7 +537,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            self.logger.error(f"❌ Bot start error: {e}")
+            logger.error(f"❌ Bot start error: {e}")
             await self._cleanup()
             return False
 
@@ -492,17 +549,17 @@ class TradingBotM4:
                     self.ws_connection["reconnect_count"]
                     < self.ws_connection["max_reconnects"]
                 ):
-                    self.logger.info("Attempting WebSocket reconnection...")
+                    logger.info("Attempting WebSocket reconnection...")
                     if await initialize_websocket(self):
                         self.ws_connection["reconnect_count"] = 0
                         return True
                     self.ws_connection["reconnect_count"] += 1
                 else:
-                    self.logger.error("Max WebSocket reconnection attempts reached")
+                    logger.error("Max WebSocket reconnection attempts reached")
                     return False
             return True
         except Exception as e:
-            self.logger.error(f"WebSocket check error: {e}")
+            logger.error(f"WebSocket check error: {e}")
             return False
 
     async def initialize(self):
@@ -519,7 +576,7 @@ class TradingBotM4:
             if not getattr(self, "initialized", False):
                 success = await self.start()
                 if not success:
-                    self.logger.error(
+                    logger.error(
                         "❌ Impossible d'initialiser le WebSocket dans initialize()"
                     )
                     return False
@@ -528,7 +585,7 @@ class TradingBotM4:
             portfolio = await self.get_real_portfolio()
             if portfolio:
                 st.session_state.portfolio = portfolio
-                self.logger.info("✅ Initial portfolio data loaded")
+                logger.info("✅ Initial portfolio data loaded")
 
             # Mise à jour du statut
             self.ws_connection.update(
@@ -538,7 +595,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            self.logger.error(f"❌ Initialization error: {e}")
+            logger.error(f"❌ Initialization error: {e}")
             return False
 
     async def _setup_components(self):
@@ -569,7 +626,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            self.logger.error(f"Setup components error: {e}")
+            logger.error(f"Setup components error: {e}")
             return False
 
     async def _initialize_analyzers(self):
@@ -668,13 +725,13 @@ class TradingBotM4:
                 },
             }
 
-            self.logger.info(
+            logger.info(
                 f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories"
             )
             return indicators
 
         except Exception as e:
-            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            logger.error(f"❌ Erreur calcul indicateurs: {e}")
             return None
 
     async def _handle_stream(self, stream):
@@ -685,7 +742,7 @@ class TradingBotM4:
                     msg = await tscm.recv()
                     await self._process_stream_message(msg)
         except Exception as e:
-            self.logger.error(f"Erreur stream: {e}")
+            logger.error(f"Erreur stream: {e}")
             return None
 
     async def _process_stream_message(self, msg):
@@ -703,7 +760,7 @@ class TradingBotM4:
                 await self._handle_kline(msg)
 
         except Exception as e:
-            self.logger.error(f"Erreur traitement message: {e}")
+            logger.error(f"Erreur traitement message: {e}")
             return None
 
     async def _handle_trade(self, msg):
@@ -727,7 +784,7 @@ class TradingBotM4:
             return trade_data
 
         except Exception as e:
-            self.logger.error(f"Erreur traitement trade: {e}")
+            logger.error(f"Erreur traitement trade: {e}")
             return None
 
     async def _handle_orderbook(self, msg):
@@ -749,7 +806,7 @@ class TradingBotM4:
             return orderbook_data
 
         except Exception as e:
-            self.logger.error(f"Erreur traitement orderbook: {e}")
+            logger.error(f"Erreur traitement orderbook: {e}")
             return None
 
     async def _handle_kline(self, msg):
@@ -780,7 +837,7 @@ class TradingBotM4:
             return kline_data
 
         except Exception as e:
-            self.logger.error(f"Erreur traitement kline: {e}")
+            logger.error(f"Erreur traitement kline: {e}")
             return None
 
     def decision_model(self, features, timestamp=None):
@@ -789,7 +846,7 @@ class TradingBotM4:
             value = self.models["ppo_gtrxl"].get_value(features)
             return policy, value
         except Exception as e:
-            self.logger.error(f"[{timestamp}] Erreur decision_model: {e}")
+            logger.error(f"[{timestamp}] Erreur decision_model: {e}")
             return None, None
 
     def _add_risk_management(self, decision, timestamp=None):
@@ -817,7 +874,7 @@ class TradingBotM4:
             return decision
 
         except Exception as e:
-            self.logger.error(f"[{timestamp}] Erreur risk management: {e}")
+            logger.error(f"[{timestamp}] Erreur risk management: {e}")
             return decision
 
     async def get_latest_data(self):
@@ -826,19 +883,19 @@ class TradingBotM4:
 
             # Vérification de la connexion WebSocket
             if not hasattr(self, "binance_ws") or self.binance_ws is None:
-                self.logger.warning(
+                logger.warning(
                     "🔄 WebSocket non initialisé, tentative d'initialisation..."
                 )
                 if not self.initialized:
                     await self.initialize()
                 if not hasattr(self, "binance_ws") or self.binance_ws is None:
-                    self.logger.error(
+                    logger.error(
                         "Impossible d'initialiser le WebSocket après tentative."
                     )
                     return None
 
             for pair in self.config["TRADING"]["pairs"]:
-                self.logger.info(f"📊 Récupération données pour {pair}")
+                logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
 
                 try:
@@ -918,9 +975,7 @@ class TradingBotM4:
                                     if len(k) >= 6
                                 ]
                         except Exception as hist_e:
-                            self.logger.warning(
-                                f"Erreur chargement OHLCV {pair}: {hist_e}"
-                            )
+                            logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
 
                         return result
 
@@ -930,16 +985,16 @@ class TradingBotM4:
                     # Traitement des résultats
                     if result["ticker"]:
                         data[pair]["price"] = float(result["ticker"]["price"])
-                        self.logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
+                        logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
                     if result["orderbook"]:
                         data[pair]["orderbook"] = {
                             "bids": result["orderbook"]["bids"][:5],
                             "asks": result["orderbook"]["asks"][:5],
                         }
-                        self.logger.info(f"📚 Orderbook mis à jour pour {pair}")
+                        logger.info(f"📚 Orderbook mis à jour pour {pair}")
                     if result["balance"]:
                         data[pair]["account"] = result["balance"]
-                        self.logger.info(
+                        logger.info(
                             f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC"
                         )
                     if result["ticker_24h"]:
@@ -951,27 +1006,23 @@ class TradingBotM4:
                                 ),
                             }
                         )
-                        self.logger.info(
-                            f"📈 Volume 24h {pair}: {data[pair]['volume']}"
-                        )
+                        logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
                     # AJOUT FORTEMENT RECOMMANDÉ : Toujours une liste de dicts, même vide
                     data[pair]["ohlcv"] = result["ohlcv"] if result["ohlcv"] else []
-                    self.logger.info(
+                    logger.info(
                         f"📊 OHLCV récupéré ({len(data[pair]['ohlcv'])} bougies) pour {pair}"
                     )
 
                 except asyncio.TimeoutError:
-                    self.logger.warning(f"⏱️ Timeout pour {pair}")
+                    logger.warning(f"⏱️ Timeout pour {pair}")
                     continue
                 except Exception as inner_e:
-                    self.logger.error(
-                        f"❌ Erreur récupération données {pair}: {inner_e}"
-                    )
+                    logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
                     continue
 
             # Mise en cache des données si disponibles
             if data and any(data.values()):
-                self.logger.info("✅ Données reçues, mise à jour du buffer")
+                logger.info("✅ Données reçues, mise à jour du buffer")
                 for symbol, symbol_data in data.items():
                     if symbol_data:
                         self.buffer.update_data(symbol, symbol_data)
@@ -982,7 +1033,7 @@ class TradingBotM4:
                 return None
 
         except Exception as e:
-            self.logger.error(f"❌ Erreur critique get_latest_data: {e}")
+            logger.error(f"❌ Erreur critique get_latest_data: {e}")
             return None
 
     async def calculate_indicators(self, symbol: str) -> dict:
@@ -990,7 +1041,7 @@ class TradingBotM4:
         try:
             data = self.latest_data.get(symbol)
             if not data:
-                self.logger.error(f"❌ Pas de données pour {symbol}")
+                logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
 
             # Calcul des indicateurs de base
@@ -1002,18 +1053,262 @@ class TradingBotM4:
                 "timestamp": data["timestamp"],
             }
             # Log des données reçues
-            self.logger.info(
+            logger.info(
                 f"Calcul indicateurs pour {symbol}: {data}"
             )  # Log des données reçues
-            self.logger.info(f"Calcul indicateurs pour {symbol}: {data}")
+            logger.info(f"Calcul indicateurs pour {symbol}: {data}")
 
             # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
 
         except Exception as e:
-            self.logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
+            logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
+
+    async def study_market(self, period="7d"):
+        logger = logging.getLogger(__name__)
+        logger.info("🔊 Étude du marché en cours...")
+        if not hasattr(self, "advanced_indicators") or self.advanced_indicators is None:
+            raise RuntimeError(
+                "advanced_indicators non initialisé : appelle _initialize_analyzers() d'abord"
+            )
+        try:
+            # -- Bloc critique avec logs détaillés et traceback sur erreur --
+            try:
+                logger.info("➡️ [study_market] Avant get_historical_data")
+                if not getattr(self.exchange, "_initialized", False):
+                    logger.info("[study_market] Initialisation exchange...")
+                    await self.exchange.initialize()
+                logger.info(
+                    "[study_market] Après initialize, avant get_historical_data"
+                )
+                historical_data = await self.exchange.get_historical_data(
+                    self.config["TRADING"]["pairs"],
+                    self.config["TRADING"]["timeframes"],
+                    period,
+                )
+                logger.info("⬅️ [study_market] Après get_historical_data")
+            except Exception as e:
+                logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
+                import traceback
+
+                logger.error(traceback.format_exc())
+                raise
+
+            if not historical_data or not isinstance(historical_data, dict):
+                logger.error(
+                    "❌ Données historiques non disponibles ou mauvais format (None ou pas dict)"
+                )
+                raise ValueError(
+                    "Données historiques non disponibles ou format inattendu"
+                )
+
+            indicators_analysis = {}
+            # Analyse sécurisée pour chaque timeframe/paire
+            for timeframe in self.config["TRADING"]["timeframes"]:
+                tf_data = historical_data.get(timeframe, {})
+                indicators_analysis[timeframe] = {}
+                for pair in self.config["TRADING"]["pairs"]:
+                    df = tf_data.get(pair)
+                    if not isinstance(df, pd.DataFrame) or df.empty:
+                        logger.warning(
+                            f"Données OHLCV absentes ou vides pour {pair} {timeframe}, skip analyse."
+                        )
+                        indicators_analysis[timeframe][pair] = {
+                            "trend": {"trend_strength": 0},
+                            "volatility": {"current_volatility": 0},
+                            "volume": {"volume_profile": {"strength": "N/A"}},
+                            "dominant_signal": "Aucune donnée",
+                        }
+                        continue
+                    try:
+                        result = self.advanced_indicators.analyze_timeframe(
+                            df, timeframe
+                        )
+                        indicators_analysis[timeframe][pair] = (
+                            result
+                            if result
+                            else {
+                                "trend": {"trend_strength": 0},
+                                "volatility": {"current_volatility": 0},
+                                "volume": {"volume_profile": {"strength": "N/A"}},
+                                "dominant_signal": "Analyse échouée",
+                            }
+                        )
+                    except Exception as tf_error:
+                        logger.error(f"Erreur analyse {pair} {timeframe}: {tf_error}")
+                        indicators_analysis[timeframe][pair] = {
+                            "trend": {"trend_strength": 0},
+                            "volatility": {"current_volatility": 0},
+                            "volume": {"volume_profile": {"strength": "N/A"}},
+                            "dominant_signal": "Erreur",
+                        }
+
+            # Sécurise la conversion float des volumes
+            for timeframe, tf_pairs in indicators_analysis.items():
+                for pair, tf_analysis in tf_pairs.items():
+                    if (
+                        "volume" in tf_analysis
+                        and "volume_profile" in tf_analysis["volume"]
+                    ):
+                        strength = tf_analysis["volume"]["volume_profile"].get(
+                            "strength", 0
+                        )
+                        tf_analysis["volume"]["volume_profile"]["strength"] = (
+                            safe_float(strength, 0.0)
+                        )
+
+            # Pour le calcul du régime, on peut agréger (par exemple sur le premier pair)
+            regime = self.regime_detector.predict(
+                {
+                    tf: next(iter(tf_pairs.values()), {})
+                    for tf, tf_pairs in indicators_analysis.items()
+                }
+            )
+            logger.info(f"🔈 Régime de marché détecté: {regime}")
+
+            try:
+                analysis_report = self._generate_analysis_report(
+                    indicators_analysis,
+                    regime,
+                )
+                await self.telegram.send_message(analysis_report)
+            except Exception as report_error:
+                logger.error(f"Erreur génération rapport: {report_error}")
+
+            try:
+                self.dashboard.update_market_analysis(
+                    historical_data=historical_data,
+                    indicators=indicators_analysis,
+                    regime=regime,
+                )
+            except Exception as dash_error:
+                logger.error(f"Erreur mise à jour dashboard: {dash_error}")
+
+            return regime, historical_data, indicators_analysis
+
+        except Exception as e:
+            logger.error(f"Erreur study_market: {e}")
+            raise
+
+    async def analyze_signals(self, market_data, indicators=None):
+        """Analyse des signaux de trading basée sur tous les indicateurs"""
+        try:
+            # Si les indicateurs ne sont pas fournis, on les calcule
+            if indicators is None:
+                indicators = self.add_indicators(market_data)
+
+            if not indicators:
+                return None
+
+            # Analyse des tendances
+            trend_analysis = {
+                "primary_trend": (
+                    "bullish"
+                    if indicators["trend"]["ema_fast"].iloc[-1]
+                    > indicators["trend"]["sma_slow"].iloc[-1]
+                    else "bearish"
+                ),
+                "trend_strength": indicators["trend"]["adx"].iloc[-1],
+                "trend_direction": (
+                    1 if indicators["trend"]["vortex_ind_diff"].iloc[-1] > 0 else -1
+                ),
+                "ichimoku_signal": (
+                    "buy"
+                    if indicators["trend"]["ichimoku_a"].iloc[-1]
+                    > indicators["trend"]["ichimoku_b"].iloc[-1]
+                    else "sell"
+                ),
+            }
+
+            # Analyse du momentum
+            momentum_analysis = {
+                "rsi_signal": (
+                    "oversold"
+                    if indicators["momentum"]["rsi"].iloc[-1] < 30
+                    else (
+                        "overbought"
+                        if indicators["momentum"]["rsi"].iloc[-1] > 70
+                        else "neutral"
+                    )
+                ),
+                "stoch_signal": (
+                    "buy"
+                    if indicators["momentum"]["stoch_rsi_k"].iloc[-1]
+                    > indicators["momentum"]["stoch_rsi_d"].iloc[-1]
+                    else "sell"
+                ),
+                "ultimate_signal": (
+                    "buy"
+                    if indicators["momentum"]["uo"].iloc[-1] > 70
+                    else (
+                        "sell"
+                        if indicators["momentum"]["uo"].iloc[-1] < 30
+                        else "neutral"
+                    )
+                ),
+            }
+
+            # Analyse de la volatilité
+            volatility_analysis = {
+                "bb_signal": (
+                    "oversold"
+                    if market_data["close"].iloc[-1]
+                    < indicators["volatility"]["bbl"].iloc[-1]
+                    else "overbought"
+                ),
+                "kc_signal": (
+                    "breakout"
+                    if market_data["close"].iloc[-1]
+                    > indicators["volatility"]["kch"].iloc[-1]
+                    else "breakdown"
+                ),
+                "atr_volatility": indicators["volatility"]["atr"].iloc[-1],
+            }
+
+            # Analyse du volume
+            volume_analysis = {
+                "mfi_signal": (
+                    "buy"
+                    if indicators["volume"]["mfi"].iloc[-1] < 20
+                    else (
+                        "sell"
+                        if indicators["volume"]["mfi"].iloc[-1] > 80
+                        else "neutral"
+                    )
+                ),
+                "cmf_trend": (
+                    "positive"
+                    if indicators["volume"]["cmf"].iloc[-1] > 0
+                    else "negative"
+                ),
+                "obv_trend": (
+                    "up" if indicators["volume"]["obv"].diff().iloc[-1] > 0 else "down"
+                ),
+            }
+
+            # Décision finale
+            signal = {
+                "timestamp": pd.Timestamp.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "trend": trend_analysis,
+                "momentum": momentum_analysis,
+                "volatility": volatility_analysis,
+                "volume": volume_analysis,
+                "recommendation": self._generate_recommendation(
+                    trend_analysis,
+                    momentum_analysis,
+                    volatility_analysis,
+                    volume_analysis,
+                ),
+            }
+
+            logger.info(f"✅ Analyse des signaux complétée: {signal['recommendation']}")
+            return signal
+
+        except Exception as e:
+            logger.error(f"❌ Erreur analyse signaux: {e}")
+            return None
 
     async def setup_real_exchange(self):
         """Configuration sécurisée de l'exchange"""
@@ -1054,11 +1349,11 @@ class TradingBotM4:
                     "Impossible de récupérer le solde - Vérifiez vos clés API"
                 )
 
-            self.logger.info("Exchange configuré avec succès")
+            logger.info("Exchange configuré avec succès")
             return True
 
         except Exception as e:
-            self.logger.error(f"Erreur configuration exchange: {e}")
+            logger.error(f"Erreur configuration exchange: {e}")
             return False
 
     # 3. Correction de l'envoi des messages Telegram
@@ -1070,11 +1365,11 @@ class TradingBotM4:
                     message=message, parse_mode="HTML"
                 )
                 if success:
-                    self.logger.info(f"Message Telegram envoyé: {message[:50]}...")
+                    logger.info(f"Message Telegram envoyé: {message[:50]}...")
                 else:
-                    self.logger.error("Échec envoi message Telegram")
+                    logger.error("Échec envoi message Telegram")
         except Exception as e:
-            self.logger.error(f"Erreur envoi Telegram: {e}")
+            logger.error(f"Erreur envoi Telegram: {e}")
 
     async def setup_real_telegram(self):
         """Configuration sécurisée de Telegram"""
@@ -1083,7 +1378,7 @@ class TradingBotM4:
             self.telegram = TelegramBot()
 
             if not self.telegram.enabled:
-                self.logger.warning("Telegram notifications désactivées")
+                logger.warning("Telegram notifications désactivées")
                 return False
 
             # Démarrage du processeur de queue
@@ -1095,14 +1390,14 @@ class TradingBotM4:
             )
 
             if success:
-                self.logger.info("Telegram configuré avec succès")
+                logger.info("Telegram configuré avec succès")
                 return True
             else:
-                self.logger.error("Échec du test d'envoi Telegram")
+                logger.error("Échec du test d'envoi Telegram")
                 return False
 
         except Exception as e:
-            self.logger.error(f"Erreur configuration Telegram: {e}")
+            logger.error(f"Erreur configuration Telegram: {e}")
             return False
 
     def _get_portfolio_value(self):
@@ -1114,7 +1409,7 @@ class TradingBotM4:
                 return sum(self.position_manager.positions.values())
             return 0.0
         except Exception as e:
-            self.logger.error(f"Erreur calcul portfolio: {e}")
+            logger.error(f"Erreur calcul portfolio: {e}")
             return None
 
     def _calculate_total_pnl(self):
@@ -1123,7 +1418,7 @@ class TradingBotM4:
                 return sum(trade.get("pnl", 0) for trade in self.position_history)
             return 0.0
         except Exception as e:
-            self.logger.error(f"Error calculating PnL: {e}")
+            logger.error(f"Error calculating PnL: {e}")
             return 0.0
 
     async def update_dashboard(self):
@@ -1155,7 +1450,7 @@ class TradingBotM4:
 
             return True
         except Exception as e:
-            self.logger.error(f"Dashboard update error: {e}")
+            logger.error(f"Dashboard update error: {e}")
             return False
 
     async def get_real_portfolio(self):
@@ -1165,7 +1460,7 @@ class TradingBotM4:
         try:
             # Vérification et initialisation du spot client
             if not hasattr(self, "spot_client") or self.spot_client is None:
-                self.logger.info(
+                logger.info(
                     f"""
 ╔═════════════════════════════════════════════════╗
 ║         INITIALIZING SPOT CLIENT                 ║
@@ -1189,7 +1484,7 @@ class TradingBotM4:
             if not balance or "balances" not in balance:
                 raise Exception("No balance data available")
 
-            self.logger.info("💰 Balance data received")
+            logger.info("💰 Balance data received")
 
             # Traitement des balances
             portfolio = {
@@ -1236,13 +1531,13 @@ class TradingBotM4:
                                         }
                                     )
                             except Exception as price_error:
-                                self.logger.warning(
+                                logger.warning(
                                     f"⚠️ Cannot get price for {asset}: {price_error}"
                                 )
                                 continue
 
                 except Exception as asset_error:
-                    self.logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
+                    logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
                     continue
 
             # Récupération des ordres ouverts
@@ -1270,13 +1565,13 @@ class TradingBotM4:
                                         }
                                     )
                             except Exception as order_error:
-                                self.logger.warning(
+                                logger.warning(
                                     f"⚠️ Error processing order: {order_error}"
                                 )
                                 continue
 
             except Exception as orders_error:
-                self.logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
+                logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
 
             # Calcul des métriques finales
             portfolio.update(
@@ -1305,10 +1600,10 @@ class TradingBotM4:
                     portfolio["volume_change"] /= len(self.config["TRADING"]["pairs"])
 
             except Exception as volume_error:
-                self.logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
+                logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
 
             # Log de succès
-            self.logger.info(
+            logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         PORTFOLIO UPDATE SUCCESS                 ║
@@ -1323,7 +1618,7 @@ class TradingBotM4:
             return portfolio
 
         except Exception as e:
-            self.logger.error(
+            logger.error(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         PORTFOLIO UPDATE ERROR                   ║
@@ -1355,7 +1650,7 @@ class TradingBotM4:
             # Vérification du solde
             balance = await self.get_real_portfolio()
             if not balance or balance["free"] < signal["amount"] * signal["price"]:
-                self.logger.warning("Solde insuffisant pour le trade")
+                logger.warning("Solde insuffisant pour le trade")
                 return None
 
             # Calcul stop loss et take profit
@@ -1392,12 +1687,12 @@ Stop Loss: {stop_loss}
 Take Profit: {take_profit}""",
                 )
             except Exception as msg_error:
-                self.logger.error(f"Erreur envoi notification trade: {msg_error}")
+                logger.error(f"Erreur envoi notification trade: {msg_error}")
 
             return order
 
         except Exception as e:
-            self.logger.error(f"Erreur trade: {e}")
+            logger.error(f"Erreur trade: {e}")
             return None
 
     async def run_real_trading(self):
@@ -1410,7 +1705,7 @@ Take Profit: {take_profit}""",
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
 
-            self.logger.info(
+            logger.info(
                 f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
@@ -1424,7 +1719,7 @@ Take Profit: {take_profit}""",
             # Mise à jour de l'état du bot
             st.session_state.bot_running = True
         except Exception as telegram_error:
-            self.logger.error(f"Erreur envoi Telegram: {telegram_error}")
+            logger.error(f"Erreur envoi Telegram: {telegram_error}")
         raise
 
     async def create_dashboard(self):
@@ -1563,6 +1858,54 @@ Take Profit: {take_profit}""",
             self.logger.error(f"Erreur création dashboard: {e}")
             st.error(f"Error creating dashboard: {str(e)}")
 
+    def _build_decision(
+        self, policy, value, technical_score, news_sentiment, regime, timestamp
+    ):
+        """Construit la décision finale basée sur tous les inputs"""
+        try:
+            # Conversion policy en numpy pour le traitement
+            policy_np = policy.detach().numpy()
+
+            # Ne garder que les actions d'achat (long only)
+            buy_actions = np.maximum(policy_np, 0)
+
+            # Calculer la confiance basée sur value et les scores
+            confidence = float(
+                np.mean(
+                    [
+                        float(value.detach().numpy()),
+                        technical_score,
+                        news_sentiment["score"],
+                    ]
+                )
+            )
+
+            # Trouver le meilleur actif à acheter
+            best_pair_idx = np.argmax(buy_actions)
+
+            # Construire la décision
+            decision = {
+                "action": (
+                    "buy"
+                    if confidence > self.config["AI"]["confidence_threshold"]
+                    else "wait"
+                ),
+                "symbol": self.config["TRADING"]["pairs"][best_pair_idx],
+                "confidence": confidence,
+                "timestamp": timestamp,
+                "regime": regime,
+                "technical_score": technical_score,
+                "news_impact": news_sentiment["sentiment"],
+                "value_estimate": float(value.detach().numpy()),
+                "position_size": buy_actions[best_pair_idx],
+            }
+
+            return decision
+
+        except Exception as e:
+            logger.error(f"[{timestamp}] Erreur construction décision: {e}")
+            return None
+
     def _combine_features(self, technical_features, news_impact, regime):
         """Combine toutes les features pour le GTrXL"""
         try:
@@ -1585,7 +1928,7 @@ Take Profit: {take_profit}""",
             return features
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _encode_regime(self, regime):
@@ -1674,7 +2017,7 @@ Take Profit: {take_profit}""",
                 self.dashboard.update_trades(order)
 
             except Exception as e:
-                self.logger.error(f"Erreur: {e}")
+                logger.error(f"Erreur: {e}")
                 await self.telegram.send_message(f"⚠️ Erreur d'exécution: {str(e)}\n")
 
     def _validate_trade(self, decision, position_size):
@@ -1707,7 +2050,7 @@ Take Profit: {take_profit}""",
             return True
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     def _check_spread_too_high(self, symbol):
@@ -1721,7 +2064,7 @@ Take Profit: {take_profit}""",
             return spread > 0.001  # 0.1% spread maximum
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     def _check_sufficient_liquidity(self, symbol, position_size):
@@ -1738,7 +2081,7 @@ Take Profit: {take_profit}""",
             return available_liquidity >= required_liquidity
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     def _check_entry_timing(self, decision):
@@ -1762,8 +2105,137 @@ Take Profit: {take_profit}""",
             return True
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return False
+
+    def _analyze_momentum_signals(self):
+        """Analyse des signaux de momentum"""
+        try:
+            signals = {
+                "rsi": self._calculate_rsi(self.buffer.get_latest()),
+                "macd": self._calculate_macd(self.buffer.get_latest()),
+                "stoch": self._calculate_stoch_rsi(self.buffer.get_latest()),
+            }
+
+            # Calcul de la force globale
+            strengths = []
+            if signals["rsi"]:
+                strengths.append(abs(signals["rsi"]["strength"]))
+            if signals["macd"]:
+                strengths.append(abs(signals["macd"]["strength"]))
+            if signals["stoch"]:
+                strengths.append(abs(signals["stoch"]["strength"]))
+
+            return {
+                "signals": signals,
+                "strength": np.mean(strengths) if strengths else 0,
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"strength": 0, "signals": {}}
+
+    def _analyze_volatility(self):
+        """Analyse de la volatilité actuelle"""
+        try:
+            # Calcul des indicateurs de volatilité
+            bbands = self._calculate_bbands(self.buffer.get_latest())
+            atr = self._calculate_atr(self.buffer.get_latest())
+
+            # Calcul de la volatilité normalisée
+            current_volatility = 0
+            if bbands and atr:
+                bb_width = bbands["bandwidth"]
+                atr_norm = atr["normalized"]
+                current_volatility = (bb_width + atr_norm) / 2
+
+            return {
+                "current": current_volatility,
+                "threshold": 0.8,  # Seuil dynamique basé sur le régime
+                "indicators": {"bbands": bbands, "atr": atr},
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"current": float("inf"), "threshold": 0.8, "indicators": {}}
+
+    def _analyze_volume_profile(self):
+        """Analyse du profil de volume"""
+        try:
+            volume_data = self.buffer.get_volume_profile()
+            if not volume_data:
+                return {"supports_entry": False}
+
+            # Calcul des niveaux de support/résistance basés sur le volume
+            poc_level = self._calculate_poc(volume_data)
+            value_area = self._calculate_value_area(volume_data)
+
+            # Analyse de la distribution du volume
+            volume_distribution = {
+                "above_poc": sum(v for p, v in volume_data.items() if p > poc_level),
+                "below_poc": sum(v for p, v in volume_data.items() if p < poc_level),
+            }
+
+            # Calcul du ratio de support du volume
+            current_price = self.buffer.get_latest_price()
+            volume_support = (
+                volume_distribution["above_poc"]
+                / (volume_distribution["above_poc"] + volume_distribution["below_poc"])
+                if current_price > poc_level
+                else volume_distribution["below_poc"]
+                / (volume_distribution["above_poc"] + volume_distribution["below_poc"])
+            )
+
+            return {
+                "supports_entry": volume_support > 0.6,
+                "poc": poc_level,
+                "value_area": value_area,
+                "distribution": volume_distribution,
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur: {e}")
+            return {"supports_entry": False}
+
+    def _calculate_poc(self, volume_profile):
+        """Calcul du Point of Control"""
+        try:
+            if not volume_profile:
+                return None
+            return max(volume_profile.items(), key=lambda x: x[1])[0]
+        except Exception as e:
+            logger.error(f"Erreur calcul POC: {e}")
+            return None
+
+    def _calculate_value_area(self, volume_profile, value_area_pct=0.68):
+        """Calcul de la Value Area"""
+        try:
+            if not volume_profile:
+                return None
+
+            # Trier les prix par volume décroissant
+            sorted_prices = sorted(
+                volume_profile.items(), key=lambda x: x[1], reverse=True
+            )
+
+            # Calculer le volume total
+            total_volume = sum(volume_profile.values())
+            target_volume = total_volume * value_area_pct
+            cumulative_volume = 0
+            value_area_prices = []
+
+            # Construire la value area
+            for price, volume in sorted_prices:
+                cumulative_volume += volume
+                value_area_prices.append(price)
+                if cumulative_volume >= target_volume:
+                    break
+
+            return {"high": max(value_area_prices), "low": min(value_area_prices)}
+
+        except Exception as e:
+            logger.error(f"Erreur calcul Value Area: {e}")
+            return None
 
     async def run(self):
         """Point d'entrée principal du bot"""
@@ -1818,11 +2290,11 @@ Take Profit: {take_profit}""",
                     await asyncio.sleep(self.config["TRADING"]["update_interval"])
 
                 except Exception as loop_error:
-                    self.logger.error(f"Erreur dans la boucle principale: {loop_error}")
+                    logger.error(f"Erreur dans la boucle principale: {loop_error}")
                     continue
 
         except Exception as e:
-            self.logger.error(f"Erreur fatale: {e}")
+            logger.error(f"Erreur fatale: {e}")
             await self.telegram.send_message(f"🚨 Erreur critique du bot:\n{str(e)}\n")
             raise
 
@@ -1842,7 +2314,7 @@ Take Profit: {take_profit}""",
             return time_since_training.days >= 1  # Réentraînement quotidien
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return False
 
     async def _train_models(self, historical_data, initial_analysis):
@@ -1888,7 +2360,7 @@ Take Profit: {take_profit}""",
             self._save_models()
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _prepare_training_data(self, historical_data, initial_analysis):
@@ -1926,7 +2398,7 @@ Take Profit: {take_profit}""",
             return X, y
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _extract_technical_features(self, data):
@@ -1959,7 +2431,7 @@ Take Profit: {take_profit}""",
             return np.concatenate(features, axis=1)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_market_features(self, data):
@@ -1988,7 +2460,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_indicator_features(self, analysis):
@@ -2022,7 +2494,7 @@ Take Profit: {take_profit}""",
             return np.array(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_trend_features(self, data):
@@ -2061,7 +2533,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_momentum_features(self, data):
@@ -2110,7 +2582,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_volatility_features(self, data):
@@ -2153,7 +2625,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_gap_features(self, data):
@@ -2183,7 +2655,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_liquidity_features(self, data):
@@ -2240,7 +2712,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _detect_liquidity_clusters(self, orderbook):
@@ -2286,7 +2758,7 @@ Take Profit: {take_profit}""",
             }
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
 
     def _calculate_impact_resistance(self, orderbook, impact_size=1.0):
         """Calcule la résistance à l'impact de marché"""
@@ -2324,7 +2796,7 @@ Take Profit: {take_profit}""",
             return resistance_score
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return
 
     def _calculate_future_returns(self, data, horizons=[1, 5, 10, 20]):
@@ -2355,7 +2827,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(returns)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _save_models(self):
@@ -2393,7 +2865,7 @@ Take Profit: {take_profit}""",
                 json.dump(metadata, f, indent=4)
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             raise
 
     def _get_training_metrics(self):
@@ -2423,7 +2895,7 @@ Take Profit: {take_profit}""",
             return metrics
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return {}
 
     async def _should_stop_trading(self):
@@ -2452,7 +2924,7 @@ Take Profit: {take_profit}""",
             return False
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     async def _check_market_conditions(self):
@@ -2491,7 +2963,7 @@ Take Profit: {take_profit}""",
             return conditions
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return {"safe_to_trade": False, "reason": "Erreur système"}
 
     async def _analyze_market_liquidity(self):
@@ -2536,7 +3008,7 @@ Take Profit: {take_profit}""",
             return liquidity_status
 
         except Exception as e:
-            self.logger.error(f"Erreur analyse liquidité: {e}")
+            logger.error(f"Erreur analyse liquidité: {e}")
             return {"status": "insufficient", "metrics": {}}
 
     def _check_technical_conditions(self):
@@ -2583,7 +3055,7 @@ Take Profit: {take_profit}""",
             return conditions
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
             return {"safe": False, "reason": "Erreur système", "details": {}}
 
     def _check_divergences(self, data):
@@ -2624,7 +3096,7 @@ Take Profit: {take_profit}""",
             return divergences
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
 
     def _check_critical_patterns(self, data):
         """Détecte les patterns techniques critiques"""
@@ -2668,7 +3140,7 @@ Take Profit: {take_profit}""",
             return patterns
 
         except Exception as e:
-            self.logger.error(f"Erreur: {e}")
+            logger.error(f"Erreur: {e}")
 
     async def run_adaptive_trading(self, period="7d"):
         logger = logging.getLogger(__name__)
@@ -2695,7 +3167,7 @@ Take Profit: {take_profit}""",
                 )
                 logger.info("[DEBUG] Après send_telegram_message (Lancement bot)")
             except Exception as e:
-                self.logger.error(
+                logger.error(
                     f"❌ [run_adaptive_trading] Erreur Telegram démarrage: {e}"
                 )
 
@@ -2703,7 +3175,7 @@ Take Profit: {take_profit}""",
             self.current_strategy = strategy
 
         except Exception as e:
-            self.logger.error(
+            logger.error(
                 f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}"
             )
             print(f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}")
@@ -2712,7 +3184,7 @@ Take Profit: {take_profit}""",
                     f"❌ Erreur initiale run_adaptive_trading : {e}"
                 )
             except Exception as e2:
-                self.logger.error(
+                logger.error(
                     f"❌ [run_adaptive_trading] Erreur Telegram lors de l'init: {e2}"
                 )
             return
@@ -2757,7 +3229,7 @@ Take Profit: {take_profit}""",
                     else:
                         logger.info("[DEBUG] Aucun arbitrage_engine")
                 except Exception as e:
-                    self.logger.error(
+                    logger.error(
                         f"❌ [run_adaptive_trading] Erreur arbitrage_engine: {e}"
                     )
 
@@ -2779,7 +3251,7 @@ Take Profit: {take_profit}""",
                             f"📰 News critique détectée : {news}"
                         )
                     except Exception as e:
-                        self.logger.error(
+                        logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram news critique: {e}"
                         )
                     self.current_strategy = "Defensive/No Trade"
@@ -2792,7 +3264,7 @@ Take Profit: {take_profit}""",
                             f"⚡ Arbitrage détecté : {arbitrage_opps}"
                         )
                     except Exception as e:
-                        self.logger.error(
+                        logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram arbitrage: {e}"
                         )
                     self.current_strategy = "Arbitrage"
@@ -2807,7 +3279,7 @@ Take Profit: {take_profit}""",
                             f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
                         )
                     except Exception as e:
-                        self.logger.error(
+                        logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram changement de régime: {e}"
                         )
 
@@ -2833,7 +3305,7 @@ Take Profit: {take_profit}""",
                             f"✅ Trade exécuté : {decision}"
                         )
                     except Exception as e:
-                        self.logger.error(
+                        logger.error(
                             f"❌ [run_adaptive_trading] Erreur exécution trade / Telegram: {e}"
                         )
                         try:
@@ -2841,7 +3313,7 @@ Take Profit: {take_profit}""",
                                 f"❌ Erreur exécution trade: {e}"
                             )
                         except Exception as e2:
-                            self.logger.error(
+                            logger.error(
                                 f"❌ [run_adaptive_trading] Erreur secondaire Telegram: {e2}"
                             )
                 else:
@@ -2871,7 +3343,7 @@ Take Profit: {take_profit}""",
                         f"🖥️ [run_adaptive_trading] Statut live mis à jour dans Streamlit: {st.session_state['live_status']}"
                     )
                 except Exception as e:
-                    self.logger.error(
+                    logger.error(
                         f"❌ [run_adaptive_trading] Erreur update dashboard: {e}"
                     )
 
@@ -2884,7 +3356,7 @@ Take Profit: {take_profit}""",
                 await asyncio.sleep(2)
 
             except Exception as loop_error:
-                self.logger.error(
+                logger.error(
                     f"❌ [run_adaptive_trading] Exception dans la boucle: {loop_error}"
                 )
                 print(
@@ -2895,7 +3367,7 @@ Take Profit: {take_profit}""",
                         f"❌ Exception dans la boucle: {loop_error}"
                     )
                 except Exception as e2:
-                    self.logger.error(
+                    logger.error(
                         f"❌ [run_adaptive_trading] Erreur Telegram exception boucle : {e2}"
                     )
                 await asyncio.sleep(2)
@@ -2905,9 +3377,7 @@ Take Profit: {take_profit}""",
         try:
             await self.send_telegram_message("🛑 Boucle run_adaptive_trading stoppée.")
         except Exception as e:
-            self.logger.error(
-                f"❌ [run_adaptive_trading] Erreur Telegram arrêt boucle: {e}"
-            )
+            logger.error(f"❌ [run_adaptive_trading] Erreur Telegram arrêt boucle: {e}")
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -2919,6 +3389,173 @@ Take Profit: {take_profit}""",
             return "Arbitrage"
         else:
             return "Range/Scalping"
+
+    def make_trade_decision(self, signals, strategy, news, arbitrage_opps):
+        # Logique simple d'exemple : personnalise selon tes besoins
+        if strategy == "Arbitrage" and arbitrage_opps:
+            # Place un trade d'arbitrage (implémente selon ta structure)
+            return {"action": "arbitrage", "details": arbitrage_opps}
+        if signals and signals.get("recommendation", {}).get("action") in [
+            "buy",
+            "sell",
+        ]:
+            return signals["recommendation"]
+        return None
+
+    def _calculate_supertrend(self, data):
+        try:
+            # Log de début de calcul
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           CALCULATING SUPERTREND                 ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # Vérification de la configuration
+            if not (
+                self.config.get("INDICATORS", {}).get("trend", {}).get("supertrend", {})
+            ):
+                logger.warning("Missing Supertrend configuration")
+                self.dashboard.update_indicator_status(
+                    "Supertrend", "DISABLED - Missing config"
+                )
+                return None
+
+            # Récupération des paramètres
+            try:
+                period = self.config["INDICATORS"]["trend"]["supertrend"]["period"]
+                multiplier = self.config["INDICATORS"]["trend"]["supertrend"][
+                    "multiplier"
+                ]
+
+                logger.info(
+                    f"Using parameters: period={period}, multiplier={multiplier}"
+                )
+
+            except KeyError as ke:
+                logger.error(f"Missing parameter: {ke}")
+                self.dashboard.update_indicator_status(
+                    "Supertrend", "DISABLED - Missing parameters"
+                )
+                return None
+
+            # Vérification des données d'entrée
+            if data is None or data.empty:
+                logger.error("No input data provided")
+                self.dashboard.update_indicator_status("Supertrend", "ERROR - No data")
+                return None
+
+            required_columns = ["high", "low", "close"]
+            if not all(col in data.columns for col in required_columns):
+                logger.error(f"Missing required columns: {required_columns}")
+                self.dashboard.update_indicator_status(
+                    "Supertrend", "ERROR - Missing columns"
+                )
+                return None
+
+            # Extraction des séries de prix
+            high = data["high"]
+            low = data["low"]
+            close = data["close"]
+
+            # Calcul du True Range (TR)
+            tr = pd.DataFrame()
+            tr["h-l"] = high - low
+            tr["h-pc"] = abs(high - close.shift(1))
+            tr["l-pc"] = abs(low - close.shift(1))
+            tr["tr"] = tr[["h-l", "h-pc", "l-pc"]].max(axis=1)
+
+            # Calcul de l'ATR
+            atr = tr["tr"].rolling(window=period, min_periods=1).mean()
+
+            # Calcul des bandes
+            hl2 = (high + low) / 2
+            final_upperband = hl2 + (multiplier * atr)
+            final_lowerband = hl2 - (multiplier * atr)
+
+            # Initialisation des séries Supertrend
+            supertrend = pd.Series(index=data.index, dtype=float)
+            direction = pd.Series(index=data.index, dtype=float)
+
+            # Calcul du Supertrend
+            for i in range(period, len(data)):
+                try:
+                    if close[i] > final_upperband[i - 1]:
+                        supertrend[i] = final_lowerband[i]
+                        direction[i] = 1
+                    elif close[i] < final_lowerband[i - 1]:
+                        supertrend[i] = final_upperband[i]
+                        direction[i] = -1
+                    else:
+                        supertrend[i] = supertrend[i - 1]
+                        direction[i] = direction[i - 1]
+                except IndexError as idx_error:
+                    logger.error(f"Index error at position {i}: {idx_error}")
+                    continue
+
+            # Calcul de la force du signal
+            strength = abs(close - supertrend) / close
+
+            # Mise à jour du statut
+            self.dashboard.update_indicator_status("Supertrend", "ACTIVE")
+
+            # Log de succès
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           SUPERTREND CALCULATED                  ║
+╠═════════════════════════════════════════════════╣
+║ Status: Success
+║ Direction: {'Bullish' if direction.iloc[-1] == 1 else 'Bearish'}
+║ Strength: {strength.iloc[-1]:.4f}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            return {
+                "value": supertrend,
+                "direction": direction,
+                "strength": strength,
+                "parameters": {"period": period, "multiplier": multiplier},
+                "metadata": {
+                    "calculation_time": datetime.now(timezone.utc).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "status": "SUCCESS",
+                },
+            }
+
+        except Exception as e:
+            # Log d'erreur détaillé
+            logger.error(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           SUPERTREND ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+            # Mise à jour du statut dans le dashboard
+            self.dashboard.update_indicator_status(
+                "Supertrend", f"ERROR - {type(e).__name__}"
+            )
+            return None
+
+        finally:
+            # Nettoyage et libération des ressources si nécessaire
+            try:
+                del tr
+            except:
+                pass
 
 
 class TradingEnv(gym.Env):
