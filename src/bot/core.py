@@ -1,14 +1,42 @@
 import os
+import time
+import json
 import logging
+from datetime import datetime, timezone
+
 import numpy as np
 import pandas as pd
+
+# Gym et espace d'observation/action pour RL
 import gym
 import gymnasium as gym
 from gymnasium import spaces
 
+from src.data.realtime.websocket.client import StreamConfig
+from src.core.buffer.circular_buffer import CircularBuffer
+
+# Binance
 from binance import AsyncClient, BinanceSocketManager
+
+# Modules internes (adapte le chemin selon ton projet)
 from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
+from src.data.realtime.websocket.client import MultiStreamManager
+
+# ccxt (si utilisé pour l'exchange)
+import ccxt
+
+# Deep learning et IA (torch, etc.)
+import torch
+
+# Analyse technique (ex: ta-lib ou pandas-ta)
+import ta  # ou import pandas_ta as ta
+
+# Gestion des websockets et buffers
+from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
+
+# (Optionnel) nest_asyncio si tu utilises dans Streamlit ou Jupyter
+import nest_asyncio
 
 
 class TradingBotM4:
@@ -315,7 +343,7 @@ class TradingBotM4:
                     st.session_state["important_news"] = []
 
         except Exception as e:
-            logger.error(f"Erreur tick: {e}")
+            self.logger.error(f"Erreur tick: {e}")
 
     def get_latest_price(self, symbol):
         """
@@ -387,11 +415,11 @@ class TradingBotM4:
                         model.load_state_dict(torch.load(model_path))
                         logger.info(f"Modèle {model_name} chargé avec succès")
 
-            logger.info("✅ Modèles initialisés avec succès")
+            self.logger.info("✅ Modèles initialisés avec succès")
             return True
 
         except Exception as e:
-            logger.error(f"❌ Erreur initialisation modèles: {e}")
+            self.logger.error(f"❌ Erreur initialisation modèles: {e}")
             return False
 
     async def _cleanup(self):
@@ -405,7 +433,7 @@ class TradingBotM4:
                 try:
                     self.buffer = None  # Au lieu de clear()
                 except Exception as buffer_error:
-                    logger.error(f"❌ Buffer cleanup error: {buffer_error}")
+                    self.logger.error(f"❌ Buffer cleanup error: {buffer_error}")
 
             # Nettoyage des données
             if hasattr(self, "latest_data"):
@@ -449,7 +477,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Bot start error: {e}")
+            self.logger.error(f"❌ Bot start error: {e}")
             await self._cleanup()
             return False
 
@@ -461,17 +489,17 @@ class TradingBotM4:
                     self.ws_connection["reconnect_count"]
                     < self.ws_connection["max_reconnects"]
                 ):
-                    logger.info("Attempting WebSocket reconnection...")
+                    self.logger.info("Attempting WebSocket reconnection...")
                     if await initialize_websocket(self):
                         self.ws_connection["reconnect_count"] = 0
                         return True
                     self.ws_connection["reconnect_count"] += 1
                 else:
-                    logger.error("Max WebSocket reconnection attempts reached")
+                    self.logger.error("Max WebSocket reconnection attempts reached")
                     return False
             return True
         except Exception as e:
-            logger.error(f"WebSocket check error: {e}")
+            self.logger.error(f"WebSocket check error: {e}")
             return False
 
     async def initialize(self):
@@ -488,7 +516,7 @@ class TradingBotM4:
             if not getattr(self, "initialized", False):
                 success = await self.start()
                 if not success:
-                    logger.error(
+                    self.logger.error(
                         "❌ Impossible d'initialiser le WebSocket dans initialize()"
                     )
                     return False
@@ -497,7 +525,7 @@ class TradingBotM4:
             portfolio = await self.get_real_portfolio()
             if portfolio:
                 st.session_state.portfolio = portfolio
-                logger.info("✅ Initial portfolio data loaded")
+                self.logger.info("✅ Initial portfolio data loaded")
 
             # Mise à jour du statut
             self.ws_connection.update(
@@ -507,7 +535,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Initialization error: {e}")
+            self.logger.error(f"❌ Initialization error: {e}")
             return False
 
     async def _setup_components(self):
@@ -538,7 +566,7 @@ class TradingBotM4:
             return True
 
         except Exception as e:
-            logger.error(f"Setup components error: {e}")
+            self.logger.error(f"Setup components error: {e}")
             return False
 
     async def _initialize_analyzers(self):
@@ -637,13 +665,13 @@ class TradingBotM4:
                 },
             }
 
-            logger.info(
+            self.logger.info(
                 f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories"
             )
             return indicators
 
         except Exception as e:
-            logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
             return None
 
     async def _handle_stream(self, stream):
@@ -654,7 +682,7 @@ class TradingBotM4:
                     msg = await tscm.recv()
                     await self._process_stream_message(msg)
         except Exception as e:
-            logger.error(f"Erreur stream: {e}")
+            self.logger.error(f"Erreur stream: {e}")
             return None
 
     async def _process_stream_message(self, msg):
@@ -672,7 +700,7 @@ class TradingBotM4:
                 await self._handle_kline(msg)
 
         except Exception as e:
-            logger.error(f"Erreur traitement message: {e}")
+            self.logger.error(f"Erreur traitement message: {e}")
             return None
 
     async def _handle_trade(self, msg):
@@ -696,7 +724,7 @@ class TradingBotM4:
             return trade_data
 
         except Exception as e:
-            logger.error(f"Erreur traitement trade: {e}")
+            self.logger.error(f"Erreur traitement trade: {e}")
             return None
 
     async def _handle_orderbook(self, msg):
@@ -718,7 +746,7 @@ class TradingBotM4:
             return orderbook_data
 
         except Exception as e:
-            logger.error(f"Erreur traitement orderbook: {e}")
+            self.logger.error(f"Erreur traitement orderbook: {e}")
             return None
 
     async def _handle_kline(self, msg):
@@ -749,7 +777,7 @@ class TradingBotM4:
             return kline_data
 
         except Exception as e:
-            logger.error(f"Erreur traitement kline: {e}")
+            self.logger.error(f"Erreur traitement kline: {e}")
             return None
 
     def decision_model(self, features, timestamp=None):
@@ -758,7 +786,7 @@ class TradingBotM4:
             value = self.models["ppo_gtrxl"].get_value(features)
             return policy, value
         except Exception as e:
-            logger.error(f"[{timestamp}] Erreur decision_model: {e}")
+            self.logger.error(f"[{timestamp}] Erreur decision_model: {e}")
             return None, None
 
     def _add_risk_management(self, decision, timestamp=None):
@@ -786,7 +814,7 @@ class TradingBotM4:
             return decision
 
         except Exception as e:
-            logger.error(f"[{timestamp}] Erreur risk management: {e}")
+            self.logger.error(f"[{timestamp}] Erreur risk management: {e}")
             return decision
 
     async def get_latest_data(self):
@@ -795,19 +823,19 @@ class TradingBotM4:
 
             # Vérification de la connexion WebSocket
             if not hasattr(self, "binance_ws") or self.binance_ws is None:
-                logger.warning(
+                self.logger.warning(
                     "🔄 WebSocket non initialisé, tentative d'initialisation..."
                 )
                 if not self.initialized:
                     await self.initialize()
                 if not hasattr(self, "binance_ws") or self.binance_ws is None:
-                    logger.error(
+                    self.logger.error(
                         "Impossible d'initialiser le WebSocket après tentative."
                     )
                     return None
 
             for pair in self.config["TRADING"]["pairs"]:
-                logger.info(f"📊 Récupération données pour {pair}")
+                self.logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
 
                 try:
@@ -887,7 +915,9 @@ class TradingBotM4:
                                     if len(k) >= 6
                                 ]
                         except Exception as hist_e:
-                            logger.warning(f"Erreur chargement OHLCV {pair}: {hist_e}")
+                            self.logger.warning(
+                                f"Erreur chargement OHLCV {pair}: {hist_e}"
+                            )
 
                         return result
 
@@ -897,16 +927,16 @@ class TradingBotM4:
                     # Traitement des résultats
                     if result["ticker"]:
                         data[pair]["price"] = float(result["ticker"]["price"])
-                        logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
+                        self.logger.info(f"💰 Prix {pair}: {data[pair]['price']}")
                     if result["orderbook"]:
                         data[pair]["orderbook"] = {
                             "bids": result["orderbook"]["bids"][:5],
                             "asks": result["orderbook"]["asks"][:5],
                         }
-                        logger.info(f"📚 Orderbook mis à jour pour {pair}")
+                        self.logger.info(f"📚 Orderbook mis à jour pour {pair}")
                     if result["balance"]:
                         data[pair]["account"] = result["balance"]
-                        logger.info(
+                        self.logger.info(
                             f"💼 Balance mise à jour: {result['balance'].get('total', 0)} USDC"
                         )
                     if result["ticker_24h"]:
@@ -918,23 +948,27 @@ class TradingBotM4:
                                 ),
                             }
                         )
-                        logger.info(f"📈 Volume 24h {pair}: {data[pair]['volume']}")
+                        self.logger.info(
+                            f"📈 Volume 24h {pair}: {data[pair]['volume']}"
+                        )
                     # AJOUT FORTEMENT RECOMMANDÉ : Toujours une liste de dicts, même vide
                     data[pair]["ohlcv"] = result["ohlcv"] if result["ohlcv"] else []
-                    logger.info(
+                    self.logger.info(
                         f"📊 OHLCV récupéré ({len(data[pair]['ohlcv'])} bougies) pour {pair}"
                     )
 
                 except asyncio.TimeoutError:
-                    logger.warning(f"⏱️ Timeout pour {pair}")
+                    self.logger.warning(f"⏱️ Timeout pour {pair}")
                     continue
                 except Exception as inner_e:
-                    logger.error(f"❌ Erreur récupération données {pair}: {inner_e}")
+                    self.logger.error(
+                        f"❌ Erreur récupération données {pair}: {inner_e}"
+                    )
                     continue
 
             # Mise en cache des données si disponibles
             if data and any(data.values()):
-                logger.info("✅ Données reçues, mise à jour du buffer")
+                self.logger.info("✅ Données reçues, mise à jour du buffer")
                 for symbol, symbol_data in data.items():
                     if symbol_data:
                         self.buffer.update_data(symbol, symbol_data)
@@ -945,7 +979,7 @@ class TradingBotM4:
                 return None
 
         except Exception as e:
-            logger.error(f"❌ Erreur critique get_latest_data: {e}")
+            self.logger.error(f"❌ Erreur critique get_latest_data: {e}")
             return None
 
     async def calculate_indicators(self, symbol: str) -> dict:
@@ -953,7 +987,7 @@ class TradingBotM4:
         try:
             data = self.latest_data.get(symbol)
             if not data:
-                logger.error(f"❌ Pas de données pour {symbol}")
+                self.logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
 
             # Calcul des indicateurs de base
@@ -965,17 +999,17 @@ class TradingBotM4:
                 "timestamp": data["timestamp"],
             }
             # Log des données reçues
-            logger.info(
+            self.logger.info(
                 f"Calcul indicateurs pour {symbol}: {data}"
             )  # Log des données reçues
-            logger.info(f"Calcul indicateurs pour {symbol}: {data}")
+            self.logger.info(f"Calcul indicateurs pour {symbol}: {data}")
 
             # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
 
         except Exception as e:
-            logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
+            self.logger.error(f"Erreur calcul indicateurs pour {symbol}: {str(e)}")
             return {}
 
     async def setup_real_exchange(self):
@@ -1017,11 +1051,11 @@ class TradingBotM4:
                     "Impossible de récupérer le solde - Vérifiez vos clés API"
                 )
 
-            logger.info("Exchange configuré avec succès")
+            self.logger.info("Exchange configuré avec succès")
             return True
 
         except Exception as e:
-            logger.error(f"Erreur configuration exchange: {e}")
+            self.logger.error(f"Erreur configuration exchange: {e}")
             return False
 
     # 3. Correction de l'envoi des messages Telegram
@@ -1033,11 +1067,11 @@ class TradingBotM4:
                     message=message, parse_mode="HTML"
                 )
                 if success:
-                    logger.info(f"Message Telegram envoyé: {message[:50]}...")
+                    self.logger.info(f"Message Telegram envoyé: {message[:50]}...")
                 else:
-                    logger.error("Échec envoi message Telegram")
+                    self.logger.error("Échec envoi message Telegram")
         except Exception as e:
-            logger.error(f"Erreur envoi Telegram: {e}")
+            self.logger.error(f"Erreur envoi Telegram: {e}")
 
     async def setup_real_telegram(self):
         """Configuration sécurisée de Telegram"""
@@ -1046,7 +1080,7 @@ class TradingBotM4:
             self.telegram = TelegramBot()
 
             if not self.telegram.enabled:
-                logger.warning("Telegram notifications désactivées")
+                self.logger.warning("Telegram notifications désactivées")
                 return False
 
             # Démarrage du processeur de queue
@@ -1058,14 +1092,14 @@ class TradingBotM4:
             )
 
             if success:
-                logger.info("Telegram configuré avec succès")
+                self.logger.info("Telegram configuré avec succès")
                 return True
             else:
-                logger.error("Échec du test d'envoi Telegram")
+                self.logger.error("Échec du test d'envoi Telegram")
                 return False
 
         except Exception as e:
-            logger.error(f"Erreur configuration Telegram: {e}")
+            self.logger.error(f"Erreur configuration Telegram: {e}")
             return False
 
     def _get_portfolio_value(self):
@@ -1077,7 +1111,7 @@ class TradingBotM4:
                 return sum(self.position_manager.positions.values())
             return 0.0
         except Exception as e:
-            logger.error(f"Erreur calcul portfolio: {e}")
+            self.logger.error(f"Erreur calcul portfolio: {e}")
             return None
 
     def _calculate_total_pnl(self):
@@ -1086,7 +1120,7 @@ class TradingBotM4:
                 return sum(trade.get("pnl", 0) for trade in self.position_history)
             return 0.0
         except Exception as e:
-            logger.error(f"Error calculating PnL: {e}")
+            self.logger.error(f"Error calculating PnL: {e}")
             return 0.0
 
     async def update_dashboard(self):
@@ -1118,7 +1152,7 @@ class TradingBotM4:
 
             return True
         except Exception as e:
-            logger.error(f"Dashboard update error: {e}")
+            self.logger.error(f"Dashboard update error: {e}")
             return False
 
     async def get_real_portfolio(self):
@@ -1128,7 +1162,7 @@ class TradingBotM4:
         try:
             # Vérification et initialisation du spot client
             if not hasattr(self, "spot_client") or self.spot_client is None:
-                logger.info(
+                self.logger.info(
                     f"""
 ╔═════════════════════════════════════════════════╗
 ║         INITIALIZING SPOT CLIENT                 ║
@@ -1152,7 +1186,7 @@ class TradingBotM4:
             if not balance or "balances" not in balance:
                 raise Exception("No balance data available")
 
-            logger.info("💰 Balance data received")
+            self.logger.info("💰 Balance data received")
 
             # Traitement des balances
             portfolio = {
@@ -1199,13 +1233,13 @@ class TradingBotM4:
                                         }
                                     )
                             except Exception as price_error:
-                                logger.warning(
+                                self.logger.warning(
                                     f"⚠️ Cannot get price for {asset}: {price_error}"
                                 )
                                 continue
 
                 except Exception as asset_error:
-                    logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
+                    self.logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
                     continue
 
             # Récupération des ordres ouverts
@@ -1233,13 +1267,13 @@ class TradingBotM4:
                                         }
                                     )
                             except Exception as order_error:
-                                logger.warning(
+                                self.logger.warning(
                                     f"⚠️ Error processing order: {order_error}"
                                 )
                                 continue
 
             except Exception as orders_error:
-                logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
+                self.logger.warning(f"⚠️ Cannot fetch open orders: {orders_error}")
 
             # Calcul des métriques finales
             portfolio.update(
@@ -1268,10 +1302,10 @@ class TradingBotM4:
                     portfolio["volume_change"] /= len(self.config["TRADING"]["pairs"])
 
             except Exception as volume_error:
-                logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
+                self.logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
 
             # Log de succès
-            logger.info(
+            self.logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         PORTFOLIO UPDATE SUCCESS                 ║
@@ -1286,7 +1320,7 @@ class TradingBotM4:
             return portfolio
 
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║         PORTFOLIO UPDATE ERROR                   ║
@@ -1318,7 +1352,7 @@ class TradingBotM4:
             # Vérification du solde
             balance = await self.get_real_portfolio()
             if not balance or balance["free"] < signal["amount"] * signal["price"]:
-                logger.warning("Solde insuffisant pour le trade")
+                self.logger.warning("Solde insuffisant pour le trade")
                 return None
 
             # Calcul stop loss et take profit
@@ -1355,12 +1389,12 @@ Stop Loss: {stop_loss}
 Take Profit: {take_profit}""",
                 )
             except Exception as msg_error:
-                logger.error(f"Erreur envoi notification trade: {msg_error}")
+                self.logger.error(f"Erreur envoi notification trade: {msg_error}")
 
             return order
 
         except Exception as e:
-            logger.error(f"Erreur trade: {e}")
+            self.logger.error(f"Erreur trade: {e}")
             return None
 
     async def run_real_trading(self):
@@ -1373,7 +1407,7 @@ Take Profit: {take_profit}""",
             if not await self.setup_real_telegram():
                 raise Exception("Échec configuration Telegram")
 
-            logger.info(
+            self.logger.info(
                 f"""
 ╔═════════════════════════════════════════════════════════════╗
 ║                Trading Bot Ultimate v4 - REAL               ║
@@ -1387,7 +1421,7 @@ Take Profit: {take_profit}""",
             # Mise à jour de l'état du bot
             st.session_state.bot_running = True
         except Exception as telegram_error:
-            logger.error(f"Erreur envoi Telegram: {telegram_error}")
+            self.logger.error(f"Erreur envoi Telegram: {telegram_error}")
         raise
 
     async def create_dashboard(self):
@@ -1548,7 +1582,7 @@ Take Profit: {take_profit}""",
             return features
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             raise
 
     def _encode_regime(self, regime):
@@ -1637,7 +1671,7 @@ Take Profit: {take_profit}""",
                 self.dashboard.update_trades(order)
 
             except Exception as e:
-                logger.error(f"Erreur: {e}")
+                self.logger.error(f"Erreur: {e}")
                 await self.telegram.send_message(f"⚠️ Erreur d'exécution: {str(e)}\n")
 
     def _validate_trade(self, decision, position_size):
@@ -1670,7 +1704,7 @@ Take Profit: {take_profit}""",
             return True
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return False
 
     def _check_spread_too_high(self, symbol):
@@ -1684,7 +1718,7 @@ Take Profit: {take_profit}""",
             return spread > 0.001  # 0.1% spread maximum
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     def _check_sufficient_liquidity(self, symbol, position_size):
@@ -1701,7 +1735,7 @@ Take Profit: {take_profit}""",
             return available_liquidity >= required_liquidity
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return False
 
     def _check_entry_timing(self, decision):
@@ -1725,7 +1759,7 @@ Take Profit: {take_profit}""",
             return True
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return False
 
     async def run(self):
@@ -1781,11 +1815,11 @@ Take Profit: {take_profit}""",
                     await asyncio.sleep(self.config["TRADING"]["update_interval"])
 
                 except Exception as loop_error:
-                    logger.error(f"Erreur dans la boucle principale: {loop_error}")
+                    self.logger.error(f"Erreur dans la boucle principale: {loop_error}")
                     continue
 
         except Exception as e:
-            logger.error(f"Erreur fatale: {e}")
+            self.logger.error(f"Erreur fatale: {e}")
             await self.telegram.send_message(f"🚨 Erreur critique du bot:\n{str(e)}\n")
             raise
 
@@ -1805,7 +1839,7 @@ Take Profit: {take_profit}""",
             return time_since_training.days >= 1  # Réentraînement quotidien
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return False
 
     async def _train_models(self, historical_data, initial_analysis):
@@ -1851,7 +1885,7 @@ Take Profit: {take_profit}""",
             self._save_models()
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             raise
 
     def _prepare_training_data(self, historical_data, initial_analysis):
@@ -1889,7 +1923,7 @@ Take Profit: {take_profit}""",
             return X, y
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             raise
 
     def _extract_technical_features(self, data):
@@ -1922,7 +1956,7 @@ Take Profit: {take_profit}""",
             return np.concatenate(features, axis=1)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_market_features(self, data):
@@ -1951,7 +1985,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _extract_indicator_features(self, analysis):
@@ -1985,7 +2019,7 @@ Take Profit: {take_profit}""",
             return np.array(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_trend_features(self, data):
@@ -2024,7 +2058,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_momentum_features(self, data):
@@ -2073,7 +2107,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_volatility_features(self, data):
@@ -2116,7 +2150,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_gap_features(self, data):
@@ -2146,7 +2180,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _calculate_liquidity_features(self, data):
@@ -2203,7 +2237,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(features)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _detect_liquidity_clusters(self, orderbook):
@@ -2249,7 +2283,7 @@ Take Profit: {take_profit}""",
             }
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
 
     def _calculate_impact_resistance(self, orderbook, impact_size=1.0):
         """Calcule la résistance à l'impact de marché"""
@@ -2287,7 +2321,7 @@ Take Profit: {take_profit}""",
             return resistance_score
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return
 
     def _calculate_future_returns(self, data, horizons=[1, 5, 10, 20]):
@@ -2318,7 +2352,7 @@ Take Profit: {take_profit}""",
             return np.column_stack(returns)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return np.array([])
 
     def _save_models(self):
@@ -2356,7 +2390,7 @@ Take Profit: {take_profit}""",
                 json.dump(metadata, f, indent=4)
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             raise
 
     def _get_training_metrics(self):
@@ -2386,7 +2420,7 @@ Take Profit: {take_profit}""",
             return metrics
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return {}
 
     async def _should_stop_trading(self):
@@ -2415,7 +2449,7 @@ Take Profit: {take_profit}""",
             return False
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return True  # Par sécurité
 
     async def _check_market_conditions(self):
@@ -2454,7 +2488,7 @@ Take Profit: {take_profit}""",
             return conditions
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return {"safe_to_trade": False, "reason": "Erreur système"}
 
     async def _analyze_market_liquidity(self):
@@ -2499,7 +2533,7 @@ Take Profit: {take_profit}""",
             return liquidity_status
 
         except Exception as e:
-            logger.error(f"Erreur analyse liquidité: {e}")
+            self.logger.error(f"Erreur analyse liquidité: {e}")
             return {"status": "insufficient", "metrics": {}}
 
     def _check_technical_conditions(self):
@@ -2546,7 +2580,7 @@ Take Profit: {take_profit}""",
             return conditions
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
             return {"safe": False, "reason": "Erreur système", "details": {}}
 
     def _check_divergences(self, data):
@@ -2587,7 +2621,7 @@ Take Profit: {take_profit}""",
             return divergences
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
 
     def _check_critical_patterns(self, data):
         """Détecte les patterns techniques critiques"""
@@ -2631,7 +2665,7 @@ Take Profit: {take_profit}""",
             return patterns
 
         except Exception as e:
-            logger.error(f"Erreur: {e}")
+            self.logger.error(f"Erreur: {e}")
 
     async def run_adaptive_trading(self, period="7d"):
         logger = logging.getLogger(__name__)
@@ -2658,7 +2692,7 @@ Take Profit: {take_profit}""",
                 )
                 logger.info("[DEBUG] Après send_telegram_message (Lancement bot)")
             except Exception as e:
-                logger.error(
+                self.logger.error(
                     f"❌ [run_adaptive_trading] Erreur Telegram démarrage: {e}"
                 )
 
@@ -2666,7 +2700,7 @@ Take Profit: {take_profit}""",
             self.current_strategy = strategy
 
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}"
             )
             print(f"❌ [run_adaptive_trading] Erreur lors de l'initialisation : {e}")
@@ -2675,7 +2709,7 @@ Take Profit: {take_profit}""",
                     f"❌ Erreur initiale run_adaptive_trading : {e}"
                 )
             except Exception as e2:
-                logger.error(
+                self.logger.error(
                     f"❌ [run_adaptive_trading] Erreur Telegram lors de l'init: {e2}"
                 )
             return
@@ -2720,7 +2754,7 @@ Take Profit: {take_profit}""",
                     else:
                         logger.info("[DEBUG] Aucun arbitrage_engine")
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f"❌ [run_adaptive_trading] Erreur arbitrage_engine: {e}"
                     )
 
@@ -2742,7 +2776,7 @@ Take Profit: {take_profit}""",
                             f"📰 News critique détectée : {news}"
                         )
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram news critique: {e}"
                         )
                     self.current_strategy = "Defensive/No Trade"
@@ -2755,7 +2789,7 @@ Take Profit: {take_profit}""",
                             f"⚡ Arbitrage détecté : {arbitrage_opps}"
                         )
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram arbitrage: {e}"
                         )
                     self.current_strategy = "Arbitrage"
@@ -2770,7 +2804,7 @@ Take Profit: {take_profit}""",
                             f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
                         )
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"❌ [run_adaptive_trading] Erreur Telegram changement de régime: {e}"
                         )
 
@@ -2796,7 +2830,7 @@ Take Profit: {take_profit}""",
                             f"✅ Trade exécuté : {decision}"
                         )
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"❌ [run_adaptive_trading] Erreur exécution trade / Telegram: {e}"
                         )
                         try:
@@ -2804,7 +2838,7 @@ Take Profit: {take_profit}""",
                                 f"❌ Erreur exécution trade: {e}"
                             )
                         except Exception as e2:
-                            logger.error(
+                            self.logger.error(
                                 f"❌ [run_adaptive_trading] Erreur secondaire Telegram: {e2}"
                             )
                 else:
@@ -2834,7 +2868,7 @@ Take Profit: {take_profit}""",
                         f"🖥️ [run_adaptive_trading] Statut live mis à jour dans Streamlit: {st.session_state['live_status']}"
                     )
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f"❌ [run_adaptive_trading] Erreur update dashboard: {e}"
                     )
 
@@ -2847,7 +2881,7 @@ Take Profit: {take_profit}""",
                 await asyncio.sleep(2)
 
             except Exception as loop_error:
-                logger.error(
+                self.logger.error(
                     f"❌ [run_adaptive_trading] Exception dans la boucle: {loop_error}"
                 )
                 print(
@@ -2858,7 +2892,7 @@ Take Profit: {take_profit}""",
                         f"❌ Exception dans la boucle: {loop_error}"
                     )
                 except Exception as e2:
-                    logger.error(
+                    self.logger.error(
                         f"❌ [run_adaptive_trading] Erreur Telegram exception boucle : {e2}"
                     )
                 await asyncio.sleep(2)
@@ -2868,7 +2902,9 @@ Take Profit: {take_profit}""",
         try:
             await self.send_telegram_message("🛑 Boucle run_adaptive_trading stoppée.")
         except Exception as e:
-            logger.error(f"❌ [run_adaptive_trading] Erreur Telegram arrêt boucle: {e}")
+            self.logger.error(
+                f"❌ [run_adaptive_trading] Erreur Telegram arrêt boucle: {e}"
+            )
 
     def choose_strategy(self, regime, indicators):
         # Logique simple d'exemple : personnalise selon tes besoins
@@ -2958,7 +2994,7 @@ class TradingEnv(gym.Env):
             return float(reward)
 
         except Exception as e:
-            logger.error(f"Erreur calcul reward: {e}")
+            self.logger.error(f"Erreur calcul reward: {e}")
             return None
 
     def _update_state(self):
@@ -2974,7 +3010,7 @@ class TradingEnv(gym.Env):
             self.state = np.concatenate([technical_features, market_features])
 
         except Exception as e:
-            logger.error(f"Erreur mise à jour state: {e}")
+            self.logger.error(f"Erreur mise à jour state: {e}")
             return None
 
     def _check_done(self):

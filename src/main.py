@@ -18,10 +18,15 @@ from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
+from src.utils import StreamlitSessionManag
 import asyncio
 import nest_asyncio
 import aiohttp
 import traceback
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -86,6 +91,58 @@ st.info(
 
 if st.button("🔄 Rafraîchir le status"):
     st.rerun()
+
+
+def _perform_cleanup():
+    """Effectue le nettoyage final de l'application"""
+    try:
+        # 1. Protection de la session
+        session_manager.protect_session()
+
+        # 2. Nettoyage de la boucle d'événements
+        if st.session_state.get("loop"):
+            loop = st.session_state.loop
+            if not loop.is_closed():
+                try:
+                    # Nettoyage conditionnel des ressources
+                    if st.session_state.get(
+                        "force_cleanup", False
+                    ) and st.session_state.get("cleanup_allowed", False):
+                        if "bot_instance" in st.session_state:
+                            loop.run_until_complete(
+                                cleanup_resources(st.session_state.bot_instance)
+                            )
+                    # NE PAS FERMER LA BOUCLE ! On ne fait PAS loop.close()
+                except Exception as e:
+                    logger.error(f"Loop cleanup error: {e}")
+                finally:
+                    # On ne détruit pas la boucle ici non plus
+                    pass
+
+        logger.info(
+            """
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ Status: All resources cleaned
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+    except Exception as e:
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║              CLEANUP ERROR                       ║
+╠═════════════════════════════════════════════════╣
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+    finally:
+        # Protection finale absolue
+        session_manager.protect_session()
 
 
 def main():
