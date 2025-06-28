@@ -25,7 +25,7 @@ class WebSocketManager:
         self.retry_delay = WEBSOCKET_CONFIG["RETRY_DELAY"]
 
     async def start(self):
-        await self._initialize_analyzers()
+        """await self._initialize_analyzers()"""
         """Démarre les WebSockets"""
         async with self.lock:
             if self.running:
