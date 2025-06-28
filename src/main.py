@@ -21,6 +21,7 @@ from asyncio import TimeoutError, AbstractEventLoop
 from src.bot.utils import StreamlitSessionManager
 from src.bot.utils import _setup_and_verify_event_loop
 from src.bot.streamlit_helpers import get_bot
+from src.notifications.telegram_bot import TelegramBot
 
 import asyncio
 import nest_asyncio
