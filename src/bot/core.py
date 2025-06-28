@@ -3775,19 +3775,19 @@ async def update_trading_data(bot):
     try:
 
         # Récupération des données BTC/USDC
-        logger.info("📊 Récupération données pour BTC/USDC")
+        self.logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
 
         # Récupération des données ETH/USDC
-        logger.info("📊 Récupération données pour ETH/USDC")
+        self.logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data
 
     except Exception as e:
-        logger.error(f"❌ Erreur mise à jour données: {e}")
+        self.logger.error(f"❌ Erreur mise à jour données: {e}")
 
 
 async def fetch_market_data(bot, symbol):
@@ -3818,7 +3818,7 @@ async def fetch_market_data(bot, symbol):
         return data
 
     except Exception as e:
-        logger.error(f"❌ Erreur récupération données {symbol}: {e}")
+        self.logger.error(f"❌ Erreur récupération données {symbol}: {e}")
         return None
 
 
@@ -3828,26 +3828,26 @@ async def update_market_data(bot):
         data_received = False
 
         # Récupération BTC/USDC
-        logger.info("📊 Récupération données pour BTC/USDC")
+        self.logger.info("📊 Récupération données pour BTC/USDC")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
             data_received = True
 
         # Récupération ETH/USDC
-        logger.info("📊 Récupération données pour ETH/USDC")
+        self.logger.info("📊 Récupération données pour ETH/USDC")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data
             data_received = True
 
         if not data_received:
-            logger.warning("⚠️ Aucune donnée reçue")
+            self.logger.warning("⚠️ Aucune donnée reçue")
 
         return data_received
 
     except Exception as e:
-        logger.error(f"❌ Erreur mise à jour données: {e}")
+        self.logger.error(f"❌ Erreur mise à jour données: {e}")
         return False
 
 
@@ -3871,7 +3871,7 @@ async def process_market_data(bot, symbol):
         await check_signals(bot, symbol)
 
     except Exception as e:
-        logger.error(f"❌ Erreur traitement données {symbol}: {e}")
+        self.logger.error(f"❌ Erreur traitement données {symbol}: {e}")
 
 
 async def run_trading_bot():
@@ -3898,7 +3898,7 @@ async def run_trading_bot():
             st.info("Le trading bot est arrêté. Utilise la sidebar pour le démarrer.")
 
     except Exception as e:
-        logger.error(f"Trading bot error: {e}")
+        self.logger.error(f"Trading bot error: {e}")
         st.error(f"❌ Trading bot error: {str(e)}")
 
 
@@ -4002,7 +4002,7 @@ class TradingEnv(gym.Env):
     def step(self, action):
         # Validation de l'action
         if not self.action_space.contains(action):
-            logger.warning(f"Action invalide: {action}")
+            self.logger.warning(f"Action invalide: {action}")
             action = np.clip(action, self.action_space.low, self.action_space.high)
 
         # Calcul de la récompense
@@ -4035,7 +4035,7 @@ class TradingEnv(gym.Env):
             return float(reward)
 
         except Exception as e:
-            logger.error(f"Erreur calcul reward: {e}")
+            self.logger.error(f"Erreur calcul reward: {e}")
             return None
 
     def _update_state(self):
@@ -4051,7 +4051,7 @@ class TradingEnv(gym.Env):
             self.state = np.concatenate([technical_features, market_features])
 
         except Exception as e:
-            logger.error(f"Erreur mise à jour state: {e}")
+            self.logger.error(f"Erreur mise à jour state: {e}")
             return None
 
     def _check_done(self):
