@@ -19,7 +19,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.FileHandler("trading_bot.log"), logging.StreamHandler()],
 )
-self.logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def safe_float(val, default=0.0):
@@ -38,13 +38,13 @@ def ensure_event_loop():
             nest_asyncio.apply()
             st.session_state.loop = loop
 
-            self.logger.info("✅ New event loop created and configured")
+            logger.info("✅ New event loop created and configured")
             return loop
 
         return st.session_state.loop
 
     except Exception as e:
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
@@ -65,7 +65,7 @@ def setup_asyncio():
         nest_asyncio.apply()
         return loop
     except Exception as e:
-        self.logger.error(f"Error setting up asyncio: {e}")
+        logger.error(f"Error setting up asyncio: {e}")
         return None
 
 
@@ -225,7 +225,7 @@ def _initialize_session_state():
                 st.session_state[key] = value
 
         # Log de succès
-        self.logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE INITIALIZED              ║
@@ -242,7 +242,7 @@ def _initialize_session_state():
 
     except Exception as e:
         # Log d'erreur
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           SESSION STATE ERROR                    ║
@@ -274,7 +274,7 @@ def _setup_and_verify_event_loop():
             st.session_state.loop = loop
 
             # Log de succès d'initialisation
-            self.logger.info(
+            logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
@@ -292,7 +292,7 @@ def _setup_and_verify_event_loop():
         # Vérification de la boucle existante
         existing_loop = st.session_state.loop
         if existing_loop.is_closed():
-            self.logger.warning(
+            logger.warning(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP CLOSED                   ║
@@ -312,7 +312,7 @@ def _setup_and_verify_event_loop():
             return new_loop
 
         # Retour de la boucle existante
-        self.logger.debug(
+        logger.debug(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP VERIFIED                 ║
@@ -328,7 +328,7 @@ def _setup_and_verify_event_loop():
 
     except Exception as e:
         # Log d'erreur détaillé
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
@@ -589,7 +589,7 @@ def _setup_and_verify_event_loop():
             st.session_state.loop = loop
 
             # Log de succès d'initialisation
-            self.logger.info(
+            logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP INITIALIZED              ║
@@ -607,7 +607,7 @@ def _setup_and_verify_event_loop():
         # Vérification de la boucle existante
         existing_loop = st.session_state.loop
         if existing_loop.is_closed():
-            self.logger.warning(
+            logger.warning(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP CLOSED                   ║
@@ -627,7 +627,7 @@ def _setup_and_verify_event_loop():
             return new_loop
 
         # Retour de la boucle existante
-        self.logger.debug(
+        logger.debug(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP VERIFIED                 ║
@@ -643,7 +643,7 @@ def _setup_and_verify_event_loop():
 
     except Exception as e:
         # Log d'erreur détaillé
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║              EVENT LOOP ERROR                    ║
@@ -670,7 +670,7 @@ def _setup_and_verify_event_loop():
 # Création de l'instance globale avec vérification
 try:
     session_manager = StreamlitSessionManager()
-    self.logger.info("✅ Session manager initialized successfully")
+    logger.info("✅ Session manager initialized successfully")
 except Exception as e:
-    self.logger.error(f"❌ Failed to initialize session manager: {e}")
+    logger.error(f"❌ Failed to initialize session manager: {e}")
     session_manager = None

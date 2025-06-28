@@ -1,19 +1,35 @@
+import os
 import asyncio
 import logging
+import time
 from datetime import datetime, timezone
 import websockets
 import json
 from .utils import WEBSOCKET_CONFIG
+from binance import AsyncClient, BinanceSocketManager
+from src.exchanges.binance_exchange import BinanceExchange
+from src.exchanges.binance.binance_client import BinanceClient
+from src.core.exchange import ExchangeInterface as Exchange
+from src.core.buffer.circular_buffer import CircularBuffer
+from src.connectors.binance import BinanceConnector
+
+logger = logging.getLogger(__name__)
+
+# 7. Constantes de nettoyage
+cleanup_lock = asyncio.Lock()
+cleanup_in_progress = False
+last_cleanup_time = 0
+CLEANUP_COOLDOWN = 5
 
 
 class WebSocketManager:
     def __init__(self, bot):
+        self.logger = logging.getLogger(__name__)
         self.bot = bot
         self.streams = {}
         self.running = False
         self.lock = asyncio.Lock()
         self.advanced_indicators = {}
-        # Correction des valeurs par défaut
         self.pairs = bot.config.get("TRADING", {}).get(
             "pairs", ["BTC/USDT", "ETH/USDT"]
         )
@@ -25,7 +41,6 @@ class WebSocketManager:
         self.retry_delay = WEBSOCKET_CONFIG["RETRY_DELAY"]
 
     async def start(self):
-        """await self._initialize_analyzers()"""
         """Démarre les WebSockets"""
         async with self.lock:
             if self.running:
@@ -105,6 +120,82 @@ class WebSocketManager:
                         continue
                 return
 
+    async def cleanup(self):
+        """Nettoie les ressources WebSocket"""
+        try:
+            self.running = False
+
+            # Annulation des tâches
+            for stream in self.streams.values():
+                if not stream.done():
+                    stream.cancel()
+                    try:
+                        await stream
+                    except asyncio.CancelledError:
+                        pass
+
+            self.streams.clear()
+
+            # Fermeture du socket manager
+            if hasattr(self.bot, "socket_manager") and self.bot.socket_manager:
+                try:
+                    # Modification pour utiliser stop_socket
+                    for socket in getattr(self.bot.socket_manager, "sockets", []):
+                        await self.bot.socket_manager.stop_socket(socket)
+                    self.bot.socket_manager = None
+                except Exception as e:
+                    self.logger.warning(f"Error closing socket manager: {e}")
+
+            # Fermeture du client Binance
+            if hasattr(self.bot, "binance_ws") and self.bot.binance_ws:
+                try:
+                    await self.bot.binance_ws.close_connection()
+                except Exception as e:
+                    self.logger.warning(f"Error closing Binance client: {e}")
+                self.bot.binance_ws = None
+        except Exception as e:
+            self.logger.error(f"Cleanup error: {e}")
+
+    async def cleanup_session(self):
+        """Nettoyage d'une session avec verrou et cooldown"""
+        global cleanup_in_progress, last_cleanup_time
+
+        try:
+            # Vérification du cooldown
+            current_time = time.time()
+            if current_time - last_cleanup_time < CLEANUP_COOLDOWN:
+                return
+
+            # Utilisation d'un verrou pour éviter les nettoyages simultanés
+            async with cleanup_lock:
+                if cleanup_in_progress:
+                    return
+
+                cleanup_in_progress = True
+                last_cleanup_time = current_time
+
+                try:
+                    # Nettoyage des ressources
+                    await cleanup_resources(self.bot)
+
+                    # Un seul message de log
+                    self.logger.info("✅ Session cleaned successfully")
+                    self.logger.info(
+                        """
+╔═════════════════════════════════════════════════╗
+║              CLEANUP COMPLETED                   ║
+╠═════════════════════════════════════════════════╣
+║ All resources cleaned successfully              ║
+╚═════════════════════════════════════════════════╝
+                        """
+                    )
+
+                finally:
+                    cleanup_in_progress = False
+
+        except Exception as e:
+            self.logger.error(f"❌ Cleanup error: {e}")
+
 
 async def initialize_websocket(bot):
     """
@@ -113,12 +204,12 @@ async def initialize_websocket(bot):
     try:
         # Vérification du statut d'initialisation
         if getattr(bot, "_ws_initializing", False):
-            self.logger.warning("⚠️ Initialisation WebSocket déjà en cours")
+            logger.warning("⚠️ Initialisation WebSocket déjà en cours")
             return False
 
         bot._ws_initializing = True
 
-        self.logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║         INITIALISATION WEBSOCKET                ║
@@ -134,7 +225,7 @@ async def initialize_websocket(bot):
         api_secret = os.getenv("BINANCE_API_SECRET")
 
         if not api_key or not api_secret:
-            self.logger.error(
+            logger.error(
                 """
 ╔═════════════════════════════════════════════════╗
 ║         ERREUR CREDENTIALS                      ║
@@ -151,7 +242,7 @@ async def initialize_websocket(bot):
                 await bot.binance_ws.close_connection()
                 bot.binance_ws = None
             except Exception as cleanup_error:
-                self.logger.warning(
+                logger.warning(
                     f"⚠️ Erreur nettoyage connexion existante: {cleanup_error}"
                 )
 
@@ -160,9 +251,9 @@ async def initialize_websocket(bot):
             bot.binance_ws = await AsyncClient.create(
                 api_key=api_key, api_secret=api_secret, tld="com"
             )
-            self.logger.info("✅ Client Binance initialisé")
+            logger.info("✅ Client Binance initialisé")
         except Exception as client_error:
-            self.logger.error(f"❌ Erreur création client: {client_error}")
+            logger.error(f"❌ Erreur création client: {client_error}")
             return False
 
         # 4. Configuration du socket manager avec paramètres optimisés
@@ -170,9 +261,9 @@ async def initialize_websocket(bot):
             bot.socket_manager = BinanceSocketManager(
                 bot.binance_ws,
             )
-            self.logger.info("✅ Socket Manager configuré")
+            logger.info("✅ Socket Manager configuré")
         except Exception as manager_error:
-            self.logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
+            logger.error(f"❌ Erreur configuration socket manager: {manager_error}")
             return False
 
         # 5. Configuration des streams avec gestion d'erreur
@@ -202,10 +293,10 @@ async def initialize_websocket(bot):
             heartbeat_task.set_name("websocket_heartbeat")
             bot.ws_tasks.append(heartbeat_task)
 
-            self.logger.info("✅ Streams configurés")
+            logger.info("✅ Streams configurés")
 
         except Exception as stream_error:
-            self.logger.error(f"❌ Erreur configuration streams: {stream_error}")
+            logger.error(f"❌ Erreur configuration streams: {stream_error}")
             return False
 
         # 6. Mise à jour du statut de connexion
@@ -219,7 +310,7 @@ async def initialize_websocket(bot):
             "start_time": datetime.now(timezone.utc),
         }
 
-        self.logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║         WEBSOCKET INITIALISÉ                    ║
@@ -235,7 +326,7 @@ async def initialize_websocket(bot):
         return True
 
     except Exception as e:
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║         ERREUR INITIALISATION                   ║
@@ -261,7 +352,7 @@ async def initialize_websocket(bot):
         bot._ws_initializing = False
         # Vérification finale de la connexion
         if not bot.ws_connection.get("enabled", False):
-            self.logger.warning("⚠️ WebSocket non initialisé correctement")
+            logger.warning("⚠️ WebSocket non initialisé correctement")
 
 
 async def setup_websocket_streams(bot):
@@ -308,7 +399,7 @@ async def setup_websocket_streams(bot):
         return True
 
     except Exception as e:
-        self.logger.error(f"❌ Stream setup error: {e}")
+        logger.error(f"❌ Stream setup error: {e}")
         return False
 
 
@@ -325,7 +416,7 @@ async def websocket_heartbeat(bot):
             await asyncio.sleep(30)  # Heartbeat toutes les 30 secondes
 
         except Exception as e:
-            self.logger.error(f"Heartbeat error: {e}")
+            logger.error(f"Heartbeat error: {e}")
             await asyncio.sleep(5)
 
 
@@ -353,7 +444,7 @@ async def handle_socket_message(bot, socket, stream_name):
                 continue
 
             except Exception as e:
-                self.logger.error(f"Socket error ({stream_name}): {e}")
+                logger.error(f"Socket error ({stream_name}): {e}")
                 await asyncio.sleep(1)
                 continue
 
@@ -361,7 +452,7 @@ async def handle_socket_message(bot, socket, stream_name):
 async def cleanup_websocket(bot):
     """Clean WebSocket resources"""
     try:
-        self.logger.info("🔄 Closing WebSocket...")
+        logger.info("🔄 Closing WebSocket...")
 
         if hasattr(bot, "ws_tasks"):
             for task in bot.ws_tasks:
@@ -376,10 +467,10 @@ async def cleanup_websocket(bot):
 
         bot.ws_connection = {"enabled": False, "status": "disconnected", "tasks": []}
 
-        self.logger.info("✅ WebSocket closed successfully")
+        logger.info("✅ WebSocket closed successfully")
 
     except Exception as e:
-        self.logger.error(f"❌ WebSocket cleanup error: {e}")
+        logger.error(f"❌ WebSocket cleanup error: {e}")
 
 
 async def setup_streams(bot):
@@ -418,11 +509,11 @@ async def setup_streams(bot):
 
                 except Exception as e:
                     retry_count += 1
-                    self.logger.error(f"Error setting up {stream_type} stream: {e}")
+                    logger.error(f"Error setting up {stream_type} stream: {e}")
                     if retry_count < WEBSOCKET_CONFIG["MAX_RETRIES"]:
                         await asyncio.sleep(WEBSOCKET_CONFIG["RETRY_DELAY"])
                     else:
-                        self.logger.error(
+                        logger.error(
                             f"Failed to setup {stream_type} stream after {WEBSOCKET_CONFIG['MAX_RETRIES']} attempts"
                         )
                         return None
@@ -438,16 +529,16 @@ async def setup_streams(bot):
         tasks = [t for t in [ticker_task, depth_task, kline_task] if t is not None]
 
         if len(tasks) > 0:
-            self.logger.info(
+            logger.info(
                 f"✅ Successfully setup {len(tasks)}/{len(WEBSOCKET_CONFIG['STREAM_TYPES'])} streams"
             )
             return tasks
         else:
-            self.logger.error("❌ Failed to setup any streams")
+            logger.error("❌ Failed to setup any streams")
             return None
 
     except Exception as e:
-        self.logger.error(f"❌ Stream setup error: {e}")
+        logger.error(f"❌ Stream setup error: {e}")
         return None
 
 
@@ -469,7 +560,7 @@ async def cleanup_existing_connections(bot):
                     await bot.socket_manager.close_connection()
 
             except Exception as e:
-                self.logger.warning(f"⚠️ Error closing socket manager: {e}")
+                logger.warning(f"⚠️ Error closing socket manager: {e}")
             finally:
                 bot.socket_manager = None
 
@@ -478,14 +569,14 @@ async def cleanup_existing_connections(bot):
             try:
                 await bot.binance_ws.close_connection()
             except Exception as e:
-                self.logger.warning(f"⚠️ Error closing Binance client: {e}")
+                logger.warning(f"⚠️ Error closing Binance client: {e}")
             finally:
                 bot.binance_ws = None
 
         return True
 
     except Exception as e:
-        self.logger.error(f"❌ Error during cleanup: {e}")
+        logger.error(f"❌ Error during cleanup: {e}")
         return False
 
 
@@ -509,7 +600,7 @@ async def create_binance_client(bot):
         return True
 
     except Exception as e:
-        self.logger.error(f"❌ Error creating Binance client: {e}")
+        logger.error(f"❌ Error creating Binance client: {e}")
         return False
 
 
@@ -526,7 +617,7 @@ async def cleanup_resources(bot):
     current_time = datetime.now(timezone.utc)
 
     # Log de début de tentative de nettoyage
-    self.logger.info(
+    logger.info(
         f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ATTEMPT STARTED                ║
@@ -554,7 +645,7 @@ async def cleanup_resources(bot):
     if any(protection_conditions.values()):
         # Log détaillé des conditions qui empêchent le nettoyage
         active_protections = [k for k, v in protection_conditions.items() if v]
-       self. logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP PREVENTED                      ║
@@ -573,7 +664,7 @@ async def cleanup_resources(bot):
     try:
         # Marquer le début du nettoyage
         bot.cleanup_in_progress = True
-        self.logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP STARTED                        ║
@@ -588,7 +679,7 @@ async def cleanup_resources(bot):
         await close_websocket(bot)
 
         # Log de succès
-        self.logger.info(
+        logger.info(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP SUCCESSFUL                     ║
@@ -602,7 +693,7 @@ async def cleanup_resources(bot):
 
     except Exception as e:
         # Log d'erreur détaillé
-        self.logger.error(
+        logger.error(
             f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP ERROR                          ║
@@ -622,7 +713,7 @@ async def cleanup_resources(bot):
             session_manager.protect_session()
 
             # Log final
-            self.logger.info(
+            logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
 ║           CLEANUP FINALIZED                      ║
@@ -635,7 +726,7 @@ async def cleanup_resources(bot):
             )
 
         except Exception as final_error:
-            self.logger.error(f"Final cleanup error: {final_error}")
+            logger.error(f"Final cleanup error: {final_error}")
 
 
 async def check_websocket_health(bot):
@@ -657,7 +748,7 @@ async def check_websocket_health(bot):
         return True
 
     except Exception as e:
-        self.logger.error(f"❌ WebSocket health check error: {e}")
+        logger.error(f"❌ WebSocket health check error: {e}")
         await reset_websocket(bot)
         return False
 
@@ -665,7 +756,7 @@ async def check_websocket_health(bot):
 async def close_websocket(bot):
     """Ferme proprement la connexion WebSocket"""
     try:
-        self.logger.info("🔄 Closing WebSocket...")
+        logger.info("🔄 Closing WebSocket...")
 
         # Fermeture des tâches
         if bot.ws_connection and bot.ws_connection.get("tasks"):
@@ -708,11 +799,11 @@ async def close_websocket(bot):
         # Réinitialisation de l'état
         bot.ws_connection = {"enabled": False, "status": "disconnected", "tasks": []}
 
-        self.logger.info("✅ WebSocket closed successfully")
+        logger.info("✅ WebSocket closed successfully")
         return True
 
     except Exception as e:
-        self.logger.error(f"❌ WebSocket close error: {e}")
+        logger.error(f"❌ WebSocket close error: {e}")
         return False
 
 
@@ -720,23 +811,23 @@ async def process_ws_message(bot, msg):
     """Process WebSocket messages"""
     try:
         if not msg:
-            self.logger.warning("Empty message received")
+            logger.warning("Empty message received")
             return
 
         if "e" not in msg:
-            self.logger.warning(f"Invalid message format: {msg}")
+            logger.warning(f"Invalid message format: {msg}")
             return
 
         if msg["e"] == "ticker":
             # Mise à jour du prix
             bot.latest_data["price"] = float(msg["c"])
             bot.latest_data["volume"] = float(msg["v"])
-            self.logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
+            logger.debug(f"💰 Price updated: {bot.latest_data['price']}")
 
         elif msg["e"] == "depth":
             # Mise à jour de l'orderbook
             bot.latest_data["orderbook"] = {"bids": msg["b"][:5], "asks": msg["a"][:5]}
-            self.logger.debug("📚 Orderbook updated")
+            logger.debug("📚 Orderbook updated")
 
         elif msg["e"] == "kline":
             # Mise à jour des klines
@@ -748,14 +839,14 @@ async def process_ws_message(bot, msg):
                 "close": float(k["c"]),
                 "volume": float(k["v"]),
             }
-            self.logger.debug("📊 Klines updated")
+            logger.debug("📊 Klines updated")
 
         # Mise à jour du timestamp
         bot.latest_data["timestamp"] = msg.get("E", int(time.time() * 1000))
         bot.ws_connection["last_message"] = time.time()
 
     except Exception as e:
-        self.logger.error(f"❌ Message processing error: {e}")
+        logger.error(f"❌ Message processing error: {e}")
 
 
 async def handle_ticker_message(bot, msg):
@@ -774,7 +865,7 @@ async def handle_ticker_message(bot, msg):
             bot.ws_connection["last_message"] = time.time()
 
     except Exception as e:
-        self.logger.error(f"❌ Ticker message error: {e}")
+        logger.error(f"❌ Ticker message error: {e}")
 
 
 async def handle_kline_message(bot, msg):
@@ -800,7 +891,7 @@ async def handle_kline_message(bot, msg):
                     bot.latest_klines.pop(0)
 
     except Exception as e:
-        self.logger.error(f"❌ Kline message error: {e}")
+        logger.error(f"❌ Kline message error: {e}")
 
 
 async def handle_depth_message(bot, msg):
@@ -818,7 +909,7 @@ async def handle_depth_message(bot, msg):
             bot.latest_orderbook = orderbook
 
     except Exception as e:
-        self.logger.error(f"❌ Depth message error: {e}")
+        logger.error(f"❌ Depth message error: {e}")
 
 
 async def handle_kline_message(bot, msg):
@@ -844,7 +935,7 @@ async def handle_kline_message(bot, msg):
                     bot.latest_klines.pop(0)
 
     except Exception as e:
-        self.logger.error(f"❌ Kline message error: {e}")
+        logger.error(f"❌ Kline message error: {e}")
 
 
 async def handle_depth_message(bot, msg):
@@ -862,7 +953,7 @@ async def handle_depth_message(bot, msg):
             bot.latest_orderbook = orderbook
 
     except Exception as e:
-        self.logger.error(f"❌ Depth message error: {e}")
+        logger.error(f"❌ Depth message error: {e}")
 
 
 async def cleanup_session(bot):
@@ -888,8 +979,8 @@ async def cleanup_session(bot):
                 await cleanup_resources(bot)
 
                 # Un seul message de log
-                self.logger.info("✅ Session cleaned successfully")
-                self.logger.info(
+                logger.info("✅ Session cleaned successfully")
+                logger.info(
                     """
 ╔═════════════════════════════════════════════════╗
 ║              CLEANUP COMPLETED                   ║
@@ -903,85 +994,7 @@ async def cleanup_session(bot):
                 cleanup_in_progress = False
 
     except Exception as e:
-        self.logger.error(f"❌ Cleanup error: {e}")
-
-
-async def cleanup(self):
-    """Nettoie les ressources WebSocket"""
-    try:
-        self.running = False
-
-        # Annulation des tâches
-        for stream in self.streams.values():
-            if not stream.done():
-                stream.cancel()
-                try:
-                    await stream
-                except asyncio.CancelledError:
-                    pass
-
-        self.streams.clear()
-
-        # Fermeture du socket manager
-        if hasattr(self.bot, "socket_manager") and self.bot.socket_manager:
-            try:
-                # Modification pour utiliser stop_socket
-                for socket in self.bot.socket_manager.sockets:
-                    await self.bot.socket_manager.stop_socket(socket)
-                self.bot.socket_manager = None
-            except Exception as e:
-                self.logger.warning(f"Error closing socket manager: {e}")
-
-        # Fermeture du client Binance
-        if hasattr(self.bot, "binance_ws") and self.bot.binance_ws:
-            try:
-                await self.bot.binance_ws.close_connection()
-            except Exception as e:
-                self.logger.warning(f"Error closing Binance client: {e}")
-            self.bot.binance_ws = None
-    except Exception as e:
-        self.logger.error(f"Cleanup error: {e}")
-
-
-async def cleanup_session(bot):
-    """Nettoyage d'une session avec verrou et cooldown"""
-    global cleanup_in_progress, last_cleanup_time
-
-    try:
-        # Vérification du cooldown
-        current_time = time.time()
-        if current_time - last_cleanup_time < CLEANUP_COOLDOWN:
-            return
-
-        # Utilisation d'un verrou pour éviter les nettoyages simultanés
-        async with cleanup_lock:
-            if cleanup_in_progress:
-                return
-
-            cleanup_in_progress = True
-            last_cleanup_time = current_time
-
-            try:
-                # Nettoyage des ressources
-                await cleanup_resources(bot)
-
-                # Un seul message de log
-                self.logger.info("✅ Session cleaned successfully")
-                self.logger.info(
-                    """
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned successfully              ║
-╚═════════════════════════════════════════════════╝
-                """
-                )
-
-            finally:
-                cleanup_in_progress = False
-
-    except Exception as e:
-        self.logger.error(f"❌ Cleanup error: {e}")
+        logger.error(f"❌ Cleanup error: {e}")
 
 
 async def shutdown():
@@ -1005,7 +1018,7 @@ async def shutdown():
                     asyncio.gather(*tasks, return_exceptions=True), timeout=5.0
                 )
             except asyncio.TimeoutError:
-                self.logger.warning("Timeout during tasks cancellation")
+                logger.warning("Timeout during tasks cancellation")
 
         # Nettoyage via le gestionnaire de sessions
         await session_manager.cleanup()
@@ -1015,7 +1028,7 @@ async def shutdown():
             bot = st.session_state.bot_instance
             await cleanup_resources(bot)
 
-        self.logger.info(
+        logger.info(
             """
 ╔═════════════════════════════════════════════════╗
 ║              SHUTDOWN COMPLETED                  ║
@@ -1026,4 +1039,4 @@ async def shutdown():
         )
 
     except Exception as e:
-        self.logger.error(f"Shutdown error: {e}")
+        logger.error(f"Shutdown error: {e}")

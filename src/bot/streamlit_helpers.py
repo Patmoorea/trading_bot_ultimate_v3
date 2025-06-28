@@ -4,7 +4,7 @@ import nest_asyncio
 import os
 import logging
 
-self.logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 from datetime import datetime, timezone
 
@@ -25,7 +25,7 @@ def get_bot():
 
     try:
         session_manager.protect_session()
-        self.logger.info("Creating new bot instance...")
+        logger.info("Creating new bot instance...")
         bot = TradingBotM4()
 
         async def initialize_bot():
@@ -34,10 +34,10 @@ def get_bot():
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
                 bot._initialized = True
-                self.logger.info("Bot initialized successfully")
+                logger.info("Bot initialized successfully")
                 return bot
             except Exception as init_error:
-                self.logger.error(f"Bot initialization error: {init_error}")
+                logger.error(f"Bot initialization error: {init_error}")
                 raise
 
         try:
@@ -55,20 +55,20 @@ def get_bot():
             else:
                 bot = loop.run_until_complete(initialize_bot())
         except RuntimeError as e:
-            self.logger.error(f"RuntimeError during bot init: {e}")
+            logger.error(f"RuntimeError during bot init: {e}")
             bot = loop.run_until_complete(initialize_bot())
 
         if not bot or not getattr(bot, "_initialized", False):
             raise Exception("Bot initialization incomplete")
 
         st.session_state.bot_instance = bot
-        self.logger.info(
+        logger.info(
             f"Bot ready - Status: {bot.ws_connection.get('status', 'initializing')} - Mode: {getattr(bot, 'trading_mode', 'production')}"
         )
 
         return bot
     except Exception as e:
-        self.logger.error(f"Bot creation failed: {e}")
+        logger.error(f"Bot creation failed: {e}")
         if "bot_instance" in st.session_state:
             del st.session_state.bot_instance
         if "loop" in st.session_state:
