@@ -170,7 +170,7 @@ def main():
         )
 
         # 3. Initialisation de l'état de session
-        _initialize_session_state()
+        session_manager._initialize_session_state()
 
         # 4. Configuration et vérification de la boucle d'événements
         event_loop = _setup_and_verify_event_loop()
