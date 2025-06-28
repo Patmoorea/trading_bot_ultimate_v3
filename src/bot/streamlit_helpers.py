@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 from datetime import datetime, timezone
 
 from bot.core import TradingBotM4
+from src.bot.utils import StreamlitSessionManager
+from src.notifications.telegram_bot import TelegramBot
+
+session_manager = StreamlitSessionManager()
 
 # Ajoute les autres imports nécessaires (logger, session_manager, etc.)
 
