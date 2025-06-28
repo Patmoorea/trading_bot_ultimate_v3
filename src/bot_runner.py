@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from src.bot.core import TradingBotM4
+from src.notifications.telegram_bot import TelegramBot
 
 STATUS_PATH = "bot_status.json"
 

@@ -244,6 +244,8 @@ class TradingBotM4:
         # Configuration Telegram
         self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
         self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        from src.notifications.telegram_bot import TelegramBot
+
         self.telegram = TelegramBot()
 
         # IA et analyse
