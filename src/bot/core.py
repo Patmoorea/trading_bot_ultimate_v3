@@ -319,6 +319,25 @@ class TradingBotM4:
         else:
             raise NotImplementedError("No method to get latest price")
 
+    async def async_init(self):
+        await self.exchange.initialize()
+        is_spot_testnet = (
+            getattr(self.exchange, "testnet", False)
+            and getattr(self.exchange, "_exchange", None) is not None
+            and self.exchange._exchange.options.get("defaultType", "spot") == "spot"
+        )
+        if is_spot_testnet:
+            self.logger.warning(
+                "Binance SPOT testnet : WebSockets et MultiStreamManager désactivés"
+            )
+            self.ws_manager = None
+            self.websocket = None
+        else:
+            self.ws_manager = WebSocketManager(self)
+            self.websocket = MultiStreamManager(
+                pairs=self.config["TRADING"]["pairs"], config=self.stream_config
+            )
+
     async def start(self):
         """Démarre le bot"""
         try:
