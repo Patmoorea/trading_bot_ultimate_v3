@@ -24,7 +24,9 @@ from src.exchanges.binance_exchange import BinanceExchange
 from src.exchanges.binance.binance_client import BinanceClient
 from src.data.realtime.websocket.client import MultiStreamManager
 from src.monitoring.streamlit_ui import TradingDashboard
-from .dashboard import TradingDashboard
+from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import (
+    ArbitrageScanner as ArbitrageEngine,
+)
 
 # ccxt (si utilisé pour l'exchange)
 import ccxt

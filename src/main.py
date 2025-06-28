@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
-from src.utils import StreamlitSessionManager
+from src.bot.utils import StreamlitSessionManager
 import asyncio
 import nest_asyncio
 import aiohttp
