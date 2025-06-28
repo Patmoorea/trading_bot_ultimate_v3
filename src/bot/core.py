@@ -43,6 +43,7 @@ from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 # (Optionnel) nest_asyncio si tu utilises dans Streamlit ou Jupyter
 import nest_asyncio
 from .utils import WEBSOCKET_CONFIG
+from src.ai.hybrid_model import HybridAI
 
 
 class TradingBotM4:
