@@ -157,7 +157,7 @@ class RegimeDetector:
             }
 
         except Exception as e:
-            logger.error(f"❌ Erreur génération recommandation: {e}")
+            self.logger.error(f"❌ Erreur génération recommandation: {e}")
             return {
                 "action": "error",
                 "confidence": 0,
@@ -188,7 +188,7 @@ class RegimeDetector:
     """
             return report
         except Exception as e:
-            logger.error(f"❌ Erreur génération rapport: {e}")
+            self.logger.error(f"❌ Erreur génération rapport: {e}")
             return f"Erreur lors de la génération du rapport : {e}"
 
 
@@ -250,8 +250,8 @@ class RegimeDetector:
 
 
 async def study_market(self, period="7d"):
-    logger = logging.getLogger(__name__)
-    logger.info("🔊 Étude du marché en cours...")
+    self.logger = logging.getLogger(__name__)
+    self.logger.info("🔊 Étude du marché en cours...")
     if not hasattr(self, "advanced_indicators") or self.advanced_indicators is None:
         raise RuntimeError(
             "advanced_indicators non initialisé : appelle _initialize_analyzers() d'abord"
@@ -259,26 +259,28 @@ async def study_market(self, period="7d"):
     try:
         # -- Bloc critique avec logs détaillés et traceback sur erreur --
         try:
-            logger.info("➡️ [study_market] Avant get_historical_data")
+            self.logger.info("➡️ [study_market] Avant get_historical_data")
             if not getattr(self.exchange, "_initialized", False):
-                logger.info("[study_market] Initialisation exchange...")
+                self.logger.info("[study_market] Initialisation exchange...")
                 await self.exchange.initialize()
-            logger.info("[study_market] Après initialize, avant get_historical_data")
+            self.logger.info(
+                "[study_market] Après initialize, avant get_historical_data"
+            )
             historical_data = await self.exchange.get_historical_data(
                 self.config["TRADING"]["pairs"],
                 self.config["TRADING"]["timeframes"],
                 period,
             )
-            logger.info("⬅️ [study_market] Après get_historical_data")
+            self.logger.info("⬅️ [study_market] Après get_historical_data")
         except Exception as e:
-            logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
+            self.logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
             import traceback
 
-            logger.error(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
             raise
 
         if not historical_data or not isinstance(historical_data, dict):
-            logger.error(
+            self.logger.error(
                 "❌ Données historiques non disponibles ou mauvais format (None ou pas dict)"
             )
             raise ValueError("Données historiques non disponibles ou format inattendu")
@@ -291,7 +293,7 @@ async def study_market(self, period="7d"):
             for pair in self.config["TRADING"]["pairs"]:
                 df = tf_data.get(pair)
                 if not isinstance(df, pd.DataFrame) or df.empty:
-                    logger.warning(
+                    self.logger.warning(
                         f"Données OHLCV absentes ou vides pour {pair} {timeframe}, skip analyse."
                     )
                     indicators_analysis[timeframe][pair] = {
@@ -314,7 +316,7 @@ async def study_market(self, period="7d"):
                         }
                     )
                 except Exception as tf_error:
-                    logger.error(f"Erreur analyse {pair} {timeframe}: {tf_error}")
+                    self.logger.error(f"Erreur analyse {pair} {timeframe}: {tf_error}")
                     indicators_analysis[timeframe][pair] = {
                         "trend": {"trend_strength": 0},
                         "volatility": {"current_volatility": 0},
@@ -343,7 +345,7 @@ async def study_market(self, period="7d"):
                 for tf, tf_pairs in indicators_analysis.items()
             }
         )
-        logger.info(f"🔈 Régime de marché détecté: {regime}")
+        self.logger.info(f"🔈 Régime de marché détecté: {regime}")
 
         try:
             analysis_report = self._generate_analysis_report(
@@ -352,7 +354,7 @@ async def study_market(self, period="7d"):
             )
             await self.telegram.send_message(analysis_report)
         except Exception as report_error:
-            logger.error(f"Erreur génération rapport: {report_error}")
+            self.logger.error(f"Erreur génération rapport: {report_error}")
 
         try:
             self.dashboard.update_market_analysis(
@@ -361,10 +363,10 @@ async def study_market(self, period="7d"):
                 regime=regime,
             )
         except Exception as dash_error:
-            logger.error(f"Erreur mise à jour dashboard: {dash_error}")
+            self.logger.error(f"Erreur mise à jour dashboard: {dash_error}")
 
         return regime, historical_data, indicators_analysis
 
     except Exception as e:
-        logger.error(f"Erreur study_market: {e}")
+        self.logger.error(f"Erreur study_market: {e}")
         raise

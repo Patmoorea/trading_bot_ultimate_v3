@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from typing import Dict, Any, List
 
-logger = logging.getLogger(__name__)
+self.logger = logging.getLogger(__name__)
 
 
 def compute_rsi(prices: pd.Series, period: int = 14) -> float:
@@ -76,7 +76,7 @@ def analyze_signals(
     signals = {}
 
     if market_data is None or len(market_data) < 50:
-        logger.warning("Pas assez de données pour analyse des signaux.")
+        self.logger.warning("Pas assez de données pour analyse des signaux.")
         return {}
 
     close = market_data["close"]
