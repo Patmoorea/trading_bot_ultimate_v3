@@ -19,6 +19,9 @@ from dataclasses import dataclass
 from contextlib import AsyncExitStack
 from asyncio import TimeoutError, AbstractEventLoop
 from src.bot.utils import StreamlitSessionManager
+from src.bot.utils import _setup_and_verify_event_loop
+from src.bot.streamlit_helpers import get_bot
+
 import asyncio
 import nest_asyncio
 import aiohttp
