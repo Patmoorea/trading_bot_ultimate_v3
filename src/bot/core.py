@@ -3859,6 +3859,63 @@ async def run_trading_bot():
         st.error(f"❌ Trading bot error: {str(e)}")
 
 
+class RegimeDetector:
+    """Détecteur de régimes de marché"""
+
+    def __init__(self):
+        self.current_regime = None
+        self.logger = logging.getLogger(__name__)
+
+    def predict(self, indicators_analysis):
+        try:
+            regime = "Unknown"
+            if indicators_analysis:
+                trend_strength = 0
+                volatility = 0
+                volume = 0
+
+                for timeframe_data in indicators_analysis.values():
+                    if "trend" in timeframe_data:
+                        trend_strength += timeframe_data["trend"].get(
+                            "trend_strength", 0
+                        )
+                    if "volatility" in timeframe_data:
+                        volatility += timeframe_data["volatility"].get(
+                            "current_volatility", 0
+                        )
+                    if "volume" in timeframe_data:
+                        volume += float(
+                            timeframe_data["volume"]
+                            .get("volume_profile", {})
+                            .get("strength", 0)
+                        )
+
+                if trend_strength > 0.7:
+                    regime = "Trending"
+                elif volatility > 0.7:
+                    regime = "Volatile"
+                elif volume > 0.7:
+                    regime = "High Volume"
+                else:
+                    regime = "Ranging"
+
+            self.current_regime = regime
+            self.logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           MARKET REGIME DETECTION                ║
+╠═════════════════════════════════════════════════╣
+║ Régime: {regime}
+╚═════════════════════════════════════════════════╝
+            """
+            )
+            return regime
+
+        except Exception as e:
+            self.logger.error(f"❌ Erreur détection régime: {e}")
+            return "Error"
+
+
 class TradingEnv(gym.Env):
     """Environment d'apprentissage par renforcement pour le trading"""
 
