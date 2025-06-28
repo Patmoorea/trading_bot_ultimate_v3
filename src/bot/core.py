@@ -27,6 +27,16 @@ from src.monitoring.streamlit_ui import TradingDashboard
 from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import (
     ArbitrageScanner as ArbitrageEngine,
 )
+from src.indicators.advanced.multi_timeframe import (
+    MultiTimeframeAnalyzer,
+    TimeframeConfig,
+)
+from src.analysis.indicators.orderflow.orderflow_analysis import (
+    OrderFlowAnalysis,
+    OrderFlowConfig,
+)
+from src.analysis.indicators.volume.volume_analysis import VolumeAnalysis
+from src.analysis.indicators.volatility.volatility import VolatilityIndicators
 
 # ccxt (si utilisé pour l'exchange)
 import ccxt
@@ -44,6 +54,12 @@ from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
 import nest_asyncio
 from .utils import WEBSOCKET_CONFIG
 from src.ai.hybrid_model import HybridAI
+from src.risk_management.position_manager import PositionManager
+from src.risk_management.circuit_breakers import CircuitBreaker
+from src.notifications.telegram_bot import TelegramBot
+from web_interface.app.services.news_analyzer import NewsAnalyzer
+from src.regime_detection.hmm_kmeans import MarketRegimeDetector
+from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
 
 
 class TradingBotM4:
@@ -245,7 +261,6 @@ class TradingBotM4:
         # Configuration Telegram
         self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
         self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
-        from src.notifications.telegram_bot import TelegramBot
 
         self.telegram = TelegramBot()
 
