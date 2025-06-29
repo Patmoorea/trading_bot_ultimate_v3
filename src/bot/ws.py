@@ -16,6 +16,7 @@ from src.core.exchange import ExchangeInterface as Exchange
 from src.core.buffer.circular_buffer import CircularBuffer
 from src.connectors.binance import BinanceConnector
 from src.monitoring.streamlit_ui import TradingDashboard
+from src.bot.utils import StreamlitSessionManager
 
 logger = logging.getLogger(__name__)
 

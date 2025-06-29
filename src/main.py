@@ -22,6 +22,8 @@ from src.bot.utils import StreamlitSessionManager
 from src.bot.utils import _setup_and_verify_event_loop
 from src.bot.streamlit_helpers import get_bot
 from src.bot.ws import cleanup_resources
+from src.bot.core import TradingBotM4
+
 from src.notifications.telegram_bot import TelegramBot
 
 import asyncio

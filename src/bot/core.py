@@ -64,6 +64,7 @@ from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
 from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
 import nest_asyncio
+from src.ai.ppo_gtrxl import PPOGTrXL
 
 
 class TradingBotM4:
