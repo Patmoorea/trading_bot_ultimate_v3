@@ -207,7 +207,7 @@ async def main_async():
             if "session_manager" in globals():
                 session_manager.protect_session()
             else:
-                logger.info("No session_manager available during main_async.")
+                logger.debug("No session_manager available during main_async.")
         except Exception as e:
             logger.error(f"Session protection error in main_async: {e}")
 
@@ -503,7 +503,9 @@ async def main_async():
             if "session_manager" in globals():
                 session_manager.protect_session()
             else:
-                logger.info("No session_manager available for protection (main_async).")
+                logger.debug(
+                    "No session_manager available for protection (main_async)."
+                )
             st.session_state.last_update_time = datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
