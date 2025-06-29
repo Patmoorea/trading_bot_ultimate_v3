@@ -744,7 +744,7 @@ if __name__ == "__main__":
         sys.exit(1)
     finally:
         try:
-            # Nettoyage final SANS session_manager
+            # Nettoyage final SANS session_manager !
             if "bot_instance" in st.session_state:
                 try:
                     cleanup_loop = asyncio.new_event_loop()
@@ -767,7 +767,6 @@ if __name__ == "__main__":
 ╚═════════════════════════════════════════════════╝
                 """
             )
-
         except Exception as cleanup_error:
             logger.error(
                 f"""
