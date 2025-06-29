@@ -47,9 +47,6 @@ from src.backtesting.advanced.quantum_backtest import QuantumBacktester, Backtes
 from src.backtesting.core.backtest_engine import BacktestEngine
 
 
-# Dans la méthode cleanup()
-
-
 # Fonction d'aide pour la configuration asyncio
 def setup_asyncio():
     """Configure l'environnement asyncio pour Streamlit"""
