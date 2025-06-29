@@ -692,15 +692,15 @@ if __name__ == "__main__":
         sys.exit(1)
     finally:
         try:
-            # Utilise la boucle courante (celle de Streamlit)
+            # Utilise la boucle courante de Streamlit (celle où la tâche a été créée)
             try:
                 loop = asyncio.get_event_loop()
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-            # 1. Annule la tâche de trading si elle existe
+            # Annule proprement la tâche de trading
             loop.run_until_complete(cancel_trading_task())
-            # 2. Nettoie le bot si présent dans la session
+            # Puis nettoie le bot si présent dans la session
             if "bot_instance" in st.session_state:
                 loop.run_until_complete(
                     cleanup_resources(st.session_state.bot_instance)
