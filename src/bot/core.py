@@ -66,6 +66,12 @@ import asyncio
 import nest_asyncio
 from src.ai.ppo_gtrxl import PPOGTrXL
 
+from src.ai.cnn_lstm import CNNLSTM
+from src.ai.ppo_gtrxl import PPOGTrXL
+
+
+USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
+
 
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
@@ -654,7 +660,7 @@ class TradingBotM4:
 
             # Mise à jour du statut
             self.initialized = True
-            self.logger.info("✅ Bot started successfully")
+            self.logger.info("✅ Bot started successfully CORE")
             return True
 
         except Exception as e:
