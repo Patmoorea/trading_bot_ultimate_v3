@@ -29,9 +29,15 @@ def get_bot():
 
         async def initialize_bot():
             try:
-                await bot.async_init()  # <<== La ligne importante !
-                if not await bot.start():
-                    raise Exception("Bot initialization failed")
+                await bot.async_init()
+                # Vérifie que .start() existe AVANT d’appeler
+                if getattr(bot, "ws_manager", None) is not None:
+                    if not await bot.start():
+                        raise Exception("Bot initialization failed")
+                else:
+                    logger.info(
+                        "WebSocket manager non initialisé (testnet ou mode restreint), skip .start()"
+                    )
                 bot._initialized = True
                 logger.info("Bot initialized successfully STREAM")
                 return bot
