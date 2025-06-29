@@ -1,3 +1,4 @@
+print("### RUN_ADAPTIVE_TRADING VERSION PATCH COPILOT ###DEBUT")
 import os
 import time
 import json
@@ -3202,11 +3203,11 @@ Take Profit: {take_profit}""",
             self.logger.error(f"Erreur: {e}")
 
     async def run_adaptive_trading(self, period="7d"):
-        print("### RUN_ADAPTIVE_TRADING VERSION PATCH COPILOT ###")
+        print("### RUN_ADAPTIVE_TRADING VERSION PATCH COPILOT ### RUN")
         self.logger = logging.getLogger(__name__)
         try:
             # 1. Initialisation
-            msg = "✅ Bot initialized successfully"
+            msg = "✅ Bot initialized successfully CORE"
             self.logger.info(msg)
             print(msg)
             await self.send_telegram_message(msg)
