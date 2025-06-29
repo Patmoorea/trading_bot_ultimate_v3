@@ -26,12 +26,24 @@ from src.bot.core import TradingBotM4
 
 from src.notifications.telegram_bot import TelegramBot
 
+import contextlib
 import asyncio
 import nest_asyncio
 import aiohttp
 import traceback
 
 import logging
+import contextlib
+
+
+async def cancel_trading_task():
+    trading_task = st.session_state.get("trading_task")
+    if trading_task is not None:
+        trading_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await trading_task
+        st.session_state["trading_task"] = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -680,17 +692,22 @@ if __name__ == "__main__":
         sys.exit(1)
     finally:
         try:
-            # Nettoyage final SANS session_manager !
+            cleanup_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(cleanup_loop)
+
+            # 1. Annule la tâche de trading si elle existe
+            cleanup_loop.run_until_complete(cancel_trading_task())
+
+            # 2. Nettoie le bot si présent dans la session
             if "bot_instance" in st.session_state:
                 try:
-                    cleanup_loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(cleanup_loop)
                     cleanup_loop.run_until_complete(
                         cleanup_resources(st.session_state.bot_instance)
                     )
-                    cleanup_loop.close()
                 except Exception as e:
                     logger.error(f"Final cleanup error: {e}")
+
+            cleanup_loop.close()
 
             logger.info(
                 f"""
