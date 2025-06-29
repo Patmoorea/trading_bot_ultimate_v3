@@ -220,9 +220,6 @@ def main():
         )
         st.error(f"❌ Application error: {str(e)}")
 
-    finally:
-        _perform_cleanup()
-
 
 async def main_async():
     """Point d'entrée principal de l'application avec gestion améliorée des états"""
@@ -741,36 +738,13 @@ if __name__ == "__main__":
         main()
 
     except KeyboardInterrupt:
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              KEYBOARD INTERRUPT                  ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Status: Graceful shutdown initiated
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
+        logger.info("Arrêt propre de l'application")
     except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              CRITICAL ERROR                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
+        logger.error(f"Erreur critique: {e}")
         sys.exit(1)
-
     finally:
         try:
-            # Nettoyage final avec nouvelle boucle si nécessaire
+            # Nettoyage final SANS session_manager
             if "bot_instance" in st.session_state:
                 try:
                     cleanup_loop = asyncio.new_event_loop()
@@ -782,7 +756,6 @@ if __name__ == "__main__":
                 except Exception as e:
                     logger.error(f"Final cleanup error: {e}")
 
-            # ATTENTION: NE PAS TOUCHER À session_manager ici !
             logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
