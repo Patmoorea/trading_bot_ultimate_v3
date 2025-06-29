@@ -1,4 +1,3 @@
-print("### RUN_ADAPTIVE_TRADING VERSION PATCH COPILOT ###DEBUT")
 import os
 import time
 import json
