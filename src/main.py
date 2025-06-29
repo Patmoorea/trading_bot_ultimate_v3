@@ -692,22 +692,19 @@ if __name__ == "__main__":
         sys.exit(1)
     finally:
         try:
-            cleanup_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(cleanup_loop)
-
+            # Utilise la boucle courante (celle de Streamlit)
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
             # 1. Annule la tâche de trading si elle existe
-            cleanup_loop.run_until_complete(cancel_trading_task())
-
+            loop.run_until_complete(cancel_trading_task())
             # 2. Nettoie le bot si présent dans la session
             if "bot_instance" in st.session_state:
-                try:
-                    cleanup_loop.run_until_complete(
-                        cleanup_resources(st.session_state.bot_instance)
-                    )
-                except Exception as e:
-                    logger.error(f"Final cleanup error: {e}")
-
-            cleanup_loop.close()
+                loop.run_until_complete(
+                    cleanup_resources(st.session_state.bot_instance)
+                )
 
             logger.info(
                 f"""
