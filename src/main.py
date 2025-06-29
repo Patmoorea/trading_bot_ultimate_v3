@@ -98,66 +98,6 @@ if st.button("🔄 Rafraîchir le status"):
     st.rerun()
 
 
-def _perform_cleanup():
-    """Effectue le nettoyage final de l'application"""
-    try:
-        # 1. Protection de la session
-        try:
-            if "session_manager" in globals():
-                session_manager.protect_session()
-            else:
-                logger.info("No session_manager available during cleanup.")
-        except Exception as e:
-            logger.error(f"Session protection error in cleanup: {e}")
-
-        # 2. Nettoyage de la boucle d'événements
-        if st.session_state.get("loop"):
-            loop = st.session_state.loop
-            if not loop.is_closed():
-                try:
-                    # Nettoyage conditionnel des ressources
-                    if st.session_state.get(
-                        "force_cleanup", False
-                    ) and st.session_state.get("cleanup_allowed", False):
-                        if "bot_instance" in st.session_state:
-                            loop.run_until_complete(
-                                cleanup_resources(st.session_state.bot_instance)
-                            )
-                except Exception as e:
-                    logger.error(f"Loop cleanup error: {e}")
-
-        logger.info(
-            """
-╔═════════════════════════════════════════════════╗
-║              CLEANUP COMPLETED                   ║
-╠═════════════════════════════════════════════════╣
-║ Status: All resources cleaned
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-    except Exception as e:
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║              CLEANUP ERROR                       ║
-╠═════════════════════════════════════════════════╣
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-    finally:
-        # Protection finale absolue
-        try:
-            if "session_manager" in globals():
-                session_manager.protect_session()
-            else:
-                logger.info("No session_manager available during cleanup (finally).")
-        except Exception as e:
-            logger.error(f"Session protection error in cleanup (finally): {e}")
-
-
 def main():
     """Point d'entrée principal avec protection renforcée et gestion des événements améliorée"""
     current_time = datetime.now(timezone.utc)
