@@ -91,7 +91,7 @@ async def cleanup_resources(bot):
         if "session_manager" in globals() and session_manager is not None:
             session_manager.protect_session()
         else:
-            logger.info("No session_manager available during cleanup.")
+            logger.debug("No session_manager available during cleanup.")
         return False
 
     try:
@@ -146,7 +146,7 @@ async def cleanup_resources(bot):
             if "session_manager" in globals() and session_manager is not None:
                 session_manager.protect_session()
             else:
-                logger.info("No session_manager available during cleanup.")
+                logger.debug("No session_manager available during cleanup.")
         except Exception as final_error:
             logger.error(f"Final cleanup error: {final_error}")
 
@@ -973,13 +973,13 @@ async def shutdown():
         if "session_manager" in globals():
             await session_manager.cleanup()
         else:
-            logger.info("No session_manager available during shutdown.")
+            logger.debug("No session_manager available during shutdown.")
 
         # Nettoyage via le gestionnaire de sessions
         if "session_manager" in globals() and session_manager is not None:
             await session_manager.cleanup()
         else:
-            logger.info("No session_manager available during shutdown.")
+            logger.debug("No session_manager available during shutdown.")
 
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
