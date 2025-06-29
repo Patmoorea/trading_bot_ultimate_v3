@@ -21,6 +21,7 @@ from asyncio import TimeoutError, AbstractEventLoop
 from src.bot.utils import StreamlitSessionManager
 from src.bot.utils import _setup_and_verify_event_loop
 from src.bot.streamlit_helpers import get_bot
+from src.bot.ws import cleanup_resources
 from src.notifications.telegram_bot import TelegramBot
 
 import asyncio
@@ -101,7 +102,13 @@ def _perform_cleanup():
     """Effectue le nettoyage final de l'application"""
     try:
         # 1. Protection de la session
-        session_manager.protect_session()
+        try:
+            if "session_manager" in globals():
+                session_manager.protect_session()
+            else:
+                logger.info("No session_manager available during cleanup.")
+        except Exception as e:
+            logger.error(f"Session protection error in cleanup: {e}")
 
         # 2. Nettoyage de la boucle d'événements
         if st.session_state.get("loop"):
@@ -116,12 +123,8 @@ def _perform_cleanup():
                             loop.run_until_complete(
                                 cleanup_resources(st.session_state.bot_instance)
                             )
-                    # NE PAS FERMER LA BOUCLE ! On ne fait PAS loop.close()
                 except Exception as e:
                     logger.error(f"Loop cleanup error: {e}")
-                finally:
-                    # On ne détruit pas la boucle ici non plus
-                    pass
 
         logger.info(
             """
@@ -146,7 +149,13 @@ def _perform_cleanup():
         )
     finally:
         # Protection finale absolue
-        session_manager.protect_session()
+        try:
+            if "session_manager" in globals():
+                session_manager.protect_session()
+            else:
+                logger.info("No session_manager available during cleanup (finally).")
+        except Exception as e:
+            logger.error(f"Session protection error in cleanup (finally): {e}")
 
 
 def main():
@@ -257,7 +266,13 @@ async def main_async():
     current_user = "Patmoorea"
 
     try:
-        session_manager.protect_session()
+        try:
+            if "session_manager" in globals():
+                session_manager.protect_session()
+            else:
+                logger.info("No session_manager available during main_async.")
+        except Exception as e:
+            logger.error(f"Session protection error in main_async: {e}")
 
         if "initialization_time" not in st.session_state:
             st.session_state.initialization_time = current_time
@@ -548,7 +563,10 @@ async def main_async():
     finally:
         # Protection finale avec timestamp
         try:
-            session_manager.protect_session()
+            if "session_manager" in globals():
+                session_manager.protect_session()
+            else:
+                logger.info("No session_manager available for protection (main_async).")
             st.session_state.last_update_time = datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
@@ -755,7 +773,6 @@ if __name__ == "__main__":
             # Nettoyage final avec nouvelle boucle si nécessaire
             if "bot_instance" in st.session_state:
                 try:
-                    # Création d'une nouvelle boucle pour le nettoyage final
                     cleanup_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(cleanup_loop)
                     cleanup_loop.run_until_complete(
@@ -765,6 +782,7 @@ if __name__ == "__main__":
                 except Exception as e:
                     logger.error(f"Final cleanup error: {e}")
 
+            # ATTENTION: NE PAS TOUCHER À session_manager ici !
             logger.info(
                 f"""
 ╔═════════════════════════════════════════════════╗
@@ -774,7 +792,7 @@ if __name__ == "__main__":
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Status: All resources cleaned
 ╚═════════════════════════════════════════════════╝
-            """
+                """
             )
 
         except Exception as cleanup_error:
@@ -787,5 +805,5 @@ if __name__ == "__main__":
 ║ User: {os.getenv('USER', 'Patmoorea')}
 ║ Error: {str(cleanup_error)}
 ╚═════════════════════════════════════════════════╝
-            """
+                """
             )

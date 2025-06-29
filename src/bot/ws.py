@@ -129,26 +129,28 @@ async def cleanup_resources(bot):
         return False
 
     finally:
-        # Nettoyage final et restauration de la protection
+        bot.cleanup_in_progress = False
+        # Appelle la protection si session_manager est disponible
         try:
-            bot.cleanup_in_progress = False
-            session_manager.protect_session()
-
-            # Log final
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP FINALIZED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Protection Restored: True
-║ Session Status: Protected
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
+            if "session_manager" in globals():
+                session_manager.protect_session()
+            else:
+                logger.info("No session_manager available during cleanup.")
         except Exception as final_error:
             logger.error(f"Final cleanup error: {final_error}")
+
+        # Log final
+        logger.info(
+            f"""
+    ╔═════════════════════════════════════════════════╗
+    ║           CLEANUP FINALIZED                      ║
+    ╠═════════════════════════════════════════════════╣
+    ║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+    ║ Protection Restored: True
+    ║ Session Status: Protected
+    ╚═════════════════════════════════════════════════╝
+            """
+        )
 
 
 class WebSocketManager:
@@ -957,7 +959,10 @@ async def shutdown():
                 logger.warning("Timeout during tasks cancellation")
 
         # Nettoyage via le gestionnaire de sessions
-        await session_manager.cleanup()
+        if "session_manager" in globals():
+            await session_manager.cleanup()
+        else:
+            logger.info("No session_manager available during shutdown.")
 
         # Nettoyage des ressources du bot
         if "bot_instance" in st.session_state:
