@@ -1,4 +1,7 @@
+# 1. Import et configuration Streamlit (DOIT ÊTRE EN PREMIER)
+import streamlit as st
 import os
+
 import asyncio
 import logging
 import time
@@ -12,6 +15,7 @@ from src.exchanges.binance.binance_client import BinanceClient
 from src.core.exchange import ExchangeInterface as Exchange
 from src.core.buffer.circular_buffer import CircularBuffer
 from src.connectors.binance import BinanceConnector
+from src.monitoring.streamlit_ui import TradingDashboard
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +24,131 @@ cleanup_lock = asyncio.Lock()
 cleanup_in_progress = False
 last_cleanup_time = 0
 CLEANUP_COOLDOWN = 5
+
+
+async def cleanup_resources(bot):
+    """
+    Nettoyage sécurisé des ressources avec protection de session et logging détaillé.
+
+    Args:
+        bot: Instance du bot de trading à nettoyer
+
+    Returns:
+        bool: True si le nettoyage a réussi, False sinon
+    """
+    current_time = datetime.now(timezone.utc)
+
+    # Log de début de tentative de nettoyage
+    logger.info(
+        f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP ATTEMPT STARTED                ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ User: {os.getenv('USER', 'Patmoorea')}
+║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
+╚═════════════════════════════════════════════════╝
+    """
+    )
+
+    # Vérification des conditions de protection
+    protection_conditions = {
+        "prevent_cleanup": st.session_state.get("prevent_cleanup", True),
+        "keep_alive": st.session_state.get("keep_alive", True),
+        "bot_running": st.session_state.get("bot_running", False),
+        "ws_initializing": getattr(bot, "_ws_initializing", False),
+        "bot_initialized": getattr(bot, "_initialized", False),
+        "cleanup_in_progress": getattr(bot, "cleanup_in_progress", False),
+        "force_cleanup": not st.session_state.get("force_cleanup", False),
+        "cleanup_allowed": not st.session_state.get("cleanup_allowed", False),
+    }
+
+    # Si une condition de protection est active
+    if any(protection_conditions.values()):
+        # Log détaillé des conditions qui empêchent le nettoyage
+        active_protections = [k for k, v in protection_conditions.items() if v]
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP PREVENTED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Active Protections: {', '.join(active_protections)}
+║ Session ID: {st.session_state.get('session_id', 'Unknown')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Renforcer la protection
+        session_manager.protect_session()
+        return False
+
+    try:
+        # Marquer le début du nettoyage
+        bot.cleanup_in_progress = True
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP STARTED                        ║
+╠═════════════════════════════════════════════════╣
+║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ WebSocket Status: {bot.ws_connection.get('status', 'unknown')}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+
+        # Fermeture du WebSocket
+        await close_websocket(bot)
+
+        # Log de succès
+        logger.info(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP SUCCESSFUL                     ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Resources Cleaned: WebSocket, Buffer, Data
+╚═════════════════════════════════════════════════╝
+        """
+        )
+        return True
+
+    except Exception as e:
+        # Log d'erreur détaillé
+        logger.error(
+            f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP ERROR                          ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Error: {str(e)}
+║ Type: {type(e).__name__}
+╚═════════════════════════════════════════════════╝
+        """
+        )
+        return False
+
+    finally:
+        # Nettoyage final et restauration de la protection
+        try:
+            bot.cleanup_in_progress = False
+            session_manager.protect_session()
+
+            # Log final
+            logger.info(
+                f"""
+╔═════════════════════════════════════════════════╗
+║           CLEANUP FINALIZED                      ║
+╠═════════════════════════════════════════════════╣
+║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+║ Protection Restored: True
+║ Session Status: Protected
+╚═════════════════════════════════════════════════╝
+            """
+            )
+
+        except Exception as final_error:
+            logger.error(f"Final cleanup error: {final_error}")
 
 
 class WebSocketManager:
@@ -604,155 +733,6 @@ async def create_binance_client(bot):
         return False
 
 
-async def cleanup_resources(bot):
-    """
-    Nettoyage sécurisé des ressources avec protection de session et logging détaillé.
-
-    Args:
-        bot: Instance du bot de trading à nettoyer
-
-    Returns:
-        bool: True si le nettoyage a réussi, False sinon
-    """
-    current_time = datetime.now(timezone.utc)
-
-    # Log de début de tentative de nettoyage
-    logger.info(
-        f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP ATTEMPT STARTED                ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ User: {os.getenv('USER', 'Patmoorea')}
-║ Bot Status: {'Running' if st.session_state.get('bot_running') else 'Stopped'}
-╚═════════════════════════════════════════════════╝
-    """
-    )
-
-    # Vérification des conditions de protection
-    protection_conditions = {
-        "prevent_cleanup": st.session_state.get("prevent_cleanup", True),
-        "keep_alive": st.session_state.get("keep_alive", True),
-        "bot_running": st.session_state.get("bot_running", False),
-        "ws_initializing": getattr(bot, "_ws_initializing", False),
-        "bot_initialized": getattr(bot, "_initialized", False),
-        "cleanup_in_progress": getattr(bot, "cleanup_in_progress", False),
-        "force_cleanup": not st.session_state.get("force_cleanup", False),
-        "cleanup_allowed": not st.session_state.get("cleanup_allowed", False),
-    }
-
-    # Si une condition de protection est active
-    if any(protection_conditions.values()):
-        # Log détaillé des conditions qui empêchent le nettoyage
-        active_protections = [k for k, v in protection_conditions.items() if v]
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP PREVENTED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Active Protections: {', '.join(active_protections)}
-║ Session ID: {st.session_state.get('session_id', 'Unknown')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Renforcer la protection
-        session_manager.protect_session()
-        return False
-
-    try:
-        # Marquer le début du nettoyage
-        bot.cleanup_in_progress = True
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP STARTED                        ║
-╠═════════════════════════════════════════════════╣
-║ Time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ WebSocket Status: {bot.ws_connection.get('status', 'unknown')}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-
-        # Fermeture du WebSocket
-        await close_websocket(bot)
-
-        # Log de succès
-        logger.info(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP SUCCESSFUL                     ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Resources Cleaned: WebSocket, Buffer, Data
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        return True
-
-    except Exception as e:
-        # Log d'erreur détaillé
-        logger.error(
-            f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP ERROR                          ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Error: {str(e)}
-║ Type: {type(e).__name__}
-╚═════════════════════════════════════════════════╝
-        """
-        )
-        return False
-
-    finally:
-        # Nettoyage final et restauration de la protection
-        try:
-            bot.cleanup_in_progress = False
-            session_manager.protect_session()
-
-            # Log final
-            logger.info(
-                f"""
-╔═════════════════════════════════════════════════╗
-║           CLEANUP FINALIZED                      ║
-╠═════════════════════════════════════════════════╣
-║ Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
-║ Protection Restored: True
-║ Session Status: Protected
-╚═════════════════════════════════════════════════╝
-            """
-            )
-
-        except Exception as final_error:
-            logger.error(f"Final cleanup error: {final_error}")
-
-
-async def check_websocket_health(bot):
-    """Vérifie l'état du WebSocket et le réinitialise si nécessaire"""
-    try:
-        # Vérifier si les streams sont actifs
-        if not bot.ws_connection.get("tasks"):
-            return await reset_websocket(bot)
-
-        # Vérifier l'état des tâches
-        active_tasks = [t for t in bot.ws_connection["tasks"] if not t.done()]
-        if not active_tasks:
-            return await reset_websocket(bot)
-
-        # Vérifier si on reçoit des données
-        if not bot.latest_data:
-            return await reset_websocket(bot)
-
-        return True
-
-    except Exception as e:
-        logger.error(f"❌ WebSocket health check error: {e}")
-        await reset_websocket(bot)
-        return False
-
-
 async def close_websocket(bot):
     """Ferme proprement la connexion WebSocket"""
     try:
@@ -866,50 +846,6 @@ async def handle_ticker_message(bot, msg):
 
     except Exception as e:
         logger.error(f"❌ Ticker message error: {e}")
-
-
-async def handle_kline_message(bot, msg):
-    """Gestion des messages de klines"""
-    try:
-        if "k" in msg:
-            kline = msg["k"]
-            if all(k in kline for k in ["t", "o", "h", "l", "c", "v"]):
-                candle = {
-                    "timestamp": kline["t"],
-                    "open": float(kline["o"]),
-                    "high": float(kline["h"]),
-                    "low": float(kline["l"]),
-                    "close": float(kline["c"]),
-                    "volume": float(kline["v"]),
-                }
-
-                if not hasattr(bot, "latest_klines"):
-                    bot.latest_klines = []
-                bot.latest_klines.append(candle)
-
-                if len(bot.latest_klines) > 1000:
-                    bot.latest_klines.pop(0)
-
-    except Exception as e:
-        logger.error(f"❌ Kline message error: {e}")
-
-
-async def handle_depth_message(bot, msg):
-    """Gestion des messages d'orderbook"""
-    try:
-        if "a" in msg and "b" in msg:
-            orderbook = {
-                "asks": [[float(price), float(qty)] for price, qty in msg["a"]],
-                "bids": [[float(price), float(qty)] for price, qty in msg["b"]],
-                "timestamp": time.time(),
-            }
-
-            if not hasattr(bot, "latest_orderbook"):
-                bot.latest_orderbook = {}
-            bot.latest_orderbook = orderbook
-
-    except Exception as e:
-        logger.error(f"❌ Depth message error: {e}")
 
 
 async def handle_kline_message(bot, msg):
