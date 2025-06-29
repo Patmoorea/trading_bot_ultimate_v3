@@ -34,7 +34,7 @@ def get_bot():
                 if not await bot.start():
                     raise Exception("Bot initialization failed")
                 bot._initialized = True
-                logger.info("Bot initialized successfully")
+                logger.info("Bot initialized successfully STREAM")
                 return bot
             except Exception as init_error:
                 logger.error(f"Bot initialization error: {init_error}")

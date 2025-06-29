@@ -3202,6 +3202,7 @@ Take Profit: {take_profit}""",
             self.logger.error(f"Erreur: {e}")
 
     async def run_adaptive_trading(self, period="7d"):
+        print("### RUN_ADAPTIVE_TRADING VERSION PATCH COPILOT ###")
         self.logger = logging.getLogger(__name__)
         try:
             # 1. Initialisation
