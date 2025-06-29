@@ -25,6 +25,14 @@ cleanup_in_progress = False
 last_cleanup_time = 0
 CLEANUP_COOLDOWN = 5
 
+# Création de l'instance globale avec vérification
+try:
+    session_manager = StreamlitSessionManager()
+    logger.info("✅ Session manager initialized successfully")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize session manager: {e}")
+    session_manager = None
+
 
 async def cleanup_resources(bot):
     """
@@ -80,7 +88,10 @@ async def cleanup_resources(bot):
         )
 
         # Renforcer la protection
-        session_manager.protect_session()
+        if "session_manager" in globals() and session_manager is not None:
+            session_manager.protect_session()
+        else:
+            logger.info("No session_manager available during cleanup.")
         return False
 
     try:
@@ -132,7 +143,7 @@ async def cleanup_resources(bot):
         bot.cleanup_in_progress = False
         # Appelle la protection si session_manager est disponible
         try:
-            if "session_manager" in globals():
+            if "session_manager" in globals() and session_manager is not None:
                 session_manager.protect_session()
             else:
                 logger.info("No session_manager available during cleanup.")
@@ -964,20 +975,11 @@ async def shutdown():
         else:
             logger.info("No session_manager available during shutdown.")
 
-        # Nettoyage des ressources du bot
-        if "bot_instance" in st.session_state:
-            bot = st.session_state.bot_instance
-            await cleanup_resources(bot)
-
-        logger.info(
-            """
-╔═════════════════════════════════════════════════╗
-║              SHUTDOWN COMPLETED                  ║
-╠═════════════════════════════════════════════════╣
-║ All resources cleaned and sessions closed       ║
-╚═════════════════════════════════════════════════╝
-        """
-        )
+        # Nettoyage via le gestionnaire de sessions
+        if "session_manager" in globals() and session_manager is not None:
+            await session_manager.cleanup()
+        else:
+            logger.info("No session_manager available during shutdown.")
 
     except Exception as e:
         logger.error(f"Shutdown error: {e}")

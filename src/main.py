@@ -640,13 +640,6 @@ async def _render_analysis_tab(bot):
         except Exception as e:
             st.warning(f"Erreur Quantum SVM : {e}")
 
-    st.set_page_config(
-        page_title="Trading Bot Ultimate v4",
-        page_icon="📈",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
-
 
 # --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
