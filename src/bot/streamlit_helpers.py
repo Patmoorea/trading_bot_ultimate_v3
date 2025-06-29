@@ -18,7 +18,6 @@ session_manager = StreamlitSessionManager()
 # Ajoute les autres imports nécessaires (logger, session_manager, etc.)
 
 
-@st.cache_resource(ttl=None)
 def get_bot():
     if "bot_instance" in st.session_state and st.session_state.bot_instance is not None:
         return st.session_state.bot_instance
