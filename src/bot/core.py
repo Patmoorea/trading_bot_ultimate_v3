@@ -1190,6 +1190,23 @@ class TradingBotM4:
                 self.logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
 
+            # Sécurité: Vérification de la présence des clés nécessaires
+            required_keys = [
+                "price",
+                "volume",
+                "bid",
+                "ask",
+                "high",
+                "low",
+                "timestamp",
+            ]
+            for key in required_keys:
+                if key not in data:
+                    self.logger.error(
+                        f"Clé '{key}' manquante dans les données pour {symbol} : {data}"
+                    )
+                    return {}
+
             # Calcul des indicateurs de base
             indicators = {
                 "price": data["price"],
@@ -1199,9 +1216,6 @@ class TradingBotM4:
                 "timestamp": data["timestamp"],
             }
             # Log des données reçues
-            self.logger.info(
-                f"Calcul indicateurs pour {symbol}: {data}"
-            )  # Log des données reçues
             self.logger.info(f"Calcul indicateurs pour {symbol}: {data}")
 
             # Stockage des indicateurs
