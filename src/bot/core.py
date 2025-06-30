@@ -1032,7 +1032,7 @@ class TradingBotM4:
                     self.logger.error(
                         "Impossible d'initialiser le WebSocket après tentative."
                     )
-                    return None
+                    return {}  # Correction : retourne un dict vide
 
             for pair in self.pairs_valid:
                 self.logger.info(f"📊 Récupération données pour {pair}")
@@ -1176,11 +1176,11 @@ class TradingBotM4:
                 return data
             else:
                 self.logger.warning("⚠️ Aucune donnée reçue")
-                return None
+                return {}  # Correction : retourne un dict vide
 
         except Exception as e:
             self.logger.error(f"❌ Erreur critique get_latest_data: {e}")
-            return None
+            return {}  # Correction : retourne un dict vide
 
     async def calculate_indicators(self, symbol: str) -> dict:
         """Calcule les indicateurs techniques"""
