@@ -300,9 +300,14 @@ async def study_market(self, period="7d"):
             indicators_analysis[timeframe] = {}
             for pair in self.config["TRADING"]["pairs"]:
                 df = tf_data.get(pair)
-                if not isinstance(df, pd.DataFrame) or df.empty:
+                required_cols = {"open", "high", "low", "close", "volume"}
+                if (
+                    not isinstance(df, pd.DataFrame)
+                    or df.empty
+                    or not required_cols.issubset(df.columns)
+                ):
                     self.logger.warning(
-                        f"Données OHLCV absentes ou vides pour {pair} {timeframe}, skip analyse."
+                        f"Données OHLCV absentes ou incomplètes pour {pair} {timeframe}, skip analyse."
                     )
                     indicators_analysis[timeframe][pair] = {
                         "trend": {"trend_strength": 0},

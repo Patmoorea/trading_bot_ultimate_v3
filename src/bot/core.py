@@ -1295,9 +1295,14 @@ class TradingBotM4:
                 indicators_analysis[timeframe] = {}
                 for pair in self.pairs_valid:
                     df = tf_data.get(pair)
-                    if not isinstance(df, pd.DataFrame) or df.empty:
+                    required_cols = {"open", "high", "low", "close", "volume"}
+                    if (
+                        not isinstance(df, pd.DataFrame)
+                        or df.empty
+                        or not required_cols.issubset(df.columns)
+                    ):
                         self.logger.warning(
-                            f"Données OHLCV absentes ou vides pour {pair} {timeframe}, skip analyse."
+                            f"Données OHLCV absentes ou incomplètes pour {pair} {timeframe}, skip analyse."
                         )
                         indicators_analysis[timeframe][pair] = {
                             "trend": {"trend_strength": 0},
@@ -1310,6 +1315,7 @@ class TradingBotM4:
                         result = self.advanced_indicators.analyze_timeframe(
                             df, timeframe
                         )
+
                         indicators_analysis[timeframe][pair] = (
                             result
                             if result
