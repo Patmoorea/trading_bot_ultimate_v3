@@ -266,11 +266,19 @@ async def study_market(self, period="7d"):
             self.logger.info(
                 "[study_market] Après initialize, avant get_historical_data"
             )
-            historical_data = await self.exchange.get_historical_data(
-                self.config["TRADING"]["pairs"],
-                self.config["TRADING"]["timeframes"],
-                period,
-            )
+            get_historical = getattr(self.exchange, "get_historical_data", None)
+            if asyncio.iscoroutinefunction(get_historical):
+                historical_data = await get_historical(
+                    self.config["TRADING"]["pairs"],
+                    self.config["TRADING"]["timeframes"],
+                    period,
+                )
+            else:
+                historical_data = get_historical(
+                    self.config["TRADING"]["pairs"],
+                    self.config["TRADING"]["timeframes"],
+                    period,
+                )
             self.logger.info("⬅️ [study_market] Après get_historical_data")
         except Exception as e:
             self.logger.error(f"❌ [study_market] Exception get_historical_data: {e}")
