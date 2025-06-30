@@ -1,4 +1,5 @@
 import os
+import streamlit as st
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 import time
@@ -259,7 +260,7 @@ class TradingBotM4:
 
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
 
-        self.pairs_valid = self.pairs_valid  # Initial par défaut, sera filtré plus bas
+        self.pairs_valid = self.config["TRADING"]["pairs"]
 
         # Patch pour éviter le blocage load_markets en testnet
         if use_testnet and hasattr(self.exchange, "exchange"):
