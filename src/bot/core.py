@@ -394,19 +394,29 @@ class TradingBotM4:
 
     async def async_init(self):
         await self.exchange.initialize()
-        if asyncio.iscoroutinefunction(self.exchange._exchange.load_markets):
-            await self.exchange._exchange.load_markets()
+
+        # Chargement des marchés (attention au testnet/None)
+        if hasattr(self.exchange, "_exchange") and hasattr(
+            self.exchange._exchange, "load_markets"
+        ):
+            if asyncio.iscoroutinefunction(self.exchange._exchange.load_markets):
+                await self.exchange._exchange.load_markets()
+            else:
+                self.exchange._exchange.load_markets()
+
+        # Protection contre NoneType
+        symbols = getattr(self.exchange._exchange, "symbols", None)
+        if symbols:
+            self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
+            if not self.pairs_valid:
+                self.logger.error("Aucune paire valide trouvée dans la config !")
+                raise ValueError("Aucune paire valide trouvée dans la config !")
+            else:
+                self.logger.info(f"Paires valides Binance: {self.pairs_valid}")
         else:
-            self.exchange._exchange.load_markets()
-        symbols = (
-            self.exchange._exchange.symbols
-        )  # Liste de toutes les paires valides Binance
-        self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
-        if not self.pairs_valid:
-            self.logger.error("Aucune paire valide trouvée dans la config !")
-            raise ValueError("Aucune paire valide trouvée dans la config !")
-        else:
-            self.logger.info(f"Paires valides Binance: {self.pairs_valid}")
+            self.logger.warning(
+                "⚠️ self.exchange._exchange.symbols is None, skip filtering pairs_valid."
+            )
 
         is_spot_testnet = (
             getattr(self.exchange, "testnet", False)
@@ -1216,23 +1226,33 @@ class TradingBotM4:
                 if not getattr(self.exchange, "_initialized", False):
                     self.logger.info("[study_market] Initialisation exchange...")
                     await self.exchange.initialize()
-                    if asyncio.iscoroutinefunction(
-                        self.exchange._exchange.load_markets
+                    if hasattr(self.exchange, "_exchange") and hasattr(
+                        self.exchange._exchange, "load_markets"
                     ):
-                        await self.exchange._exchange.load_markets()
+                        if asyncio.iscoroutinefunction(
+                            self.exchange._exchange.load_markets
+                        ):
+                            await self.exchange._exchange.load_markets()
+                        else:
+                            self.exchange._exchange.load_markets()
+                    symbols = getattr(self.exchange._exchange, "symbols", None)
+                    if symbols:
+                        self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
+                        if not self.pairs_valid:
+                            self.logger.error(
+                                "Aucune paire valide trouvée dans la config !"
+                            )
+                            raise ValueError(
+                                "Aucune paire valide trouvée dans la config !"
+                            )
+                        else:
+                            self.logger.info(
+                                f"Paires valides Binance: {self.pairs_valid}"
+                            )
                     else:
-                        self.exchange._exchange.load_markets()
-                    symbols = (
-                        self.exchange._exchange.symbols
-                    )  # Liste de toutes les paires valides Binance
-                    self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
-                    if not self.pairs_valid:
-                        self.logger.error(
-                            "Aucune paire valide trouvée dans la config !"
+                        self.logger.warning(
+                            "⚠️ self.exchange._exchange.symbols is None, skip filtering pairs_valid."
                         )
-                        raise ValueError("Aucune paire valide trouvée dans la config !")
-                    else:
-                        self.logger.info(f"Paires valides Binance: {self.pairs_valid}")
                 self.logger.info(
                     "[study_market] Après initialize, avant get_historical_data"
                 )
