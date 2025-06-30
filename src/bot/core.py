@@ -1037,9 +1037,9 @@ class TradingBotM4:
 
             # Analyse technique si la bougie est fermée
             if kline_data["closed"]:
-                # 🟢 PASSER LA LISTE DES BOUGIES, PAS LE DICT UNIQUE
+                # 🟢 Corrigé : passe la LISTE des bougies pour la paire à analyze_signals
                 candles = self.buffer.get_all_data(kline_data["symbol"])
-                if candles:
+                if candles and len(candles) > 0:
                     await self.analyze_signals(
                         market_data=candles,
                         indicators=self.advanced_indicators.analyze_timeframe(
