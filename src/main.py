@@ -236,7 +236,23 @@ if data_ready:
                     st.write(f"Test {symbol} ...")
                     try:
                         if _has_valid_ohlcv(data):
-                            df = pd.DataFrame(data["ohlcv"])
+                            columns = [
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            ]
+                            if len(data["ohlcv"]) > 0 and isinstance(
+                                data["ohlcv"][0], (list, tuple)
+                            ):
+                                df = pd.DataFrame(data["ohlcv"], columns=columns)
+                                df["timestamp"] = pd.to_datetime(
+                                    df["timestamp"], unit="ms"
+                                )
+                            else:
+                                df = pd.DataFrame(data["ohlcv"])
 
                             def strategy_func(df, **params):
                                 return (
