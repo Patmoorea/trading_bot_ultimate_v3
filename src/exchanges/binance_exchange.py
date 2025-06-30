@@ -203,6 +203,7 @@ class BinanceExchange:
         Récupère les données OHLCV historiques pour chaque paire/timeframe sur la période demandée.
         Retourne {timeframe: {pair: pd.DataFrame}}
         PATCH: Ne retourne jamais None, toujours un DataFrame (éventuellement vide), jamais d'objet non-attendu.
+        PATCH: Garantit que fetch_ohlcv est toujours awaitable, même en testnet ou mock.
         """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
@@ -221,14 +222,21 @@ class BinanceExchange:
                 tf_result = {}
                 for pair in pairs:
                     try:
-                        # PATCH: Vérifie si fetch_ohlcv est awaitable
                         fetch_ohlcv = getattr(self._exchange, "fetch_ohlcv", None)
                         klines = None
+                        # --- PATCH: Robust await handling ---
                         if fetch_ohlcv is not None:
+                            # Si on a une cofunc, on await ; sinon, on wrap dans une coroutine
                             if asyncio.iscoroutinefunction(fetch_ohlcv):
                                 klines = await fetch_ohlcv(pair, tf, since=since)
                             else:
-                                klines = fetch_ohlcv(pair, tf, since=since)
+                                # On force le résultat dans une coroutine si jamais il n'est pas async
+                                async def fake_coro(*args, **kwargs):
+                                    return fetch_ohlcv(*args, **kwargs)
+                                klines = await fake_coro(pair, tf, since=since)
+                        else:
+                            logger.error(f"fetch_ohlcv n'est pas disponible pour {pair} {tf}")
+                            klines = []
                         if not klines or len(klines) == 0:
                             logger.error(f"Aucune donnée historique pour {pair} {tf}")
                             tf_result[pair] = pd.DataFrame(

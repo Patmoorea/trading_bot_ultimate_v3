@@ -1,4 +1,6 @@
 import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
 import time
 import json
 import logging
@@ -89,7 +91,7 @@ class TradingBotM4:
             # Récupération des données
             market_data = await self.get_latest_data()
             if market_data:
-                for pair in self.config["TRADING"]["pairs"]:
+                for pair in self.pairs_valid:
                     indicators = await self.calculate_indicators(pair)
                     if indicators:
                         signals = await self.analyze_signals(market_data, indicators)
@@ -257,6 +259,8 @@ class TradingBotM4:
 
         self.exchange = BinanceExchange(api_key, api_secret, testnet=use_testnet)
 
+        self.pairs_valid = self.pairs_valid  # Initial par défaut, sera filtré plus bas
+
         # Patch pour éviter le blocage load_markets en testnet
         if use_testnet and hasattr(self.exchange, "exchange"):
             # ccxt ne supporte pas load_markets en testnet Binance
@@ -286,7 +290,7 @@ class TradingBotM4:
 
         # Configuration du WebSocket
         self.websocket = MultiStreamManager(
-            pairs=self.config["TRADING"]["pairs"], config=self.stream_config
+            pairs=self.pairs_valid, config=self.stream_config
         )
 
         self.ws_connection = {
@@ -335,7 +339,7 @@ class TradingBotM4:
         # IA et analyse
         self.hybrid_model = HybridAI()
         self.env = TradingEnv(
-            trading_pairs=self.config["TRADING"]["pairs"],
+            trading_pairs=self.pairs_valid,
             timeframes=self.config["TRADING"]["timeframes"],
         )
 
@@ -389,6 +393,17 @@ class TradingBotM4:
 
     async def async_init(self):
         await self.exchange.initialize()
+        await self.exchange._exchange.load_markets()
+        symbols = (
+            self.exchange._exchange.symbols
+        )  # Liste de toutes les paires valides Binance
+        self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
+        if not self.pairs_valid:
+            self.logger.error("Aucune paire valide trouvée dans la config !")
+            raise ValueError("Aucune paire valide trouvée dans la config !")
+        else:
+            self.logger.info(f"Paires valides Binance: {self.pairs_valid}")
+
         is_spot_testnet = (
             getattr(self.exchange, "testnet", False)
             and getattr(self.exchange, "_exchange", None) is not None
@@ -403,7 +418,7 @@ class TradingBotM4:
         else:
             self.ws_manager = WebSocketManager(self)
             self.websocket = MultiStreamManager(
-                pairs=self.config["TRADING"]["pairs"], config=self.stream_config
+                pairs=self.pairs_valid, config=self.stream_config
             )
 
     async def start(self):
@@ -558,13 +573,13 @@ class TradingBotM4:
             # Calcul des dimensions pour CNNLSTM
             input_shape = (
                 len(self.config["TRADING"]["timeframes"]),  # Nombre de timeframes
-                len(self.config["TRADING"]["pairs"]),  # Nombre de paires
+                len(self.pairs_valid),  # Nombre de paires
                 42,  # Nombre de features par candlestick
             )
 
             # Calcul des dimensions pour PPO-GTrXL
             state_dim = input_shape[0] * input_shape[1] * input_shape[2]
-            action_dim = len(self.config["TRADING"]["pairs"])
+            action_dim = len(self.pairs_valid)
 
             # Initialisation des modèles
             self.models = {
@@ -1005,7 +1020,7 @@ class TradingBotM4:
                     )
                     return None
 
-            for pair in self.config["TRADING"]["pairs"]:
+            for pair in self.pairs_valid:
                 self.logger.info(f"📊 Récupération données pour {pair}")
                 data[pair] = {}
 
@@ -1197,11 +1212,23 @@ class TradingBotM4:
                 if not getattr(self.exchange, "_initialized", False):
                     self.logger.info("[study_market] Initialisation exchange...")
                     await self.exchange.initialize()
+                    await self.exchange._exchange.load_markets()
+                    symbols = (
+                        self.exchange._exchange.symbols
+                    )  # Liste de toutes les paires valides Binance
+                    self.pairs_valid = [p for p in self.pairs_valid if p in symbols]
+                    if not self.pairs_valid:
+                        self.logger.error(
+                            "Aucune paire valide trouvée dans la config !"
+                        )
+                        raise ValueError("Aucune paire valide trouvée dans la config !")
+                    else:
+                        self.logger.info(f"Paires valides Binance: {self.pairs_valid}")
                 self.logger.info(
                     "[study_market] Après initialize, avant get_historical_data"
                 )
                 historical_data = await self.exchange.get_historical_data(
-                    self.config["TRADING"]["pairs"],
+                    self.pairs_valid,
                     self.config["TRADING"]["timeframes"],
                     period,
                 )
@@ -1228,7 +1255,7 @@ class TradingBotM4:
             for timeframe in self.config["TRADING"]["timeframes"]:
                 tf_data = historical_data.get(timeframe, {})
                 indicators_analysis[timeframe] = {}
-                for pair in self.config["TRADING"]["pairs"]:
+                for pair in self.pairs_valid:
                     df = tf_data.get(pair)
                     if not isinstance(df, pd.DataFrame) or df.empty:
                         self.logger.warning(
@@ -1299,11 +1326,7 @@ class TradingBotM4:
                 self.logger.error(f"Erreur génération rapport: {report_error}")
 
             try:
-                self.dashboard.update_market_analysis(
-                    historical_data=historical_data,
-                    indicators=indicators_analysis,
-                    regime=regime,
-                )
+                self.dashboard.update_market_analysis()
             except Exception as dash_error:
                 self.logger.error(f"Erreur mise à jour dashboard: {dash_error}")
 
@@ -1665,7 +1688,7 @@ class TradingBotM4:
 
             # Récupération des ordres ouverts
             try:
-                for pair in self.config["TRADING"]["pairs"]:
+                for pair in self.pairs_valid:
                     open_orders = self.spot_client.get_open_orders(pair)
 
                     if open_orders:
@@ -1710,7 +1733,7 @@ class TradingBotM4:
 
             # Récupération des données de volume sur 24h
             try:
-                for pair in self.config["TRADING"]["pairs"]:
+                for pair in self.pairs_valid:
                     ticker_24h = self.spot_client.get_24h_ticker(pair)
                     if ticker_24h:
                         portfolio["volume_24h"] += float(ticker_24h["volume"])
@@ -1719,8 +1742,8 @@ class TradingBotM4:
                         )
 
                 # Moyenne du changement de volume
-                if len(self.config["TRADING"]["pairs"]) > 0:
-                    portfolio["volume_change"] /= len(self.config["TRADING"]["pairs"])
+                if len(self.pairs_valid) > 0:
+                    portfolio["volume_change"] /= len(self.pairs_valid)
 
             except Exception as volume_error:
                 self.logger.warning(f"⚠️ Cannot fetch 24h volume data: {volume_error}")
@@ -2013,7 +2036,7 @@ Take Profit: {take_profit}""",
                     if confidence > self.config["AI"]["confidence_threshold"]
                     else "wait"
                 ),
-                "symbol": self.config["TRADING"]["pairs"][best_pair_idx],
+                "symbol": self.pairs_valid[best_pair_idx],
                 "confidence": confidence,
                 "timestamp": timestamp,
                 "regime": regime,
@@ -3098,7 +3121,7 @@ Take Profit: {take_profit}""",
             }
 
             # Analyse du carnet d'ordres
-            for pair in self.config["TRADING"]["pairs"]:
+            for pair in self.pairs_valid:
                 orderbook = self.buffer.get_orderbook(pair)
                 if orderbook:
                     # Profondeur de marché
@@ -3140,7 +3163,7 @@ Take Profit: {take_profit}""",
         try:
             conditions = {"safe": True, "reason": None, "details": {}}
 
-            for pair in self.config["TRADING"]["pairs"]:
+            for pair in self.pairs_valid:
                 pair_data = self.buffer.get_latest_ohlcv(pair)
 
                 # Vérification des divergences

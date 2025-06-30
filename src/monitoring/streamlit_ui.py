@@ -220,7 +220,41 @@ class TradingDashboard:
         )
         indicators = TechnicalIndicators(df)
         self.indicators[symbol] = indicators.calculate_all_indicators()
+    
+    def update_market_analysis(self, symbol: str = None, timeframe: str = None):
+        if symbol is None:
+            symbol = st.session_state.get("selected_symbol", "BTC/USDT")
+        if timeframe is None:
+            timeframe = st.session_state.get("selected_timeframe", "1m")
 
+        try:
+            if self.exchange:
+                # Recharge les données OHLCV pour le symbole/timeframe
+                ohlcv = self.exchange.fetch_ohlcv(symbol, timeframe, limit=1000)
+                df = pd.DataFrame(
+                    ohlcv,
+                    columns=["timestamp", "open", "high", "low", "close", "volume"],
+                )
+                df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                self.market_data[symbol] = MarketData(
+                    symbol=symbol,
+                    timeframe=timeframe,
+                    open_prices=df["open"],
+                    high_prices=df["high"],
+                    low_prices=df["low"],
+                    close_prices=df["close"],
+                    volume=df["volume"],
+                    timestamp=df["timestamp"],
+                )
+                self.calculate_indicators(symbol)
+                self.logger.info(f"Market analysis updated for {symbol} ({timeframe})")
+            else:
+                self.logger.warning("Exchange not initialized, using sample data for update_market_analysis")
+                self._load_sample_data()
+        except Exception as e:
+            self.logger.error(f"Failed to update market analysis for {symbol}: {e}")
+            self._load_sample_data()
+            
     async def start_websocket(self, symbol: str):
         """Démarrage de la connexion WebSocket"""
         url = f"wss://stream.binance.com:9443/ws/{symbol.lower()}@kline_1m"
