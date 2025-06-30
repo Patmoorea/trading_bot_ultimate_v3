@@ -108,7 +108,6 @@ class TradingBotM4:
                         )
                         continue
                     pair_data = market_data[pair_key]
-                    # DEBUG : Log structure de la sous-donnée
                     self.logger.debug(
                         f"[DEBUG] tick: pair={pair} | pair_key={pair_key} | pair_data keys: {list(pair_data.keys()) if isinstance(pair_data, dict) else type(pair_data)}"
                     )
@@ -2572,15 +2571,19 @@ Take Profit: {take_profit}""",
                             )
                             continue
                         pair_data = market_data[pair_key]
-                        signals = await self.analyze_signals(pair_data)
-                        all_signals[pair] = signals
+                        signal = await self.analyze_signals(pair_data)
+                        all_signals[pair] = signal
+
+                    # Utiliser le signal de la paire principale
+                    main_pair = self.pairs_valid[0]
+                    main_signal = all_signals.get(main_pair)
 
                     # Analyse des news
                     news_impact = await self.news_analyzer.analyze()
 
                     # Construction des features
                     features = self._combine_features(
-                        technical_features=signals,
+                        technical_features=main_signal,
                         news_impact=news_impact,
                         regime=market_regime,
                     )
@@ -2593,7 +2596,7 @@ Take Profit: {take_profit}""",
                         decision = self._build_decision(
                             policy=policy,
                             value=value,
-                            technical_score=signals["recommendation"]["confidence"],
+                            technical_score=main_signal["recommendation"]["confidence"],
                             news_sentiment=news_impact,
                             regime=market_regime,
                             timestamp=pd.Timestamp.utcnow(),
