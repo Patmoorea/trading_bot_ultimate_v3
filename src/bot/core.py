@@ -796,11 +796,42 @@ class TradingBotM4:
     def add_indicators(self, df):
         """Ajoute tous les indicateurs (130+) au DataFrame"""
         try:
-            # Ajout de tous les indicateurs techniques
+            # PATCH: Accepte DataFrame, liste de dicts, ou liste de listes
+            if isinstance(df, list):
+                if len(df) == 0:
+                    self.logger.error("add_indicators: Liste reçue vide")
+                    return None
+                # Si dict
+                if isinstance(df[0], dict):
+                    df = pd.DataFrame(df)
+                # Si liste ou tuple
+                elif isinstance(df[0], (list, tuple)):
+                    columns = ["timestamp", "open", "high", "low", "close", "volume"]
+                    df = pd.DataFrame(df, columns=columns)
+                    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                else:
+                    self.logger.error(
+                        "add_indicators: Format de liste non pris en charge"
+                    )
+                    return None
+
+            if not isinstance(df, pd.DataFrame):
+                self.logger.error("add_indicators: df n'est pas un DataFrame")
+                return None
+
+            required_cols = {"open", "high", "low", "close", "volume"}
+            # Vérifie la présence des colonnes nécessaires
+            if not required_cols.issubset(df.columns):
+                self.logger.error(
+                    f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
+                )
+                return None
+
             self.logger.info(f"Colonnes du DataFrame reçu: {df.columns.tolist()}")
             self.logger.info(f"Exemple de lignes: {df.head(2)}")
             print("Colonnes du DataFrame reçu:", df.columns.tolist())
             print(df.head(2))
+
             df_with_indicators = ta.add_all_ta_features(
                 df,
                 open="open",
