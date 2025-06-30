@@ -4,6 +4,9 @@ import os
 from datetime import datetime
 from src.bot.core import TradingBotM4
 from src.notifications.telegram_bot import TelegramBot
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 STATUS_PATH = "bot_status.json"
 

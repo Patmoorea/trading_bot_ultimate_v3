@@ -73,6 +73,13 @@ from src.ai.ppo_gtrxl import PPOGTrXL
 USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
 
+def safe_float(val, default=0.0):
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
 
