@@ -3526,7 +3526,11 @@ Take Profit: {take_profit}""",
                     pair_data = market_data[pair_key]
                     signals = await self.analyze_signals(pair_data)
                     all_signals[pair] = signals
-                    news = None
+
+                # Choix du signal principal pour la prise de décision
+                main_pair = self.pairs_valid[0]
+                main_signal = all_signals.get(main_pair)
+                news = None
                 try:
                     if hasattr(self, "news_analyzer"):
                         news = await self.news_analyzer.analyze()
@@ -3544,7 +3548,7 @@ Take Profit: {take_profit}""",
 
                 # Régime
                 if hasattr(self, "regime_detector"):
-                    new_regime = self.regime_detector.predict(signals)
+                    new_regime = self.regime_detector.predict(main_signal)
                 else:
                     new_regime = self.current_regime
 
@@ -3561,14 +3565,16 @@ Take Profit: {take_profit}""",
                     self.current_strategy = "Arbitrage"
                 elif new_regime != self.current_regime:
                     self.current_regime = new_regime
-                    self.current_strategy = self.choose_strategy(new_regime, signals)
+                    self.current_strategy = self.choose_strategy(
+                        new_regime, main_signal
+                    )
                     await self.send_telegram_message(
                         f"🔄 Changement de régime : {new_regime} ⇒ Nouvelle stratégie : {self.current_strategy}"
                     )
 
                 # Décision de trade
                 decision = self.make_trade_decision(
-                    signals, self.current_strategy, news, arbitrage_opps
+                    main_signal, self.current_strategy, news, arbitrage_opps
                 )
                 trade_status = None
                 if decision and decision.get("action") in ["buy", "sell"]:
@@ -3593,8 +3599,8 @@ Take Profit: {take_profit}""",
                         "Régime": self.current_regime,
                         "Stratégie": self.current_strategy,
                         "Signal": (
-                            signals["recommendation"]["action"]
-                            if signals and "recommendation" in signals
+                            main_signal["recommendation"]["action"]
+                            if main_signal and "recommendation" in main_signal
                             else "N/A"
                         ),
                         "News": (
