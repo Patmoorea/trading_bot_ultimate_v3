@@ -50,9 +50,6 @@ import torch
 # Analyse technique (ex: ta-lib ou pandas-ta)
 import ta  # ou import pandas_ta as ta
 
-# Gestion des websockets et buffers
-from src.data.realtime.websocket.client import MultiStreamManager, StreamConfig
-
 # (Optionnel) nest_asyncio si tu utilises dans Streamlit ou Jupyter
 import nest_asyncio
 from .utils import WEBSOCKET_CONFIG
@@ -66,7 +63,6 @@ from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
 
 from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
-import nest_asyncio
 from src.ai.ppo_gtrxl import PPOGTrXL
 
 from src.ai.cnn_lstm import CNNLSTM
@@ -801,6 +797,10 @@ class TradingBotM4:
         """Ajoute tous les indicateurs (130+) au DataFrame"""
         try:
             # Ajout de tous les indicateurs techniques
+            self.logger.info(f"Colonnes du DataFrame reçu: {df.columns.tolist()}")
+            self.logger.info(f"Exemple de lignes: {df.head(2)}")
+            print("Colonnes du DataFrame reçu:", df.columns.tolist())
+            print(df.head(2))
             df_with_indicators = ta.add_all_ta_features(
                 df,
                 open="open",
@@ -3715,138 +3715,6 @@ Take Profit: {take_profit}""",
                 del tr
             except:
                 pass
-
-
-class TradingEnv(gym.Env):
-    """Environment d'apprentissage par renforcement pour le trading"""
-
-    def __init__(self, trading_pairs, timeframes):
-        super().__init__()
-        self.trading_pairs = trading_pairs
-        self.timeframes = timeframes
-
-        # Espace d'observation: 42 features par paire/timeframe
-        self.observation_space = spaces.Box(
-            low=-np.inf,
-            high=np.inf,
-            shape=(len(trading_pairs) * len(timeframes) * 42,),
-            dtype=np.float32,
-        )
-
-        # Espace d'action: allocation par paire entre 0 et 1
-        self.action_space = spaces.Box(
-            low=0, high=1, shape=(len(trading_pairs),), dtype=np.float32
-        )
-
-        # Paramètres d'apprentissage
-        self.reward_scale = 1.0
-        self.position_history = []
-        self.done_penalty = -1.0
-
-        # Initialisation des métriques
-        self.metrics = {
-            "episode_rewards": [],
-            "portfolio_values": [],
-            "positions": [],
-            "actions": [],
-        }
-
-    def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
-        self.state = np.zeros(self.observation_space.shape)
-        self.position_history.clear()
-        return self.state, {}
-
-    def step(self, action):
-        # Validation de l'action
-        if not self.action_space.contains(action):
-            self.logger.warning(f"Action invalide: {action}")
-            action = np.clip(action, self.action_space.low, self.action_space.high)
-
-        # Calcul de la récompense
-        reward = self._calculate_reward(action)
-
-        # Mise à jour de l'état
-        self._update_state()
-
-        # Vérification des conditions de fin
-        done = self._check_done()
-        truncated = False
-
-        # Mise à jour des métriques
-        self._update_metrics(action, reward)
-
-        return self.state, reward, done, truncated, self._get_info()
-
-    def _calculate_reward(self, action):
-        """Calcule la récompense basée sur le PnL et le risque"""
-        try:
-            # Calcul du PnL
-            pnl = self._calculate_pnl(action)
-
-            # Pénalité pour le risque
-            risk_penalty = self._calculate_risk_penalty(action)
-
-            # Reward final
-            reward = (pnl - risk_penalty) * self.reward_scale
-
-            return float(reward)
-
-        except Exception as e:
-            self.logger.error(f"Erreur calcul reward: {e}")
-            return None
-
-    def _update_state(self):
-        """Mise à jour de l'état avec les dernières données de marché"""
-        try:
-            # Mise à jour des features techniques
-            technical_features = self._calculate_technical_features()
-
-            # Mise à jour des features de marché
-            market_features = self._calculate_market_features()
-
-            # Combinaison des features
-            self.state = np.concatenate([technical_features, market_features])
-
-        except Exception as e:
-            self.logger.error(f"Erreur mise à jour state: {e}")
-            return None
-
-    def _check_done(self):
-        """Vérifie les conditions de fin d'épisode"""
-        # Vérification du stop loss
-        if self._check_stop_loss():
-            return True
-
-        # Vérification de la durée max
-        if len(self.position_history) >= self.max_steps:
-            return True
-
-        return False
-
-    def _update_metrics(self, action, reward):
-        """Mise à jour des métriques de l'épisode"""
-        self.metrics["episode_rewards"].append(reward)
-        self.metrics["portfolio_values"].append(self._get_portfolio_value())
-        self.metrics["positions"].append(self.position_history[-1])
-        self.metrics["actions"].append(action)
-
-    def _get_info(self):
-        """Retourne les informations additionnelles"""
-        return {
-            "portfolio_value": self._get_portfolio_value(),
-            "current_positions": (
-                self.position_history[-1] if self.position_history else None
-            ),
-            "metrics": self.metrics,
-        }
-
-    def render(self):
-        """Affichage de l'environnement"""
-        # Affichage des métriques principales
-        print(f"\nPortfolio Value: {self._get_portfolio_value():.2f}")
-        print(f"Total Reward: {sum(self.metrics['episode_rewards']):.2f}")
-        print(f"Number of Trades: {len(self.position_history)}")
 
 
 class MultiStreamManager:
