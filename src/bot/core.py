@@ -2561,7 +2561,19 @@ Take Profit: {take_profit}""",
                         continue
 
                     # Analyse technique
-                    signals = await self.analyze_signals(market_data)
+                    all_signals = {}
+                    for pair in self.pairs_valid:
+                        pair_key = (
+                            pair if pair in market_data else pair.replace("/", "")
+                        )
+                        if pair_key not in market_data:
+                            self.logger.error(
+                                f"[PATCH] Paire {pair} absente de market_data, clés: {list(market_data.keys())}"
+                            )
+                            continue
+                        pair_data = market_data[pair_key]
+                        signals = await self.analyze_signals(pair_data)
+                        all_signals[pair] = signals
 
                     # Analyse des news
                     news_impact = await self.news_analyzer.analyze()
@@ -3503,8 +3515,18 @@ Take Profit: {take_profit}""",
             cycle += 1
             try:
                 market_data = await self.get_latest_data()
-                signals = await self.analyze_signals(market_data)
-                news = None
+                all_signals = {}
+                for pair in self.pairs_valid:
+                    pair_key = pair if pair in market_data else pair.replace("/", "")
+                    if pair_key not in market_data:
+                        self.logger.error(
+                            f"[PATCH] Paire {pair} absente de market_data, clés: {list(market_data.keys())}"
+                        )
+                        continue
+                    pair_data = market_data[pair_key]
+                    signals = await self.analyze_signals(pair_data)
+                    all_signals[pair] = signals
+                    news = None
                 try:
                     if hasattr(self, "news_analyzer"):
                         news = await self.news_analyzer.analyze()
