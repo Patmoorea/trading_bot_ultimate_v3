@@ -1018,7 +1018,6 @@ class TradingBotM4:
             return None
 
     async def _handle_kline(self, msg):
-        """Traite une bougie"""
         try:
             kline = msg["k"]
             kline_data = {
@@ -1038,10 +1037,15 @@ class TradingBotM4:
 
             # Analyse technique si la bougie est fermée
             if kline_data["closed"]:
-                await self.analyze_signals(
-                    market_data=self.buffer.get_latest_ohlcv(kline_data["symbol"]),
-                    indicators=self.advanced_indicators.analyze_timeframe(kline_data),
-                )
+                # 🟢 PASSER LA LISTE DES BOUGIES, PAS LE DICT UNIQUE
+                candles = self.buffer.get_all_data(kline_data["symbol"])
+                if candles:
+                    await self.analyze_signals(
+                        market_data=candles,
+                        indicators=self.advanced_indicators.analyze_timeframe(
+                            kline_data
+                        ),
+                    )
             return kline_data
 
         except Exception as e:
