@@ -226,17 +226,26 @@ class BinanceExchange:
                         klines = None
                         # --- PATCH: Robust await handling ---
                         if fetch_ohlcv is not None:
-                            # Si on a une cofunc, on await ; sinon, on wrap dans une coroutine
                             if asyncio.iscoroutinefunction(fetch_ohlcv):
                                 klines = await fetch_ohlcv(pair, tf, since=since)
                             else:
-                                # On force le résultat dans une coroutine si jamais il n'est pas async
+
                                 async def fake_coro(*args, **kwargs):
                                     return fetch_ohlcv(*args, **kwargs)
+
                                 klines = await fake_coro(pair, tf, since=since)
                         else:
-                            logger.error(f"fetch_ohlcv n'est pas disponible pour {pair} {tf}")
+                            logger.error(
+                                f"fetch_ohlcv n'est pas disponible pour {pair} {tf}"
+                            )
                             klines = []
+                        # === DEBUG ICI ===
+                        logger.info(
+                            f"[DEBUG][{pair}][{tf}] klines type: {type(klines)} len: {len(klines) if klines else 0}"
+                        )
+                        if klines and len(klines) > 0:
+                            logger.info(f"[DEBUG][{pair}][{tf}] klines[0]: {klines[0]}")
+                        # =================
                         if not klines or len(klines) == 0:
                             logger.error(f"Aucune donnée historique pour {pair} {tf}")
                             tf_result[pair] = pd.DataFrame(
@@ -251,8 +260,19 @@ class BinanceExchange:
                             )
                             continue
 
+                        # Robustification: filtre les bougies invalides
+                        valid_klines = [
+                            row
+                            for row in klines
+                            if isinstance(row, (list, tuple)) and len(row) == 6
+                        ]
+                        if len(valid_klines) < len(klines):
+                            logger.warning(
+                                f"[{pair}][{tf}] {len(klines) - len(valid_klines)} bougies invalides ignorées"
+                            )
+
                         df = pd.DataFrame(
-                            klines,
+                            valid_klines,
                             columns=[
                                 "timestamp",
                                 "open",
@@ -264,6 +284,9 @@ class BinanceExchange:
                         )
                         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                         tf_result[pair] = df
+                        logger.info(
+                            f"[DEBUG][{pair}][{tf}] df.columns: {list(df.columns)} shape: {df.shape}"
+                        )
                     except Exception as e:
                         logger.error(f"Erreur historique {pair} {tf}: {e}")
                         tf_result[pair] = pd.DataFrame(
