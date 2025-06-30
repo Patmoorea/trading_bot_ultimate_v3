@@ -95,22 +95,29 @@ class TradingBotM4:
             if market_data:
                 all_indicators = {}
                 all_signals = {}
+
                 for pair in self.pairs_valid:
                     # PATCH: Normalise la clé pour matcher market_data
-                    pair_key = pair
-                    if pair not in market_data:
+                    if pair in market_data:
+                        pair_key = pair
+                    elif pair.replace("/", "") in market_data:
                         pair_key = pair.replace("/", "")
-                    if pair_key not in market_data:
+                    else:
                         self.logger.error(
                             f"[PATCH] Paire {pair} absente de market_data, clés: {list(market_data.keys())}"
                         )
                         continue
                     pair_data = market_data[pair_key]
+                    # DEBUG : Log structure de la sous-donnée
+                    self.logger.debug(
+                        f"[DEBUG] tick: pair={pair} | pair_key={pair_key} | pair_data keys: {list(pair_data.keys()) if isinstance(pair_data, dict) else type(pair_data)}"
+                    )
                     indicators = await self.calculate_indicators(pair)
                     if indicators:
                         all_indicators[pair] = indicators
                         signals = await self.analyze_signals(pair_data, indicators)
                         all_signals[pair] = signals
+
                 portfolio = await self.get_real_portfolio()
                 if portfolio:
                     st.session_state.portfolio = portfolio
