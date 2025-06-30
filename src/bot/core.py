@@ -129,6 +129,20 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Erreur tick: {e}")
 
+    def build_ohlcv_df(ohlcv):
+        columns = ["timestamp", "open", "high", "low", "close", "volume"]
+        if (
+            ohlcv
+            and isinstance(ohlcv, list)
+            and len(ohlcv) > 0
+            and isinstance(ohlcv[0], (list, tuple))
+        ):
+            df = pd.DataFrame(ohlcv, columns=columns)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+        else:
+            df = pd.DataFrame(ohlcv)
+        return df
+
     def __init__(self):
         """Initialisation du bot avec gestion améliorée des états"""
 
@@ -1208,10 +1222,17 @@ class TradingBotM4:
             high_low_range = None
             if "ohlcv" in data and isinstance(data["ohlcv"], list) and data["ohlcv"]:
                 last_ohlcv = data["ohlcv"][-1]
-                high = last_ohlcv.get("high")
-                low = last_ohlcv.get("low")
+                if isinstance(last_ohlcv, dict):
+                    high = last_ohlcv.get("high")
+                    low = last_ohlcv.get("low")
+                elif isinstance(last_ohlcv, (list, tuple)) and len(last_ohlcv) >= 4:
+                    # Format liste: [timestamp, open, high, low, close, volume]
+                    high = last_ohlcv[2]
+                    low = last_ohlcv[3]
+                else:
+                    high, low = None, None
                 if high is not None and low is not None:
-                    high_low_range = high - low
+                    high_low_range = float(high) - float(low)
 
             indicators = {
                 "price": data["price"],
