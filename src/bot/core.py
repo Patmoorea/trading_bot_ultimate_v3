@@ -1190,16 +1190,8 @@ class TradingBotM4:
                 self.logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
 
-            # Sécurité: Vérification de la présence des clés nécessaires
-            required_keys = [
-                "price",
-                "volume",
-                "bid",
-                "ask",
-                "high",
-                "low",
-                "timestamp",
-            ]
+            # Sécurité: Vérification des clés de base
+            required_keys = ["price", "volume", "bid", "ask", "timestamp"]
             for key in required_keys:
                 if key not in data:
                     self.logger.error(
@@ -1207,18 +1199,23 @@ class TradingBotM4:
                     )
                     return {}
 
-            # Calcul des indicateurs de base
+            # Calcul high_low_range depuis la dernière bougie OHLCV
+            high_low_range = None
+            if "ohlcv" in data and isinstance(data["ohlcv"], list) and data["ohlcv"]:
+                last_ohlcv = data["ohlcv"][-1]
+                high = last_ohlcv.get("high")
+                low = last_ohlcv.get("low")
+                if high is not None and low is not None:
+                    high_low_range = high - low
+
             indicators = {
                 "price": data["price"],
                 "volume": data["volume"],
                 "bid_ask_spread": data["ask"] - data["bid"],
-                "high_low_range": data["high"] - data["low"],
+                "high_low_range": high_low_range,
                 "timestamp": data["timestamp"],
             }
-            # Log des données reçues
             self.logger.info(f"Calcul indicateurs pour {symbol}: {data}")
-
-            # Stockage des indicateurs
             self.indicators[symbol] = indicators
             return indicators
 
