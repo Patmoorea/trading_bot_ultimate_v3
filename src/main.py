@@ -22,6 +22,8 @@ from src.bot.streamlit_helpers import get_bot
 from src.bot.ws import cleanup_resources
 from src.bot.core import TradingBotM4
 from src.notifications.telegram_bot import TelegramBot
+from src.backtesting.advanced.quantum_backtest import QuantumBacktester, BacktestConfig
+from src.backtesting.core.backtest_engine import BacktestEngine
 
 # --- Chargement des variables d'environnement
 load_dotenv()
@@ -124,9 +126,109 @@ if st.session_state.get("should_launch_bot", False):
         )
     st.session_state["should_launch_bot"] = False
 
+
 # ================================
 # ==== RESTE DE TON DASHBOARD ====
 # ================================
+# Helper pour valider les données OHLCV
+def _has_valid_ohlcv(data):
+    try:
+        ohlcv = data.get("ohlcv") if isinstance(data, dict) else None
+        if ohlcv is None or not isinstance(ohlcv, list):
+            return False
+        if len(ohlcv) == 0:
+            return False
+        for row in ohlcv:
+            if not isinstance(row, (list, tuple)) or len(row) < 5:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+# Récupère les données du bot (adapte si besoin)
+latest_data = getattr(bot, "latest_data", {})
+
+data_ready = (
+    isinstance(latest_data, dict)
+    and bool(latest_data)
+    and any(_has_valid_ohlcv(data) for data in latest_data.values())
+)
+
+if data_ready:
+    # --- BACKTEST CLASSIQUE ---
+    if st.button("Lancer Backtest", key="backtest_all_btn"):
+        results = {}
+        st.info("Backtest en cours sur toutes les paires...")
+        try:
+            for symbol, data in latest_data.items():
+                try:
+                    if _has_valid_ohlcv(data):
+                        df = pd.DataFrame(data["ohlcv"])
+
+                        def strategy_func(df, **params):
+                            return (df["close"] > df["close"].rolling(5).mean()).astype(
+                                int
+                            )
+
+                        # Adapter l'import si nécessaire !
+                        from src.backtesting.core.backtest_engine import BacktestEngine
+
+                        engine = BacktestEngine(initial_capital=10000)
+                        results[symbol] = engine.run_backtest(df, strategy_func)
+                    else:
+                        st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
+                except Exception as pair_exc:
+                    st.warning(f"Erreur sur {symbol}: {pair_exc}")
+            st.session_state["all_backtest_results"] = results
+            st.success("Backtest terminé ✅")
+        except Exception as batch_exc:
+            st.error(f"Erreur lors du backtest: {batch_exc}")
+
+    # --- RÉSULTATS BACKTEST CLASSIQUE ---
+    if st.session_state.get("all_backtest_results"):
+        st.markdown("**Résultats Backtest Classique :**")
+        for symbol, res in st.session_state["all_backtest_results"].items():
+            st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
+
+    # --- BACKTEST QUANTIQUE ---
+    if st.session_state.get("all_backtest_results"):
+        if st.button("Lancer Backtest Quantique", key="quantum_backtest_all_btn"):
+            st.info("Backtest quantique en cours sur toutes les paires...")
+            results = {}
+            try:
+                from src.backtesting.advanced.quantum_backtest import QuantumBacktester
+
+                for symbol, data in latest_data.items():
+                    st.write(f"Test {symbol} ...")
+                    try:
+                        if _has_valid_ohlcv(data):
+                            df = pd.DataFrame(data["ohlcv"])
+
+                            def strategy_func(df, **params):
+                                return (
+                                    df["close"] > df["close"].rolling(5).mean()
+                                ).astype(int)
+
+                            engine = QuantumBacktester()
+                            results[symbol] = engine.run_quantum_simulation(
+                                df, strategy_func
+                            )
+                        else:
+                            st.warning(f"Aucune donnée OHLCV exploitable pour {symbol}")
+                    except Exception as pair_exc:
+                        st.warning(f"Erreur quantique sur {symbol}: {pair_exc}")
+                st.session_state["all_quantum_results"] = results
+                st.success("Backtest quantique terminé ✅")
+                st.write("DEBUG - Résultats quantum :", results)
+            except Exception as batch_exc:
+                st.error(f"Erreur lors du backtest quantique: {batch_exc}")
+
+    # --- RÉSULTATS BACKTEST QUANTIQUE ---
+    if st.session_state.get("all_quantum_results"):
+        st.markdown("**Résultats Backtest Quantique :**")
+        for symbol, res in st.session_state["all_quantum_results"].items():
+            st.write(f"{symbol} : {res.get('final_capital', 'N/A')} USD")
 
 
 # Exemples de helpers (garde-les, adapte si besoin)
