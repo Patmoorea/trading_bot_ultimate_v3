@@ -394,7 +394,10 @@ class TradingBotM4:
 
     async def async_init(self):
         await self.exchange.initialize()
-        await self.exchange._exchange.load_markets()
+        if asyncio.iscoroutinefunction(self.exchange._exchange.load_markets):
+            await self.exchange._exchange.load_markets()
+        else:
+            self.exchange._exchange.load_markets()
         symbols = (
             self.exchange._exchange.symbols
         )  # Liste de toutes les paires valides Binance
@@ -1213,7 +1216,12 @@ class TradingBotM4:
                 if not getattr(self.exchange, "_initialized", False):
                     self.logger.info("[study_market] Initialisation exchange...")
                     await self.exchange.initialize()
-                    await self.exchange._exchange.load_markets()
+                    if asyncio.iscoroutinefunction(
+                        self.exchange._exchange.load_markets
+                    ):
+                        await self.exchange._exchange.load_markets()
+                    else:
+                        self.exchange._exchange.load_markets()
                     symbols = (
                         self.exchange._exchange.symbols
                     )  # Liste de toutes les paires valides Binance
