@@ -1190,7 +1190,7 @@ class TradingBotM4:
                 self.logger.error(f"❌ Pas de données pour {symbol}")
                 return {}
 
-            # Sécurité: Vérification des clés de base
+            # Vérification des clés de base
             required_keys = ["price", "volume", "bid", "ask", "timestamp"]
             for key in required_keys:
                 if key not in data:
@@ -1199,7 +1199,7 @@ class TradingBotM4:
                     )
                     return {}
 
-            # Calcul high_low_range depuis la dernière bougie OHLCV
+            # Calcul high_low_range depuis la dernière bougie OHLCV si présent
             high_low_range = None
             if "ohlcv" in data and isinstance(data["ohlcv"], list) and data["ohlcv"]:
                 last_ohlcv = data["ohlcv"][-1]
