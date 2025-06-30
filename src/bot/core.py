@@ -87,50 +87,55 @@ logging.basicConfig(
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
 
-    async def tick(self):
-        """Effectue une itération de trading (une fois par refresh)"""
-        try:
-            # Récupération des données
-            market_data = await self.get_latest_data()
-            if market_data:
-                for pair in self.pairs_valid:
-                    # PATCH: Normalise la clé pour matcher market_data
-                    pair_key = pair
-                    if pair not in market_data:
-                        pair_key = pair.replace("/", "")
-                    if pair_key not in market_data:
-                        self.logger.error(
-                            f"[PATCH] Paire {pair} absente de market_data, clés: {list(market_data.keys())}"
+       async def tick(self):
+            """Effectue une itération de trading (une fois par refresh)"""
+            try:
+                # Récupération des données
+                market_data = await self.get_latest_data()
+                if market_data:
+                    all_indicators = {}
+                    all_signals = {}
+                    for pair in self.pairs_valid:
+                        # PATCH: Normalise la clé pour matcher market_data
+                        pair_key = pair
+                        if pair not in market_data:
+                            pair_key = pair.replace("/", "")
+                        if pair_key not in market_data:
+                            self.logger.error(
+                                f"[PATCH] Paire {pair} absente de market_data, clés: {list(market_data.keys())}"
+                            )
+                            continue
+                        pair_data = market_data[pair_key]
+                        indicators = await self.calculate_indicators(pair)
+                        if indicators:
+                            all_indicators[pair] = indicators
+                            signals = await self.analyze_signals(pair_data, indicators)
+                            all_signals[pair] = signals
+                    portfolio = await self.get_real_portfolio()
+                    if portfolio:
+                        st.session_state.portfolio = portfolio
+                        st.session_state.latest_data = market_data
+                        st.session_state.indicators = all_indicators
+                        st.session_state.signals = all_signals
+
+                    # Appel périodique de l’analyseur de news
+                    now = time.time()
+                    news_result = None
+                    if now - self.last_news_check > self.news_refresh_interval:
+                        news_result = await self.news_analyzer.analyze_news()
+                        self.last_news_check = now
+                    if news_result and news_result.get("status") == "success":
+                        st.session_state["news_score"] = news_result["sentiment_summary"]
+                        st.session_state["important_news"] = news_result["important_news"]
+                        self.logger.info(
+                            f"News sentiment: {news_result['sentiment_summary']}"
                         )
-                        continue
-                    pair_data = market_data[pair_key]
-                    indicators = await self.calculate_indicators(pair)
-                    if indicators:
-                        signals = await self.analyze_signals(pair_data, indicators)
-                portfolio = await self.get_real_portfolio()
-                if portfolio:
-                    st.session_state.portfolio = portfolio
-                    st.session_state.latest_data = market_data
-                    st.session_state.indicators = indicators
+                    elif news_result is not None:
+                        st.session_state["news_score"] = None
+                        st.session_state["important_news"] = []
 
-                # Appel périodique de l’analyseur de news
-                now = time.time()
-                news_result = None
-                if now - self.last_news_check > self.news_refresh_interval:
-                    news_result = await self.news_analyzer.analyze_news()
-                    self.last_news_check = now
-                if news_result and news_result.get("status") == "success":
-                    st.session_state["news_score"] = news_result["sentiment_summary"]
-                    st.session_state["important_news"] = news_result["important_news"]
-                    self.logger.info(
-                        f"News sentiment: {news_result['sentiment_summary']}"
-                    )
-                elif news_result is not None:
-                    st.session_state["news_score"] = None
-                    st.session_state["important_news"] = []
-
-        except Exception as e:
-            self.logger.error(f"Erreur tick: {e}")
+            except Exception as e:
+                self.logger.error(f"Erreur tick: {e}")
 
     def build_ohlcv_df(ohlcv):
         columns = ["timestamp", "open", "high", "low", "close", "volume"]
