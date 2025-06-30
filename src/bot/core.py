@@ -96,10 +96,9 @@ class TradingBotM4:
                 for pair in self.pairs_valid:
                     indicators = await self.calculate_indicators(pair)
                     if indicators:
-                        signals = await self.analyze_signals(market_data, indicators)
-                        # Ici tu peux gérer l’exécution réelle du trade si besoin
-                        # if signals and signals.get('should_trade', False):
-                        #     await self.execute_real_trade(signals)
+                        pair_data = market_data.get(pair, {})
+                        # On ne passe que le sous-dict de la paire
+                        signals = await self.analyze_signals(pair_data, indicators)
                 portfolio = await self.get_real_portfolio()
                 if portfolio:
                     st.session_state.portfolio = portfolio
