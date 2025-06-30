@@ -1453,7 +1453,23 @@ class TradingBotM4:
         try:
             # Si les indicateurs ne sont pas fournis, on les calcule
             if indicators is None:
-                indicators = self.add_indicators(market_data)
+                # PATCH extraction robuste
+                ohlcv = None
+                if isinstance(market_data, dict):
+                    if "ohlcv" in market_data:
+                        ohlcv = market_data["ohlcv"]
+                    elif len(market_data) == 1:
+                        _, data = next(iter(market_data.items()))
+                        ohlcv = data.get("ohlcv", None)
+                elif isinstance(market_data, (list, pd.DataFrame)):
+                    ohlcv = market_data
+                if ohlcv and isinstance(ohlcv, (list, pd.DataFrame)) and len(ohlcv) > 0:
+                    indicators = self.add_indicators(ohlcv)
+                else:
+                    self.logger.error(
+                        f"[PATCH] Impossible d'extraire OHLCV pour analyze_signals: type={type(market_data)} valeur={str(market_data)[:200]}"
+                    )
+                    return None
 
             if not indicators:
                 return None
