@@ -1660,26 +1660,40 @@ class TradingBotM4:
                             portfolio["total_value"] += free + locked
                         else:
                             # Conversion en USDC pour les autres assets
-                            try:
-                                price = self.get_latest_price(f"{asset}USDC")
-                                value = (free + locked) * price
+                            symbol = f"{asset}USDC"
+                            # --- PATCH: vérifier que la paire existe sur Binance ---
+                            if hasattr(self.exchange, "_exchange") and hasattr(
+                                self.exchange._exchange, "symbols"
+                            ):
+                                valid_symbols = self.exchange._exchange.symbols
+                            else:
+                                valid_symbols = []
+                            if symbol in valid_symbols:
+                                try:
+                                    price = self.get_latest_price(symbol)
+                                    value = (free + locked) * price
 
-                                if value > 0:
-                                    portfolio["total_value"] += value
-                                    portfolio["positions"].append(
-                                        {
-                                            "symbol": f"{asset}/USDC",
-                                            "size": free + locked,
-                                            "value": value,
-                                            "price": price,
-                                            "free": free,
-                                            "locked": locked,
-                                            "timestamp": portfolio["timestamp"],
-                                        }
+                                    if value > 0:
+                                        portfolio["total_value"] += value
+                                        portfolio["positions"].append(
+                                            {
+                                                "symbol": f"{asset}/USDC",
+                                                "size": free + locked,
+                                                "value": value,
+                                                "price": price,
+                                                "free": free,
+                                                "locked": locked,
+                                                "timestamp": portfolio["timestamp"],
+                                            }
+                                        )
+                                except Exception as price_error:
+                                    self.logger.warning(
+                                        f"⚠️ Cannot get price for {asset}: {price_error}"
                                     )
-                            except Exception as price_error:
+                                    continue
+                            else:
                                 self.logger.warning(
-                                    f"⚠️ Cannot get price for {asset}: {price_error}"
+                                    f"⚠️ Pair {symbol} not available on Binance, skipping."
                                 )
                                 continue
 
