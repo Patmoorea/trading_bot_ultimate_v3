@@ -3,6 +3,7 @@ import json
 import os
 import traceback
 from datetime import datetime
+import pandas as pd
 from src.bot.core import TradingBotM4
 from src.notifications.telegram_bot import TelegramBot
 
@@ -39,7 +40,12 @@ async def main():
                     pair_key = pair if pair in market_data else pair.replace("/", "")
                     if pair_key in market_data:
                         pair_data = market_data[pair_key]
-                        signals[pair] = await bot.analyze_signals(pair_data)
+                        ohlcv = pair_data.get("ohlcv", [])
+                        if not ohlcv or len(ohlcv) < 2:
+                            continue
+                        df = pd.DataFrame(ohlcv)
+                        indicators = bot.add_indicators(df)
+                        signals[pair] = await bot.analyze_signals(df, indicators)
                 # --- 2. Ecriture du status pour Streamlit ---
                 status = {
                     "cycle": cycle,
