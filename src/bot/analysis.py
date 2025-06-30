@@ -300,6 +300,13 @@ async def study_market(self, period="7d"):
             indicators_analysis[timeframe] = {}
             for pair in self.config["TRADING"]["pairs"]:
                 df = tf_data.get(pair)
+                if isinstance(df, pd.DataFrame):
+                    print(f"\n[DEBUG] {pair} {timeframe} Colonnes: {list(df.columns)}")
+                    print(f"[DEBUG] {pair} {timeframe} Premières lignes:\n{df.head()}")
+                elif isinstance(df, list) and df:
+                    print(f"\n[DEBUG] {pair} {timeframe} OHLCV exemple (list): {df[0]}")
+                elif df is None:
+                    print(f"\n[DEBUG] {pair} {timeframe}: df is None")
                 required_cols = {"open", "high", "low", "close", "volume"}
                 if (
                     not isinstance(df, pd.DataFrame)
