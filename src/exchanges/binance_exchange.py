@@ -223,20 +223,22 @@ class BinanceExchange:
                 for pair in pairs:
                     try:
                         fetch_ohlcv = getattr(self._exchange, "fetch_ohlcv", None)
-                        klines = None
-                        # --- PATCH: Robust await handling ---
+                        klines = []
                         if fetch_ohlcv is not None:
-                            if asyncio.iscoroutinefunction(fetch_ohlcv):
-                                klines = await fetch_ohlcv(pair, tf, since=since)
-                            else:
-
-                                async def fake_coro(*args, **kwargs):
-                                    return fetch_ohlcv(*args, **kwargs)
-
-                                klines = await fake_coro(pair, tf, since=since)
+                            try:
+                                if asyncio.iscoroutinefunction(fetch_ohlcv):
+                                    klines = await fetch_ohlcv(pair, tf, since=since)
+                                else:
+                                    # fallback sync (rare, jamais sur ccxt officiel)
+                                    klines = fetch_ohlcv(pair, tf, since=since)
+                            except Exception as e:
+                                logger.error(
+                                    f"[{pair}][{tf}] fetch_ohlcv exception: {e}"
+                                )
+                                klines = []
                         else:
-                            logger.error(
-                                f"fetch_ohlcv n'est pas disponible pour {pair} {tf}"
+                            logger.warning(
+                                f"[{pair}][{tf}] fetch_ohlcv absent (probablement testnet)"
                             )
                             klines = []
                         # === DEBUG ICI ===

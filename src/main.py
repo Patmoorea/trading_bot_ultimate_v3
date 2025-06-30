@@ -187,7 +187,16 @@ if data_ready:
                     if _has_valid_ohlcv(data):
                         import pandas as pd
 
-                        df = pd.DataFrame(data["ohlcv"])
+                        columns = [
+                            "timestamp",
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                        ]
+                        df = pd.DataFrame(data["ohlcv"], columns=columns)
+                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
 
                         def strategy_func(df, **params):
                             return (df["close"] > df["close"].rolling(5).mean()).astype(
