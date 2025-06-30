@@ -209,6 +209,22 @@ class TradingDashboard:
     def calculate_indicators(self, symbol: str):
         """Calcul des indicateurs techniques"""
         data = self.market_data[symbol]
+
+        # Vérification de la présence de toutes les séries nécessaires
+        required_attrs = [
+            "open_prices",
+            "high_prices",
+            "low_prices",
+            "close_prices",
+            "volume",
+        ]
+        for attr in required_attrs:
+            if not hasattr(data, attr) or getattr(data, attr) is None:
+                print(
+                    f"DEBUG: Attribut {attr} manquant ou vide pour {symbol} dans data: {data}"
+                )
+                return  # Ou lève une exception ou retourne un dict vide
+
         df = pd.DataFrame(
             {
                 "open": data.open_prices,
@@ -220,7 +236,7 @@ class TradingDashboard:
         )
         indicators = TechnicalIndicators(df)
         self.indicators[symbol] = indicators.calculate_all_indicators()
-    
+
     def update_market_analysis(self, symbol: str = None, timeframe: str = None):
         if symbol is None:
             symbol = st.session_state.get("selected_symbol", "BTC/USDT")
@@ -249,12 +265,14 @@ class TradingDashboard:
                 self.calculate_indicators(symbol)
                 self.logger.info(f"Market analysis updated for {symbol} ({timeframe})")
             else:
-                self.logger.warning("Exchange not initialized, using sample data for update_market_analysis")
+                self.logger.warning(
+                    "Exchange not initialized, using sample data for update_market_analysis"
+                )
                 self._load_sample_data()
         except Exception as e:
             self.logger.error(f"Failed to update market analysis for {symbol}: {e}")
             self._load_sample_data()
-            
+
     async def start_websocket(self, symbol: str):
         """Démarrage de la connexion WebSocket"""
         url = f"wss://stream.binance.com:9443/ws/{symbol.lower()}@kline_1m"

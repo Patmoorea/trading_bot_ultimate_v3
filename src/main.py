@@ -88,9 +88,30 @@ st.info(
 if st.button("🔄 Rafraîchir le status"):
     st.rerun()
 
+
 # --- INITIALISATION DES FLAGS ET DU BOT ---
+async def ensure_bot_initialized(bot):
+    # Initialise tous les composants asynchrones du bot (analyseurs, modèles, etc.)
+    try:
+        await bot._setup_components()
+    except Exception as e:
+        st.error(f"Erreur d'initialisation du bot TradingBotM4 : {e}")
+        raise
+
+
 if "bot" not in st.session_state or st.session_state["bot"] is None:
-    st.session_state["bot"] = get_bot()
+    bot = get_bot()
+    try:
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        loop.run_until_complete(ensure_bot_initialized(bot))
+    except Exception as e:
+        st.error(f"Impossible d'initialiser le bot (analyseurs non prêts) : {e}")
+        bot = None
+    st.session_state["bot"] = bot
 bot = st.session_state["bot"]
 
 if "trading_task" not in st.session_state:
@@ -147,7 +168,7 @@ def _has_valid_ohlcv(data):
 
 
 # Récupère les données du bot (adapte si besoin)
-latest_data = getattr(bot, "latest_data", {})
+latest_data = getattr(bot, "latest_data", {}) if bot is not None else {}
 
 data_ready = (
     isinstance(latest_data, dict)
@@ -164,6 +185,8 @@ if data_ready:
             for symbol, data in latest_data.items():
                 try:
                     if _has_valid_ohlcv(data):
+                        import pandas as pd
+
                         df = pd.DataFrame(data["ohlcv"])
 
                         def strategy_func(df, **params):
@@ -198,6 +221,7 @@ if data_ready:
             results = {}
             try:
                 from src.backtesting.advanced.quantum_backtest import QuantumBacktester
+                import pandas as pd
 
                 for symbol, data in latest_data.items():
                     st.write(f"Test {symbol} ...")
@@ -247,6 +271,8 @@ async def _render_portfolio_tab(bot):
         try:
             portfolio = st.session_state.get("portfolio")
             if portfolio:
+                import pandas as pd
+
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric(
@@ -286,6 +312,8 @@ async def _render_trading_tab(bot):
         try:
             latest_data = bot.latest_data.get("BTCUSDT", {})
             if latest_data:
+                import pandas as pd
+
                 col1, col2 = st.columns(2)
                 with col1:
                     current_price = latest_data[-1]["close"]
@@ -332,6 +360,8 @@ async def _render_trading_tab(bot):
 async def _render_analysis_tab(bot):
     if st.session_state.bot_running:
         try:
+            import pandas as pd
+
             if bot.latest_data and bot.indicators:
                 st.subheader("Technical Analysis")
                 for symbol in bot.latest_data:
@@ -359,180 +389,6 @@ async def _render_analysis_tab(bot):
 
 # Ajout: Hack JavaScript pour autorefresh sans st_autorefresh
 def auto_refresh(interval_ms=2000, key="js_autorefresh"):
-    js_code = f"""
-    <script>
-        if (!window.{key}) {{
-            window.{key} = setInterval(function() {{
-                window.location.reload();
-            }}, {interval_ms});
-        }}
-    </script>
-    """
-    st.markdown(js_code, unsafe_allow_html=True)
-
-
-# Initialisation des flags de protection
-for flag, default in [
-    ("prevent_cleanup", True),
-    ("keep_alive", True),
-    ("force_cleanup", False),
-    ("cleanup_allowed", False),
-]:
-    if flag not in st.session_state:
-        st.session_state[flag] = default
-
-# Onglets principaux (tu adaptes si besoin)
-try:
-    portfolio_tab, trading_tab, analysis_tab = st.tabs(
-        ["📈 Portfolio", "🎯 Trading", "📊 Analysis"]
-    )
-    with portfolio_tab:
-        st.write(
-            "Portfolio Tab"
-        )  # Tu ajoutes ici l'appel à ta fonction/logiciel métier
-        # await _render_portfolio_tab(bot)  # si besoin, décommente
-    with trading_tab:
-        st.write("Trading Tab")
-        # await _render_trading_tab(bot)
-    with analysis_tab:
-        st.write("Analysis Tab")
-        # await _render_analysis_tab(bot)
-except Exception as tab_error:
-    logger.error(f"Tab rendering error: {tab_error}")
-    st.error("Error rendering tabs")
-
-
-# Fonctions auxiliaires pour le rendu des onglets
-async def _render_portfolio_tab(bot):
-    """Rendu de l'onglet Portfolio"""
-    if st.session_state.bot_running:
-        try:
-            portfolio = st.session_state.get("portfolio")
-            if portfolio:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric(
-                        "💰 Total Value",
-                        f"{portfolio.get('total_value', 0):.2f} USDC",
-                        f"{portfolio.get('daily_pnl', 0):+.2f} USDC",
-                    )
-                with col2:
-                    st.metric(
-                        "📈 24h Volume",
-                        f"{portfolio.get('volume_24h', 0):.2f} USDC",
-                        f"{portfolio.get('volume_change', 0):+.2f}%",
-                    )
-                with col3:
-                    positions = portfolio.get("positions", [])
-                    st.metric(
-                        "🔄 Active Positions",
-                        str(len(positions)),
-                        f"{len(positions)} active",
-                    )
-
-                if positions:
-                    st.subheader("Active Positions")
-                    st.dataframe(pd.DataFrame(positions), use_container_width=True)
-                else:
-                    st.info("💡 No active positions")
-            else:
-                st.warning("⚠️ Waiting for portfolio data...")
-        except Exception as e:
-            st.error(f"❌ Portfolio error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view portfolio")
-
-
-async def _render_trading_tab(bot):
-    """Rendu de l'onglet Trading"""
-    if st.session_state.bot_running:
-        try:
-            latest_data = bot.latest_data.get("BTCUSDT", {})
-            if latest_data:
-                col1, col2 = st.columns(2)
-                with col1:
-                    current_price = latest_data[-1]["close"]
-                    prev_price = (
-                        latest_data[-2]["close"]
-                        if len(latest_data) > 1
-                        else current_price
-                    )
-                    price_change = (
-                        ((current_price - prev_price) / prev_price * 100)
-                        if prev_price
-                        else 0
-                    )
-
-                    st.metric(
-                        "BTC/USDC Price",
-                        f"{current_price:.2f}",
-                        f"{price_change:+.2f}%",
-                    )
-                with col2:
-                    current_vol = latest_data[-1]["volume"]
-                    prev_vol = (
-                        latest_data[-2]["volume"]
-                        if len(latest_data) > 1
-                        else current_vol
-                    )
-                    vol_change = (
-                        ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
-                    )
-
-                    st.metric(
-                        "Trading Volume", f"{current_vol:.2f}", f"{vol_change:+.2f}%"
-                    )
-
-            if bot.indicators:
-                st.subheader("Trading Signals")
-                st.dataframe(pd.DataFrame(bot.indicators), use_container_width=True)
-            else:
-                st.info("💡 Waiting for signals...")
-        except Exception as e:
-            st.error(f"❌ Trading data error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view signals")
-
-
-async def _render_analysis_tab(bot):
-    """Rendu de l'onglet Analysis"""
-    if st.session_state.bot_running:
-        try:
-            if bot.latest_data and bot.indicators:
-                st.subheader("Technical Analysis")
-
-                for symbol in bot.latest_data:
-                    await process_market_data(bot, symbol)
-
-                if hasattr(bot, "advanced_indicators"):
-                    analysis = bot.advanced_indicators.get_all_signals()
-                    st.dataframe(pd.DataFrame(analysis), use_container_width=True)
-                else:
-                    st.info("💡 Processing analysis...")
-            else:
-                st.info("💡 Waiting for market data...")
-        except Exception as e:
-            st.error(f"❌ Analysis error: {str(e)}")
-    else:
-        st.warning("⚠️ Start trading to view analysis")
-
-    # --- Signal Quantum SVM ---
-    if hasattr(bot, "qsvm") and bot.qsvm is not None:
-        try:
-            # Prépare les features à passer à predict (adapte cette ligne selon ta logique)
-            features = (
-                bot.latest_data
-            )  # ou bot.indicators ou ton dataframe, adapte selon besoin
-            quantum_signal = bot.qsvm.predict(features)
-            st.subheader("Quantum SVM Signal")
-            st.metric("Quantum SVM Signal", quantum_signal)
-        except Exception as e:
-            st.warning(f"Erreur Quantum SVM : {e}")
-
-
-# --- Ajout: Hack JavaScript pour autorefresh sans st_autorefresh ---
-def auto_refresh(interval_ms=2000, key="js_autorefresh"):
-    """Inject JS code for auto-refresh in Streamlit."""
     js_code = f"""
     <script>
         if (!window.{key}) {{

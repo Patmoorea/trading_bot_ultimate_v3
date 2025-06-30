@@ -18,7 +18,9 @@ def write_status(data):
 
 async def main():
     bot = TradingBotM4()
-    await bot.initialize()
+    # --- Initialisation complète des analyseurs et modèles ---
+    await bot._setup_components()  # <-- AJOUT CRITIQUE
+
     print("[BOT] Bot initialisé, démarrage de la boucle adaptative...")
 
     try:

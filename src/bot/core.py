@@ -83,6 +83,11 @@ def safe_float(val, default=0.0):
         return default
 
 
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
 
