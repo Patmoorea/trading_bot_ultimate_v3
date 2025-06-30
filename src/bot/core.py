@@ -1256,11 +1256,20 @@ class TradingBotM4:
                 self.logger.info(
                     "[study_market] Après initialize, avant get_historical_data"
                 )
-                historical_data = await self.exchange.get_historical_data(
-                    self.pairs_valid,
-                    self.config["TRADING"]["timeframes"],
-                    period,
-                )
+                get_historical = getattr(self.exchange, "get_historical_data", None)
+                if asyncio.iscoroutinefunction(get_historical):
+                    historical_data = await get_historical(
+                        self.pairs_valid,
+                        self.config["TRADING"]["timeframes"],
+                        period,
+                    )
+                else:
+                    historical_data = get_historical(
+                        self.pairs_valid,
+                        self.config["TRADING"]["timeframes"],
+                        period,
+                    )
+
                 self.logger.info("⬅️ [study_market] Après get_historical_data")
             except Exception as e:
                 self.logger.error(
