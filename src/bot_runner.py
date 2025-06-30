@@ -34,7 +34,12 @@ async def main():
                 )
                 strategy = bot.choose_strategy(regime, indicators_analysis)
                 market_data = await bot.get_latest_data()
-                signals = await bot.analyze_signals(market_data)
+                signals = {}
+                for pair in bot.pairs_valid:
+                    pair_key = pair if pair in market_data else pair.replace("/", "")
+                    if pair_key in market_data:
+                        pair_data = market_data[pair_key]
+                        signals[pair] = await bot.analyze_signals(pair_data)
                 # --- 2. Ecriture du status pour Streamlit ---
                 status = {
                     "cycle": cycle,
