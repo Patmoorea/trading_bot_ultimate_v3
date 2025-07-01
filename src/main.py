@@ -641,10 +641,18 @@ with tab4:
 with tab5:
     st.subheader("Performance et Métriques")
 
-    # Récupérer les données de performance réelles
-    market_data = bot_manager.get_market_data()
+    # Calculer la date de début (30 jours avant la date actuelle)
+    start_date = (
+        datetime.strptime(CURRENT_TIME, "%Y-%m-%d %H:%M:%S") - timedelta(days=30)
+    ).strftime("%Y-%m-%d")
+
+    # Métriques de performance avec dates correctes
     performance_data = {
-        "dates": pd.date_range(start="2025-06-01", end=get_current_time(), freq="D"),
+        "dates": pd.date_range(
+            start=start_date,  # 30 jours avant
+            end=CURRENT_TIME,  # Date actuelle
+            freq="D",
+        ),
         "cumulative_returns": bot_manager.get_performance_metrics()["return"],
         "drawdowns": market_data.get("drawdowns", []),
         "volatility": market_data.get("volatility", []),
