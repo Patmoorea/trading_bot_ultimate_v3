@@ -1386,13 +1386,10 @@ class TradingBotM4:
                 for pair in self.pairs_valid:
                     df = tf_data.get(pair)
                     required_cols = {"open", "high", "low", "close", "volume"}
-                    if (
-                        not isinstance(df, pd.DataFrame)
-                        or df.empty
-                        or not required_cols.issubset(df.columns)
-                    ):
-                        self.logger.warning(
-                            f"Données OHLCV absentes ou incomplètes pour {pair} {timeframe}, skip analyse."
+                    # PATCH ROBUSTE : vérification et log détaillé
+                    if not isinstance(df, pd.DataFrame):
+                        self.logger.error(
+                            f"[study_market] {pair} {timeframe}: PAS un DataFrame mais {type(df)} | valeur={str(df)[:200]}"
                         )
                         indicators_analysis[timeframe][pair] = {
                             "trend": {"trend_strength": 0},
@@ -1401,11 +1398,41 @@ class TradingBotM4:
                             "dominant_signal": "Aucune donnée",
                         }
                         continue
+                    if df.empty:
+                        self.logger.warning(
+                            f"[study_market] {pair} {timeframe}: DataFrame VIDE"
+                        )
+                        indicators_analysis[timeframe][pair] = {
+                            "trend": {"trend_strength": 0},
+                            "volatility": {"current_volatility": 0},
+                            "volume": {"volume_profile": {"strength": "N/A"}},
+                            "dominant_signal": "Aucune donnée",
+                        }
+                        continue
+                    if not required_cols.issubset(df.columns):
+                        self.logger.error(
+                            f"[study_market] {pair} {timeframe}: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
+                        )
+                        indicators_analysis[timeframe][pair] = {
+                            "trend": {"trend_strength": 0},
+                            "volatility": {"current_volatility": 0},
+                            "volume": {"volume_profile": {"strength": "N/A"}},
+                            "dominant_signal": "Aucune donnée",
+                        }
+                        continue
+                    # FIN PATCH
                     try:
+                        # PATCH: log avant appel indicateurs
+                        self.logger.info(
+                            f"[study_market] {pair} {timeframe}: Colonnes DataFrame passées à l'analyse: {df.columns.tolist()}"
+                        )
                         result = self.advanced_indicators.analyze_timeframe(
                             df, timeframe
                         )
-
+                        # PATCH: log après appel indicateurs
+                        self.logger.info(
+                            f"[study_market] {pair} {timeframe}: Résultat analyse: {result}"
+                        )
                         indicators_analysis[timeframe][pair] = (
                             result
                             if result
@@ -1420,6 +1447,9 @@ class TradingBotM4:
                         self.logger.error(
                             f"Erreur analyse {pair} {timeframe}: {tf_error}"
                         )
+                        import traceback
+
+                        self.logger.error(traceback.format_exc())
                         indicators_analysis[timeframe][pair] = {
                             "trend": {"trend_strength": 0},
                             "volatility": {"current_volatility": 0},
@@ -1468,6 +1498,9 @@ class TradingBotM4:
 
         except Exception as e:
             self.logger.error(f"Erreur study_market: {e}")
+            import traceback
+
+            self.logger.error(traceback.format_exc())
             raise
 
     async def analyze_signals(self, market_data, indicators=None):
