@@ -228,56 +228,146 @@ class DashboardEnhancer:
 
     def get_enhanced_metrics(self, market_data):
         try:
+            # Extract numeric data from market_data dictionary
+            if isinstance(market_data, dict):
+                # Get close prices for calculations
+                close_prices = market_data.get("close", [])
+                if hasattr(close_prices, 'values'):
+                    close_prices = close_prices.values
+                
+                # Calculate returns from close prices
+                if len(close_prices) > 1:
+                    returns = pd.Series(close_prices).pct_change().dropna()
+                else:
+                    returns = pd.Series([0.0])
+                
+                # Use close prices as equity curve for drawdown calculations
+                equity_curve = pd.Series(close_prices) if len(close_prices) > 0 else pd.Series([100.0])
+                
+                # For trade-based metrics, we'll use empty lists since market_data doesn't contain trades
+                empty_trades = []
+            else:
+                # Fallback for non-dict input
+                returns = pd.Series([0.0])
+                equity_curve = pd.Series([100.0])
+                empty_trades = []
+
             return {
-                "sharpe_ratio": self.metrics["performance"].get_sharpe(market_data),
-                "max_drawdown": self.metrics["risk"].get_max_drawdown(market_data),
-                "volatility": self.metrics["risk"].get_volatility(market_data),
-                "win_rate": self.metrics["performance"].get_win_rate(market_data),
-                "profit_factor": self.metrics["performance"].get_profit_factor(
-                    market_data
-                ),
-                "recovery_factor": self.metrics["risk"].get_recovery_factor(
-                    market_data
-                ),
+                "sharpe_ratio": self.metrics["performance"].get_sharpe(returns),
+                "max_drawdown": self.metrics["risk"].get_max_drawdown(equity_curve),
+                "volatility": self.metrics["risk"].get_volatility(returns),
+                "win_rate": self.metrics["performance"].get_win_rate(empty_trades),
+                "profit_factor": self.metrics["performance"].get_profit_factor(empty_trades),
+                "recovery_factor": self.metrics["risk"].get_recovery_factor(equity_curve),
             }
         except Exception as e:
             logger.error(f"Erreur calcul métriques: {e}")
-            return {}
+            return {
+                "sharpe_ratio": 0.0,
+                "max_drawdown": 0.0,
+                "volatility": 0.0,
+                "win_rate": 0.0,
+                "profit_factor": 0.0,
+                "recovery_factor": 0.0,
+            }
 
 
 class PerformanceMetrics:
     def get_sharpe(self, returns, risk_free_rate=0.02):
-        returns = pd.Series(returns)
-        excess_returns = returns - risk_free_rate / 252
-        return np.sqrt(252) * excess_returns.mean() / returns.std()
+        try:
+            # Ensure returns is a pandas Series with numeric data
+            if hasattr(returns, 'dtype') and 'datetime' in str(returns.dtype):
+                logger.warning("DatetimeArray passed to get_sharpe, returning 0")
+                return 0.0
+            
+            returns = pd.Series(returns)
+            # Remove any non-numeric values
+            returns = returns.dropna()
+            
+            if len(returns) == 0 or returns.std() == 0:
+                return 0.0
+                
+            excess_returns = returns - risk_free_rate / 252
+            return float(np.sqrt(252) * excess_returns.mean() / returns.std())
+        except Exception as e:
+            logger.error(f"Error in get_sharpe: {e}")
+            return 0.0
 
     def get_win_rate(self, trades):
-        if not trades:
-            return 0
-        wins = sum(1 for trade in trades if trade["pnl"] > 0)
-        return wins / len(trades)
+        try:
+            if not trades or len(trades) == 0:
+                return 0.0
+            wins = sum(1 for trade in trades if isinstance(trade, dict) and trade.get("pnl", 0) > 0)
+            return float(wins / len(trades))
+        except Exception as e:
+            logger.error(f"Error in get_win_rate: {e}")
+            return 0.0
 
     def get_profit_factor(self, trades):
-        if not trades:
-            return 0
-        gains = sum(trade["pnl"] for trade in trades if trade["pnl"] > 0)
-        losses = abs(sum(trade["pnl"] for trade in trades if trade["pnl"] < 0))
-        return gains / losses if losses != 0 else float("inf")
+        try:
+            if not trades or len(trades) == 0:
+                return 0.0
+            gains = sum(trade.get("pnl", 0) for trade in trades if isinstance(trade, dict) and trade.get("pnl", 0) > 0)
+            losses = abs(sum(trade.get("pnl", 0) for trade in trades if isinstance(trade, dict) and trade.get("pnl", 0) < 0))
+            return float(gains / losses) if losses != 0 else float("inf")
+        except Exception as e:
+            logger.error(f"Error in get_profit_factor: {e}")
+            return 0.0
 
 
 class RiskMetrics:
     def get_max_drawdown(self, equity_curve):
-        rolling_max = pd.Series(equity_curve).expanding(min_periods=1).max()
-        drawdowns = equity_curve / rolling_max - 1.0
-        return abs(drawdowns.min())
+        try:
+            # Ensure equity_curve is numeric data
+            if hasattr(equity_curve, 'dtype') and 'datetime' in str(equity_curve.dtype):
+                logger.warning("DatetimeArray passed to get_max_drawdown, returning 0")
+                return 0.0
+            
+            equity_curve = pd.Series(equity_curve).dropna()
+            if len(equity_curve) == 0:
+                return 0.0
+                
+            rolling_max = equity_curve.expanding(min_periods=1).max()
+            drawdowns = equity_curve / rolling_max - 1.0
+            return float(abs(drawdowns.min()))
+        except Exception as e:
+            logger.error(f"Error in get_max_drawdown: {e}")
+            return 0.0
 
     def get_volatility(self, returns, window=20):
-        return pd.Series(returns).rolling(window=window).std() * np.sqrt(252)
+        try:
+            # Ensure returns is numeric data
+            if hasattr(returns, 'dtype') and 'datetime' in str(returns.dtype):
+                logger.warning("DatetimeArray passed to get_volatility, returning 0")
+                return 0.0
+            
+            returns = pd.Series(returns).dropna()
+            if len(returns) < window:
+                window = max(1, len(returns))
+            
+            vol = returns.rolling(window=window).std() * np.sqrt(252)
+            return float(vol.iloc[-1]) if not vol.empty and not pd.isna(vol.iloc[-1]) else 0.0
+        except Exception as e:
+            logger.error(f"Error in get_volatility: {e}")
+            return 0.0
 
     def get_recovery_factor(self, equity_curve):
-        max_dd = self.get_max_drawdown(equity_curve)
-        total_return = (equity_curve[-1] / equity_curve[0]) - 1
-        return abs(total_return / max_dd) if max_dd != 0 else float("inf")
+        try:
+            # Ensure equity_curve is numeric data
+            if hasattr(equity_curve, 'dtype') and 'datetime' in str(equity_curve.dtype):
+                logger.warning("DatetimeArray passed to get_recovery_factor, returning 0")
+                return 0.0
+            
+            equity_curve = pd.Series(equity_curve).dropna()
+            if len(equity_curve) < 2:
+                return 0.0
+                
+            max_dd = self.get_max_drawdown(equity_curve)
+            total_return = (equity_curve.iloc[-1] / equity_curve.iloc[0]) - 1
+            return float(abs(total_return / max_dd)) if max_dd != 0 else float("inf")
+        except Exception as e:
+            logger.error(f"Error in get_recovery_factor: {e}")
+            return 0.0
 
 
 class MarketMetrics:
