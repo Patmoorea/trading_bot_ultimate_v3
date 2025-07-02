@@ -1,0 +1,11 @@
+{
+  "valid_pairs": [
+    "BTC/USDC",
+    "ETH/USDC"
+  ],
+  "invalid_pairs_to_skip": [
+    "LTCUSDC", "ETHUSDC", "BNBUSDC", "USDTUSDC", "TRXUSDC", 
+    "ADAUSDC", "FETUSDC", "DOGEUSDC", "LDBNBUSDC", "NVTUSDC",
+    "AVAUSDC", "UNIUSDC", "GALAUSDC", "PEOPLEUSDC", "LDOUSDC"
+  ]
+}
