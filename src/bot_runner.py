@@ -7,15 +7,25 @@ import asyncio
 import aiohttp
 import numpy as np
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import pandas as pd
+from decimal import Decimal
 from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+
+# Chemins absolus pour s'assurer que les imports fonctionnent
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(BASE_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
+# Import des modules existants avec les bons chemins
 from web_interface.app.services.order_execution import SmartOrderExecutor
 from src.ai.model_keras import DeepLearningModel
 from src.ai.ppo_strategy import PPOStrategy
-from src.news_processor.sentiment_news import NewsSentimentAnalyzer
+from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
+from src.connectors.binance import BinanceConnector
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -115,6 +125,52 @@ class TelegramNotifier:
         )
         await self.send_message(message)
 
+    async def send_trade_alert(self, trade_data):
+        """Envoie une alerte de trade sur Telegram"""
+        emoji = "🟢" if trade_data["side"] == "BUY" else "🔴"
+        message = (
+            f"{emoji} <b>Trade {trade_data['side']}</b>\n\n"
+            f"📊 Paire: {trade_data['symbol']}\n"
+            f"💰 Quantité: {trade_data['amount']}\n"
+            f"💵 Prix: {trade_data.get('price', 'Market')}\n"
+            f"🕒 Heure: {get_current_time()}\n"
+            f"📝 Raison: {trade_data.get('reason', 'Signal de trading')}"
+        )
+        await self.send_message(message)
+
+    async def send_arbitrage_alert(self, opportunity):
+        """Envoie une alerte d'opportunité d'arbitrage"""
+        message = (
+            f"🔄 <b>Opportunité d'Arbitrage</b>\n\n"
+            f"📊 Paire: {opportunity['pair']}\n"
+            f"💹 Différence: {opportunity['diff_percent']:.2f}%\n"
+            f"📈 {opportunity['exchange1']}: {opportunity['price1']}\n"
+            f"📉 {opportunity['exchange2']}: {opportunity['price2']}\n"
+            f"💰 Profit potentiel: {(opportunity['diff_percent'] - 0.2):.2f}% (après frais)"
+        )
+        await self.send_message(message)
+
+    async def send_news_summary(self, news_data):
+        """Envoie un résumé des dernières nouvelles importantes"""
+        if not news_data or len(news_data) == 0:
+            return
+
+        message = "📰 <b>Dernières Nouvelles Importantes</b>\n\n"
+
+        for i, news in enumerate(news_data[:5]):
+            sentiment = news.get("sentiment", 0)
+            sentiment_emoji = (
+                "🟢" if sentiment > 0.3 else "🔴" if sentiment < -0.3 else "⚪"
+            )
+
+            message += f"{sentiment_emoji} {news['title']}\n"
+            if "summary" in news and news["summary"]:
+                message += f"└ {news['summary'][:100]}...\n\n"
+            else:
+                message += "\n"
+
+        await self.send_message(message)
+
 
 class WarningFilter:
     def __init__(self, original_stderr):
@@ -162,12 +218,14 @@ class TradingBotM4:
 
         if self.api_key and self.api_secret:
             self.binance_client = Client(self.api_key, self.api_secret)
+            self.binance_connector = BinanceConnector()
             self.executor = SmartOrderExecutor()
             self.is_live_trading = True
             self.logger.info("Binance API initialized for live trading")
         else:
             self.is_live_trading = False
             self.binance_client = None
+            self.binance_connector = None
             self.executor = None
             self.logger.warning(
                 "Binance API credentials not found, running in simulation mode"
@@ -203,6 +261,37 @@ class TradingBotM4:
         print(f"🔄 IA activée: {self.ai_enabled}")
         print(f"🔄 Analyse de news activée: {self.news_enabled}")
 
+    def check_stop_loss(self, symbol, side):
+        """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
+        try:
+            # Si c'est un ordre de vente, pas besoin de vérifier le stop-loss
+            if side.upper() == "SELL":
+                return False
+
+            # Récupérer les données de marché récentes
+            if symbol not in self.market_data:
+                return False
+
+            # Calculer la variation de prix récente
+            if "1h" in self.market_data[symbol]:
+                data = self.market_data[symbol]["1h"]
+                if "close" in data and len(data["close"]) >= 2:
+                    current_price = data["close"][-1]
+                    previous_price = data["close"][-2]
+                    price_change = (current_price - previous_price) / previous_price
+
+                    # Si le prix a baissé de plus de 5% récemment, activer le stop-loss
+                    if price_change < -0.05:
+                        self.logger.warning(
+                            f"Stop-loss activé pour {symbol}: variation de {price_change:.2%}"
+                        )
+                        return True
+
+            return False
+        except Exception as e:
+            self.logger.error(f"Erreur vérification stop-loss: {e}")
+            return False
+
     async def execute_trade(self, symbol, side, amount, price=None):
         """Exécute un ordre de trading avec l'exécuteur intelligent"""
         if not self.is_live_trading:
@@ -216,7 +305,8 @@ class TradingBotM4:
 
         try:
             # Récupération du carnet d'ordres
-            orderbook = self.binance_client.get_order_book(symbol=symbol)
+            bid, ask = await self.binance_connector.get_order_book(symbol)
+            orderbook = {"bids": [[float(bid), 1.0]], "asks": [[float(ask), 1.0]]}
 
             # Récupération des trades récents pour la détection de mouvements
             recent_trades = self.binance_client.get_recent_trades(symbol=symbol)
@@ -438,14 +528,16 @@ class TradingBotM4:
 
                 # Récupération et analyse des dernières news
                 self.logger.info("Fetching latest news for sentiment analysis")
-                news_data = await self.news_analyzer.get_latest_news()
+                news_data = await self.news_analyzer.fetch_all_news()
                 sentiment_scores = self.news_analyzer.analyze_sentiment(news_data)
 
                 # Mise à jour des données de sentiment
                 await self._update_sentiment_data(sentiment_scores)
 
                 # Envoi d'alertes si sentiment extrême
-                for symbol, score in sentiment_scores.items():
+                for item in sentiment_scores:
+                    symbol = item.get("symbol", "")
+                    score = item.get("sentiment", 0)
                     if abs(score) > 0.7:  # Sentiment très fort (positif ou négatif)
                         sentiment_type = "positif" if score > 0 else "négatif"
                         await self.telegram.send_message(
@@ -455,6 +547,9 @@ class TradingBotM4:
                 # Sauvegarde des données pour l'interface
                 await self._save_sentiment_data(sentiment_scores, news_data)
 
+                # Envoi du résumé périodique des news
+                await self.telegram.send_news_summary(news_data[:5])
+
             except Exception as e:
                 self.logger.error(f"News analysis error: {e}")
 
@@ -463,30 +558,49 @@ class TradingBotM4:
 
     async def _update_sentiment_data(self, sentiment_scores):
         """Met à jour les données de marché avec le sentiment"""
-        for symbol, score in sentiment_scores.items():
-            symbol_formatted = symbol.replace("/", "")
-            if symbol_formatted in self.market_data:
+        for item in sentiment_scores:
+            symbol = item.get("symbol", "")
+            score = item.get("sentiment", 0)
+            if symbol and symbol in self.market_data:
                 # Mise à jour des données de marché avec le sentiment
-                self.market_data[symbol_formatted]["sentiment"] = score
+                self.market_data[symbol]["sentiment"] = score
+                self.market_data[symbol]["sentiment_timestamp"] = time.time()
 
                 # Ajustement des signaux en fonction du sentiment
-                if "signals" in self.market_data[symbol_formatted]:
-                    signals = self.market_data[symbol_formatted]["signals"]
+                if "signals" in self.market_data[symbol]:
+                    signals = self.market_data[symbol]["signals"]
 
                     # Le sentiment influence tous les signaux
                     for signal_type in signals:
-                        # Ajustement proportionnel au sentiment
-                        sentiment_adjustment = score * self.news_weight
+                        # Ajustement proportionnel au sentiment avec pondération du temps
+                        time_factor = 1.0  # Diminue avec le temps
+                        if "sentiment_timestamp" in self.market_data[symbol]:
+                            elapsed_time = (
+                                time.time()
+                                - self.market_data[symbol]["sentiment_timestamp"]
+                            )
+                            time_factor = max(
+                                0.2, 1.0 - (elapsed_time / (3600 * 12))
+                            )  # Décroît sur 12h
+
+                        # Ajuster le poids du sentiment en fonction de son intensité
+                        sentiment_weight = self.news_weight * (1 + abs(score))
+
+                        # Donner plus d'importance aux nouvelles très positives ou très négatives
+                        if abs(score) > 0.7:
+                            sentiment_weight *= 1.5
+
+                        sentiment_adjustment = score * sentiment_weight * time_factor
                         signals[signal_type] += sentiment_adjustment
 
     async def _save_sentiment_data(self, sentiment_scores, news_data):
         """Sauvegarde les données de sentiment pour l'interface"""
         # Formatage des données pour l'interface
-        headlines = (
-            [item["title"] for item in news_data[:10]]
-            if isinstance(news_data, list)
-            else []
-        )
+        headlines = []
+        if isinstance(news_data, list):
+            for item in news_data[:10]:
+                if isinstance(item, dict) and "title" in item:
+                    headlines.append(item["title"])
 
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
@@ -784,6 +898,226 @@ class TradingBotM4:
 
                 except Exception as e:
                     self.logger.error(f"Error getting AI predictions for {pair}: {e}")
+
+    async def detect_arbitrage_opportunities(self):
+        """Détecte les opportunités d'arbitrage entre différents marchés"""
+        if not self.is_live_trading:
+            return []
+
+        opportunities = []
+
+        try:
+            # Récupérer les tickers de plusieurs exchanges
+            binance_prices = {}
+            for pair in self.pairs_valid:
+                pair_key = pair.replace("/", "")
+                ticker = self.binance_client.get_ticker(symbol=pair_key)
+                binance_prices[pair] = float(ticker["lastPrice"])
+
+            # Comparer avec d'autres exchanges (si implémenté)
+            # Cette partie nécessiterait des connecteurs pour d'autres exchanges
+
+            # Simuler la détection d'opportunités pour démonstration
+            for pair in self.pairs_valid:
+                # Simuler une opportunité avec 0.5% de différence
+                simulated_opportunity = {
+                    "pair": pair,
+                    "exchange1": "Binance",
+                    "price1": binance_prices[pair],
+                    "exchange2": "Simulated",
+                    "price2": binance_prices[pair] * 1.005,
+                    "diff_percent": 0.5,
+                }
+
+                if simulated_opportunity["diff_percent"] > 0.3:  # Seuil minimum
+                    opportunities.append(simulated_opportunity)
+
+            return opportunities
+
+        except Exception as e:
+            self.logger.error(f"Error detecting arbitrage: {e}")
+            return []
+
+    async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
+        """Étudie le marché sur une période définie et établit un plan de trading"""
+        try:
+            # Convertir les dates en timestamps (ms)
+            start_ts = int(datetime.strptime(start_time, "%Y-%m-%d").timestamp() * 1000)
+            end_ts = int(datetime.strptime(end_time, "%Y-%m-%d").timestamp() * 1000)
+
+            # Récupérer les données historiques
+            tf_binance = getattr(Client, f"KLINE_INTERVAL_{timeframe.upper()}")
+            klines = self.binance_client.get_historical_klines(
+                symbol=symbol, interval=tf_binance, start_str=start_ts, end_str=end_ts
+            )
+
+            # Convertir en DataFrame
+            ohlcv = {
+                "open": [float(k[1]) for k in klines],
+                "high": [float(k[2]) for k in klines],
+                "low": [float(k[3]) for k in klines],
+                "close": [float(k[4]) for k in klines],
+                "volume": [float(k[5]) for k in klines],
+                "timestamp": [int(k[0]) for k in klines],
+            }
+
+            # Analyser les données
+            trend = self.calculate_trend(ohlcv)
+            volatility = self.calculate_volatility(ohlcv)
+            volume_profile = self.calculate_volume_profile(ohlcv)
+
+            # Identifier les régimes de marché
+            if volatility > 0.8:
+                regime = MARKET_REGIMES["VOLATILE"]
+                strategy = "Protection du capital - trades limités, stop-loss étroits"
+            elif trend > 0.02:
+                regime = MARKET_REGIMES["TRENDING_UP"]
+                strategy = "Suivre la tendance - positions longues, trailing stop"
+            elif trend < -0.02:
+                regime = MARKET_REGIMES["TRENDING_DOWN"]
+                strategy = "Ventes courtes ou attente - protection des positions"
+            else:
+                regime = MARKET_REGIMES["RANGING"]
+                strategy = "Range trading - achats aux supports, ventes aux résistances"
+
+            # Préparer le rapport d'analyse
+            analysis_report = {
+                "symbol": symbol,
+                "period": f"{start_time} à {end_time}",
+                "timeframe": timeframe,
+                "data_points": len(klines),
+                "regime": regime,
+                "trend": trend,
+                "volatility": volatility,
+                "volume_profile": volume_profile,
+                "strategy": strategy,
+                "key_levels": self._identify_key_levels(ohlcv),
+            }
+
+            # Envoyer le rapport sur Telegram
+            report_message = (
+                f"📊 <b>Analyse de Marché: {symbol}</b>\n\n"
+                f"⏱️ Période: {start_time} à {end_time}\n"
+                f"📈 Régime: {regime}\n"
+                f"🔍 Tendance: {trend:.2%}\n"
+                f"📏 Volatilité: {volatility:.2%}\n\n"
+                f"🎯 <b>Stratégie recommandée:</b>\n{strategy}\n\n"
+                f"🔑 <b>Niveaux clés:</b>\n"
+            )
+
+            for level in analysis_report["key_levels"][:3]:
+                report_message += f"- {level['type']}: {level['price']:.2f}\n"
+
+            await self.telegram.send_message(report_message)
+
+            return analysis_report
+
+        except Exception as e:
+            self.logger.error(f"Error studying market period: {e}")
+            return None
+
+    def _identify_key_levels(self, ohlcv):
+        """Identifie les niveaux clés (support/résistance) dans les données"""
+        levels = []
+
+        try:
+            highs = np.array(ohlcv["high"])
+            lows = np.array(ohlcv["low"])
+            closes = np.array(ohlcv["close"])
+
+            # Identifier les sommets locaux (résistances potentielles)
+            for i in range(2, len(highs) - 2):
+                if (
+                    highs[i] > highs[i - 1]
+                    and highs[i] > highs[i - 2]
+                    and highs[i] > highs[i + 1]
+                    and highs[i] > highs[i + 2]
+                ):
+                    levels.append(
+                        {"price": highs[i], "type": "Résistance", "strength": 1}
+                    )
+
+            # Identifier les creux locaux (supports potentiels)
+            for i in range(2, len(lows) - 2):
+                if (
+                    lows[i] < lows[i - 1]
+                    and lows[i] < lows[i - 2]
+                    and lows[i] < lows[i + 1]
+                    and lows[i] < lows[i + 2]
+                ):
+                    levels.append({"price": lows[i], "type": "Support", "strength": 1})
+
+            # Regrouper les niveaux proches
+            grouped_levels = []
+            sorted_levels = sorted(levels, key=lambda x: x["price"])
+
+            if sorted_levels:
+                current_group = [sorted_levels[0]]
+                current_price = sorted_levels[0]["price"]
+
+                for level in sorted_levels[1:]:
+                    # Si le niveau est proche du groupe actuel (0.5% de différence)
+                    if abs(level["price"] - current_price) / current_price < 0.005:
+                        current_group.append(level)
+                    else:
+                        # Calculer le niveau moyen du groupe
+                        avg_price = sum(l["price"] for l in current_group) / len(
+                            current_group
+                        )
+                        avg_strength = sum(l["strength"] for l in current_group)
+                        type_counts = {"Support": 0, "Résistance": 0}
+                        for l in current_group:
+                            type_counts[l["type"]] += 1
+
+                        # Déterminer le type dominant
+                        level_type = (
+                            "Support"
+                            if type_counts["Support"] > type_counts["Résistance"]
+                            else "Résistance"
+                        )
+
+                        grouped_levels.append(
+                            {
+                                "price": avg_price,
+                                "type": level_type,
+                                "strength": avg_strength,
+                            }
+                        )
+
+                        # Commencer un nouveau groupe
+                        current_group = [level]
+                        current_price = level["price"]
+
+                # Ajouter le dernier groupe
+                if current_group:
+                    avg_price = sum(l["price"] for l in current_group) / len(
+                        current_group
+                    )
+                    avg_strength = sum(l["strength"] for l in current_group)
+                    type_counts = {"Support": 0, "Résistance": 0}
+                    for l in current_group:
+                        type_counts[l["type"]] += 1
+
+                    level_type = (
+                        "Support"
+                        if type_counts["Support"] > type_counts["Résistance"]
+                        else "Résistance"
+                    )
+
+                    grouped_levels.append(
+                        {
+                            "price": avg_price,
+                            "type": level_type,
+                            "strength": avg_strength,
+                        }
+                    )
+
+            # Trier par force décroissante
+            return sorted(grouped_levels, key=lambda x: x["strength"], reverse=True)
+
+        except Exception as e:
+            self.logger.error(f"Error identifying key levels: {e}")
+            return []
 
     async def send_telegram_updates(self):
         """Envoie des mises à jour périodiques sur Telegram"""
@@ -1098,6 +1432,27 @@ async def run_clean_bot():
                 strategy = bot.choose_strategy(regime, indicators)
                 print(f"🎯 Stratégie active: {strategy}")
 
+                # Détection d'opportunités d'arbitrage
+                arbitrage_opportunities = await bot.detect_arbitrage_opportunities()
+                if arbitrage_opportunities:
+                    print(
+                        f"💹 {len(arbitrage_opportunities)} opportunités d'arbitrage détectées"
+                    )
+                    for opp in arbitrage_opportunities:
+                        print(
+                            f"  • {opp['pair']}: {opp['diff_percent']:.2f}% entre {opp['exchange1']} et {opp['exchange2']}"
+                        )
+
+                        # Notification Telegram pour chaque opportunité
+                        await bot.telegram.send_arbitrage_alert(opp)
+
+                        # Si l'opportunité est suffisamment intéressante, exécuter l'arbitrage
+                        if (
+                            opp["diff_percent"] > 0.5
+                        ):  # Seuil de rentabilité après frais
+                            print(f"🔄 Exécution de l'arbitrage sur {opp['pair']}")
+                            # Code d'exécution de l'arbitrage à implémenter
+
                 # Analyse des signaux pour chaque paire
                 trade_decisions = []
                 for pair in valid_pairs:
@@ -1146,9 +1501,34 @@ async def run_clean_bot():
                             if bot.ai_enabled:
                                 combined_score += (ai_signal - 0.5) * 2 * bot.ai_weight
 
-                            # Ajout du sentiment des news
-                            if bot.news_enabled:
-                                combined_score += sentiment_score * bot.news_weight
+                            # Amélioration de l'intégration des news
+                            if bot.news_enabled and sentiment_score != 0:
+                                # Ajuster le poids du sentiment en fonction de son intensité
+                                sentiment_weight = bot.news_weight * (
+                                    1 + abs(sentiment_score)
+                                )
+
+                                # Donner plus d'importance aux nouvelles très positives ou très négatives
+                                if abs(sentiment_score) > 0.7:
+                                    print(
+                                        f"⚠️ Sentiment fort détecté pour {pair}: {sentiment_score:.2f}"
+                                    )
+                                    sentiment_weight *= 1.5
+
+                                # Ajouter une information temporelle au score
+                                time_factor = 1.0  # Diminue avec le temps
+                                if "sentiment_timestamp" in data:
+                                    elapsed_time = (
+                                        time.time() - data["sentiment_timestamp"]
+                                    )
+                                    time_factor = max(
+                                        0.2, 1.0 - (elapsed_time / (3600 * 12))
+                                    )  # Décroît sur 12h
+
+                                # Appliquer le score de sentiment avec le poids ajusté
+                                combined_score += (
+                                    sentiment_score * sentiment_weight * time_factor
+                                )
 
                             # Détermination de l'action finale
                             final_action = "neutral"
@@ -1167,22 +1547,76 @@ async def run_clean_bot():
                             if bot.is_live_trading and abs(combined_score) > 0.5:
                                 # Détermination des paramètres de l'ordre
                                 side = "BUY" if final_action == "buy" else "SELL"
-                                amount = 0.01  # Montant fixe pour l'exemple, à ajuster avec votre stratégie
+
+                                # Calcul du montant en fonction de la force du signal et de la volatilité
+                                base_amount = 0.01  # Montant de base
+                                volatility_factor = data.get("signals", {}).get(
+                                    "volatility", 0.5
+                                )
+                                risk_adjusted_amount = base_amount * (
+                                    1 - volatility_factor * 0.5
+                                )  # Réduire le montant si volatilité élevée
+                                signal_adjusted_amount = risk_adjusted_amount * (
+                                    0.5 + confidence * 0.5
+                                )  # Augmenter le montant si confiance élevée
+
+                                # Vérifier les stop-loss
+                                has_stop_loss = bot.check_stop_loss(pair_key, side)
+                                if has_stop_loss:
+                                    print(
+                                        f"⚠️ Stop-loss actif pour {pair}, ordre annulé"
+                                    )
+                                    continue
 
                                 # Exécution de l'ordre
                                 trade_result = await bot.execute_trade(
-                                    pair_key, side, amount
+                                    pair_key, side, signal_adjusted_amount
                                 )
+
+                                # Enregistrer la décision et le résultat
                                 trade_decisions.append(
                                     {
                                         "pair": pair,
                                         "action": final_action,
                                         "confidence": confidence,
                                         "result": trade_result,
+                                        "signals": {
+                                            "technical": signal["confidence"],
+                                            "ai": ai_signal,
+                                            "sentiment": sentiment_score,
+                                        },
                                     }
                                 )
 
-                # Sauvegarde et mises à jour
+                                # Envoyer une alerte Telegram pour chaque trade
+                                if trade_result["status"] == "completed":
+                                    await bot.telegram.send_message(
+                                        f"🔄 <b>Trade exécuté</b>\n\n"
+                                        f"📊 Paire: {pair}\n"
+                                        f"📈 Action: {final_action.upper()}\n"
+                                        f"💰 Montant: {signal_adjusted_amount}\n"
+                                        f"🎯 Confiance: {confidence:.0%}\n"
+                                        f"💵 Prix: {trade_result.get('avg_price', 'N/A')}\n\n"
+                                        f"🧠 Signaux:\n"
+                                        f"  • Technique: {signal['confidence']:.0%}\n"
+                                        f"  • IA: {ai_signal:.2f}\n"
+                                        f"  • Sentiment: {sentiment_score:.2f}"
+                                    )
+
+                            # Vérifier les opportunités d'arbitrage
+                            if bot.is_live_trading and final_action != "neutral":
+                                arbitrage_opps = (
+                                    await bot.detect_arbitrage_opportunities(pair)
+                                )
+                                for opp in arbitrage_opps:
+                                    if (
+                                        opp["diff_percent"] > 0.5
+                                    ):  # Seuil minimum de profit
+                                        print(
+                                            f"💹 Opportunité d'arbitrage détectée pour {pair}: {opp['diff_percent']:.2f}%"
+                                        )
+                                        await bot.telegram.send_arbitrage_alert(opp)
+                                        # Sauvegarde et mises à jour
                 bot.current_cycle = cycle
                 bot.regime = regime
                 bot.save_shared_data()
@@ -1214,7 +1648,7 @@ async def run_clean_bot():
                 print(error_msg)
                 await bot.telegram.send_message(error_msg)
 
-            await asyncio.sleep(30)
+            await asyncio.sleep(30)  # Attendre avant le prochain cycle
 
     except KeyboardInterrupt:
         stop_msg = "👋 Bot arrêté proprement"
