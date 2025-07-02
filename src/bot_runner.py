@@ -14,15 +14,15 @@ from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 
-# Chemins absolus pour s'assurer que les imports fonctionnent
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.join(BASE_DIR, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+# Obtenir le chemin racine du projet (un niveau au-dessus de l'emplacement du script)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 # Import des modules existants avec les bons chemins
 from web_interface.app.services.order_execution import SmartOrderExecutor
-from src.ai.model_keras import DeepLearningModel
+from src.ai.hybrid.extended_model import ExtendedHybridModel
+from src.ai_models.hybrid.cnn_lstm_enhanced import EnhancedCNNLSTM
 from src.ai.ppo_strategy import PPOStrategy
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
