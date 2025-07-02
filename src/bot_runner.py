@@ -21,9 +21,9 @@ if PROJECT_ROOT not in sys.path:
 
 # Import des modules existants avec les bons chemins
 from web_interface.app.services.order_execution import SmartOrderExecutor
-from src.ai.hybrid.extended_model import ExtendedHybridModel
+from src.ai.enhanced_cnn_lstm import EnhancedCNNLSTM
 from src.ai_models.hybrid.cnn_lstm_enhanced import EnhancedCNNLSTM
-from src.ai.ppo_strategy import PPOStrategy
+from src.ai.ppo_gtrxl import PPOGTrXL
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
 
