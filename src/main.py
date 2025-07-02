@@ -647,9 +647,33 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
 with tab1:
     st.subheader("Trading en temps réel")
 
-    # Métriques principales
-    col1, col2, col3, col4 = st.columns(4)
+    # État du Bot (NOUVEAU)
+    st.subheader("🔄 État du Bot")
+    try:
+        with open(SHARED_DATA_PATH, "r") as f:
+            bot_data = json.load(f)
 
+        state_col1, state_col2, state_col3 = st.columns(3)
+        with state_col1:
+            st.info("✅ État du Bot")
+            st.metric("Cycle actuel", bot_data["bot_status"]["cycle"])
+
+        with state_col2:
+            st.info("🎯 Stratégie Active")
+            st.metric("Régime", bot_data["bot_status"]["regime"])
+
+        with state_col3:
+            st.info("📈 Performance")
+            st.metric(
+                "Balance",
+                f"${bot_data['bot_status']['performance']['balance']:,.2f}",
+                f"+{bot_data['bot_status']['performance']['win_rate']*100:.1f}%",
+            )
+    except Exception as e:
+        st.error(f"Erreur de lecture des données du bot: {e}")
+
+    # Métriques principales (EXISTANT)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric(
             "BTC/USDT",
@@ -676,7 +700,7 @@ with tab1:
             f"{status.get('pnl_change', '0.00')}%",
         )
 
-    # Signaux actifs
+    # Signaux actifs (EXISTANT)
     st.subheader("📡 Signaux de trading")
     if "signals" in status:
         signals_df = pd.DataFrame(status["signals"]).T
