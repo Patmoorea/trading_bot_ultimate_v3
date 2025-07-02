@@ -27,12 +27,7 @@ STATUS_FILE = "bot_status.json"
 CURRENT_TIME = "2025-07-01 16:44:56"  # Date spécifique
 CURRENT_USER = "Patmoorea"
 CONFIG_FILE = "config.json"
-
-
-def auto_refresh():
-    st.empty()
-    time.sleep(30)  # Rafraîchir toutes les 30 secondes
-    st.rerun()
+SHARED_DATA_PATH = "src/shared_data.json"
 
 
 def generate_dummy_returns(n_points=30, final_return=27.5):
@@ -895,26 +890,6 @@ with tab5:
             help="Capital final",
         )
 
-    # Afficher le graphique (deuxième fois - j'ai gardé votre duplication originale)
-    st.plotly_chart(fig, use_container_width=True, key="perf_chart_main")
-
-    # Afficher les métriques dans des colonnes (deuxième fois - j'ai gardé votre duplication originale)
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Total des trades", value=f"{metrics['total_trades']}", delta=None)
-        st.metric("Win Rate", value=f"{metrics['win_rate']:.1%}", delta=None)
-
-    with col2:
-        st.metric("Profit Factor", value=f"{metrics['profit_factor']:.2f}", delta=None)
-        st.metric("Max Drawdown", value=f"{metrics['max_drawdown']:.1%}", delta=None)
-
-    with col3:
-        st.metric("Sharpe Ratio", value=f"{metrics['sharpe_ratio']:.2f}", delta=None)
-        st.metric(
-            "Balance Finale", value=f"${metrics['final_balance']:,.0f}", delta=None
-        )
-
 # --- Système d'alertes ---
 alert_system = AlertSystem()
 alerts = alert_system.check_alerts(status)
@@ -930,21 +905,6 @@ with st.sidebar:
             st.warning(f"{alert['message']} ({alert['timestamp']})")
         else:
             st.info(f"{alert['message']} ({alert['timestamp']})")
-
-
-# --- Auto-refresh et Footer ---
-def auto_refresh(interval_ms=2000):
-    js_code = f"""
-    <script>
-        setInterval(function() {{
-            window.location.reload();
-        }}, {interval_ms});
-    </script>
-    """
-    st.markdown(js_code, unsafe_allow_html=True)
-
-
-auto_refresh()
 
 # Footer avec informations détaillées
 st.sidebar.divider()
@@ -975,6 +935,13 @@ st.sidebar.markdown(
 # Ajout d'un bouton de rafraîchissement manuel
 if st.sidebar.button("🔄 Rafraîchir"):
     st.rerun()
+
+
+# Auto-refresh optimisé
+def auto_refresh():
+    time.sleep(30)  # Attendre 30 secondes
+    st.rerun()
+
 
 if __name__ == "__main__":
     auto_refresh()
