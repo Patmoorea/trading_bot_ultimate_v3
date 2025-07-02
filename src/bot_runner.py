@@ -26,6 +26,8 @@ from src.ai_models.hybrid.cnn_lstm_enhanced import EnhancedCNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
+from src.ai.deep_learning_model import DeepLearningModel
+from src.ai.ppo_strategy import PPOStrategy
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
