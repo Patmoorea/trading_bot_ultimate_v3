@@ -377,11 +377,6 @@ class TradingBotM4:
             timeframes=self.config["TRADING"]["timeframes"],
         )
 
-        self.env = TradingEnv(
-            trading_pairs=self.pairs_valid,
-            timeframes=self.config["TRADING"]["timeframes"],
-        )
-
         ppo_config = {
             "env": self.env,
             # tu peux rajouter d'autres paramètres ici si tu veux (learning_rate, etc.)
