@@ -25,26 +25,31 @@ class NewsSentimentAnalyzer:
             },
             {"name": "Cointelegraph", "url": "https://cointelegraph.com/api/v1/news"},
         ]
-    def analyze_news(data):
+
+    def analyze_news(self, data):
         if isinstance(data, list):
             for d in data:
                 if isinstance(d, dict):
                     titre = d.get("title", "")
                     # suite du traitement...
+                    pass
                 else:
                     print("Élément news non dict :", type(d))
         elif isinstance(data, dict):
             # traitement direct
+            pass
         else:
             print("Format inattendu :", type(data))
-        
+
     async def fetch_all_news(self) -> List[Dict]:
         """Récupère les news de toutes les sources"""
         async with aiohttp.ClientSession() as session:
             tasks = []
             for source in self.sources:
                 tasks.append(self.fetch_news(session, source))
-            return await asyncio.gather(*tasks)
+            # flatten the results (each fetch_news returns a list)
+            all_results = await asyncio.gather(*tasks)
+            return [item for sublist in all_results for item in sublist]
 
     async def fetch_news(self, session, source: Dict) -> List[Dict]:
         """Récupère les news d'une source"""
@@ -207,7 +212,7 @@ class NewsSentimentAnalyzer:
 
             # Décroissance exponentielle sur 24h
             return max(0.1, np.exp(-age_hours / 24))
-        except:
+        except Exception:
             return 0.5
 
     def _get_relevance_weight(self, title: str) -> float:
@@ -226,9 +231,7 @@ class NewsSentimentAnalyzer:
             "defi",
             "nft",
         ]
-
         title_lower = title.lower()
         keyword_count = sum(1 for keyword in keywords if keyword in title_lower)
-
         # Normalisation entre 0.1 et 1.0
         return min(1.0, 0.1 + (keyword_count * 0.2))

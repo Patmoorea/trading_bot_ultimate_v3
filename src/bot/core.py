@@ -67,7 +67,7 @@ from src.ai.ppo_gtrxl import PPOGTrXL
 
 from src.ai.cnn_lstm import CNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
-
+from src.ai.ppo_strategy import PPOStrategy
 
 USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
@@ -376,6 +376,17 @@ class TradingBotM4:
             trading_pairs=self.pairs_valid,
             timeframes=self.config["TRADING"]["timeframes"],
         )
+
+        self.env = TradingEnv(
+            trading_pairs=self.pairs_valid,
+            timeframes=self.config["TRADING"]["timeframes"],
+        )
+
+        ppo_config = {
+            "env": self.env,
+            # tu peux rajouter d'autres paramètres ici si tu veux (learning_rate, etc.)
+        }
+        self.ppo_strategy = PPOStrategy(ppo_config)
 
         # Gestionnaires de trading
         self.position_manager = PositionManager(

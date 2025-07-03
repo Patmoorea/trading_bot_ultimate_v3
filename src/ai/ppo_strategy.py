@@ -4,7 +4,6 @@ from stable_baselines3 import PPO
 from torch.nn import TransformerEncoderLayer
 from ..strategies.base import BaseStrategy
 from src.ai_decision.ppo_transformer import PPOTradingAgent
-import requests
 
 
 class PPOStrategy(BaseStrategy):
@@ -49,17 +48,3 @@ class PPOStrategy(BaseStrategy):
         """Sauvegarde le modèle si nécessaire"""
         if "save_path" in self.config:
             self.agent.model.save(self.config["save_path"])
-
-    def fetch_cointelegraph_news():
-        url = "https://cointelegraph.com/api/v1/news"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        resp = requests.get(url, headers=headers)
-        if resp.status_code == 200 and resp.headers.get("Content-Type", "").startswith(
-            "application/json"
-        ):
-            return resp.json()
-        else:
-            print(
-                f"Erreur Cointelegraph: code={resp.status_code}, content-type={resp.headers.get('Content-Type')}"
-            )
-            return []

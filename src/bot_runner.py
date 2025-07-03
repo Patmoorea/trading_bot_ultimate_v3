@@ -13,6 +13,7 @@ from decimal import Decimal
 from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+from src.analysis.news.cointelegraph_fetcher import fetch_cointelegraph_news
 
 # Obtenir le chemin racine du projet (un niveau au-dessus de l'emplacement du script)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
