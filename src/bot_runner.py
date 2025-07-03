@@ -236,7 +236,19 @@ class TradingBotM4:
         # Initialisation des modèles d'IA
         try:
             self.dl_model = DeepLearningModel()
-            self.ppo_strategy = PPOStrategy()
+            # Configuration par défaut pour PPOStrategy
+            default_config = {
+                "learning_rate": 3e-4,
+                "n_steps": 2048,
+                "batch_size": 64,
+                "gamma": 0.99,
+                "gae_lambda": 0.95,
+                "clip_range": 0.2,
+                "n_epochs": 10,
+                "verbose": 1,
+            }
+
+            ppo_strategy = PPOStrategy(default_config)
             self.ai_enabled = True
             self.ai_weight = 0.3  # Influence de l'IA dans la décision (30%)
             self.logger.info("AI models initialized successfully")

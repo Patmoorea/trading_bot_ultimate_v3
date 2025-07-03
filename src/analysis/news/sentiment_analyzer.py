@@ -25,7 +25,19 @@ class NewsSentimentAnalyzer:
             },
             {"name": "Cointelegraph", "url": "https://cointelegraph.com/api/v1/news"},
         ]
-
+    def analyze_news(data):
+        if isinstance(data, list):
+            for d in data:
+                if isinstance(d, dict):
+                    titre = d.get("title", "")
+                    # suite du traitement...
+                else:
+                    print("Élément news non dict :", type(d))
+        elif isinstance(data, dict):
+            # traitement direct
+        else:
+            print("Format inattendu :", type(data))
+        
     async def fetch_all_news(self) -> List[Dict]:
         """Récupère les news de toutes les sources"""
         async with aiohttp.ClientSession() as session:
