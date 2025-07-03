@@ -205,6 +205,24 @@ sys.stderr = WarningFilter(sys.stderr)
 
 class TradingBotM4:
     def __init__(self):
+        # Ajouter en début de __init__
+        self.config = {
+            "TRADING": {
+                "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
+                "pairs": ["BTC/USDC", "ETH/USDC"],
+            },
+            "AI": {
+                "learning_rate": 3e-4,
+                "n_steps": 2048,
+                "batch_size": 64,
+                "gamma": 0.99,
+                "gae_lambda": 0.95,
+                "clip_range": 0.2,
+                "n_epochs": 10,
+                "verbose": 1,
+            },
+        }
+
         self.data_file = SHARED_DATA_PATH
         self.current_cycle = 0
         self.regime = MARKET_REGIMES["RANGING"]
@@ -919,6 +937,28 @@ class TradingBotM4:
 
                 except Exception as e:
                     self.logger.error(f"Error getting AI predictions for {pair}: {e}")
+
+    async def fetch_news(self):
+        """Récupère les news de différentes sources"""
+        try:
+            news = []
+            # Essayer plusieurs sources
+            try:
+                coindesk_news = await self.fetch_coindesk_news()
+                news.extend(coindesk_news)
+            except Exception as e:
+                self.logger.warning(f"Erreur CoinDesk: {e}")
+
+            try:
+                cointelegraph_news = await self.fetch_cointelegraph_news()
+                news.extend(cointelegraph_news)
+            except Exception as e:
+                self.logger.warning(f"Erreur Cointelegraph: {e}")
+
+            return news
+        except Exception as e:
+            self.logger.error(f"Erreur générale news: {e}")
+            return []
 
     async def detect_arbitrage_opportunities(self):
         """Détecte les opportunités d'arbitrage entre différents marchés"""
