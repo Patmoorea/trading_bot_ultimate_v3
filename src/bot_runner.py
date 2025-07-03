@@ -29,6 +29,7 @@ from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
 from src.ai.deep_learning_model import DeepLearningModel
 from src.ai.ppo_strategy import PPOStrategy
+from src.bot.core import TradingEnv
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -237,8 +238,14 @@ class TradingBotM4:
         # Initialisation des modèles d'IA
         try:
             self.dl_model = DeepLearningModel()
+            self.env = TradingEnv(
+                trading_pairs=self.pairs_valid,
+                timeframes=self.config["TRADING"]["timeframes"],
+            )
+
             # Configuration par défaut pour PPOStrategy
             default_config = {
+                "env": self.env,
                 "learning_rate": 3e-4,
                 "n_steps": 2048,
                 "batch_size": 64,
@@ -248,8 +255,7 @@ class TradingBotM4:
                 "n_epochs": 10,
                 "verbose": 1,
             }
-
-            ppo_strategy = PPOStrategy(default_config)
+            self.ppo_strategy = PPOStrategy(default_config)
             self.ai_enabled = True
             self.ai_weight = 0.3  # Influence de l'IA dans la décision (30%)
             self.logger.info("AI models initialized successfully")
