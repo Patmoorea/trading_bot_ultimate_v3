@@ -7,7 +7,8 @@ import asyncio
 import json
 from datetime import datetime
 import logging
-import feedparser
+import requests
+from bs4 import BeautifulSoup
 import ssl
 from time import mktime
 
@@ -80,59 +81,126 @@ class NewsSentimentAnalyzer:
                 self.logger.error(f"Erreur fetch_all_news: {str(e)}")
                 return []
 
-    async def fetch_news(self, session, source: Dict) -> List[Dict]:
-        """Récupère les news d'une source"""
-        try:
-            async with session.get(source["url"], timeout=30) as response:
-                if response.status != 200:
-                    self.logger.error(
-                        f"Erreur HTTP {response.status} pour {source['name']}"
-                    )
-                    return []
-
-                if source["type"] == "rss":
-                    content = await response.text()
-                    feed = feedparser.parse(content)
-                    return self._parse_rss_feed(feed, source["name"])
-                else:
-                    data = await response.json()
-                    return self._parse_news(data, source["name"])
-
-        except Exception as e:
-            self.logger.error(f"Erreur fetch_news {source['name']}: {str(e)}")
-            return []
-
-    def _parse_rss_feed(self, feed, source: str) -> List[Dict]:
+    def _parse_rss_feed(self, content, source: str) -> List[Dict]:
         """Parse un flux RSS"""
         parsed_news = []
         try:
-            for entry in feed.entries:
-                # Extraction du timestamp
-                timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-                if hasattr(entry, "published_parsed"):
-                    try:
-                        timestamp = datetime.fromtimestamp(
-                            mktime(entry.published_parsed)
-                        ).strftime("%Y-%m-%d %H:%M:%S")
-                    except Exception:
-                        pass
+            # Vérification que content n'est pas None
+            if not content:
+                self.logger.error(f"Contenu vide pour {source}")
+                return []
 
-                # Construction de l'item
-                news_item = {
-                    "title": entry.get("title", ""),
-                    "text": entry.get("description", ""),
-                    "source": source,
-                    "timestamp": timestamp,
-                    "url": entry.get("link", ""),
-                    "symbols": self._extract_crypto_symbols(
-                        [tag.get("term", "") for tag in entry.get("tags", [])]
-                    ),
-                }
-                parsed_news.append(news_item)
+            # Parsing avec gestion d'erreur explicite
+            try:
+                soup = BeautifulSoup(content, "xml")
+            except Exception as parse_error:
+                self.logger.error(f"Erreur parsing XML pour {source}: {parse_error}")
+                return []
+
+            # Vérification de la structure RSS
+            if not soup.find("rss"):
+                self.logger.error(f"Format RSS invalide pour {source}")
+                return []
+
+            items = soup.find_all("item")
+            if not items:
+                self.logger.error(f"Aucun item trouvé pour {source}")
+                return []
+
+            for item in items:
+                try:
+                    # Extraction sécurisée des données
+                    title = item.find("title")
+                    description = item.find("description")
+                    link = item.find("link")
+                    pub_date = item.find("pubDate")
+
+                    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                    if pub_date and pub_date.text:
+                        try:
+                            from email.utils import parsedate_to_datetime
+
+                            timestamp = parsedate_to_datetime(pub_date.text).strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            )
+                        except Exception as date_error:
+                            self.logger.warning(
+                                f"Erreur parsing date pour {source}: {date_error}"
+                            )
+
+                    news_item = {
+                        "title": title.text if title else "",
+                        "text": description.text if description else "",
+                        "source": source,
+                        "timestamp": timestamp,
+                        "url": link.text if link else "",
+                        "symbols": self._extract_crypto_symbols(
+                            [tag.text for tag in item.find_all("category")]
+                            if item.find_all("category")
+                            else []
+                        ),
+                    }
+                    parsed_news.append(news_item)
+
+                except Exception as item_error:
+                    self.logger.warning(
+                        f"Erreur parsing item pour {source}: {item_error}"
+                    )
+                    continue
 
             return parsed_news
+
         except Exception as e:
             self.logger.error(f"Erreur parsing RSS {source}: {str(e)}")
+            return []
+
+    async def fetch_news(
+        self, session: aiohttp.ClientSession, source: Dict
+    ) -> List[Dict]:
+        """Récupère les news de toutes les sources"""
+        all_news = []
+
+        # Configuration SSL pour éviter les erreurs de certificat
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+
+        try:
+            async with aiohttp.ClientSession(
+                connector=connector, headers=self.headers
+            ) as session:
+                for source in self.sources:
+                    try:
+                        async with session.get(source["url"], timeout=30) as response:
+                            if response.status != 200:
+                                self.logger.error(
+                                    f"Erreur HTTP {response.status} pour {source['name']}"
+                                )
+                                continue
+
+                            content = await response.text()
+
+                            if source["type"] == "rss":
+                                news = self._parse_rss_feed(content, source["name"])
+                            else:
+                                data = await response.json()
+                                news = self._parse_news(data, source["name"])
+
+                            if news:
+                                all_news.extend(news)
+
+                    except Exception as e:
+                        self.logger.error(
+                            f"Erreur récupération news pour {source['name']}: {e}"
+                        )
+                        continue
+
+            return all_news
+
+        except Exception as e:
+            self.logger.error(f"Erreur fetch_news: {e}")
             return []
 
     def _parse_news(self, data: Dict, source: str) -> List[Dict]:

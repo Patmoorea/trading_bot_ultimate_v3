@@ -4,7 +4,6 @@ import streamlit as st
 current_dir = os.path.dirname(os.path.abspath(__file__))
 import time
 import json
-import logging
 from datetime import datetime, timezone
 
 import numpy as np
@@ -63,11 +62,20 @@ from src.quantum.qsvm import QuantumTradingModel as QuantumSVM
 
 from asyncio import TimeoutError, AbstractEventLoop
 import asyncio
-from src.ai.ppo_gtrxl import PPOGTrXL
 
 from src.ai.cnn_lstm import CNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
 from src.ai.ppo_strategy import PPOStrategy
+
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
@@ -86,6 +94,32 @@ logging.basicConfig(
 
 class TradingBotM4:
     """Classe principale du bot de trading v4"""
+
+    def prepare_observation(market_data: dict, required_fields: list) -> np.ndarray:
+        obs = []
+        for field in required_fields:
+            value = market_data.get(field, 0.0)
+            if isinstance(value, (list, np.ndarray)):
+                value = np.array(value)
+            else:
+                value = np.array([value])
+            obs.append(value)
+        try:
+            obs_array = np.concatenate(obs, axis=-1)
+        except Exception as e:
+            logger.error(f"Observation preparation failed: {e}")
+            obs_array = np.zeros(len(required_fields))
+        return obs_array
+
+    def enrich_market_data(self, data: dict) -> dict:
+        for pair, d in data.items():
+            if "bid" not in d or "ask" not in d:
+                ob = d.get("orderbook", {})
+                bids = ob.get("bids", [])
+                asks = ob.get("asks", [])
+                d["bid"] = float(bids[0][0]) if bids else d.get("price", 0.0)
+                d["ask"] = float(asks[0][0]) if asks else d.get("price", 0.0)
+        return data
 
     async def tick(self):
         """Effectue une itération de trading (une fois par refresh)"""
@@ -1060,8 +1094,20 @@ class TradingBotM4:
 
     def decision_model(self, features, timestamp=None):
         try:
-            policy = self.models["ppo_gtrxl"].get_policy(features)
-            value = self.models["ppo_gtrxl"].get_value(features)
+            # Préparation robuste des features pour le modèle
+            required_fields = [
+                "price",
+                "volume",
+                "bid",
+                "ask",
+                "high_low_range",
+                "bid_ask_spread",
+                "timestamp",
+            ]
+            obs = self.prepare_observation(features, required_fields)
+            print("[DEBUG] Shape des features envoyées au modèle:", obs.shape)
+            policy = self.models["ppo_gtrxl"].get_policy(obs)
+            value = self.models["ppo_gtrxl"].get_value(obs)
             return policy, value
         except Exception as e:
             self.logger.error(f"[{timestamp}] Erreur decision_model: {e}")
@@ -2587,22 +2633,17 @@ Take Profit: {take_profit}""",
             return None
 
     async def run(self):
-        """Point d'entrée principal du bot"""
+        """Boucle principale du bot, robuste pour l'IA et la PPO."""
         try:
-            # Configuration initiale
             await self.setup_streams()
-
-            # Étude initiale du marché
             market_regime, historical_data, initial_analysis = await self.study_market()
-
+            required_fields = ["bid", "ask", "price", "volume"]
             while True:
                 try:
-                    # Mise à jour des données
                     market_data = await self.get_latest_data()
                     if not market_data:
                         continue
-
-                    # Analyse technique
+                    market_data = self.enrich_market_data(market_data)
                     all_signals = {}
                     for pair in self.pairs_valid:
                         pair_key = (
@@ -2616,48 +2657,55 @@ Take Profit: {take_profit}""",
                         pair_data = market_data[pair_key]
                         signal = await self.analyze_signals(pair_data)
                         all_signals[pair] = signal
-
-                    # Utiliser le signal de la paire principale
                     main_pair = self.pairs_valid[0]
                     main_signal = all_signals.get(main_pair)
-
-                    # Analyse des news
                     news_impact = await self.news_analyzer.analyze()
-
-                    # Construction des features
                     features = self._combine_features(
                         technical_features=main_signal,
                         news_impact=news_impact,
                         regime=market_regime,
                     )
-
-                    # Obtention de la politique et valeur
-                    policy, value = self.decision_model(features)
-
-                    if policy is not None and value is not None:
-                        # Construction de la décision
+                    # --- Utilisation correcte de la PPO ---
+                    # Préparation robuste de l'input PPO
+                    ppo_input_raw = (
+                        market_data[main_pair]
+                        if main_pair in market_data
+                        else market_data[main_pair.replace("/", "")]
+                    )
+                    # On s'assure que les champs sont bien scalaires ou arrays homogènes
+                    ppo_input = {
+                        "ohlcv": ppo_input_raw.get("ohlcv", []),
+                        "indicators": main_signal if main_signal else {},
+                        "market_metrics": {
+                            k: safe_float(ppo_input_raw.get(k, 0.0))
+                            for k in required_fields
+                        },
+                    }
+                    print(
+                        "[DEBUG] PPO input:", {k: type(v) for k, v in ppo_input.items()}
+                    )
+                    ppo_decision = await self.ppo_strategy.analyze_market(ppo_input)
+                    if ppo_decision:
                         decision = self._build_decision(
-                            policy=policy,
-                            value=value,
-                            technical_score=main_signal["recommendation"]["confidence"],
+                            policy=ppo_decision["action"],
+                            value=ppo_decision["confidence"],
+                            technical_score=(
+                                main_signal["recommendation"]["confidence"]
+                                if main_signal
+                                else 0.5
+                            ),
                             news_sentiment=news_impact,
                             regime=market_regime,
                             timestamp=pd.Timestamp.utcnow(),
                         )
-
-                        # Ajout gestion des risques
                         decision = self._add_risk_management(decision)
-
-                        # Exécution des trades
                         await self.execute_trades(decision)
-
-                    # Attente avant la prochaine itération
-                    await asyncio.sleep(self.config["TRADING"]["update_interval"])
-
+                    await asyncio.sleep(
+                        self.config["TRADING"].get("update_interval", 10)
+                    )
                 except Exception as loop_error:
                     self.logger.error(f"Erreur dans la boucle principale: {loop_error}")
                     continue
-
         except Exception as e:
             self.logger.error(f"Erreur fatale: {e}")
             await self.telegram.send_message(f"🚨 Erreur critique du bot:\n{str(e)}\n")

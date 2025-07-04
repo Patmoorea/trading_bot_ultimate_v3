@@ -2,14 +2,18 @@
 BingX Exchange Module
 Handles all interactions with BingX API (Futures Trading)
 """
+
 import asyncio
 import logging
 from typing import Dict, Any, List, Optional
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import ccxt.async_support as ccxt
 import pandas as pd
+
 logger = logging.getLogger(__name__)
+
+
 class BingXExchange:
     def __init__(self, api_key: str, api_secret: str):
         """
@@ -22,29 +26,31 @@ class BingXExchange:
         self.api_secret = api_secret
         self._exchange = None
         self._initialized = False
+
     async def initialize(self) -> None:
         """Initialize the exchange connection"""
         try:
-            self._exchange = ccxt.bingx({
-                'apiKey': self.api_key,
-                'secret': self.api_secret,
-                'enableRateLimit': True,
-                'options': {
-                    'defaultType': 'swap',
-                    'adjustForTimeDifference': True
+            self._exchange = ccxt.bingx(
+                {
+                    "apiKey": self.api_key,
+                    "secret": self.api_secret,
+                    "enableRateLimit": True,
+                    "options": {"defaultType": "swap", "adjustForTimeDifference": True},
                 }
-            })
+            )
             await self._exchange.load_markets()
             self._initialized = True
             logger.info("BingXExchange initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize BingXExchange: {e}")
             raise
+
     async def close(self) -> None:
         """Close exchange connection"""
         if self._exchange:
             await self._exchange.close()
             self._initialized = False
+
     async def get_ticker(self, symbol: str) -> Dict[str, Any]:
         """
         Get current ticker data
@@ -58,19 +64,28 @@ class BingXExchange:
         try:
             ticker = await self._exchange.fetch_ticker(symbol)
             return {
-                'last': str(ticker.get('last', 0)),
-                'bid': str(ticker.get('bid', 0)),
-                'ask': str(ticker.get('ask', 0)),
-                'high': str(ticker.get('high', 0)),
-                'low': str(ticker.get('low', 0)),
-                'baseVolume': str(ticker.get('baseVolume', 0)),
-                'quoteVolume': str(ticker.get('quoteVolume', 0)),
-                'timestamp': ticker.get('timestamp', 0)
+                "last": str(ticker.get("last", 0)),
+                "bid": str(ticker.get("bid", 0)),
+                "ask": str(ticker.get("ask", 0)),
+                "high": str(ticker.get("high", 0)),
+                "low": str(ticker.get("low", 0)),
+                "baseVolume": str(ticker.get("baseVolume", 0)),
+                "quoteVolume": str(ticker.get("quoteVolume", 0)),
+                "timestamp": ticker.get("timestamp", 0),
             }
         except Exception as e:
             logger.error(f"Error fetching ticker for {symbol}: {e}")
             raise
-    async def get_klines(self, symbol: str, timeframe: str, limit: int = 100) -> List[List[float]]:
+
+    async def fetch_ticker(self, symbol: str) -> Dict[str, Any]:
+        """
+        Alias direct pour compatibilité (ex: scan d'arbitrage multi-broker)
+        """
+        return await self.get_ticker(symbol)
+
+    async def get_klines(
+        self, symbol: str, timeframe: str, limit: int = 100
+    ) -> List[List[float]]:
         """
         Get OHLCV klines/candlesticks
         Args:
@@ -88,6 +103,7 @@ class BingXExchange:
         except Exception as e:
             logger.error(f"Error fetching klines for {symbol}: {e}")
             raise
+
     async def get_orderbook(self, symbol: str) -> Dict[str, List[List[float]]]:
         """
         Get current orderbook
@@ -100,13 +116,17 @@ class BingXExchange:
             raise RuntimeError("Exchange not initialized")
         try:
             orderbook = await self._exchange.fetch_order_book(symbol)
-            return {
-                'bids': orderbook['bids'],
-                'asks': orderbook['asks']
-            }
+            return {"bids": orderbook["bids"], "asks": orderbook["asks"]}
         except Exception as e:
             logger.error(f"Error fetching orderbook for {symbol}: {e}")
             raise
+
+    async def fetch_order_book(self, symbol: str) -> Dict[str, List[List[float]]]:
+        """
+        Alias direct pour compatibilité (ex: scan d'arbitrage multi-broker)
+        """
+        return await self.get_orderbook(symbol)
+
     async def get_balance(self) -> Dict[str, Any]:
         """
         Get account balance
@@ -118,13 +138,14 @@ class BingXExchange:
         try:
             balance = await self._exchange.fetch_balance()
             return {
-                currency: data 
-                for currency, data in balance.items() 
-                if isinstance(data, dict) and float(data.get('total', 0)) > 0
+                currency: data
+                for currency, data in balance.items()
+                if isinstance(data, dict) and float(data.get("total", 0)) > 0
             }
         except Exception as e:
             logger.error(f"Error fetching balance: {e}")
             raise
+
     async def get_positions(self) -> List[Dict[str, Any]]:
         """
         Get open positions
@@ -135,10 +156,11 @@ class BingXExchange:
             raise RuntimeError("Exchange not initialized")
         try:
             positions = await self._exchange.fetch_positions()
-            return [pos for pos in positions if float(pos.get('contracts', 0)) != 0]
+            return [pos for pos in positions if float(pos.get("contracts", 0)) != 0]
         except Exception as e:
             logger.error(f"Error fetching positions: {e}")
             raise
+
     async def get_my_trades(self, symbol: str) -> List[Dict[str, Any]]:
         """
         Get trade history
@@ -155,7 +177,10 @@ class BingXExchange:
         except Exception as e:
             logger.error(f"Error fetching trades for {symbol}: {e}")
             raise
-    async def set_leverage(self, symbol: str, leverage: int, position_side: str = 'LONG') -> bool:
+
+    async def set_leverage(
+        self, symbol: str, leverage: int, position_side: str = "LONG"
+    ) -> bool:
         """
         Set leverage for a symbol
         Args:
@@ -170,15 +195,25 @@ class BingXExchange:
         try:
             # S'assurer que position_side est en majuscules et valide
             position_side = position_side.upper()
-            if position_side not in ['LONG', 'SHORT', 'BOTH']:
+            if position_side not in ["LONG", "SHORT", "BOTH"]:
                 raise ValueError("position_side must be one of: LONG, SHORT, BOTH")
-            await self._exchange.set_leverage(leverage, symbol, params={'side': position_side})
+            await self._exchange.set_leverage(
+                leverage, symbol, params={"side": position_side}
+            )
             return True
         except Exception as e:
             logger.error(f"Error setting leverage for {symbol}: {e}")
             raise
-    async def create_order(self, symbol: str, order_type: str, side: str, 
-                         amount: str, price: Optional[str] = None, params: Dict = None) -> Dict[str, Any]:
+
+    async def create_order(
+        self,
+        symbol: str,
+        order_type: str,
+        side: str,
+        amount: str,
+        price: Optional[str] = None,
+        params: Dict = None,
+    ) -> Dict[str, Any]:
         """
         Create a new order
         Args:
@@ -196,12 +231,12 @@ class BingXExchange:
         try:
             params = params or {}
             # Ajouter le positionSide par défaut
-            if 'positionSide' not in params:
-                position_side = 'LONG' if side.lower() == 'buy' else 'SHORT'
-                params['positionSide'] = position_side
+            if "positionSide" not in params:
+                position_side = "LONG" if side.lower() == "buy" else "SHORT"
+                params["positionSide"] = position_side
             if float(amount) <= 0:
                 raise ValueError("Amount must be positive")
-            if order_type == 'limit':
+            if order_type == "limit":
                 if not price or float(price) <= 0:
                     raise ValueError("Valid price required for limit orders")
                 order = await self._exchange.create_limit_order(
@@ -215,6 +250,7 @@ class BingXExchange:
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             raise
+
     async def cancel_order(self, symbol: str, order_id: str) -> bool:
         """
         Cancel an order
@@ -232,6 +268,7 @@ class BingXExchange:
         except Exception as e:
             logger.error(f"Error canceling order {order_id}: {e}")
             raise
+
     async def get_order(self, symbol: str, order_id: str) -> Dict[str, Any]:
         """
         Get order information
@@ -249,7 +286,10 @@ class BingXExchange:
         except Exception as e:
             logger.error(f"Error fetching order {order_id}: {e}")
             raise
-    async def get_historical_data(self, pairs: List[str], timeframes: List[str], period: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+
+    async def get_historical_data(
+        self, pairs: List[str], timeframes: List[str], period: str
+    ) -> Dict[str, Dict[str, pd.DataFrame]]:
         """
         Récupère les données OHLCV historiques pour chaque paire/timeframe sur la période demandée.
         Retourne {timeframe: {pair: pd.DataFrame}}
@@ -261,7 +301,9 @@ class BingXExchange:
             # Parse period (ex: "7d" -> 7 jours)
             if period.endswith("d"):
                 days = int(period.replace("d", ""))
-                since = int((datetime.utcnow() - timedelta(days=days)).timestamp() * 1000)
+                since = int(
+                    (datetime.utcnow() - timedelta(days=days)).timestamp() * 1000
+                )
             else:
                 # Fallback: 1 jour
                 since = int((datetime.utcnow() - timedelta(days=1)).timestamp() * 1000)
@@ -270,7 +312,17 @@ class BingXExchange:
                 for pair in pairs:
                     try:
                         ohlcv = await self._exchange.fetch_ohlcv(pair, tf, since=since)
-                        df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+                        df = pd.DataFrame(
+                            ohlcv,
+                            columns=[
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            ],
+                        )
                         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                         tf_result[pair] = df
                     except Exception as e:

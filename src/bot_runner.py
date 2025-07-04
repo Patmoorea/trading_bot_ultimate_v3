@@ -29,7 +29,12 @@ from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
 from src.ai.deep_learning_model import DeepLearningModel
 from src.ai.ppo_strategy import PPOStrategy
-from src.bot.core import TradingEnv
+from src.bot.trading_env import TradingEnv
+
+from src.strategies.arbitrage.core.arbitrage_bot import ArbitrageBot
+from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageScanner
+from src.strategies.arbitrage.core.risk_management.risk_manager import RiskManager
+from src.strategies.arbitrage.service import ArbitrageEngine
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -140,6 +145,11 @@ class TelegramNotifier:
             f"🕒 Heure: {get_current_time()}\n"
             f"📝 Raison: {trade_data.get('reason', 'Signal de trading')}"
         )
+        if not self.ai_enabled:
+            print("⚠️ IA désactivée. Raison possible:")
+            print("- Modèle Deep Learning:", "OK" if self.dl_model else "❌")
+            print("- Stratégie PPO:", "OK" if self.ppo_strategy else "❌")
+            print("- Environnement:", "OK" if self.env else "❌")
         await self.send_message(message)
 
     async def send_arbitrage_alert(self, opportunity):
@@ -205,7 +215,7 @@ sys.stderr = WarningFilter(sys.stderr)
 
 class TradingBotM4:
     def __init__(self):
-        # Ajouter en début de __init__
+        # Configuration de base existante...
         self.config = {
             "TRADING": {
                 "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
@@ -223,13 +233,216 @@ class TradingBotM4:
             },
         }
 
+        # Initialize basic attributes...
         self.data_file = SHARED_DATA_PATH
         self.current_cycle = 0
         self.regime = MARKET_REGIMES["RANGING"]
-        self.pairs_valid = []
         self.market_data = {}
         self.indicators = {}
+        self.ai_weight = 0.3
+        self.ai_enabled = False
+
+        # Initialisation de l'arbitrage engine
+        try:
+            self.arbitrage_engine = ArbitrageEngine()
+            self.brokers = self.arbitrage_engine.brokers
+            print("✅ ArbitrageEngine initialisé avec succès")
+        except Exception as e:
+            print(f"⚠️ Erreur initialisation ArbitrageEngine: {e}")
+            self.arbitrage_engine = None
+            self.brokers = {}
+
+        # Initialisation de l'environnement (une seule fois)
+        print("Configuration de l'environnement...")
+        self.env = TradingEnv(
+            trading_pairs=self.config["TRADING"]["pairs"],
+            timeframes=self.config["TRADING"]["timeframes"],
+        )
+        print("✅ Environnement initialisé avec succès")
+
+        # Initialisation de l'IA
+        self._initialize_ai()
+
+        # Initialize shared data
         self.initialize_shared_data()
+
+        # Initialize basic attributes
+        self.data_file = SHARED_DATA_PATH
+        self.current_cycle = 0
+        self.regime = MARKET_REGIMES["RANGING"]
+        self.market_data = {}
+        self.indicators = {}
+        self.ai_weight = 0.3  # Add AI weight initialization
+        self.ai_enabled = False  # Initialize AI status
+        self.pairs_valid = []
+        # Initialize shared data
+        self.initialize_shared_data()
+
+        # Initialize environment
+        print("Checking environment setup...")
+        self.env = TradingEnv(
+            trading_pairs=self.config["TRADING"]["pairs"],
+            timeframes=self.config["TRADING"]["timeframes"],
+        )
+        print(f"Trading pairs: {self.pairs_valid}")
+        print(f"Environment initialized: {hasattr(self, 'env')}")
+        if hasattr(self, "env"):
+            print(
+                f"Environment methods: reset={hasattr(self.env, 'reset')}, step={hasattr(self.env, 'step')}"
+            )
+        # Initialisation des composants d'arbitrage
+        self.arbitrage_bot = ArbitrageBot()
+        self.arbitrage_scanner = ArbitrageScanner()
+        self.risk_manager = RiskManager()
+
+        # Configuration de l'arbitrage
+        self.arbitrage_config = {
+            "min_profit": 0.5,  # 0.5% minimum profit
+            "max_exposure": 10000,  # Maximum exposure in USDC
+            "enabled_exchanges": ["binance", "kucoin", "huobi"],
+        }
+
+    async def detect_arbitrage_opportunities(self, pair=None):
+        """Détecte les opportunités d'arbitrage avec vérification des volumes"""
+        if not self.is_live_trading:
+            return []
+
+        opportunities = []
+        pairs_to_check = [pair] if pair else self.pairs_valid
+        MIN_PROFIT_THRESHOLD = 0.15
+        MIN_VOLUME_USD = 10000
+        MAX_SPREAD = 0.5
+
+        try:
+            for current_pair in pairs_to_check:
+                try:
+                    pair_key = current_pair.replace("/", "")
+
+                    # Liste des échanges réels à comparer
+                    exchanges_to_check = [
+                        {"name": "okx", "client": self.brokers.get("okx")},
+                        {"name": "gateio", "client": self.brokers.get("gateio")},
+                        {"name": "blofin", "client": self.brokers.get("blofin")},
+                        {"name": "bingx", "client": self.brokers.get("bingx")},
+                    ]
+
+                    # Prix Binance comme référence
+                    binance_ticker = self.binance_client.get_ticker(symbol=pair_key)
+                    binance_price = float(binance_ticker["lastPrice"])
+
+                    # Comparaison avec les autres échanges
+                    for exchange in exchanges_to_check:
+                        if not exchange["client"]:
+                            continue
+
+                        try:
+                            # Récupération du prix sur l'autre échange
+                            ticker = exchange["client"].fetch_ticker(current_pair)
+                            exchange_price = ticker["last"]
+
+                            # Calcul de la différence de prix
+                            price_diff = abs(exchange_price - binance_price)
+                            profit_pct = (price_diff / binance_price) * 100
+
+                            if profit_pct > MIN_PROFIT_THRESHOLD:
+                                opportunity = {
+                                    "pair": current_pair,
+                                    "exchange1": "Binance",
+                                    "exchange2": exchange["name"],
+                                    "price1": binance_price,
+                                    "price2": exchange_price,
+                                    "diff_percent": profit_pct,
+                                    "volume_24h": float(binance_ticker["volume"])
+                                    * binance_price,
+                                    "estimated_profit": profit_pct - 0.2,  # Après frais
+                                }
+                                opportunities.append(opportunity)
+                                self.logger.info(
+                                    f"Opportunité d'arbitrage détectée pour {current_pair}"
+                                )
+
+                        except Exception as e:
+                            self.logger.error(f"Erreur sur {exchange['name']}: {e}")
+                            continue
+
+                except Exception as e:
+                    self.logger.error(
+                        f"Erreur lors du traitement de {current_pair}: {e}"
+                    )
+                    continue
+
+            return opportunities
+
+        except Exception as e:
+            self.logger.error(f"Erreur globale détection arbitrage: {e}")
+            return []
+
+    async def execute_arbitrage(self, opportunity):
+        """Exécute une opportunité d'arbitrage"""
+        try:
+            # Utiliser l'ArbitrageExecutor existant
+            result = await self.arbitrage_executor.execute(
+                opportunity=opportunity,
+                max_slippage=0.1,  # 0.1% de slippage maximum
+                timeout=5,  # 5 secondes maximum
+            )
+
+            if result["success"]:
+                profit = result["realized_profit"]
+                message = (
+                    f"✅ Arbitrage réussi!\n"
+                    f"💰 Profit: {profit:.2f} USDC\n"
+                    f"📊 Paire: {opportunity['pair']}\n"
+                    f"🔄 Route: {opportunity['route']}"
+                )
+                await self.telegram.send_message(message)
+
+                # Mettre à jour les statistiques
+                self._update_performance_metrics(
+                    {"type": "arbitrage", "profit": profit, "pair": opportunity["pair"]}
+                )
+            else:
+                self.logger.warning(f"Échec arbitrage: {result['error']}")
+
+        except Exception as e:
+            self.logger.error(f"Erreur exécution arbitrage: {e}")
+
+    def _initialize_ai(self):
+        """Initialise les composants d'IA"""
+        try:
+            print("Initialisation des modèles d'IA...")
+
+            if not self.env:
+                raise ValueError("L'environnement de trading n'est pas initialisé")
+
+            # Initialisation du modèle Deep Learning
+            self.dl_model = DeepLearningModel()
+
+            # Configuration de l'environnement PPO
+            env_config = {
+                "env": self.env,
+                "input_dim": 42,
+                "learning_rate": self.config["AI"]["learning_rate"],
+                "batch_size": self.config["AI"]["batch_size"],
+                "n_epochs": self.config["AI"]["n_epochs"],
+                "verbose": 1,
+            }
+
+            self.ppo_strategy = PPOStrategy(env_config)
+
+            if self.ppo_strategy.model is None:
+                raise ValueError("Échec de l'initialisation du modèle PPO")
+
+            self.ai_enabled = True
+            print("✅ Modèles d'IA initialisés avec succès")
+
+        except Exception as e:
+            print(f"❌ Erreur initialisation IA: {str(e)}")
+            self.ai_enabled = False
+            self.dl_model = None
+            self.ppo_strategy = None
+
+        # Initialize other components
         self.telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
         self.last_telegram_update = datetime.utcnow()
         self.logger = logger
@@ -240,7 +453,10 @@ class TradingBotM4:
 
         if self.api_key and self.api_secret:
             self.binance_client = Client(self.api_key, self.api_secret)
-            self.binance_connector = BinanceConnector()
+            # Modifier cette ligne
+            self.binance_connector = (
+                BinanceConnector()
+            )  # Retirer les paramètres api_key et api_secret
             self.executor = SmartOrderExecutor()
             self.is_live_trading = True
             self.logger.info("Binance API initialized for live trading")
@@ -252,35 +468,33 @@ class TradingBotM4:
             self.logger.warning(
                 "Binance API credentials not found, running in simulation mode"
             )
+        print("Vérification des clés API:")
+        print(f"API Key présente: {'Oui' if self.api_key else 'Non'}")
+        print(f"API Secret présente: {'Oui' if self.api_secret else 'Non'}")
 
-        # Initialisation des modèles d'IA
         try:
-            self.dl_model = DeepLearningModel()
-            self.env = TradingEnv(
-                trading_pairs=self.pairs_valid,
-                timeframes=self.config["TRADING"]["timeframes"],
-            )
-
-            # Configuration par défaut pour PPOStrategy
-            default_config = {
+            print("Configuration de la stratégie PPO...")
+            env_config = {
                 "env": self.env,
+                "input_dim": 42,
                 "learning_rate": 3e-4,
-                "n_steps": 2048,
                 "batch_size": 64,
-                "gamma": 0.99,
-                "gae_lambda": 0.95,
-                "clip_range": 0.2,
                 "n_epochs": 10,
                 "verbose": 1,
             }
-            self.ppo_strategy = PPOStrategy(default_config)
-            self.ai_enabled = True
-            self.ai_weight = 0.3  # Influence de l'IA dans la décision (30%)
-            self.logger.info("AI models initialized successfully")
+
+            # Add error checking for environment
+            if not hasattr(self.env, "reset") or not hasattr(self.env, "step"):
+                raise ValueError("Trading environment missing required methods")
+
+            self.ppo_strategy = PPOStrategy(env_config)
+            if self.ppo_strategy.model is None:
+                raise ValueError("PPO model failed to initialize")
+
+            print("✅ PPO Strategy initialized successfully")
+
         except Exception as e:
-            self.logger.error(f"Failed to initialize AI models: {e}")
-            self.ai_enabled = False
-            self.dl_model = None
+            print(f"❌ Erreur initialisation PPO: {str(e)}")
             self.ppo_strategy = None
 
         # Initialisation de l'analyseur de sentiment
@@ -960,45 +1174,6 @@ class TradingBotM4:
             self.logger.error(f"Erreur générale news: {e}")
             return []
 
-    async def detect_arbitrage_opportunities(self):
-        """Détecte les opportunités d'arbitrage entre différents marchés"""
-        if not self.is_live_trading:
-            return []
-
-        opportunities = []
-
-        try:
-            # Récupérer les tickers de plusieurs exchanges
-            binance_prices = {}
-            for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "")
-                ticker = self.binance_client.get_ticker(symbol=pair_key)
-                binance_prices[pair] = float(ticker["lastPrice"])
-
-            # Comparer avec d'autres exchanges (si implémenté)
-            # Cette partie nécessiterait des connecteurs pour d'autres exchanges
-
-            # Simuler la détection d'opportunités pour démonstration
-            for pair in self.pairs_valid:
-                # Simuler une opportunité avec 0.5% de différence
-                simulated_opportunity = {
-                    "pair": pair,
-                    "exchange1": "Binance",
-                    "price1": binance_prices[pair],
-                    "exchange2": "Simulated",
-                    "price2": binance_prices[pair] * 1.005,
-                    "diff_percent": 0.5,
-                }
-
-                if simulated_opportunity["diff_percent"] > 0.3:  # Seuil minimum
-                    opportunities.append(simulated_opportunity)
-
-            return opportunities
-
-        except Exception as e:
-            self.logger.error(f"Error detecting arbitrage: {e}")
-            return []
-
     async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
         """Étudie le marché sur une période définie et établit un plan de trading"""
         try:
@@ -1385,43 +1560,39 @@ class TradingBotM4:
         return indicators
 
     async def analyze_signals(self, df, indicators):
-        """Analyse les signaux"""
-        await asyncio.sleep(0.2)  # Simule le temps d'analyse
-
         action = "neutral"
         confidence = 0.5
 
         try:
-            # Analyse technique de base
             if indicators:
-                # Signaux de tendance
+                # Signaux plus sensibles
                 trend_signal = 0
                 if indicators.get("sma_20", 0) > indicators.get("sma_50", 0):
-                    trend_signal += 0.3
+                    trend_signal += 0.4
                 else:
-                    trend_signal -= 0.3
+                    trend_signal -= 0.4
 
-                # Signaux de momentum
                 momentum_signal = 0
-                if indicators.get("rsi", 50) > 70:
-                    momentum_signal -= 0.5  # Survente potentielle
-                elif indicators.get("rsi", 50) < 30:
-                    momentum_signal += 0.5  # Surachat potentiel
+                rsi = indicators.get("rsi", 50)
+                if rsi > 70:
+                    momentum_signal -= 0.6
+                elif rsi < 30:
+                    momentum_signal += 0.6
 
-                # Signaux MACD
-                macd_signal = 0
-                if indicators.get("macd", 0) > indicators.get("macd_signal", 0):
-                    macd_signal += 0.3
+                macd = indicators.get("macd", 0)
+                macd_signal = indicators.get("macd_signal", 0)
+                macd_strength = abs(macd - macd_signal) / max(abs(macd), 0.01)
+                if macd > macd_signal:
+                    momentum_signal += 0.4 * macd_strength
                 else:
-                    macd_signal -= 0.3
+                    momentum_signal -= 0.4 * macd_strength
 
-                # Agrégation des signaux
-                combined_signal = (trend_signal + momentum_signal + macd_signal) / 3
+                combined_signal = (trend_signal + momentum_signal) / 2
 
-                if combined_signal > 0.2:
+                if combined_signal > 0.15:  # Seuil plus bas
                     action = "buy"
                     confidence = 0.5 + min(0.5, abs(combined_signal))
-                elif combined_signal < -0.2:
+                elif combined_signal < -0.15:  # Seuil plus bas
                     action = "sell"
                     confidence = 0.5 + min(0.5, abs(combined_signal))
 
@@ -1442,44 +1613,113 @@ def load_config():
 
 
 async def run_clean_bot():
-    """Fonction principale"""
-    print("\n=== DÉMARRAGE DU BOT ===")
-    print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
+    """
+    Fonction principale du bot de trading
+    Gère l'initialisation, l'analyse de marché et l'exécution des stratégies
+    """
+    logger = logging.getLogger(__name__)
 
+    async def initialize_bot():
+        """Initialisation du bot et de ses composants"""
+        try:
+            print("\n=== DÉMARRAGE DU BOT ===")
+            print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
+
+            # Configuration initiale
+            valid_pairs = load_config()
+            print(f"📊 Paires configurées: {valid_pairs}")
+
+            # Création et configuration du bot
+            bot = TradingBotM4()
+            bot.pairs_valid = valid_pairs
+
+            if not await bot._setup_components():
+                raise Exception("Échec de l'initialisation des composants")
+
+            # Rapport initial
+            initial_report = await bot.generate_market_analysis_report()
+            await bot.telegram.send_message(
+                "🚀 <b>Bot Trading démarré</b>\n"
+                "✅ Initialisation réussie\n"
+                f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
+                f"{initial_report}"
+            )
+
+            print("✅ Bot initialized successfully")
+            return bot, valid_pairs
+
+        except Exception as e:
+            logger.error(f"Erreur d'initialisation: {e}")
+            raise
+
+    async def market_analysis_cycle(bot, pair, market_data):
+        """Analyse une paire de trading spécifique"""
+        try:
+            pair_key = pair.replace("/", "")
+            if not market_data or pair_key not in market_data:
+                return None
+
+            data = market_data[pair_key]
+            if "1h" not in data:
+                return None
+
+            # Préparation des données OHLCV
+            ohlcv_df = prepare_ohlcv_data(data["1h"])
+            if ohlcv_df is None or len(ohlcv_df) < 20:
+                return None
+
+            # Analyse des indicateurs et signaux
+            indicators_data = bot.add_indicators(ohlcv_df)
+            signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+
+            # Analyse des signaux supplémentaires
+            combined_score = await calculate_combined_score(bot, data, signal, pair)
+
+            return await generate_trade_decision(
+                bot, pair, combined_score, data, signal
+            )
+
+        except Exception as e:
+            logger.error(f"Erreur analyse {pair}: {e}")
+            return None
+
+    async def execute_trading_cycle(bot, valid_pairs):
+        """Exécute un cycle complet de trading"""
+        try:
+            # Analyse de marché
+            regime, market_data, indicators = await bot.study_market("7d")
+            strategy = bot.choose_strategy(regime, indicators)
+            print(f"🎯 Stratégie active: {strategy}")
+
+            # Détection d'arbitrage
+            await handle_arbitrage_opportunities(bot)
+
+            # Analyse des paires
+            trade_decisions = []
+            for pair in valid_pairs:
+                decision = await market_analysis_cycle(bot, pair, market_data)
+                if decision:
+                    trade_decisions.append(decision)
+
+            # Exécution des trades
+            await execute_trade_decisions(bot, trade_decisions)
+
+            return trade_decisions, regime
+
+        except Exception as e:
+            logger.error(f"Erreur cycle trading: {e}")
+            raise
+
+    # Fonction principale
     try:
-        # Étape 1: Initialisation
-        print("\n=== ÉTAPE 1: INITIALISATION ===")
-        valid_pairs = load_config()
-        print(f"📊 Paires configurées: {valid_pairs}")
+        # Initialisation
+        bot, valid_pairs = await initialize_bot()
 
-        bot = TradingBotM4()
-        bot.pairs_valid = valid_pairs
-        setup_success = await bot._setup_components()
-
-        if not setup_success:
-            print("⚠️ Erreur lors de l'initialisation des composants")
-            return
-
-        # Notification de démarrage avec rapport d'analyse
-        initial_report = await bot.generate_market_analysis_report()
-        await bot.telegram.send_message(
-            "🚀 <b>Bot Trading démarré</b>\n"
-            "✅ Initialisation réussie\n"
-            f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
-            f"{initial_report}"
-        )
-
-        print("✅ Bot initialized successfully")
-
-        # Étape 2: Analyse du marché
-        print("\n=== ÉTAPE 2: ANALYSE DU MARCHÉ ===")
-        regime, _, indicators = await bot.study_market("7d")
+        # Analyse initiale du marché
+        regime, _, _ = await bot.study_market("7d")
         print(f"🔈 Régime de marché détecté: {regime}")
 
-        # Étape 3: Trading
-        print("\n=== ÉTAPE 3: TRADING ADAPTATIF ===")
-        print("📈 Trading adaptatif lancé")
-
+        # Boucle principale
         cycle = 0
         while True:
             cycle += 1
@@ -1488,238 +1728,281 @@ async def run_clean_bot():
             try:
                 print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
 
-                # Analyse et mise à jour
-                regime, market_data, indicators = await bot.study_market("7d")
-                strategy = bot.choose_strategy(regime, indicators)
-                print(f"🎯 Stratégie active: {strategy}")
+                # Exécution du cycle de trading
+                trade_decisions, regime = await execute_trading_cycle(bot, valid_pairs)
 
-                # Détection d'opportunités d'arbitrage
-                arbitrage_opportunities = await bot.detect_arbitrage_opportunities()
-                if arbitrage_opportunities:
-                    print(
-                        f"💹 {len(arbitrage_opportunities)} opportunités d'arbitrage détectées"
-                    )
-                    for opp in arbitrage_opportunities:
-                        print(
-                            f"  • {opp['pair']}: {opp['diff_percent']:.2f}% entre {opp['exchange1']} et {opp['exchange2']}"
-                        )
-
-                        # Notification Telegram pour chaque opportunité
-                        await bot.telegram.send_arbitrage_alert(opp)
-
-                        # Si l'opportunité est suffisamment intéressante, exécuter l'arbitrage
-                        if (
-                            opp["diff_percent"] > 0.5
-                        ):  # Seuil de rentabilité après frais
-                            print(f"🔄 Exécution de l'arbitrage sur {opp['pair']}")
-                            # Code d'exécution de l'arbitrage à implémenter
-
-                # Analyse des signaux pour chaque paire
-                trade_decisions = []
-                for pair in valid_pairs:
-                    pair_key = pair.replace("/", "")
-                    if market_data and pair_key in market_data:
-                        data = market_data[pair_key]
-
-                        # Conversion des données OHLCV pour l'analyse
-                        ohlcv_df = None
-                        if "1h" in data:
-                            ohlcv = data["1h"]
-                            # Conversion en DataFrame pour l'analyse
-                            if all(
-                                k in ohlcv
-                                for k in ["open", "high", "low", "close", "volume"]
-                            ):
-                                ohlcv_df = pd.DataFrame(
-                                    {
-                                        0: ohlcv["timestamp"],
-                                        1: ohlcv["open"],
-                                        2: ohlcv["high"],
-                                        3: ohlcv["low"],
-                                        4: ohlcv["close"],
-                                        5: ohlcv["volume"],
-                                    }
-                                )
-
-                        if ohlcv_df is not None and len(ohlcv_df) >= 20:
-                            indicators_data = bot.add_indicators(ohlcv_df)
-                            signal = await bot.analyze_signals(
-                                ohlcv_df, indicators_data
-                            )
-
-                            # Intégration des signaux IA et news si disponibles
-                            ai_signal = data.get("ai_prediction", 0.5)
-                            sentiment_score = data.get("sentiment", 0)
-
-                            # Fusion des signaux
-                            combined_score = 0
-                            if signal["action"] == "buy":
-                                combined_score += signal["confidence"] * 0.5
-                            elif signal["action"] == "sell":
-                                combined_score -= signal["confidence"] * 0.5
-
-                            # Ajout du signal IA
-                            if bot.ai_enabled:
-                                combined_score += (ai_signal - 0.5) * 2 * bot.ai_weight
-
-                            # Amélioration de l'intégration des news
-                            if bot.news_enabled and sentiment_score != 0:
-                                # Ajuster le poids du sentiment en fonction de son intensité
-                                sentiment_weight = bot.news_weight * (
-                                    1 + abs(sentiment_score)
-                                )
-
-                                # Donner plus d'importance aux nouvelles très positives ou très négatives
-                                if abs(sentiment_score) > 0.7:
-                                    print(
-                                        f"⚠️ Sentiment fort détecté pour {pair}: {sentiment_score:.2f}"
-                                    )
-                                    sentiment_weight *= 1.5
-
-                                # Ajouter une information temporelle au score
-                                time_factor = 1.0  # Diminue avec le temps
-                                if "sentiment_timestamp" in data:
-                                    elapsed_time = (
-                                        time.time() - data["sentiment_timestamp"]
-                                    )
-                                    time_factor = max(
-                                        0.2, 1.0 - (elapsed_time / (3600 * 12))
-                                    )  # Décroît sur 12h
-
-                                # Appliquer le score de sentiment avec le poids ajusté
-                                combined_score += (
-                                    sentiment_score * sentiment_weight * time_factor
-                                )
-
-                            # Détermination de l'action finale
-                            final_action = "neutral"
-                            if combined_score > 0.3:
-                                final_action = "buy"
-                            elif combined_score < -0.3:
-                                final_action = "sell"
-
-                            # Affichage et stockage de la décision
-                            confidence = min(0.99, abs(combined_score) + 0.5)
-                            print(
-                                f"📡 {pair}: {final_action.upper()} ({confidence:.0%})"
-                            )
-
-                            # Exécution des ordres en mode réel si le signal est fort
-                            if bot.is_live_trading and abs(combined_score) > 0.5:
-                                # Détermination des paramètres de l'ordre
-                                side = "BUY" if final_action == "buy" else "SELL"
-
-                                # Calcul du montant en fonction de la force du signal et de la volatilité
-                                base_amount = 0.01  # Montant de base
-                                volatility_factor = data.get("signals", {}).get(
-                                    "volatility", 0.5
-                                )
-                                risk_adjusted_amount = base_amount * (
-                                    1 - volatility_factor * 0.5
-                                )  # Réduire le montant si volatilité élevée
-                                signal_adjusted_amount = risk_adjusted_amount * (
-                                    0.5 + confidence * 0.5
-                                )  # Augmenter le montant si confiance élevée
-
-                                # Vérifier les stop-loss
-                                has_stop_loss = bot.check_stop_loss(pair_key, side)
-                                if has_stop_loss:
-                                    print(
-                                        f"⚠️ Stop-loss actif pour {pair}, ordre annulé"
-                                    )
-                                    continue
-
-                                # Exécution de l'ordre
-                                trade_result = await bot.execute_trade(
-                                    pair_key, side, signal_adjusted_amount
-                                )
-
-                                # Enregistrer la décision et le résultat
-                                trade_decisions.append(
-                                    {
-                                        "pair": pair,
-                                        "action": final_action,
-                                        "confidence": confidence,
-                                        "result": trade_result,
-                                        "signals": {
-                                            "technical": signal["confidence"],
-                                            "ai": ai_signal,
-                                            "sentiment": sentiment_score,
-                                        },
-                                    }
-                                )
-
-                                # Envoyer une alerte Telegram pour chaque trade
-                                if trade_result["status"] == "completed":
-                                    await bot.telegram.send_message(
-                                        f"🔄 <b>Trade exécuté</b>\n\n"
-                                        f"📊 Paire: {pair}\n"
-                                        f"📈 Action: {final_action.upper()}\n"
-                                        f"💰 Montant: {signal_adjusted_amount}\n"
-                                        f"🎯 Confiance: {confidence:.0%}\n"
-                                        f"💵 Prix: {trade_result.get('avg_price', 'N/A')}\n\n"
-                                        f"🧠 Signaux:\n"
-                                        f"  • Technique: {signal['confidence']:.0%}\n"
-                                        f"  • IA: {ai_signal:.2f}\n"
-                                        f"  • Sentiment: {sentiment_score:.2f}"
-                                    )
-
-                            # Vérifier les opportunités d'arbitrage
-                            if bot.is_live_trading and final_action != "neutral":
-                                arbitrage_opps = (
-                                    await bot.detect_arbitrage_opportunities(pair)
-                                )
-                                for opp in arbitrage_opps:
-                                    if (
-                                        opp["diff_percent"] > 0.5
-                                    ):  # Seuil minimum de profit
-                                        print(
-                                            f"💹 Opportunité d'arbitrage détectée pour {pair}: {opp['diff_percent']:.2f}%"
-                                        )
-                                        await bot.telegram.send_arbitrage_alert(opp)
-                                        # Sauvegarde et mises à jour
+                # Mise à jour des données
                 bot.current_cycle = cycle
                 bot.regime = regime
                 bot.save_shared_data()
 
+                # Calcul de la durée et rapports
                 duration = (datetime.utcnow() - start).total_seconds()
                 print(f"✅ Cycle terminé en {duration:.1f}s")
 
-                # Mises à jour Telegram
-                await bot.send_telegram_updates()
-
-                # Rapport de trades si des trades ont été exécutés
-                if trade_decisions:
-                    trade_report = "💹 <b>Trades exécutés</b>\n\n"
-                    for trade in trade_decisions:
-                        status = trade["result"]["status"]
-                        emoji = (
-                            "✅"
-                            if status == "completed"
-                            else "⚠️" if status == "simulated" else "❌"
-                        )
-                        trade_report += f"{emoji} {trade['pair']}: {trade['action'].upper()} ({trade['confidence']:.0%})\n"
-
-                    await bot.telegram.send_message(trade_report)
-                else:
-                    await bot.telegram.send_cycle_update(cycle, regime, duration)
+                # Envoi des mises à jour
+                await send_cycle_reports(bot, trade_decisions, cycle, regime, duration)
 
             except Exception as e:
                 error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-                print(error_msg)
+                logger.error(error_msg)
                 await bot.telegram.send_message(error_msg)
 
-            await asyncio.sleep(30)  # Attendre avant le prochain cycle
+            # Attente avant le prochain cycle
+            await asyncio.sleep(30)
 
     except KeyboardInterrupt:
-        stop_msg = "👋 Bot arrêté proprement"
-        print(f"\n{stop_msg}")
-        await bot.telegram.send_message(stop_msg)
+        await handle_shutdown(bot, "👋 Bot arrêté proprement")
+    except Exception as e:
+        await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+
+    # Fonctions auxiliaires pour le traitement des données et l'analyse
+
+
+def prepare_ohlcv_data(ohlcv_data):
+    """Prépare les données OHLCV pour l'analyse"""
+    try:
+        if not all(
+            k in ohlcv_data
+            for k in ["open", "high", "low", "close", "volume", "timestamp"]
+        ):
+            return None
+
+        return pd.DataFrame(
+            {
+                0: ohlcv_data["timestamp"],
+                1: ohlcv_data["open"],
+                2: ohlcv_data["high"],
+                3: ohlcv_data["low"],
+                4: ohlcv_data["close"],
+                5: ohlcv_data["volume"],
+            }
+        )
+    except Exception as e:
+        logging.error(f"Erreur préparation OHLCV: {e}")
+        return None
+
+
+async def calculate_combined_score(bot, data, signal, pair):
+    """Calcule le score combiné des différents signaux"""
+    try:
+        combined_score = 0
+
+        # Signal technique
+        if signal["action"] == "buy":
+            combined_score += signal["confidence"] * 0.5
+        elif signal["action"] == "sell":
+            combined_score -= signal["confidence"] * 0.5
+
+        # Signal IA
+        if bot.ai_enabled:
+            ai_signal = data.get("ai_prediction", 0.5)
+            combined_score += (ai_signal - 0.5) * 2 * bot.ai_weight
+
+        # Analyse des news
+        if bot.news_enabled:
+            sentiment_score = data.get("sentiment", 0)
+            if sentiment_score != 0:
+                sentiment_weight = calculate_sentiment_weight(
+                    bot, data, sentiment_score
+                )
+                combined_score += sentiment_score * sentiment_weight
+
+        return combined_score
+
+    except Exception as e:
+        logging.error(f"Erreur calcul score: {e}")
+        return 0
+
+
+def calculate_sentiment_weight(bot, data, sentiment_score):
+    """Calcule le poids du sentiment en fonction de son intensité et de son âge"""
+    try:
+        # Poids de base
+        sentiment_weight = bot.news_weight * (1 + abs(sentiment_score))
+
+        # Amplification pour sentiments forts
+        if abs(sentiment_score) > 0.7:
+            sentiment_weight *= 1.5
+
+        # Facteur temporel
+        time_factor = 1.0
+        if "sentiment_timestamp" in data:
+            elapsed_time = time.time() - data["sentiment_timestamp"]
+            time_factor = max(0.2, 1.0 - (elapsed_time / (3600 * 12)))
+
+        return sentiment_weight * time_factor
+
+    except Exception as e:
+        logging.error(f"Erreur calcul poids sentiment: {e}")
+        return bot.news_weight
+
+
+async def generate_trade_decision(bot, pair, combined_score, data, signal):
+    """Génère une décision de trading basée sur le score combiné"""
+    try:
+        # Détermination de l'action
+        final_action = "neutral"
+        if combined_score > 0.3:
+            final_action = "buy"
+        elif combined_score < -0.3:
+            final_action = "sell"
+
+        # Calcul de la confiance
+        confidence = min(0.99, abs(combined_score) + 0.5)
+
+        # Logging de la décision
+        print(f"📡 {pair}: {final_action.upper()} ({confidence:.0%})")
+
+        # Préparation de la décision
+        return {
+            "pair": pair,
+            "action": final_action,
+            "confidence": confidence,
+            "signals": {
+                "technical": signal["confidence"],
+                "ai": data.get("ai_prediction", 0.5),
+                "sentiment": data.get("sentiment", 0),
+            },
+        }
+
+    except Exception as e:
+        logging.error(f"Erreur génération décision: {e}")
+        return None
+
+
+async def handle_arbitrage_opportunities(bot):
+    """Gère la détection et l'exécution des opportunités d'arbitrage"""
+    try:
+        opportunities = await bot.detect_arbitrage_opportunities()
+        if not opportunities:
+            return
+
+        print(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
+
+        for opp in opportunities:
+            # Logging de l'opportunité
+            print(
+                f"  • {opp['pair']}: {opp['diff_percent']:.2f}% entre "
+                f"{opp['exchange1']} et {opp['exchange2']}"
+            )
+
+            # Notification Telegram
+            await bot.telegram.send_arbitrage_alert(opp)
+
+            # Exécution si profitable
+            if opp["diff_percent"] > 0.5:
+                print(f"🔄 Exécution de l'arbitrage sur {opp['pair']}")
+                await bot.execute_arbitrage(opp)
+
+    except Exception as e:
+        logging.error(f"Erreur gestion arbitrage: {e}")
+
+
+async def execute_trade_decisions(bot, trade_decisions):
+    """Exécute les décisions de trading"""
+    try:
+        for decision in trade_decisions:
+            if not bot.is_live_trading or abs(decision["confidence"]) <= 0.5:
+                continue
+
+            pair = decision["pair"]
+            pair_key = pair.replace("/", "")
+            side = "BUY" if decision["action"] == "buy" else "SELL"
+
+            # Calcul du montant
+            amount = calculate_position_size(bot, decision)
+
+            # Vérification des stop-loss
+            if bot.check_stop_loss(pair_key, side):
+                print(f"⚠️ Stop-loss actif pour {pair}, ordre annulé")
+                continue
+
+            # Exécution de l'ordre
+            trade_result = await bot.execute_trade(pair_key, side, amount)
+
+            # Notification du résultat
+            if trade_result["status"] == "completed":
+                await send_trade_notification(bot, decision, trade_result, amount)
+
+    except Exception as e:
+        logging.error(f"Erreur exécution trades: {e}")
+
+
+def calculate_position_size(bot, decision):
+    """Calcule la taille de position optimale"""
+    try:
+        base_amount = 0.01
+        volatility_factor = decision.get("signals", {}).get("volatility", 0.5)
+
+        # Ajustement par la volatilité
+        risk_adjusted = base_amount * (1 - volatility_factor * 0.5)
+
+        # Ajustement par la confiance
+        signal_adjusted = risk_adjusted * (0.5 + decision["confidence"] * 0.5)
+
+        return signal_adjusted
+
+    except Exception as e:
+        logging.error(f"Erreur calcul taille position: {e}")
+        return 0.01
+
+
+async def send_trade_notification(bot, decision, trade_result, amount):
+    """Envoie une notification pour un trade exécuté"""
+    try:
+        message = (
+            f"🔄 <b>Trade exécuté</b>\n\n"
+            f"📊 Paire: {decision['pair']}\n"
+            f"📈 Action: {decision['action'].upper()}\n"
+            f"💰 Montant: {amount}\n"
+            f"🎯 Confiance: {decision['confidence']:.0%}\n"
+            f"💵 Prix: {trade_result.get('avg_price', 'N/A')}\n\n"
+            f"🧠 Signaux:\n"
+            f"  • Technique: {decision['signals']['technical']:.0%}\n"
+            f"  • IA: {decision['signals']['ai']:.2f}\n"
+            f"  • Sentiment: {decision['signals']['sentiment']:.2f}"
+        )
+        await bot.telegram.send_message(message)
+
+    except Exception as e:
+        logging.error(f"Erreur envoi notification: {e}")
+
+
+async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
+    """Envoie les rapports de fin de cycle"""
+    try:
+        # Mise à jour Telegram standard
+        await bot.send_telegram_updates()
+
+        # Rapport des trades si nécessaire
+        if trade_decisions:
+            trade_report = "💹 <b>Trades exécutés</b>\n\n"
+            for trade in trade_decisions:
+                status = trade.get("result", {}).get("status", "pending")
+                emoji = (
+                    "✅"
+                    if status == "completed"
+                    else "⚠️" if status == "simulated" else "❌"
+                )
+                trade_report += f"{emoji} {trade['pair']}: {trade['action'].upper()} ({trade['confidence']:.0%})\n"
+
+            await bot.telegram.send_message(trade_report)
+        else:
+            await bot.telegram.send_cycle_update(cycle, regime, duration)
+
+    except Exception as e:
+        logging.error(f"Erreur envoi rapports: {e}")
+
+
+async def handle_shutdown(bot, message):
+    """Gère l'arrêt propre du bot"""
+    try:
+        print(f"\n{message}")
+        await bot.telegram.send_message(message)
         bot.save_shared_data()
     except Exception as e:
-        error_msg = f"💥 Erreur fatale: {e}"
-        print(error_msg)
-        await bot.telegram.send_message(error_msg)
+        logging.error(f"Erreur arrêt bot: {e}")
 
 
 if __name__ == "__main__":

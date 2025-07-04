@@ -24,7 +24,6 @@ class BinanceExchange:
 
     async def initialize(self):
         try:
-            # Création de l'exchange ccxt
             self._exchange = ccxt.binance(
                 {
                     "apiKey": self.api_key,
@@ -46,7 +45,6 @@ class BinanceExchange:
                     "web": "https://testnet.binance.vision",
                     "rest": "https://testnet.binance.vision",
                 }
-                # PATCH: override load_markets pour éviter tout appel accidentel
                 self._exchange.load_markets = lambda *a, **k: None
             else:
                 logger.info(">>> AVANT load_markets")
@@ -65,13 +63,6 @@ class BinanceExchange:
             raise
 
     async def get_ticker(self, symbol: str) -> Dict[str, Any]:
-        """
-        Get current ticker data
-        Args:
-            symbol: Trading pair symbol (e.g., 'BTC/USDT')
-        Returns:
-            Dict containing ticker data
-        """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
         try:
@@ -90,17 +81,17 @@ class BinanceExchange:
             logger.error(f"Error fetching ticker for {symbol}: {e}")
             raise
 
+    async def fetch_ticker(self, symbol: str) -> Dict[str, Any]:
+        """
+        Alias for compatibility with multi-broker scanner.
+        """
+        return await self.get_ticker(symbol)
+
     async def get_balance(self) -> Dict[str, Any]:
-        """
-        Get account balance
-        Returns:
-            Dict containing balance information
-        """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
         try:
             balance = await self._exchange.fetch_balance()
-            # Filter only assets with non-zero balances
             return {
                 currency: data
                 for currency, data in balance.items()
@@ -136,6 +127,12 @@ class BinanceExchange:
         except Exception as e:
             logger.error(f"Error fetching orderbook for {symbol}: {e}")
             raise
+
+    async def fetch_order_book(self, symbol: str) -> Dict[str, List[List[float]]]:
+        """
+        Alias for compatibility with multi-broker scanner.
+        """
+        return await self.get_orderbook(symbol)
 
     async def get_my_trades(self, symbol: str) -> List[Dict[str, Any]]:
         if not self._initialized:
@@ -209,14 +206,12 @@ class BinanceExchange:
             raise RuntimeError("Exchange not initialized")
         result = {}
         try:
-            # Parse period (ex: "7d" -> 7 jours)
             if period.endswith("d"):
                 days = int(period.replace("d", ""))
                 since = int(
                     (datetime.utcnow() - timedelta(days=days)).timestamp() * 1000
                 )
             else:
-                # Fallback: 1 jour
                 since = int((datetime.utcnow() - timedelta(days=1)).timestamp() * 1000)
             for tf in timeframes:
                 tf_result = {}
@@ -229,7 +224,6 @@ class BinanceExchange:
                                 if asyncio.iscoroutinefunction(fetch_ohlcv):
                                     klines = await fetch_ohlcv(pair, tf, since=since)
                                 else:
-                                    # fallback sync (rare, jamais sur ccxt officiel)
                                     klines = fetch_ohlcv(pair, tf, since=since)
                             except Exception as e:
                                 logger.error(
@@ -241,13 +235,11 @@ class BinanceExchange:
                                 f"[{pair}][{tf}] fetch_ohlcv absent (probablement testnet)"
                             )
                             klines = []
-                        # === DEBUG ICI ===
                         logger.info(
                             f"[DEBUG][{pair}][{tf}] klines type: {type(klines)} len: {len(klines) if klines else 0}"
                         )
                         if klines and len(klines) > 0:
                             logger.info(f"[DEBUG][{pair}][{tf}] klines[0]: {klines[0]}")
-                        # =================
                         if not klines or len(klines) == 0:
                             logger.error(f"Aucune donnée historique pour {pair} {tf}")
                             tf_result[pair] = pd.DataFrame(
@@ -262,7 +254,6 @@ class BinanceExchange:
                             )
                             continue
 
-                        # Robustification: filtre les bougies invalides
                         valid_klines = [
                             row
                             for row in klines
@@ -305,7 +296,6 @@ class BinanceExchange:
             return result
         except Exception as e:
             logger.error(f"Erreur get_historical_data: {e}")
-            # PATCH: Ne jamais raise ici, toujours retourner un dict avec DataFrame vides
             for tf in timeframes:
                 if tf not in result:
                     result[tf] = {}
