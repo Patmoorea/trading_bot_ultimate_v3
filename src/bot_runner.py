@@ -1666,8 +1666,15 @@ async def run_clean_bot():
             if not await bot._setup_components():
                 raise Exception("Échec de l'initialisation des composants")
 
+            if bot.is_live_trading:
+                await bot._fetch_real_market_data()
+                print("MARKET DATA KEYS:", list(bot.market_data.keys()))
+                for sym in bot.market_data:
+                    print(f"{sym}: {list(bot.market_data[sym].keys())}")
+
             # Rapport initial
             initial_report = await bot.generate_market_analysis_report()
+
             await bot.telegram.send_message(
                 "🚀 <b>Bot Trading démarré</b>\n"
                 "✅ Initialisation réussie\n"
@@ -1716,22 +1723,29 @@ async def run_clean_bot():
     async def execute_trading_cycle(bot, valid_pairs):
         """Exécute un cycle complet de trading"""
         try:
-            # Analyse de marché
+            # 1. Récupération des données de marché réelles
+            if bot.is_live_trading:
+                await bot._fetch_real_market_data()  # <-- Cette ligne est PRIMORDIALE pour remplir bot.market_data
+            print("MARKET DATA KEYS:", list(bot.market_data.keys()))
+            for sym in bot.market_data:
+                print(f"{sym}: {list(bot.market_data[sym].keys())}")
+
+            # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             print(f"🎯 Stratégie active: {strategy}")
 
-            # Détection d'arbitrage
+            # 3. Détection d'arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # Analyse des paires
+            # 4. Analyse des paires
             trade_decisions = []
             for pair in valid_pairs:
-                decision = await market_analysis_cycle(bot, pair, market_data)
+                decision = await market_analysis_cycle(bot, pair, bot.market_data)
                 if decision:
                     trade_decisions.append(decision)
 
-            # Exécution des trades
+            # 5. Exécution des trades
             await execute_trade_decisions(bot, trade_decisions)
 
             return trade_decisions, regime

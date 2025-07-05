@@ -3939,8 +3939,13 @@ async def update_trading_data(bot):
 
 
 async def fetch_market_data(bot, symbol):
-    """Récupère les données de marché pour TOUS les timeframes"""
+    """
+    Récupère les données de marché pour TOUS les timeframes configurés.
+    Structure renvoyée :
+        { "1m": [candle, ...], "5m": [...], ... }
+    """
     try:
+        # Récupère la liste des timeframes à utiliser
         timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m"])
         data = {}
         for tf in timeframes:
@@ -3958,6 +3963,7 @@ async def fetch_market_data(bot, symbol):
                     for k in klines
                 ]
                 data[tf] = candles
+                logger.info(f"✅ {symbol} {tf} : {len(candles)} bougies récupérées")
             except Exception as e:
                 logger.warning(f"⚠️ Erreur fetch {symbol} {tf}: {e}")
                 data[tf] = []
@@ -3968,21 +3974,33 @@ async def fetch_market_data(bot, symbol):
 
 
 async def update_market_data(bot):
-    """Met à jour les données de marché pour tous les timeframes"""
+    """
+    Met à jour bot.latest_data avec la structure :
+        bot.latest_data["BTCUSDT"]["1m"] = [candle, ...]
+        bot.latest_data["ETHUSDT"]["1h"] = [candle, ...]
+    """
     try:
         data_received = False
-        logger.info("📊 Récupération données pour BTCUSDT")
-        btc_data = await fetch_market_data(bot, "BTCUSDT")
-        if btc_data:
-            bot.latest_data["BTCUSDT"] = btc_data
-            data_received = True
-        logger.info("📊 Récupération données pour ETHUSDT")
-        eth_data = await fetch_market_data(bot, "ETHUSDT")
-        if eth_data:
-            bot.latest_data["ETHUSDT"] = eth_data
-            data_received = True
+
+        for symbol in ["BTCUSDT", "ETHUSDT"]:
+            logger.info(f"📊 Récupération données pour {symbol}")
+            symbol_data = await fetch_market_data(bot, symbol)
+            if symbol_data:
+                bot.latest_data[symbol] = symbol_data
+                logger.info(
+                    f"✅ Données stockées pour {symbol} : {list(symbol_data.keys())}"
+                )
+                data_received = True
+
         if not data_received:
             logger.warning("⚠️ Aucune donnée reçue")
+        else:
+            logger.info(f"MARKET DATA KEYS: {list(bot.latest_data.keys())}")
+            for sym in bot.latest_data:
+                logger.info(
+                    f" - {sym}: timeframes récupérés: {list(bot.latest_data[sym].keys())}"
+                )
+
         return data_received
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
@@ -3990,23 +4008,31 @@ async def update_market_data(bot):
 
 
 async def process_market_data(bot, symbol):
-    """Traite les données de marché pour un symbole"""
+    """
+    Traite les données de marché pour un symbole et un ou plusieurs timeframes.
+    Appelle le calcul d'indicateurs et la détection de signaux.
+    """
     try:
-        data = bot.latest_data[symbol]
+        data = bot.latest_data.get(symbol, {})
         if not data:
+            logger.warning(f"Aucune donnée à traiter pour {symbol}")
             return
 
-        # Calcul des indicateurs
+        # Calcul des indicateurs pour chaque timeframe
         if not hasattr(bot, "indicators"):
             bot.indicators = {}
         if symbol not in bot.indicators:
             bot.indicators[symbol] = {}
 
-        # Mise à jour des indicateurs
-        await update_indicators(bot, symbol, data)
-
-        # Vérification des signaux
-        await check_signals(bot, symbol)
+        for tf, candles in data.items():
+            if candles:
+                # Calcul et stockage des indicateurs pour chaque timeframe
+                indicators = await update_indicators(bot, symbol, candles, tf)
+                bot.indicators[symbol][tf] = indicators
+                # Vérification des signaux pour chaque timeframe
+                await check_signals(bot, symbol, tf, indicators)
+            else:
+                logger.warning(f"Pas de données pour {symbol} {tf}")
 
     except Exception as e:
         logger.error(f"❌ Erreur traitement données {symbol}: {e}")
