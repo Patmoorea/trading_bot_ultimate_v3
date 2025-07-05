@@ -115,13 +115,12 @@ class TelegramNotifier:
             print(f"⚠️ Erreur envoi Telegram: {e}")
 
     async def send_performance_update(self, performance_data):
-        """Envoie une mise à jour des performances"""
         message = (
             "🤖 <b>Trading Bot Status Update</b>\n\n"
-            f"💰 Balance: ${performance_data['balance']:,.2f}\n"
-            f"📊 Win Rate: {performance_data['win_rate']*100:.1f}%\n"
-            f"📈 Profit Factor: {performance_data['profit_factor']:.2f}\n"
-            f"🔄 Total Trades: {performance_data['total_trades']}\n"
+            f"💰 Balance: ${safe(performance_data.get('balance'))}\n"
+            f"📊 Win Rate: {safe(performance_data.get('win_rate', 0)*100, 'N/A', '{:.1f}')}%\n"
+            f"📈 Profit Factor: {safe(performance_data.get('profit_factor'))}\n"
+            f"🔄 Total Trades: {safe(performance_data.get('total_trades'), 'N/A', '{:d}')}\n"
         )
         await self.send_message(message)
 

@@ -80,10 +80,10 @@ if not logger.handlers:
 USE_TESTNET = str(os.getenv("BINANCE_TESTNET", "False")).lower() in ("true", "1")
 
 
-def safe_float(val, default=0.0):
+def safe(val, default="N/A", fmt="{:,.2f}"):
     try:
-        return float(val)
-    except (ValueError, TypeError):
+        return fmt.format(val) if val is not None else default
+    except Exception:
         return default
 
 
