@@ -16,7 +16,7 @@ class CrossExchangeOptimizer:
         self.brokers = brokers
         self.constraints = {
             "binance": BrokerConstraint(
-                quote_asset="USDC", fee=0.001, min_volume=0.001
+                quote_asset="USDT", fee=0.001, min_volume=0.001
             ),
             "okx": BrokerConstraint(
                 quote_asset="USDT",

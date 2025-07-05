@@ -3939,29 +3939,30 @@ async def update_trading_data(bot):
 
 
 async def fetch_market_data(bot, symbol):
-    """Récupère les données de marché de manière asynchrone"""
+    """Récupère les données de marché pour TOUS les timeframes"""
     try:
-        # Configuration du timeframe par défaut si non défini
-        if not hasattr(bot.config, "timeframe"):
-            bot.config["timeframe"] = "1m"  # timeframe par défaut
+        # Récupère la liste des timeframes
+        timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m"])
+        data = {}
 
-        # Récupération des données via l'API Binance
-        klines = await bot.binance_ws.get_klines(
-            symbol=symbol, interval=bot.config["timeframe"]
-        )
-
-        # Conversion en format utilisable
-        data = []
-        for k in klines:
-            candle = {
-                "timestamp": k[0],
-                "open": float(k[1]),
-                "high": float(k[2]),
-                "low": float(k[3]),
-                "close": float(k[4]),
-                "volume": float(k[5]),
-            }
-            data.append(candle)
+        for tf in timeframes:
+            try:
+                klines = await bot.binance_ws.get_klines(symbol=symbol, interval=tf)
+                candles = [
+                    {
+                        "timestamp": k[0],
+                        "open": float(k[1]),
+                        "high": float(k[2]),
+                        "low": float(k[3]),
+                        "close": float(k[4]),
+                        "volume": float(k[5]),
+                    }
+                    for k in klines
+                ]
+                data[tf] = candles
+            except Exception as e:
+                logger.warning(f"⚠️ Erreur fetch {symbol} {tf}: {e}")
+                data[tf] = []  # Vide si erreur
 
         return data
 
@@ -3971,19 +3972,17 @@ async def fetch_market_data(bot, symbol):
 
 
 async def update_market_data(bot):
-    """Met à jour les données de marché"""
+    """Met à jour les données de marché pour tous les timeframes"""
     try:
         data_received = False
 
-        # Récupération BTC/USDC
-        logger.info("📊 Récupération données pour BTC/USDC")
+        logger.info("📊 Récupération données pour BTCUSDT")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
             data_received = True
 
-        # Récupération ETH/USDC
-        logger.info("📊 Récupération données pour ETH/USDC")
+        logger.info("📊 Récupération données pour ETHUSDT")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data

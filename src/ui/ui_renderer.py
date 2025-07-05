@@ -1,5 +1,6 @@
 class UIRenderer:
     """Classe dédiée au rendu de l'interface utilisateur"""
+
     @staticmethod
     async def render_portfolio_tab(bot):
         """Rendu de l'onglet Portfolio"""
@@ -38,6 +39,7 @@ class UIRenderer:
                 st.error(f"❌ Portfolio error: {str(e)}")
         else:
             st.warning("⚠️ Start trading to view portfolio")
+
     @staticmethod
     async def render_trading_tab(bot):
         """Rendu de l'onglet Trading"""
@@ -55,6 +57,7 @@ class UIRenderer:
                 st.error(f"❌ Trading data error: {str(e)}")
         else:
             st.warning("⚠️ Start trading to view signals")
+
     @staticmethod
     async def render_analysis_tab(bot):
         """Rendu de l'onglet Analysis"""
@@ -66,20 +69,28 @@ class UIRenderer:
                 st.error(f"❌ Analysis error: {str(e)}")
         else:
             st.warning("⚠️ Start trading to view analysis")
+
     @staticmethod
     def _render_market_metrics(latest_data):
         """Rendu des métriques de marché"""
         col1, col2 = st.columns(2)
         with col1:
             current_price = latest_data[-1]["close"]
-            prev_price = latest_data[-2]["close"] if len(latest_data) > 1 else current_price
-            price_change = ((current_price - prev_price) / prev_price * 100) if prev_price else 0
-            st.metric("BTC/USDC Price", f"{current_price:.2f}", f"{price_change:+.2f}%")
+            prev_price = (
+                latest_data[-2]["close"] if len(latest_data) > 1 else current_price
+            )
+            price_change = (
+                ((current_price - prev_price) / prev_price * 100) if prev_price else 0
+            )
+            st.metric("BTC/USDT Price", f"{current_price:.2f}", f"{price_change:+.2f}%")
         with col2:
             current_vol = latest_data[-1]["volume"]
-            prev_vol = latest_data[-2]["volume"] if len(latest_data) > 1 else current_vol
+            prev_vol = (
+                latest_data[-2]["volume"] if len(latest_data) > 1 else current_vol
+            )
             vol_change = ((current_vol - prev_vol) / prev_vol * 100) if prev_vol else 0
             st.metric("Trading Volume", f"{current_vol:.2f}", f"{vol_change:+.2f}%")
+
     @staticmethod
     def _render_technical_analysis(bot):
         """Rendu de l'analyse technique"""
@@ -92,6 +103,7 @@ class UIRenderer:
                 st.dataframe(pd.DataFrame(analysis), use_container_width=True)
         else:
             st.info("💡 Waiting for market data...")
+
     @staticmethod
     def _render_quantum_signals(bot):
         """Rendu des signaux quantiques"""

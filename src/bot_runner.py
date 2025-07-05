@@ -220,7 +220,7 @@ class TradingBotM4:
         self.config = {
             "TRADING": {
                 "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-                "pairs": ["BTC/USDC", "ETH/USDC"],
+                "pairs": ["BTC/USDT", "ETH/USDT"],
             },
             "AI": {
                 "learning_rate": 3e-4,
@@ -411,7 +411,7 @@ class TradingBotM4:
                 profit = result["realized_profit"]
                 message = (
                     f"✅ Arbitrage réussi!\n"
-                    f"💰 Profit: {profit:.2f} USDC\n"
+                    f"💰 Profit: {profit:.2f} USDT\n"
                     f"📊 Paire: {opportunity['pair']}\n"
                     f"🔄 Route: {opportunity['route']}"
                 )
@@ -906,10 +906,20 @@ class TradingBotM4:
             "╚═════════════════════════════════════════════════╝\n\n"
             "    📊 Analyse par Timeframe/Paire :\n"
         )
+        print("PAIRS VALID:", self.pairs_valid)
+        print("MARKET DATA KEYS:", list(self.market_data.keys()))
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "")
+            for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
+                if pair_key not in self.market_data or tf not in self.market_data.get(
+                    pair_key, {}
+                ):
+                    print(f"ABSENT: {pair_key} {tf}")
 
         timeframes = ["1m", "5m", "15m", "1h", "4h", "1d"]
         for tf in timeframes:
             for pair in self.pairs_valid:
+                pair_key = pair.replace("/", "")
                 report += f"""
     🕒 {tf} | {pair} :
     ├─ 📈 Tendance: {self.get_trend_analysis(pair, tf)}
@@ -1069,10 +1079,10 @@ class TradingBotM4:
 
             # Analyse du régime global
             volatility = self.calculate_volatility(
-                self.market_data.get("BTCUSDC", {}).get("1h", {})
+                self.market_data.get("BTCUSDT", {}).get("1h", {})
             )
             trend = self.calculate_trend(
-                self.market_data.get("BTCUSDC", {}).get("1h", {})
+                self.market_data.get("BTCUSDT", {}).get("1h", {})
             )
 
             if volatility > 0.8:
@@ -1627,9 +1637,9 @@ def load_config():
     try:
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)
-            return config.get("valid_pairs", ["BTC/USDC", "ETH/USDC"])
+            return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
     except:
-        return ["BTC/USDC", "ETH/USDC"]
+        return ["BTC/USDT", "ETH/USDT"]
 
 
 async def run_clean_bot():

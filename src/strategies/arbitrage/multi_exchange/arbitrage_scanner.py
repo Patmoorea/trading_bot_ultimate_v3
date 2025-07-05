@@ -30,7 +30,7 @@ class ArbitrageScanner:
         self.price_check = price_check
         self.max_slippage = max_slippage
         self.quote_currency_map = {
-            "binance": "USDC",
+            "binance": "USDT",
             "bybit": "USDT",
             "okx": "USDT",
             "gateio": "USDT",

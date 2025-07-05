@@ -235,7 +235,7 @@ class NewsSentimentAnalyzer:
         crypto_mapping = {
             "BTC": ["bitcoin", "btc"],
             "ETH": ["ethereum", "eth"],
-            "USDC": ["usdc", "usd coin"],
+            "USDT": ["usdt", "usdt"],
             "BNB": ["binance", "bnb"],
             "XRP": ["ripple", "xrp"],
             "ADA": ["cardano", "ada"],
