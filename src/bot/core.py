@@ -3941,10 +3941,8 @@ async def update_trading_data(bot):
 async def fetch_market_data(bot, symbol):
     """Récupère les données de marché pour TOUS les timeframes"""
     try:
-        # Récupère la liste des timeframes
         timeframes = bot.config.get("TRADING", {}).get("timeframes", ["1m"])
         data = {}
-
         for tf in timeframes:
             try:
                 klines = await bot.binance_ws.get_klines(symbol=symbol, interval=tf)
@@ -3962,10 +3960,8 @@ async def fetch_market_data(bot, symbol):
                 data[tf] = candles
             except Exception as e:
                 logger.warning(f"⚠️ Erreur fetch {symbol} {tf}: {e}")
-                data[tf] = []  # Vide si erreur
-
+                data[tf] = []
         return data
-
     except Exception as e:
         logger.error(f"❌ Erreur récupération données {symbol}: {e}")
         return None
@@ -3975,24 +3971,19 @@ async def update_market_data(bot):
     """Met à jour les données de marché pour tous les timeframes"""
     try:
         data_received = False
-
         logger.info("📊 Récupération données pour BTCUSDT")
         btc_data = await fetch_market_data(bot, "BTCUSDT")
         if btc_data:
             bot.latest_data["BTCUSDT"] = btc_data
             data_received = True
-
         logger.info("📊 Récupération données pour ETHUSDT")
         eth_data = await fetch_market_data(bot, "ETHUSDT")
         if eth_data:
             bot.latest_data["ETHUSDT"] = eth_data
             data_received = True
-
         if not data_received:
             logger.warning("⚠️ Aucune donnée reçue")
-
         return data_received
-
     except Exception as e:
         logger.error(f"❌ Erreur mise à jour données: {e}")
         return False
