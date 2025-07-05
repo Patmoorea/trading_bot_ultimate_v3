@@ -1386,15 +1386,17 @@ class TradingBotM4:
             return []
 
     async def send_telegram_updates(self):
-        """Envoie des mises à jour périodiques sur Telegram"""
-        current_time = datetime.utcnow()
-        if (current_time - self.last_telegram_update).total_seconds() >= 300:
-            performance = self.get_performance_metrics()
-            print("📱 Envoi mise à jour Telegram...")
-            await self.telegram.send_performance_update(performance)
-            market_report = await self.generate_market_analysis_report()
-            await self.telegram.send_message(market_report)
-            self.last_telegram_update = current_time
+        performance = self.get_performance_metrics()
+        if not performance:
+            performance = {
+                "balance": 0,
+                "win_rate": 0,
+                "profit_factor": 0,
+                "total_trades": 0,
+            }
+        await self.telegram.send_performance_update(performance)
+        report = await self.generate_market_analysis_report()
+        await self.telegram.send_message(report)
 
     def initialize_shared_data(self):
         """Initialise le fichier de données partagées"""
