@@ -326,9 +326,21 @@ class TradingBotM4:
                         {"name": "bingx", "client": self.brokers.get("bingx")},
                     ]
 
-                    # Prix Binance comme référence
-                    binance_ticker = self.binance_client.get_ticker(symbol=pair_key)
-                    binance_price = float(binance_ticker["lastPrice"])
+                    # Prix Binance comme référence (doit être await si async)
+                    binance_ticker = (
+                        await self.binance_client.fetch_ticker(pair_key)
+                        if hasattr(self.binance_client, "fetch_ticker")
+                        and asyncio.iscoroutinefunction(
+                            self.binance_client.fetch_ticker
+                        )
+                        else self.binance_client.get_ticker(symbol=pair_key)
+                    )
+                    binance_price = float(
+                        binance_ticker.get("lastPrice")
+                        or binance_ticker.get("last")
+                        or 0
+                    )
+                    binance_volume = float(binance_ticker.get("volume", 0))
 
                     # Comparaison avec les autres échanges
                     for exchange in exchanges_to_check:
@@ -336,13 +348,17 @@ class TradingBotM4:
                             continue
 
                         try:
-                            # Récupération du prix sur l'autre échange
-                            ticker = exchange["client"].fetch_ticker(current_pair)
+                            # Récupération du prix sur l'autre échange (toujours await!)
+                            ticker = await exchange["client"].fetch_ticker(current_pair)
                             exchange_price = ticker["last"]
 
                             # Calcul de la différence de prix
                             price_diff = abs(exchange_price - binance_price)
-                            profit_pct = (price_diff / binance_price) * 100
+                            profit_pct = (
+                                (price_diff / binance_price) * 100
+                                if binance_price > 0
+                                else 0
+                            )
 
                             if profit_pct > MIN_PROFIT_THRESHOLD:
                                 opportunity = {
@@ -352,13 +368,12 @@ class TradingBotM4:
                                     "price1": binance_price,
                                     "price2": exchange_price,
                                     "diff_percent": profit_pct,
-                                    "volume_24h": float(binance_ticker["volume"])
-                                    * binance_price,
+                                    "volume_24h": binance_volume * binance_price,
                                     "estimated_profit": profit_pct - 0.2,  # Après frais
                                 }
                                 opportunities.append(opportunity)
                                 self.logger.info(
-                                    f"Opportunité d'arbitrage détectée pour {current_pair}"
+                                    f"Opportunité d'arbitrage détectée pour {current_pair}: {opportunity}"
                                 )
 
                         except Exception as e:
