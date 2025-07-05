@@ -40,6 +40,25 @@ from src.strategies.arbitrage.service import ArbitrageEngine
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
+
+def debug_market_data_structure(market_data, pairs_valid, timeframes):
+    print("\n=== DEBUG STRUCTURE DE MARKET_DATA ===")
+    for pair in pairs_valid:
+        pair_key = pair.replace("/", "")
+        print(f"PAIR: {pair} (key={pair_key})")
+        if pair_key not in market_data:
+            print(f"  ❌ ABSENT de market_data")
+            continue
+        for tf in timeframes:
+            tf_data = market_data[pair_key].get(tf)
+            if tf_data is None:
+                print(f"  - {tf}: ❌ ABSENT")
+            elif isinstance(tf_data, dict):
+                print(f"  - {tf}: OK, keys: {list(tf_data.keys())}")
+            else:
+                print(f"  - {tf}: Type inattendu: {type(tf_data)}")
+
+
 # Charger les tokens Telegram depuis .env
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -895,6 +914,9 @@ class TradingBotM4:
 
     async def generate_market_analysis_report(self):
         """Génère un rapport d'analyse de marché détaillé"""
+        debug_market_data_structure(
+            self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
+        )
         report = (
             f"Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): {get_current_time()}\n"
             f"Current User's Login: {CURRENT_USER}\n"
@@ -1007,7 +1029,8 @@ class TradingBotM4:
     def get_trend_analysis(self, pair, timeframe):
         """Analyse de tendance détaillée"""
         try:
-            if pair in self.market_data and timeframe in self.market_data[pair]:
+            pair_key = pair.replace("/", "")
+            if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
                 trend = self.calculate_trend(self.market_data[pair][timeframe])
                 if trend > 0.02:
                     return "Haussière"
@@ -1021,7 +1044,8 @@ class TradingBotM4:
     def get_volatility_analysis(self, pair, timeframe):
         """Analyse de volatilité détaillée"""
         try:
-            if pair in self.market_data and timeframe in self.market_data[pair]:
+            pair_key = pair.replace("/", "")
+            if pair_key in self.market_data and timeframe in self.market_data[pair]:
                 vol = self.calculate_volatility(self.market_data[pair][timeframe])
                 if vol > 0.8:
                     return "Élevée"
@@ -1035,7 +1059,8 @@ class TradingBotM4:
     def get_volume_analysis(self, pair, timeframe):
         """Analyse du volume"""
         try:
-            if pair in self.market_data and timeframe in self.market_data[pair]:
+            pair_key = pair.replace("/", "")
+            if pair_key in self.market_data and timeframe in self.market_data[pair]:
                 vol = self.calculate_volume_profile(self.market_data[pair][timeframe])
                 if vol > 1.5:
                     return "Fort"
@@ -1393,6 +1418,7 @@ class TradingBotM4:
                 "profit_factor": 0,
                 "total_trades": 0,
             }
+        print("PERF METRICS SENT TO TELEGRAM:", performance)
         await self.telegram.send_performance_update(performance)
         report = await self.generate_market_analysis_report()
         await self.telegram.send_message(report)
