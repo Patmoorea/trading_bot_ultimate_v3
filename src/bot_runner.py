@@ -22,6 +22,7 @@ if PROJECT_ROOT not in sys.path:
 
 # Import des modules existants avec les bons chemins
 from web_interface.app.services.order_execution import SmartOrderExecutor
+from src.strategies.arbitrage.execution.execution import ArbitrageExecutor
 from src.ai.enhanced_cnn_lstm import EnhancedCNNLSTM
 from src.ai_models.hybrid.cnn_lstm_enhanced import EnhancedCNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
@@ -252,6 +253,8 @@ class TradingBotM4:
             self.arbitrage_engine = None
             self.brokers = {}
 
+        self.arbitrage_executor = ArbitrageExecutor(self.brokers)
+
         # Initialisation de l'environnement (une seule fois)
         print("Configuration de l'environnement...")
         self.env = TradingEnv(
@@ -351,6 +354,8 @@ class TradingBotM4:
                             # Récupération du prix sur l'autre échange (toujours await!)
                             ticker = await exchange["client"].fetch_ticker(current_pair)
                             exchange_price = ticker["last"]
+                            if not exchange_price or not binance_price:
+                                continue
 
                             # Calcul de la différence de prix
                             price_diff = abs(exchange_price - binance_price)
