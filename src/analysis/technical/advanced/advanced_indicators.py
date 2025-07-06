@@ -96,36 +96,30 @@ class AdvancedIndicators:
             low = data["low"]
             close = data["close"]
 
-            # Paramètres par défaut
             tenkan_period = 9
             kijun_period = 26
             senkou_span_b_period = 52
 
-            # Tenkan-sen (Conversion Line)
             tenkan_sen = pd.Series(dtype=float)
             for i in range(tenkan_period, len(data)):
                 high_val = high[i - tenkan_period : i].max()
                 low_val = low[i - tenkan_period : i].min()
                 tenkan_sen[i] = (high_val + low_val) / 2
 
-            # Kijun-sen (Base Line)
             kijun_sen = pd.Series(dtype=float)
             for i in range(kijun_period, len(data)):
                 high_val = high[i - kijun_period : i].max()
                 low_val = low[i - kijun_period : i].min()
                 kijun_sen[i] = (high_val + low_val) / 2
 
-            # Senkou Span A (Leading Span A)
             senkou_span_a = ((tenkan_sen + kijun_sen) / 2).shift(kijun_period)
 
-            # Senkou Span B (Leading Span B)
             senkou_span_b = pd.Series(dtype=float)
             for i in range(senkou_span_b_period, len(data)):
                 high_val = high[i - senkou_span_b_period : i].max()
                 low_val = low[i - senkou_span_b_period : i].min()
                 senkou_span_b[i] = ((high_val + low_val) / 2).shift(kijun_period)
 
-            # Chikou Span (Lagging Span)
             chikou_span = close.shift(-kijun_period)
 
             return {
@@ -141,6 +135,13 @@ class AdvancedIndicators:
             logger.error(f"Erreur calcul Ichimoku: {e}")
             return None
 
+    def _awesome_oscillator(
+        self, data: pd.DataFrame, fast: int = 5, slow: int = 34
+    ) -> pd.Series:
+        hl2 = (data["high"] + data["low"]) / 2
+        ao = hl2.rolling(window=fast).mean() - hl2.rolling(window=slow).mean()
+        return ao
+
     def _trix(self, data: pd.DataFrame, period: int = 15) -> pd.Series:
         close = data["close"]
         ema1 = close.ewm(span=period, min_periods=period).mean()
@@ -150,7 +151,6 @@ class AdvancedIndicators:
         return trix
 
     def _vwma(self, data: pd.DataFrame, period: int = 20) -> pd.Series:
-        """Calcule la moyenne mobile pondérée par volume"""
         try:
             return (data["close"] * data["volume"]).rolling(period).sum() / data[
                 "volume"
@@ -162,54 +162,42 @@ class AdvancedIndicators:
     def _kama(
         self, data: pd.DataFrame, period: int = 20, fast: int = 2, slow: int = 30
     ) -> pd.Series:
-        """Calcule la moyenne mobile adaptative de Kaufman"""
         try:
             close = data["close"]
             change = abs(close - close.shift(period))
             volatility = pd.Series(dtype=float)
-
             for i in range(period, len(close)):
                 vol = abs(close[i] - close[i - 1]).sum()
                 volatility[i] = vol
-
             er = change / volatility
             fast_sc = 2 / (fast + 1)
             slow_sc = 2 / (slow + 1)
             sc = (er * (fast_sc - slow_sc) + slow_sc) ** 2
-
             kama = pd.Series(index=close.index, dtype=float)
             kama[period - 1] = close[period - 1]
-
             for i in range(period, len(close)):
                 kama[i] = kama[i - 1] + sc[i] * (close[i] - kama[i - 1])
-
             return kama
-
         except Exception as e:
             logger.error(f"Erreur calcul KAMA: {e}")
             return None
 
     def _psar(self, data: pd.DataFrame, iaf: float = 0.02, maxaf: float = 0.2) -> Dict:
-        """Calcule l'indicateur Parabolic SAR"""
         try:
             high = data["high"]
             low = data["low"]
             close = data["close"]
-
             psar = pd.Series(index=data.index, dtype=float)
             trend = pd.Series(index=data.index, dtype=int)
             af = pd.Series(index=data.index, dtype=float)
             ep = pd.Series(index=data.index, dtype=float)
-
             psar[0] = high[0]
             trend[0] = 1
             af[0] = iaf
             ep[0] = low[0]
-
             for i in range(1, len(data)):
                 if trend[i - 1] == 1:
                     psar[i] = psar[i - 1] + af[i - 1] * (ep[i - 1] - psar[i - 1])
-
                     if low[i] < psar[i]:
                         trend[i] = -1
                         psar[i] = ep[i - 1]
@@ -225,7 +213,6 @@ class AdvancedIndicators:
                             af[i] = af[i - 1]
                 else:
                     psar[i] = psar[i - 1] - af[i - 1] * (psar[i - 1] - ep[i - 1])
-
                     if high[i] > psar[i]:
                         trend[i] = 1
                         psar[i] = ep[i - 1]
@@ -239,21 +226,189 @@ class AdvancedIndicators:
                         else:
                             ep[i] = ep[i - 1]
                             af[i] = af[i - 1]
-
             return {
                 "value": psar,
                 "trend": trend,
                 "strength": abs(close - psar) / close,
             }
-
         except Exception as e:
             logger.error(f"Erreur calcul PSAR: {e}")
             return None
 
-    # Ajoutez ici les autres méthodes (_trix, _awesome_oscillator, etc.)
+    # --- Momentum ---
+
+    def _williams_r(self, data: pd.DataFrame, period: int = 14) -> pd.Series:
+        try:
+            high = data["high"]
+            low = data["low"]
+            close = data["close"]
+            lowest_low = low.rolling(window=period).min()
+            highest_high = high.rolling(window=period).max()
+            willr = -100 * (highest_high - close) / (highest_high - lowest_low)
+            return willr
+        except Exception as e:
+            logger.error(f"Erreur calcul Williams %R: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _cci(self, data: pd.DataFrame, period: int = 20) -> pd.Series:
+        try:
+            tp = (data["high"] + data["low"] + data["close"]) / 3
+            cci = (tp - tp.rolling(window=period).mean()) / (
+                0.015 * tp.rolling(window=period).std()
+            )
+            return cci
+        except Exception as e:
+            logger.error(f"Erreur calcul CCI: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    # --- Volatility ---
+
+    def _parkinson(self, data: pd.DataFrame, period: int = 10) -> pd.Series:
+        try:
+            high = data["high"]
+            low = data["low"]
+            ln_hl = np.log(high / low)
+            parkinson = (1 / (4 * period * np.log(2))) * (ln_hl**2).rolling(
+                period
+            ).sum()
+            return parkinson
+        except Exception as e:
+            logger.error(f"Erreur calcul Parkinson volatility: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _yang_zhang(self, data: pd.DataFrame, period: int = 10) -> pd.Series:
+        try:
+            open_ = data["open"]
+            close = data["close"]
+            high = data["high"]
+            low = data["low"]
+            k = 0.34 / (1.34 + (period + 1) / (period - 1))
+            log_ho = np.log(high / open_)
+            log_lo = np.log(low / open_)
+            log_co = np.log(close / open_)
+            rs = (log_ho * log_lo).rolling(window=period).mean()
+            open_vol = (np.log(open_ / close.shift(1))) ** 2
+            close_vol = (np.log(close / open_)) ** 2
+            yang_zhang = (
+                open_vol.rolling(window=period).mean()
+                + k * close_vol.rolling(window=period).mean()
+                + (1 - k) * rs
+            )
+            return yang_zhang
+        except Exception as e:
+            logger.error(f"Erreur calcul Yang-Zhang volatility: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    # --- Volume ---
+
+    def _accumulation(self, data: pd.DataFrame) -> pd.Series:
+        try:
+            close = data["close"]
+            low = data["low"]
+            high = data["high"]
+            volume = data["volume"]
+            money_flow = (
+                ((close - low) - (high - close)) / (high - low + 1e-10) * volume
+            )
+            acc = money_flow.cumsum()
+            return acc
+        except Exception as e:
+            logger.error(f"Erreur calcul Accumulation/Distribution: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _chaikin_money_flow(self, data: pd.DataFrame, period: int = 20) -> pd.Series:
+        try:
+            high = data["high"]
+            low = data["low"]
+            close = data["close"]
+            volume = data["volume"]
+            mf_multiplier = ((close - low) - (high - close)) / (high - low + 1e-10)
+            mf_volume = mf_multiplier * volume
+            cmf = (
+                mf_volume.rolling(window=period).sum()
+                / volume.rolling(window=period).sum()
+            )
+            return cmf
+        except Exception as e:
+            logger.error(f"Erreur calcul Chaikin Money Flow: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _ease_of_movement(self, data: pd.DataFrame, period: int = 14) -> pd.Series:
+        try:
+            high = data["high"]
+            low = data["low"]
+            volume = data["volume"]
+            distance_moved = (high + low) / 2 - (high.shift(1) + low.shift(1)) / 2
+            box_ratio = volume / (high - low + 1e-10)
+            eom = distance_moved / box_ratio
+            eom = eom.rolling(window=period).mean()
+            return eom
+        except Exception as e:
+            logger.error(f"Erreur calcul Ease of Movement: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    # --- Orderflow ---
+
+    def _delta_volume(self, data: pd.DataFrame) -> pd.Series:
+        try:
+            return data["volume"].diff()
+        except Exception as e:
+            logger.error(f"Erreur calcul Delta Volume: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _imbalance(self, data: pd.DataFrame) -> pd.Series:
+        try:
+            # Placeholder: you should implement real orderbook imbalance if you have bid/ask
+            # Here, proxy using up/down volume
+            close = data["close"]
+            volume = data["volume"]
+            imbalance = np.where(close.diff() > 0, volume, -volume)
+            return pd.Series(imbalance, index=data.index)
+        except Exception as e:
+            logger.error(f"Erreur calcul Imbalance: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _smart_money_index(self, data: pd.DataFrame, period: int = 14) -> pd.Series:
+        try:
+            close = data["close"]
+            open_ = data["open"]
+            smi = close - open_
+            smi = smi.rolling(window=period).sum()
+            return smi
+        except Exception as e:
+            logger.error(f"Erreur calcul Smart Money Index: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _liquidity_wave(self, data: pd.DataFrame, period: int = 20) -> pd.Series:
+        try:
+            # Proxy: high-low relative to volume, as liquidity wave
+            high = data["high"]
+            low = data["low"]
+            volume = data["volume"]
+            lw = (high - low) / (volume + 1e-10)
+            lw = lw.rolling(window=period).mean()
+            return lw
+        except Exception as e:
+            logger.error(f"Erreur calcul Liquidity Wave: {e}")
+            return pd.Series(np.nan, index=data.index)
+
+    def _bid_ask_ratio(self, data: pd.DataFrame) -> float:
+        # This is a placeholder, real bid/ask needs orderbook
+        try:
+            # Use up-volume/down-volume as proxy
+            close = data["close"]
+            volume = data["volume"]
+            buy_volume = volume[close.diff() > 0].sum()
+            sell_volume = volume[close.diff() < 0].sum()
+            total = buy_volume + abs(sell_volume)
+            if total == 0:
+                return 0.5
+            return float(buy_volume / total)
+        except Exception as e:
+            logger.error(f"Erreur calcul Bid/Ask Ratio: {e}")
+            return 0.5
 
     def analyze_timeframe(self, data: pd.DataFrame, timeframe: str) -> Dict:
-        """Analyse tous les indicateurs pour un timeframe donné"""
         try:
             results = {}
             for category, indicators in self.indicators.items():

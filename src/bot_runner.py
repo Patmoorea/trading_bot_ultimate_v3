@@ -41,6 +41,11 @@ from src.data.ws_buffered_collector import BufferedWSCollector
 
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
 
+from src.optimization.optuna_wrapper import (
+    tune_hyperparameters,
+    optimize_hyperparameters_full,
+)
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -2137,6 +2142,28 @@ async def execute_trade_decisions(bot, trade_decisions):
         logging.error(f"Erreur exécution trades: {e}")
 
 
+async def run_automl_tuning(bot, mode="cnn_lstm"):
+    """Lance une optimisation AutoML/Optuna complète (manuelle ou auto)"""
+    print("🔬 Lancement AutoML/Optuna...")
+    import time
+
+    start = time.time()
+    if mode == "cnn_lstm":
+        best_params = tune_hyperparameters()
+        print("✅ Optuna tuning terminé. Meilleurs hyperparams:", best_params)
+    elif mode == "full":
+        best_trials = optimize_hyperparameters_full()
+        print("✅ Optuna full tuning terminé. Résumé:", best_trials)
+    else:
+        print("❌ Mode AutoML inconnu")
+        return
+    duration = time.time() - start
+    print(f"Durée optimisation: {duration:.1f}s")
+    # (Optionnel) Recharge config/model avec les meilleurs params
+    # bot.reload_model(best_params) ou autre logique
+    return best_params if mode == "cnn_lstm" else best_trials
+
+
 def calculate_position_size(bot, decision):
     """Calcule la taille de position optimale"""
     try:
@@ -2215,7 +2242,13 @@ async def handle_shutdown(bot, message):
 
 
 if __name__ == "__main__":
-    try:
+    import sys
+
+    if "automl" in sys.argv or "tune" in sys.argv:
+        # Mode tuning seul
+        import asyncio
+
+        asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
+    else:
+        # Lancement normal du bot
         asyncio.run(run_clean_bot())
-    except Exception as e:
-        print(f"💥 Erreur fatale: {e}")
