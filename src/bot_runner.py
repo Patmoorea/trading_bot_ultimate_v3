@@ -42,10 +42,8 @@ load_dotenv()
 
 
 def debug_market_data_structure(market_data, pairs_valid, timeframes):
-    print("\n=== DEBUG STRUCTURE DE MARKET_DATA ===")
     for pair in pairs_valid:
         pair_key = pair.replace("/", "")
-        print(f"PAIR: {pair} (key={pair_key})")
         if pair_key not in market_data:
             print(f"  ❌ ABSENT de market_data")
             continue
@@ -100,6 +98,18 @@ CONFIG_PATH = "config/trading_pairs.json"
 SHARED_DATA_PATH = "src/shared_data.json"
 
 
+def safe(val, default="N/A", fmt=None):
+    """Sécurise l'affichage d'une valeur (None => défaut, format optionnel)"""
+    try:
+        if val is None:
+            return default
+        if fmt:
+            return fmt.format(val)
+        return val
+    except Exception:
+        return default
+
+
 class TelegramNotifier:
     def __init__(self, bot_token, chat_id):
         self.bot_token = bot_token
@@ -110,7 +120,6 @@ class TelegramNotifier:
 
     async def send_message(self, message):
         """Envoie un message sur Telegram"""
-        print("DEBUG SENDING TO TELEGRAM:", message)
         if not self.bot_token or not self.chat_id:
             print("⚠️ Message non envoyé: Configuration Telegram manquante")
             return
@@ -128,7 +137,6 @@ class TelegramNotifier:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
                     result = await response.json()
-                    print("DEBUG TELEGRAM RESPONSE:", result)
                     if not result.get("ok"):
                         print(f"⚠️ Erreur Telegram: {result.get('description')}")
                     return result
@@ -185,40 +193,79 @@ class TelegramNotifier:
         )
         await self.send_message(message)
 
-    async def send_news_summary(self, news_data):
-        """
-        Envoie un résumé des dernières nouvelles importantes sur Telegram.
-        Affiche des logs de debug pour chaque étape.
-        """
-        print("DEBUG send_news_summary news_data:", news_data)
-        try:
-            if not news_data or len(news_data) == 0:
-                await self.send_message(
-                    "📰 <b>Dernières Nouvelles Importantes</b>\n\nAucune news significative détectée récemment."
-                )
-                return
+    async def send_news_summary(
+        self,
+        news_data,
+        market_data=None,
+        ai_summary: str = None,
+        filter_symbols=None,
+        filter_volatility=None,
+    ):
+        if not news_data or len(news_data) == 0:
+            await self.send_message(
+                "📰 <b>Dernières Nouvelles Importantes</b>\n\nAucune news significative détectée récemment."
+            )
+            return
 
-            message = "📰 <b>Dernières Nouvelles Importantes</b>\n\n"
+        # Mapping emoji par source
+        source_emoji = {
+            "CoinDesk": "📰",
+            "Cointelegraph": "🟣",
+            "Decrypt": "🟦",
+            "Binance": "🟡",
+            "Twitter": "🐦",
+            "default": "🗞️",
+        }
 
-            for i, news in enumerate(news_data[:5]):
-                sentiment = news.get("sentiment", 0)
-                sentiment_emoji = (
-                    "🟢" if sentiment > 0.3 else "🔴" if sentiment < -0.3 else "⚪"
-                )
+        # Filtrage avancé selon symboles ou volatilité
+        filtered_news = []
+        for news in news_data:
+            # Filtrage par symbole
+            if filter_symbols:
+                news_symbols = [s.upper() for s in news.get("symbols", [])]
+                if not any(sym in news_symbols for sym in filter_symbols):
+                    continue
+            # Filtrage par volatilité
+            if filter_volatility and market_data and news.get("symbols"):
+                symbol = news["symbols"][0].replace("/", "")
+                vol = market_data.get(symbol, {}).get("1h", {}).get("volatility", 0)
+                if vol is not None and vol < filter_volatility:
+                    continue
+            filtered_news.append(news)
 
-                # Toujours afficher un titre même s'il manque
-                message += f"{sentiment_emoji} {news.get('title', 'NO_TITLE')}\n"
-                # Utilise 'summary' si existe, sinon 'text', sinon rien
-                summary_text = news.get("summary") or news.get("text") or ""
-                if summary_text:
-                    message += f"└ {summary_text[:100]}...\n\n"
-                else:
-                    message += "\n"
+        # Si rien ne passe le filtre, utilise tout
+        if not filtered_news:
+            filtered_news = news_data
 
-            print("DEBUG SENDING MESSAGE TO TELEGRAM:", message)
-            await self.send_message(message)
-        except Exception as e:
-            print(f"ERROR in send_news_summary: {e}")
+        message = "📰 <b>Dernières Nouvelles Importantes</b>\n\n"
+
+        # Ajoute le résumé IA si fourni
+        if ai_summary:
+            message += f"🤖 <b>Résumé IA:</b>\n{ai_summary}\n\n"
+
+        for news in filtered_news[:5]:
+            # Source
+            src = news.get("source", "default")
+            emoji = source_emoji.get(src, source_emoji["default"])
+            # Lien cliquable sur le titre
+            title = news.get("title", "NO_TITLE")
+            url = news.get("url", "")
+            if url:
+                title_line = f'{emoji} <a href="{url}">{title}</a>'
+            else:
+                title_line = f"{emoji} {title}"
+
+            # Source affichée en fin de ligne
+            title_line += f" <i>({src})</i>\n"
+
+            # Résumé court
+            summary_text = news.get("summary") or news.get("text") or ""
+            if summary_text:
+                message += f"{title_line}└ {summary_text[:180]}...\n\n"
+            else:
+                message += f"{title_line}\n"
+
+        await self.send_message(message)
 
 
 class WarningFilter:
@@ -826,63 +873,37 @@ class TradingBotM4:
             return {}
 
     async def _news_analysis_loop(self):
-        """Boucle d'analyse des news"""
+        """Boucle d'analyse des news (version propre sans print/debug)"""
         while True:
             try:
-                print("NEWS LOOP: Lancement")
                 if not self.news_enabled or not self.news_analyzer:
-                    print("NEWS LOOP: News non activées ou analyseur absent")
                     await asyncio.sleep(self.news_update_interval)
                     continue
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                print("DEBUG RAW NEWS:", news_data)
 
-                print("NEWS LOOP: Avant analyze_sentiment")
                 try:
                     sentiment_scores = self.news_analyzer.analyze_sentiment(news_data)
-                except Exception as e:
-                    print(f"NEWS LOOP ERROR: analyze_sentiment crashed: {e}")
+                except Exception:
                     sentiment_scores = []
-                print("DEBUG SENTIMENTS:", sentiment_scores)
 
-                # Mise à jour des données de sentiment
                 try:
                     await self._update_sentiment_data(sentiment_scores)
-                except Exception as e:
-                    print(f"NEWS LOOP ERROR: _update_sentiment_data crashed: {e}")
+                except Exception:
+                    pass
 
-                # Envoi d'alertes si sentiment extrême
-                try:
-                    for item in sentiment_scores:
-                        symbol = item.get("symbol", "")
-                        score = item.get("sentiment", 0)
-                        if abs(score) > 0.7:
-                            sentiment_type = "positif" if score > 0 else "négatif"
-                            await self.telegram.send_message(
-                                f"⚠️ Sentiment {sentiment_type} fort détecté pour {symbol}: {score:.2f}"
-                            )
-                except Exception as e:
-                    print(f"NEWS LOOP ERROR: alertes sentiment crashed: {e}")
-
-                # Sauvegarde des données pour l'interface
                 try:
                     await self._save_sentiment_data(sentiment_scores, news_data)
-                except Exception as e:
-                    print(f"NEWS LOOP ERROR: _save_sentiment_data crashed: {e}")
+                except Exception:
+                    pass
 
-                # Envoi du résumé périodique des news
                 try:
-                    print("NEWS LOOP: Avant send_news_summary")
-                    print("DEBUG SENDING NEWS SUMMARY:", news_data[:5])
                     await self.telegram.send_news_summary(news_data[:5])
-                    print("NEWS LOOP: send_news_summary appelé")
-                except Exception as e:
-                    print(f"NEWS LOOP ERROR: send_news_summary crashed: {e}")
+                except Exception:
+                    pass
 
             except Exception as e:
-                print(f"NEWS LOOP ERROR: boucle générale: {e}")
                 self.logger.error(f"News analysis error: {e}")
 
             await asyncio.sleep(self.news_update_interval)
@@ -967,8 +988,6 @@ class TradingBotM4:
             "╚═════════════════════════════════════════════════╝\n\n"
             "    📊 Analyse par Timeframe/Paire :\n"
         )
-        print("PAIRS VALID:", self.pairs_valid)
-        print("MARKET DATA KEYS:", list(self.market_data.keys()))
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "")
             for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
@@ -1474,7 +1493,6 @@ class TradingBotM4:
                 "profit_factor": 0,
                 "total_trades": 0,
             }
-        print("PERF METRICS SENT TO TELEGRAM:", performance)
         await self.telegram.send_performance_update(performance)
         report = await self.generate_market_analysis_report()
         await self.telegram.send_message(report)
@@ -1740,7 +1758,6 @@ async def run_clean_bot():
 
             # Configuration initiale
             valid_pairs = load_config()
-            print(f"📊 Paires configurées: {valid_pairs}")
 
             # Création et configuration du bot
             bot = TradingBotM4()
@@ -1751,7 +1768,6 @@ async def run_clean_bot():
 
             if bot.is_live_trading:
                 await bot._fetch_real_market_data()
-                print("MARKET DATA KEYS:", list(bot.market_data.keys()))
                 for sym in bot.market_data:
                     print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
@@ -1804,19 +1820,15 @@ async def run_clean_bot():
             return None
 
     async def execute_trading_cycle(bot, valid_pairs):
-        """Exécute un cycle complet de trading"""
+        """Exécute un cycle complet de trading (version propre sans logs)"""
         try:
             # 1. Récupération des données de marché réelles
             if bot.is_live_trading:
-                await bot._fetch_real_market_data()  # <-- Cette ligne est PRIMORDIALE pour remplir bot.market_data
-            print("MARKET DATA KEYS:", list(bot.market_data.keys()))
-            for sym in bot.market_data:
-                print(f"{sym}: {list(bot.market_data[sym].keys())}")
+                await bot._fetch_real_market_data()  # Remplit bot.market_data
 
             # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
-            print(f"🎯 Stratégie active: {strategy}")
 
             # 3. Détection d'arbitrage
             await handle_arbitrage_opportunities(bot)
