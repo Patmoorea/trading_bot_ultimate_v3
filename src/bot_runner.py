@@ -40,23 +40,6 @@ from src.strategies.arbitrage.service import ArbitrageEngine
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
-
-def debug_market_data_structure(market_data, pairs_valid, timeframes):
-    for pair in pairs_valid:
-        pair_key = pair.replace("/", "")
-        if pair_key not in market_data:
-            print(f"  ❌ ABSENT de market_data")
-            continue
-        for tf in timeframes:
-            tf_data = market_data[pair_key].get(tf)
-            if tf_data is None:
-                print(f"  - {tf}: ❌ ABSENT")
-            elif isinstance(tf_data, dict):
-                print(f"  - {tf}: OK, keys: {list(tf_data.keys())}")
-            else:
-                print(f"  - {tf}: Type inattendu: {type(tf_data)}")
-
-
 # Charger les tokens Telegram depuis .env
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -975,9 +958,6 @@ class TradingBotM4:
 
     async def generate_market_analysis_report(self):
         """Génère un rapport d'analyse de marché détaillé"""
-        debug_market_data_structure(
-            self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
-        )
         report = (
             f"Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): {get_current_time()}\n"
             f"Current User's Login: {CURRENT_USER}\n"
@@ -1765,11 +1745,6 @@ async def run_clean_bot():
 
             if not await bot._setup_components():
                 raise Exception("Échec de l'initialisation des composants")
-
-            if bot.is_live_trading:
-                await bot._fetch_real_market_data()
-                for sym in bot.market_data:
-                    print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
             # Rapport initial
             initial_report = await bot.generate_market_analysis_report()
