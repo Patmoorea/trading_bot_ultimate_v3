@@ -318,10 +318,12 @@ class TradingBotM4:
         }
         # >>>> AJOUT ICI <<<<
         self.ws_collector = BufferedWSCollector(
-            symbols=[s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]],
+            symbols=[
+                s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]
+            ],
             timeframes=self.config["TRADING"]["timeframes"],
-            maxlen=2000
-
+            maxlen=2000,
+        )
         # Initialize basic attributes...
         self.data_file = SHARED_DATA_PATH
         self.current_cycle = 0
@@ -1579,28 +1581,28 @@ class TradingBotM4:
             }
 
     async def _setup_components(self):
-    try:
-        # >>>> DEMARRAGE WS <<<<
-        await self.ws_collector.start()
-        # >>>> FIN AJOUT <<<<
+        try:
+            # >>>> DEMARRAGE WS <<<<
+            await self.ws_collector.start()
+            # >>>> FIN AJOUT <<<<
 
-        # Lancement du processus d'analyse des news
-        if self.news_enabled and self.news_analyzer:
-            asyncio.create_task(self._news_analysis_loop())
-            self.logger.info("News analysis loop started")
-            
             # Lancement du processus d'analyse des news
             if self.news_enabled and self.news_analyzer:
                 asyncio.create_task(self._news_analysis_loop())
                 self.logger.info("News analysis loop started")
 
-            # Initialisation des connexions WebSocket Binance si en mode trading réel
-            if self.is_live_trading:
-                # Ici vous pouvez initialiser les connexions WebSocket
-                self.logger.info("Binance WebSocket connections initialized")
+                # Lancement du processus d'analyse des news
+                if self.news_enabled and self.news_analyzer:
+                    asyncio.create_task(self._news_analysis_loop())
+                    self.logger.info("News analysis loop started")
 
-            await asyncio.sleep(0.5)  # Simule le temps de configuration
-            return True
+                # Initialisation des connexions WebSocket Binance si en mode trading réel
+                if self.is_live_trading:
+                    # Ici vous pouvez initialiser les connexions WebSocket
+                    self.logger.info("Binance WebSocket connections initialized")
+
+                await asyncio.sleep(0.5)  # Simule le temps de configuration
+                return True
 
         except Exception as e:
             self.logger.error(f"Error setting up components: {e}")
@@ -1833,9 +1835,25 @@ async def run_clean_bot():
     async def execute_trading_cycle(bot, valid_pairs):
         """Exécute un cycle complet de trading"""
         try:
-            # 1. Récupération des données de marché réelles
-            if bot.is_live_trading:
-                await bot._fetch_real_market_data()  # <-- Cette ligne est PRIMORDIALE pour remplir bot.market_data
+            # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
+            for pair in bot.pairs_valid:
+                pair_key = pair.replace("/", "").lower()
+                if pair_key not in bot.market_data:
+                    bot.market_data[pair_key] = {}
+                for tf in bot.config["TRADING"]["timeframes"]:
+                    df = bot.ws_collector.get_dataframe(pair_key, tf)
+                    if df is not None and not df.empty:
+                        bot.market_data[pair_key][tf] = {
+                            "open": df["open"].tolist(),
+                            "high": df["high"].tolist(),
+                            "low": df["low"].tolist(),
+                            "close": df["close"].tolist(),
+                            "volume": df["volume"].tolist(),
+                            "timestamp": [
+                                int(pd.Timestamp(t).timestamp())
+                                for t in df["timestamp"]
+                            ],
+                        }
             print("MARKET DATA KEYS:", list(bot.market_data.keys()))
             for sym in bot.market_data:
                 print(f"{sym}: {list(bot.market_data[sym].keys())}")
