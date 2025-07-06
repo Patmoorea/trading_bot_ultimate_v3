@@ -39,6 +39,8 @@ from src.strategies.arbitrage.service import ArbitrageEngine
 
 from src.data.ws_buffered_collector import BufferedWSCollector
 
+from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -1765,6 +1767,7 @@ async def run_clean_bot():
     Fonction principale du bot de trading
     Gère l'initialisation, l'analyse de marché et l'exécution des stratégies
     """
+    orderflow_indicators = AdvancedIndicators()
     logger = logging.getLogger(__name__)
 
     async def initialize_bot():
@@ -1827,6 +1830,21 @@ async def run_clean_bot():
     async def execute_trading_cycle(bot, valid_pairs):
         """Exécute un cycle complet de trading"""
         try:
+            # 0. Import avancé des indicateurs orderflow (à placer en haut du fichier !)
+            # from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+            # Instanciation globale à faire avant la boucle :
+            # orderflow_indicators = AdvancedIndicators()
+            # Mais pour la version patch à chaud, on instancie ici :
+            try:
+                from src.analysis.technical.advanced.advanced_indicators import (
+                    AdvancedIndicators,
+                )
+
+                orderflow_indicators = AdvancedIndicators()
+            except Exception as e:
+                orderflow_indicators = None
+                print("[Orderflow] Impossible d'importer AdvancedIndicators:", e)
+
             # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").lower()
@@ -1846,6 +1864,32 @@ async def run_clean_bot():
                                 for t in df["timestamp"]
                             ],
                         }
+                        # 1bis. Calcul et injection des indicateurs orderflow avancés
+                        if orderflow_indicators is not None:
+                            try:
+                                # Les méthodes attendent un DataFrame OHLCV, converti si besoin
+                                bid_ask = None
+                                liquidity_wave = None
+                                smart_money = None
+                                # Les méthodes sont peut-être protégées (_), adapter si nécessaire
+                                if hasattr(orderflow_indicators, "_bid_ask_ratio"):
+                                    bid_ask = orderflow_indicators._bid_ask_ratio(df)
+                                if hasattr(orderflow_indicators, "_liquidity_wave"):
+                                    liquidity_wave = (
+                                        orderflow_indicators._liquidity_wave(df)
+                                    )
+                                if hasattr(orderflow_indicators, "_smart_money_index"):
+                                    smart_money = (
+                                        orderflow_indicators._smart_money_index(df)
+                                    )
+                                bot.market_data[pair_key][tf]["orderflow"] = {
+                                    "bid_ask_ratio": bid_ask,
+                                    "liquidity_wave": liquidity_wave,
+                                    "smart_money_index": smart_money,
+                                }
+                            except Exception as e:
+                                print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
+
             print("MARKET DATA KEYS:", list(bot.market_data.keys()))
             for sym in bot.market_data:
                 print(f"{sym}: {list(bot.market_data[sym].keys())}")
