@@ -37,6 +37,8 @@ from src.strategies.arbitrage.multi_exchange.arbitrage_scanner import ArbitrageS
 from src.strategies.arbitrage.core.risk_management.risk_manager import RiskManager
 from src.strategies.arbitrage.service import ArbitrageEngine
 
+from src.data.ws_buffered_collector import BufferedWSCollector
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -297,6 +299,14 @@ sys.stderr = WarningFilter(sys.stderr)
 
 class TradingBotM4:
     def __init__(self):
+        self.ws_collector = BufferedWSCollector(
+            symbols=[
+                s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]
+            ],
+            timeframes=self.config["TRADING"]["timeframes"],
+            maxlen=2000,
+        )
+        await self.ws_collector.start()
         # Configuration de base existante...
         self.config = {
             "TRADING": {
