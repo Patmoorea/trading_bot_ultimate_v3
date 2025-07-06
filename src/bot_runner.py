@@ -299,14 +299,6 @@ sys.stderr = WarningFilter(sys.stderr)
 
 class TradingBotM4:
     def __init__(self):
-        self.ws_collector = BufferedWSCollector(
-            symbols=[
-                s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]
-            ],
-            timeframes=self.config["TRADING"]["timeframes"],
-            maxlen=2000,
-        )
-        await self.ws_collector.start()
         # Configuration de base existante...
         self.config = {
             "TRADING": {
@@ -324,6 +316,11 @@ class TradingBotM4:
                 "verbose": 1,
             },
         }
+        # >>>> AJOUT ICI <<<<
+        self.ws_collector = BufferedWSCollector(
+            symbols=[s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]],
+            timeframes=self.config["TRADING"]["timeframes"],
+            maxlen=2000
 
         # Initialize basic attributes...
         self.data_file = SHARED_DATA_PATH
@@ -1582,8 +1579,16 @@ class TradingBotM4:
             }
 
     async def _setup_components(self):
-        """Configure les composants du bot"""
-        try:
+    try:
+        # >>>> DEMARRAGE WS <<<<
+        await self.ws_collector.start()
+        # >>>> FIN AJOUT <<<<
+
+        # Lancement du processus d'analyse des news
+        if self.news_enabled and self.news_analyzer:
+            asyncio.create_task(self._news_analysis_loop())
+            self.logger.info("News analysis loop started")
+            
             # Lancement du processus d'analyse des news
             if self.news_enabled and self.news_analyzer:
                 asyncio.create_task(self._news_analysis_loop())
@@ -1806,12 +1811,7 @@ async def run_clean_bot():
             if not market_data or pair_key not in market_data:
                 return None
 
-            data = market_data[pair_key]
-            if "1h" not in data:
-                return None
-
-            # Préparation des données OHLCV
-            ohlcv_df = prepare_ohlcv_data(data["1h"])
+            ohlcv_df = self.ws_collector.get_dataframe(pair_key, "1h")
             if ohlcv_df is None or len(ohlcv_df) < 20:
                 return None
 
@@ -2154,6 +2154,7 @@ async def handle_shutdown(bot, message):
     try:
         print(f"\n{message}")
         await bot.telegram.send_message(message)
+        await bot.ws_collector.stop()
         bot.save_shared_data()
     except Exception as e:
         logging.error(f"Erreur arrêt bot: {e}")
