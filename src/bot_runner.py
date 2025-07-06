@@ -1807,27 +1807,19 @@ async def run_clean_bot():
             raise
 
     async def market_analysis_cycle(bot, pair, market_data):
-        """Analyse une paire de trading spécifique"""
         try:
             pair_key = pair.replace("/", "")
             if not market_data or pair_key not in market_data:
                 return None
 
-            ohlcv_df = self.ws_collector.get_dataframe(pair_key, "1h")
+            # Ici :
+            ohlcv_df = bot.ws_collector.get_dataframe(pair_key, "1h")
             if ohlcv_df is None or len(ohlcv_df) < 20:
                 return None
 
-            # Analyse des indicateurs et signaux
             indicators_data = bot.add_indicators(ohlcv_df)
             signal = await bot.analyze_signals(ohlcv_df, indicators_data)
-
-            # Analyse des signaux supplémentaires
-            combined_score = await calculate_combined_score(bot, data, signal, pair)
-
-            return await generate_trade_decision(
-                bot, pair, combined_score, data, signal
-            )
-
+            # etc...
         except Exception as e:
             logger.error(f"Erreur analyse {pair}: {e}")
             return None
