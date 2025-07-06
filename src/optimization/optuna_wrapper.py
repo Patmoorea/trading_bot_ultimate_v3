@@ -7,6 +7,7 @@ def tune_hyperparameters():
     from src.ai.hybrid_model import HybridAI
 
     def objective(trial):
+        print(">>> OBJECTIVE Optuna appelé, trial:", trial.number)
         model = HybridAI()
         model.learning_rate = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
         return model.validate() if hasattr(model, "validate") else 0.0
