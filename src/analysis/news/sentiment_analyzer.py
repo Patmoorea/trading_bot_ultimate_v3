@@ -157,51 +157,35 @@ class NewsSentimentAnalyzer:
     async def fetch_news(
         self, session: aiohttp.ClientSession, source: Dict
     ) -> List[Dict]:
-        """Récupère les news de toutes les sources"""
+        """Récupère les news d'une seule source"""
         all_news = []
 
-        # Configuration SSL pour éviter les erreurs de certificat
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-
-        connector = aiohttp.TCPConnector(ssl=ssl_context)
-
         try:
-            async with aiohttp.ClientSession(
-                connector=connector, headers=self.headers
-            ) as session:
-                for source in self.sources:
+            async with session.get(source["url"], timeout=30) as response:
+                if response.status != 200:
+                    self.logger.error(
+                        f"Erreur HTTP {response.status} pour {source['name']}"
+                    )
+                    return []
+
+                content = await response.text()
+
+                if source["type"] == "rss":
+                    news = self._parse_rss_feed(content, source["name"])
+                else:
                     try:
-                        async with session.get(source["url"], timeout=30) as response:
-                            if response.status != 200:
-                                self.logger.error(
-                                    f"Erreur HTTP {response.status} pour {source['name']}"
-                                )
-                                continue
+                        data = await response.json()
+                    except Exception:
+                        data = json.loads(content)
+                    news = self._parse_news(data, source["name"])
 
-                            content = await response.text()
-
-                            if source["type"] == "rss":
-                                news = self._parse_rss_feed(content, source["name"])
-                            else:
-                                data = await response.json()
-                                news = self._parse_news(data, source["name"])
-
-                            if news:
-                                all_news.extend(news)
-
-                    except Exception as e:
-                        self.logger.error(
-                            f"Erreur récupération news pour {source['name']}: {e}"
-                        )
-                        continue
-
-            return all_news
+                if news:
+                    all_news.extend(news)
 
         except Exception as e:
-            self.logger.error(f"Erreur fetch_news: {e}")
-            return []
+            self.logger.error(f"Erreur récupération news pour {source['name']}: {e}")
+
+        return all_news
 
     def _parse_news(self, data: Dict, source: str) -> List[Dict]:
         """Parse les données JSON des APIs"""

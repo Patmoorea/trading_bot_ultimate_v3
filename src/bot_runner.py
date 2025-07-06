@@ -110,6 +110,7 @@ class TelegramNotifier:
 
     async def send_message(self, message):
         """Envoie un message sur Telegram"""
+        print("DEBUG SENDING TO TELEGRAM:", message)
         if not self.bot_token or not self.chat_id:
             print("⚠️ Message non envoyé: Configuration Telegram manquante")
             return
@@ -127,6 +128,7 @@ class TelegramNotifier:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
                     result = await response.json()
+                    print("DEBUG TELEGRAM RESPONSE:", result)
                     if not result.get("ok"):
                         print(f"⚠️ Erreur Telegram: {result.get('description')}")
                     return result
@@ -184,25 +186,39 @@ class TelegramNotifier:
         await self.send_message(message)
 
     async def send_news_summary(self, news_data):
-        """Envoie un résumé des dernières nouvelles importantes"""
-        if not news_data or len(news_data) == 0:
-            return
+        """
+        Envoie un résumé des dernières nouvelles importantes sur Telegram.
+        Affiche des logs de debug pour chaque étape.
+        """
+        print("DEBUG send_news_summary news_data:", news_data)
+        try:
+            if not news_data or len(news_data) == 0:
+                await self.send_message(
+                    "📰 <b>Dernières Nouvelles Importantes</b>\n\nAucune news significative détectée récemment."
+                )
+                return
 
-        message = "📰 <b>Dernières Nouvelles Importantes</b>\n\n"
+            message = "📰 <b>Dernières Nouvelles Importantes</b>\n\n"
 
-        for i, news in enumerate(news_data[:5]):
-            sentiment = news.get("sentiment", 0)
-            sentiment_emoji = (
-                "🟢" if sentiment > 0.3 else "🔴" if sentiment < -0.3 else "⚪"
-            )
+            for i, news in enumerate(news_data[:5]):
+                sentiment = news.get("sentiment", 0)
+                sentiment_emoji = (
+                    "🟢" if sentiment > 0.3 else "🔴" if sentiment < -0.3 else "⚪"
+                )
 
-            message += f"{sentiment_emoji} {news['title']}\n"
-            if "summary" in news and news["summary"]:
-                message += f"└ {news['summary'][:100]}...\n\n"
-            else:
-                message += "\n"
+                # Toujours afficher un titre même s'il manque
+                message += f"{sentiment_emoji} {news.get('title', 'NO_TITLE')}\n"
+                # Utilise 'summary' si existe, sinon 'text', sinon rien
+                summary_text = news.get("summary") or news.get("text") or ""
+                if summary_text:
+                    message += f"└ {summary_text[:100]}...\n\n"
+                else:
+                    message += "\n"
 
-        await self.send_message(message)
+            print("DEBUG SENDING MESSAGE TO TELEGRAM:", message)
+            await self.send_message(message)
+        except Exception as e:
+            print(f"ERROR in send_news_summary: {e}")
 
 
 class WarningFilter:
@@ -813,38 +829,62 @@ class TradingBotM4:
         """Boucle d'analyse des news"""
         while True:
             try:
+                print("NEWS LOOP: Lancement")
                 if not self.news_enabled or not self.news_analyzer:
+                    print("NEWS LOOP: News non activées ou analyseur absent")
                     await asyncio.sleep(self.news_update_interval)
                     continue
 
-                # Récupération et analyse des dernières news
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                sentiment_scores = self.news_analyzer.analyze_sentiment(news_data)
+                print("DEBUG RAW NEWS:", news_data)
+
+                print("NEWS LOOP: Avant analyze_sentiment")
+                try:
+                    sentiment_scores = self.news_analyzer.analyze_sentiment(news_data)
+                except Exception as e:
+                    print(f"NEWS LOOP ERROR: analyze_sentiment crashed: {e}")
+                    sentiment_scores = []
+                print("DEBUG SENTIMENTS:", sentiment_scores)
 
                 # Mise à jour des données de sentiment
-                await self._update_sentiment_data(sentiment_scores)
+                try:
+                    await self._update_sentiment_data(sentiment_scores)
+                except Exception as e:
+                    print(f"NEWS LOOP ERROR: _update_sentiment_data crashed: {e}")
 
                 # Envoi d'alertes si sentiment extrême
-                for item in sentiment_scores:
-                    symbol = item.get("symbol", "")
-                    score = item.get("sentiment", 0)
-                    if abs(score) > 0.7:  # Sentiment très fort (positif ou négatif)
-                        sentiment_type = "positif" if score > 0 else "négatif"
-                        await self.telegram.send_message(
-                            f"⚠️ Sentiment {sentiment_type} fort détecté pour {symbol}: {score:.2f}"
-                        )
+                try:
+                    for item in sentiment_scores:
+                        symbol = item.get("symbol", "")
+                        score = item.get("sentiment", 0)
+                        if abs(score) > 0.7:
+                            sentiment_type = "positif" if score > 0 else "négatif"
+                            await self.telegram.send_message(
+                                f"⚠️ Sentiment {sentiment_type} fort détecté pour {symbol}: {score:.2f}"
+                            )
+                except Exception as e:
+                    print(f"NEWS LOOP ERROR: alertes sentiment crashed: {e}")
 
                 # Sauvegarde des données pour l'interface
-                await self._save_sentiment_data(sentiment_scores, news_data)
+                try:
+                    await self._save_sentiment_data(sentiment_scores, news_data)
+                except Exception as e:
+                    print(f"NEWS LOOP ERROR: _save_sentiment_data crashed: {e}")
 
                 # Envoi du résumé périodique des news
-                await self.telegram.send_news_summary(news_data[:5])
+                try:
+                    print("NEWS LOOP: Avant send_news_summary")
+                    print("DEBUG SENDING NEWS SUMMARY:", news_data[:5])
+                    await self.telegram.send_news_summary(news_data[:5])
+                    print("NEWS LOOP: send_news_summary appelé")
+                except Exception as e:
+                    print(f"NEWS LOOP ERROR: send_news_summary crashed: {e}")
 
             except Exception as e:
+                print(f"NEWS LOOP ERROR: boucle générale: {e}")
                 self.logger.error(f"News analysis error: {e}")
 
-            # Attente avant la prochaine analyse
             await asyncio.sleep(self.news_update_interval)
 
     async def _update_sentiment_data(self, sentiment_scores):
@@ -992,83 +1032,99 @@ class TradingBotM4:
         return report
 
     def calculate_trend(self, data):
-        """Calcul de la tendance"""
         try:
             if isinstance(data, dict) and "close" in data:
                 closes = data["close"][-20:]
+                if not closes or len(closes) < 10:
+                    return 0.0
                 ma_fast = sum(closes[-10:]) / 10
-                ma_slow = sum(closes) / 20
+                ma_slow = sum(closes) / len(closes)
                 trend = (ma_fast / ma_slow) - 1
-                return trend
-            return 0
-        except:
-            return 0
+                return float(trend)
+            return 0.0
+        except Exception as e:
+            print("DEBUG calculate_trend error:", e)
+            return 0.0
 
     def calculate_volatility(self, data):
-        """Calcul de la volatilité"""
         try:
             if isinstance(data, dict) and "close" in data:
                 closes = data["close"][-20:]
+                if not closes or len(closes) < 2:
+                    return 0.0
                 returns = np.diff(np.log(closes))
-                return np.std(returns) * np.sqrt(252)
-            return 0.5
-        except:
-            return 0.5
+                return float(np.std(returns) * np.sqrt(252))
+            return 0.0
+        except Exception as e:
+            return 0.0
 
     def calculate_volume_profile(self, data):
-        """Calcul du profil de volume"""
         try:
             if isinstance(data, dict) and "volume" in data:
-                current_vol = data["volume"][-1]
-                avg_vol = sum(data["volume"][-20:]) / 20
-                return current_vol / avg_vol if avg_vol > 0 else 1.0
+                volumes = data["volume"][-20:]
+                if not volumes or len(volumes) < 2:
+                    return 1.0
+                current_vol = volumes[-1]
+                avg_vol = sum(volumes) / len(volumes)
+                return float(current_vol / avg_vol) if avg_vol > 0 else 1.0
             return 1.0
-        except:
-            return 1.0
+        except Exception as e:
+            print("DEBUG calculate_volume_profile error:", e)
+        return 1.0
 
     def get_trend_analysis(self, pair, timeframe):
-        """Analyse de tendance détaillée"""
         try:
             pair_key = pair.replace("/", "")
             if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
-                trend = self.calculate_trend(self.market_data[pair][timeframe])
+                trend = self.calculate_trend(self.market_data[pair_key][timeframe])
                 if trend > 0.02:
                     return "Haussière"
                 elif trend < -0.02:
                     return "Baissière"
                 return "Neutre"
             return "N/A"
-        except:
+        except Exception as e:
             return "N/A"
 
     def get_volatility_analysis(self, pair, timeframe):
         """Analyse de volatilité détaillée"""
         try:
             pair_key = pair.replace("/", "")
-            if pair_key in self.market_data and timeframe in self.market_data[pair]:
-                vol = self.calculate_volatility(self.market_data[pair][timeframe])
+            if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
+                vol = self.calculate_volatility(self.market_data[pair_key][timeframe])
                 if vol > 0.8:
                     return "Élevée"
                 elif vol > 0.4:
                     return "Moyenne"
                 return "Faible"
             return "N/A"
-        except:
+        except Exception as e:
+            print(f"DEBUG get_volatility_analysis error: {e}")
             return "N/A"
 
     def get_volume_analysis(self, pair, timeframe):
         """Analyse du volume"""
         try:
             pair_key = pair.replace("/", "")
-            if pair_key in self.market_data and timeframe in self.market_data[pair]:
-                vol = self.calculate_volume_profile(self.market_data[pair][timeframe])
-                if vol > 1.5:
-                    return "Fort"
-                elif vol > 0.7:
-                    return "Moyen"
-                return "Faible"
+            if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
+                data = self.market_data[pair_key][timeframe]
+                if (
+                    data
+                    and "volume" in data
+                    and isinstance(data["volume"], list)
+                    and len(data["volume"]) >= 2
+                ):
+                    vol = self.calculate_volume_profile(data)
+                    if vol > 1.5:
+                        return "Fort"
+                    elif vol > 0.7:
+                        return "Moyen"
+                    return "Faible"
+                else:
+                    return "N/A"
             return "N/A"
-        except:
+        except Exception as e:
+            print(f"DEBUG get_volume_analysis error: {e}")
             return "N/A"
 
     def get_dominant_signal(self, pair, timeframe):
@@ -1077,7 +1133,6 @@ class TradingBotM4:
             trend = self.get_trend_analysis(pair, timeframe)
             vol = self.get_volatility_analysis(pair, timeframe)
             volume = self.get_volume_analysis(pair, timeframe)
-
             if trend == "Haussière" and vol != "Élevée" and volume != "Faible":
                 return "LONG"
             elif trend == "Baissière" and vol != "Élevée" and volume != "Faible":
@@ -1085,7 +1140,8 @@ class TradingBotM4:
             elif vol == "Élevée" or volume == "Faible":
                 return "ATTENTE"
             return "NEUTRE"
-        except:
+        except Exception as e:
+            print(f"DEBUG get_dominant_signal error: {e}")
             return "N/A"
 
     async def study_market(self, timeframe):
