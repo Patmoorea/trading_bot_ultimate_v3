@@ -2043,7 +2043,7 @@ async def run_clean_bot():
         while True:
             cycle += 1
             start = datetime.utcnow()
-
+            print(f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}")
             try:
                 print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
 
@@ -2088,6 +2088,7 @@ async def run_clean_bot():
                                 bot.indicators[pair_key][tf] = indics
                                 print(f"DEBUG {pair_key} {tf} indicators: {indics}")
                             except Exception as e:
+                                print(f"ERROR {pair_key} {tf}: {e}")
                                 bot.logger.error(
                                     f"Error calculating indicators for {pair_key} {tf}: {e}"
                                 )
