@@ -468,6 +468,16 @@ class TradingBotM4:
             except Exception as e:
                 print(f"Erreur de chargement de la clé cold wallet: {e}")
 
+    def get_binance_real_balance(self, asset="USDC"):
+        if self.is_live_trading and self.binance_client:
+            try:
+                balance_info = self.binance_client.get_asset_balance(asset=asset)
+                if balance_info:
+                    return float(balance_info["free"])
+            except Exception as e:
+                self.logger.error(f"Erreur récupération balance Binance: {e}")
+        return None
+
     async def detect_arbitrage_opportunities(self, pair=None):
         """Détecte les opportunités d'arbitrage avec vérification des volumes"""
         if not self.is_live_trading:
@@ -1640,6 +1650,7 @@ class TradingBotM4:
                 "performance": self.get_performance_metrics(),
             },
             "market_data": self.market_data,
+            "indicators": self.indicators,  # <-- ton dict d'indicateurs
         }
 
         # Ajout des données d'IA si disponibles
@@ -1652,7 +1663,6 @@ class TradingBotM4:
                     and "ai_prediction" in self.market_data[pair_key]
                 ):
                     ai_predictions[pair] = self.market_data[pair_key]["ai_prediction"]
-
             data["ai_predictions"] = ai_predictions
 
         with open(self.data_file, "w") as f:
@@ -1663,6 +1673,11 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
+
+            # AJOUT ICI : récupération du solde réel Binance
+            real_balance = self.get_binance_real_balance("USDC")
+            if real_balance is not None:
+                data["bot_status"]["performance"]["balance"] = real_balance
 
             return data["bot_status"]["performance"]
         except:
@@ -2334,8 +2349,6 @@ async def handle_shutdown(bot, message):
 
 if __name__ == "__main__":
     import sys
-    import argparse
-    import pandas as pd
     from src.backtesting.core.backtest_engine import BacktestEngine
     from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
