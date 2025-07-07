@@ -21,6 +21,19 @@ import time
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
+# --- Configuration Streamlit ---
+st.set_page_config(
+    page_title="Trading Bot Ultimate v4 - Dashboard",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": "https://github.com/Patmoorea/trading_bot_ultimate_v3",
+        "Report a bug": "https://github.com/Patmoorea/trading_bot_ultimate_v3/issues",
+        "About": "# Trading Bot Ultimate v4\nVersion avancée avec IA et analyses quantiques.",
+    },
+)
+
 st.sidebar.header("Backtesting avancé")
 
 strategy_options = {
@@ -80,7 +93,6 @@ def load_status():
         try:
             with open(STATUS_FILE, "r") as f:
                 data = json.load(f)
-                # Ajouter le timestamp actuel
                 data["timestamp"] = get_current_time()
                 return data
         except Exception as e:
@@ -143,18 +155,6 @@ class BotDataManager:
         }
 
 
-# --- Configuration Streamlit ---
-st.set_page_config(
-    page_title="Trading Bot Ultimate v4 - Dashboard",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        "Get Help": "https://github.com/Patmoorea/trading_bot_ultimate_v3",
-        "Report a bug": "https://github.com/Patmoorea/trading_bot_ultimate_v3/issues",
-        "About": "# Trading Bot Ultimate v4\nVersion avancée avec IA et analyses quantiques.",
-    },
-)
 bot_manager = BotDataManager()
 
 
