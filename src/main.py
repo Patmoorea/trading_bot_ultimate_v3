@@ -638,7 +638,7 @@ with st.sidebar:
             f"""
             <div style='background-color: #0f3d40; padding: 10px; border-radius: 5px;'>
                 <h3 style='color: #00ff00; margin: 0;'>✅ Bot Actif</h3>
-                <p style='color: #ffffff; margin: 5px 0;'>Dernière mise à jour: {get_current_time()}</p>
+                <p style='color: #ffffff; margin: 5px 0;'>Dernière mise à jour: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -989,7 +989,7 @@ st.sidebar.divider()
 st.sidebar.markdown(
     f"""
 ### 📊 Informations système
-- 🕒 Dernière mise à jour: {get_current_time()} UTC
+- 🕒 Dernière mise à jour: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC 
 - 👤 Session: {CURRENT_USER}
 - 🌐 Version: 4.0.1
 - 📡 Status: En ligne

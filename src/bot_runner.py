@@ -9,6 +9,8 @@ import numpy as np
 import time
 from datetime import datetime, timezone, timedelta
 import argparse
+import numpy as np
+import pandas as pd
 import pandas_ta as ta
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -1786,6 +1788,8 @@ class TradingBotM4:
         Calcule TOUS les indicateurs possibles (130+) avec pandas-ta ou ta.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur}
         """
+        import pandas as pd
+
         try:
             # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
@@ -1822,34 +1826,50 @@ class TradingBotM4:
                 )
                 return None
 
-            # 3. Calcul de TOUS les indicateurs
-            # Pour pandas-ta, utilise la stratégie "All" si dispo
-            if hasattr(df, "ta") and hasattr(df.ta, "strategy"):
-                df_ta = df.copy()
-                df_ta.ta.strategy("All")
-                base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
-                indicators = {
-                    col: df_ta[col].iloc[-1]
-                    for col in df_ta.columns
-                    if col not in base_cols
-                }
-            else:
-                # Pour ta-lib python (lib ta)
-                df_with_indicators = ta.add_all_ta_features(
-                    df,
-                    open="open",
-                    high="high",
-                    low="low",
-                    close="close",
-                    volume="volume",
-                    fillna=True,
-                )
-                base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
-                indicators = {
-                    col: df_with_indicators[col].iloc[-1]
-                    for col in df_with_indicators.columns
-                    if col not in base_cols
-                }
+            # 3. Sécurité : trier par timestamp pour tous les indicateurs (VWAP, etc.)
+            if "timestamp" in df.columns:
+                df = df.sort_values("timestamp").reset_index(drop=True)
+                if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
+                    df["timestamp"] = pd.to_datetime(df["timestamp"])
+                df = df.set_index("timestamp")
+
+            # 4. Calcul de TOUS les indicateurs
+            indicators = {}
+            base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
+
+            # Teste d'abord pandas-ta (stratégie "All")
+            try:
+                import pandas_ta as ta
+
+                if hasattr(df, "ta") and hasattr(df.ta, "strategy"):
+                    df_ta = df.copy()
+                    df_ta.ta.strategy("All")
+                    indicators = {
+                        col: df_ta[col].iloc[-1]
+                        for col in df_ta.columns
+                        if col not in base_cols
+                    }
+                else:
+                    # Fallback ta.add_all_ta_features (lib ta, pas pandas-ta)
+                    import ta
+
+                    df_with_indicators = ta.add_all_ta_features(
+                        df,
+                        open="open",
+                        high="high",
+                        low="low",
+                        close="close",
+                        volume="volume",
+                        fillna=True,
+                    )
+                    indicators = {
+                        col: df_with_indicators[col].iloc[-1]
+                        for col in df_with_indicators.columns
+                        if col not in base_cols
+                    }
+            except ImportError:
+                self.logger.error("Ni pandas_ta ni ta n'est installé !")
+                return None
 
             self.logger.info(
                 f"✅ {len(indicators)} indicateurs extraits automatiquement"
@@ -2099,14 +2119,8 @@ async def run_clean_bot():
                 for pair in bot.pairs_valid:
                     pair_key = pair.replace("/", "")
                     for tf in bot.config["TRADING"]["timeframes"]:
-                        print(
-                            f"[DEBUG] Trying to get df for pair_key={pair_key} tf={tf}"
-                        )
                         df = bot.ws_collector.get_dataframe(pair_key.lower(), tf)
                         if df is not None and not df.empty:
-                            print(
-                                f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}"
-                            )
                             if set(df.columns) == {
                                 "timestamp",
                                 "open",
@@ -2131,7 +2145,6 @@ async def run_clean_bot():
                             try:
                                 indics = bot.add_indicators(df2)
                                 bot.indicators[pair_key][tf] = indics
-                                print(f"DEBUG {pair_key} {tf} indicators: {indics}")
                             except Exception as e:
                                 print(f"ERROR {pair_key} {tf}: {e}")
                                 bot.logger.error(
