@@ -796,11 +796,32 @@ with tab3:
 
     if indicators:
         for symbol, tf_dict in indicators.items():
-            st.markdown(f"**{symbol}**")
+            st.markdown(f"### {symbol}")
             for tf, indics in tf_dict.items():
-                st.markdown(f"*Timeframe : {tf}*")
-                df = pd.DataFrame.from_dict(indics, orient="index", columns=["value"])
-                st.dataframe(df.transpose(), use_container_width=True)
+                st.markdown(f"**Timeframe : {tf}**")
+
+                # -------- ASTUCE 1 : Lister tous les noms d'indicateurs --------
+                with st.expander("Voir tous les noms d'indicateurs"):
+                    st.write(list(indics.keys()))
+
+                # -------- ASTUCE 2 : Filtrer dynamiquement --------
+                search = st.text_input(
+                    f"Filtrer les indicateurs pour {symbol} {tf}",
+                    key=f"search_{symbol}_{tf}",
+                )
+                if search:
+                    filtered = {
+                        k: v for k, v in indics.items() if search.lower() in k.lower()
+                    }
+                else:
+                    filtered = indics
+
+                if filtered:
+                    df = pd.DataFrame(filtered, index=[0]).T
+                    df.columns = ["Dernière valeur"]
+                    st.dataframe(df, use_container_width=True)
+                else:
+                    st.info("Aucun indicateur ne correspond à ce filtre.")
     else:
         st.info(
             "Aucun indicateur technique disponible. Attends le prochain cycle de calcul."

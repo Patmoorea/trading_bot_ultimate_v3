@@ -1782,43 +1782,67 @@ class TradingBotM4:
         return data
 
     def add_indicators(self, df):
-        """Ajoute les indicateurs techniques"""
-        indicators = {}
-
+        """
+        Calcule TOUS les indicateurs possibles (130+) avec ta ou pandas-ta.
+        Retourne un dictionnaire {nom_indicateur: dernière_valeur}
+        """
         try:
-            # Calcul du RSI
-            delta = df[4].diff()
-            gain = delta.where(delta > 0, 0).rolling(window=14).mean()
-            loss = -delta.where(delta < 0, 0).rolling(window=14).mean()
-            rs = gain / loss
-            indicators["rsi"] = 100 - (100 / (1 + rs.iloc[-1]))
+            import ta  # ou import pandas_ta as ta
 
-            # Calcul des moyennes mobiles
-            indicators["sma_20"] = df[4].rolling(window=20).mean().iloc[-1]
-            indicators["sma_50"] = df[4].rolling(window=50).mean().iloc[-1]
-            indicators["sma_200"] = df[4].rolling(window=200).mean().iloc[-1]
+            # Gestion entrée : DataFrame, liste de dicts, liste de listes
+            if isinstance(df, list):
+                if len(df) == 0:
+                    self.logger.error("add_indicators: Liste reçue vide")
+                    return None
+                if isinstance(df[0], dict):
+                    df = pd.DataFrame(df)
+                elif isinstance(df[0], (list, tuple)):
+                    columns = ["timestamp", "open", "high", "low", "close", "volume"]
+                    df = pd.DataFrame(df, columns=columns)
+                    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                else:
+                    self.logger.error(
+                        "add_indicators: Format de liste non pris en charge"
+                    )
+                    return None
+            if not isinstance(df, pd.DataFrame):
+                self.logger.error("add_indicators: df n'est pas un DataFrame")
+                return None
 
-            # Calcul du MACD
-            ema_12 = df[4].ewm(span=12, adjust=False).mean()
-            ema_26 = df[4].ewm(span=26, adjust=False).mean()
-            indicators["macd"] = ema_12.iloc[-1] - ema_26.iloc[-1]
-            indicators["macd_signal"] = (
-                (ema_12 - ema_26).ewm(span=9, adjust=False).mean().iloc[-1]
+            required_cols = {"open", "high", "low", "close", "volume"}
+            if not required_cols.issubset(df.columns):
+                self.logger.error(
+                    f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
+                )
+                return None
+
+            # Calcul de TOUS les indicateurs
+            df_with_indicators = ta.add_all_ta_features(
+                df,
+                open="open",
+                high="high",
+                low="low",
+                close="close",
+                volume="volume",
+                fillna=True,
             )
 
-            # Calcul des bandes de Bollinger
-            sma_20 = df[4].rolling(window=20).mean()
-            std_20 = df[4].rolling(window=20).std()
-            indicators["bb_upper"] = (sma_20 + 2 * std_20).iloc[-1]
-            indicators["bb_lower"] = (sma_20 - 2 * std_20).iloc[-1]
-            indicators["bb_width"] = (
-                indicators["bb_upper"] - indicators["bb_lower"]
-            ) / sma_20.iloc[-1]
+            # On retourne TOUTES les colonnes ajoutées, sauf les colonnes d'origine
+            base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
+            indicators = {
+                col: df_with_indicators[col].iloc[-1]
+                for col in df_with_indicators.columns
+                if col not in base_cols
+            }
+
+            self.logger.info(
+                f"✅ {len(indicators)} indicateurs extraits automatiquement"
+            )
+            return indicators
 
         except Exception as e:
-            self.logger.error(f"Error calculating indicators: {e}")
-
-        return indicators
+            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            return None
 
     async def analyze_signals(self, df, indicators):
         action = "neutral"
@@ -2055,11 +2079,14 @@ async def run_clean_bot():
 
                 # Pour chaque paire et timeframe, calcule et stocke les indicateurs
                 bot.indicators = {}
+                print(f"PAIRS VALID: {bot.pairs_valid}")
                 for pair in bot.pairs_valid:
                     pair_key = pair.replace("/", "")
-                    bot.indicators[pair_key] = {}
                     for tf in bot.config["TRADING"]["timeframes"]:
-                        df = bot.ws_collector.get_dataframe(pair_key, tf)
+                        print(
+                            f"[DEBUG] Trying to get df for pair_key={pair_key} tf={tf}"
+                        )
+                        df = bot.ws_collector.get_dataframe(pair_key.lower(), tf)
                         if df is not None and not df.empty:
                             print(
                                 f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}"
@@ -2083,6 +2110,7 @@ async def run_clean_bot():
                                     }
                                 )
                             else:
+                                print(f"SKIP: {pair_key} {tf} (no data)")
                                 df2 = df
                             try:
                                 indics = bot.add_indicators(df2)

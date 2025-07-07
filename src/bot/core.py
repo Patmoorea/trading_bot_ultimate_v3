@@ -47,7 +47,7 @@ import ccxt
 import torch
 
 # Analyse technique (ex: ta-lib ou pandas-ta)
-import ta  # ou import pandas_ta as ta
+import pandas_ta as ta
 
 # (Optionnel) nest_asyncio si tu utilises dans Streamlit ou Jupyter
 import nest_asyncio
@@ -852,135 +852,14 @@ class TradingBotM4:
         self.volatility_indicators = VolatilityIndicators()
 
     def add_indicators(self, df):
-        """Ajoute tous les indicateurs (130+) au DataFrame"""
-        try:
-            # PATCH: Accepte DataFrame, liste de dicts, ou liste de listes
-            if isinstance(df, list):
-                if len(df) == 0:
-                    self.logger.error("add_indicators: Liste reçue vide")
-                    return None
-                # Si dict
-                if isinstance(df[0], dict):
-                    df = pd.DataFrame(df)
-                # Si liste ou tuple
-                elif isinstance(df[0], (list, tuple)):
-                    columns = ["timestamp", "open", "high", "low", "close", "volume"]
-                    df = pd.DataFrame(df, columns=columns)
-                    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-                else:
-                    self.logger.error(
-                        "add_indicators: Format de liste non pris en charge"
-                    )
-                    return None
-
-            if not isinstance(df, pd.DataFrame):
-                self.logger.error("add_indicators: df n'est pas un DataFrame")
-                return None
-
-            required_cols = {"open", "high", "low", "close", "volume"}
-            # Vérifie la présence des colonnes nécessaires
-            if not required_cols.issubset(df.columns):
-                self.logger.error(
-                    f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
-                )
-                return None
-
-            self.logger.info(f"Colonnes du DataFrame reçu: {df.columns.tolist()}")
-            self.logger.info(f"Exemple de lignes: {df.head(2)}")
-            print("Colonnes du DataFrame reçu:", df.columns.tolist())
-            print(df.head(2))
-
-            df_with_indicators = ta.add_all_ta_features(
-                df,
-                open="open",
-                high="high",
-                low="low",
-                close="close",
-                volume="volume",
-                fillna=True,
-            )
-
-            # Organisez les indicateurs par catégories
-            indicators = {
-                "trend": {
-                    "sma_fast": df_with_indicators["trend_sma_fast"],
-                    "sma_slow": df_with_indicators["trend_sma_slow"],
-                    "ema_fast": df_with_indicators["trend_ema_fast"],
-                    "ema_slow": df_with_indicators["trend_ema_slow"],
-                    "adx": df_with_indicators["trend_adx"],
-                    "adx_pos": df_with_indicators["trend_adx_pos"],
-                    "adx_neg": df_with_indicators["trend_adx_neg"],
-                    "vortex_ind_pos": df_with_indicators["trend_vortex_ind_pos"],
-                    "vortex_ind_neg": df_with_indicators["trend_vortex_ind_neg"],
-                    "vortex_ind_diff": df_with_indicators["trend_vortex_ind_diff"],
-                    "trix": df_with_indicators["trend_trix"],
-                    "mass_index": df_with_indicators["trend_mass_index"],
-                    "cci": df_with_indicators["trend_cci"],
-                    "dpo": df_with_indicators["trend_dpo"],
-                    "kst": df_with_indicators["trend_kst"],
-                    "kst_sig": df_with_indicators["trend_kst_sig"],
-                    "kst_diff": df_with_indicators["trend_kst_diff"],
-                    "ichimoku_a": df_with_indicators["trend_ichimoku_a"],
-                    "ichimoku_b": df_with_indicators["trend_ichimoku_b"],
-                    "visual_ichimoku_a": df_with_indicators["trend_visual_ichimoku_a"],
-                    "visual_ichimoku_b": df_with_indicators["trend_visual_ichimoku_b"],
-                    "aroon_up": df_with_indicators["trend_aroon_up"],
-                    "aroon_down": df_with_indicators["trend_aroon_down"],
-                    "aroon_ind": df_with_indicators["trend_aroon_ind"],
-                },
-                "momentum": {
-                    "rsi": df_with_indicators["momentum_rsi"],
-                    "stoch": df_with_indicators["momentum_stoch"],
-                    "stoch_signal": df_with_indicators["momentum_stoch_signal"],
-                    "tsi": df_with_indicators["momentum_tsi"],
-                    "uo": df_with_indicators["momentum_uo"],
-                    "stoch_rsi": df_with_indicators["momentum_stoch_rsi"],
-                    "stoch_rsi_k": df_with_indicators["momentum_stoch_rsi_k"],
-                    "stoch_rsi_d": df_with_indicators["momentum_stoch_rsi_d"],
-                    "williams_r": df_with_indicators["momentum_wr"],
-                    "ao": df_with_indicators["momentum_ao"],
-                },
-                "volatility": {
-                    "bbm": df_with_indicators["volatility_bbm"],
-                    "bbh": df_with_indicators["volatility_bbh"],
-                    "bbl": df_with_indicators["volatility_bbl"],
-                    "bbw": df_with_indicators["volatility_bbw"],
-                    "bbp": df_with_indicators["volatility_bbp"],
-                    "kcc": df_with_indicators["volatility_kcc"],
-                    "kch": df_with_indicators["volatility_kch"],
-                    "kcl": df_with_indicators["volatility_kcl"],
-                    "kcw": df_with_indicators["volatility_kcw"],
-                    "kcp": df_with_indicators["volatility_kcp"],
-                    "atr": df_with_indicators["volatility_atr"],
-                    "ui": df_with_indicators["volatility_ui"],
-                },
-                "volume": {
-                    "mfi": df_with_indicators["volume_mfi"],
-                    "adi": df_with_indicators["volume_adi"],
-                    "obv": df_with_indicators["volume_obv"],
-                    "cmf": df_with_indicators["volume_cmf"],
-                    "fi": df_with_indicators["volume_fi"],
-                    "em": df_with_indicators["volume_em"],
-                    "sma_em": df_with_indicators["volume_sma_em"],
-                    "vpt": df_with_indicators["volume_vpt"],
-                    "nvi": df_with_indicators["volume_nvi"],
-                    "vwap": df_with_indicators["volume_vwap"],
-                },
-                "others": {
-                    "dr": df_with_indicators["others_dr"],
-                    "dlr": df_with_indicators["others_dlr"],
-                    "cr": df_with_indicators["others_cr"],
-                },
-            }
-
-            self.logger.info(
-                f"✅ Indicateurs calculés avec succès pour {len(indicators)} catégories"
-            )
-            return indicators
-
-        except Exception as e:
-            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            return None
+        df_ta = df.copy()
+        df_ta.ta.strategy("All")
+        base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
+        indicators = {
+            col: df_ta[col].iloc[-1] for col in df_ta.columns if col not in base_cols
+        }
+        self.logger.info(f"✅ {len(indicators)} indicateurs extraits automatiquement")
+        return indicators
 
     async def _handle_stream(self, stream):
         """Gère un stream de données"""
