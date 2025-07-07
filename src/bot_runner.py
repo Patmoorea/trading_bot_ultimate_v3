@@ -2065,7 +2065,6 @@ async def run_clean_bot():
                             print(
                                 f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}"
                             )
-                            # PATCH : transformer le DataFrame si colonnes nommées
                             if set(df.columns) == {
                                 "timestamp",
                                 "open",
