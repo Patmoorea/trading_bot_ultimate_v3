@@ -18,6 +18,40 @@ import asyncio
 import psutil
 import time
 
+from src.backtesting.core.backtest_engine import BacktestEngine
+from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
+
+st.sidebar.header("Backtesting avancé")
+
+strategy_options = {
+    "SMA Crossover": sma_strategy,
+    "Breakout": breakout_strategy,
+    "Arbitrage": arbitrage_strategy,
+}
+strategy_name = st.sidebar.selectbox("Stratégie", list(strategy_options.keys()))
+strategy_func = strategy_options[strategy_name]
+
+# Paramètres dynamiques (exemple pour SMA)
+params = {}
+if strategy_name == "SMA Crossover":
+    params["fast_window"] = st.sidebar.slider("SMA rapide", 2, 50, 10)
+    params["slow_window"] = st.sidebar.slider("SMA lente", 10, 200, 50)
+elif strategy_name == "Breakout":
+    params["lookback"] = st.sidebar.slider("Lookback", 5, 50, 20)
+elif strategy_name == "Arbitrage":
+    params["spread_threshold"] = st.sidebar.number_input(
+        "Seuil de spread (%)", min_value=0.01, max_value=5.0, value=0.5
+    )
+
+dataset_file = st.sidebar.file_uploader("Données historiques (CSV)", type=["csv"])
+if dataset_file:
+    df = pd.read_csv(dataset_file)
+    capital = st.sidebar.number_input("Capital initial", min_value=100, value=10000)
+    if st.sidebar.button("Lancer le backtest"):
+        backtester = BacktestEngine(initial_capital=capital)
+        results = backtester.run_backtest(df, strategy_func, **params)
+        st.write("Résultats du backtest :", results)
+
 # --- Configuration initiale ---
 load_dotenv()
 logger = logging.getLogger(__name__)

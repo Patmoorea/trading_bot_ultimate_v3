@@ -8,6 +8,7 @@ import aiohttp
 import numpy as np
 import time
 from datetime import datetime, timezone, timedelta
+import argparse
 import pandas as pd
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -45,9 +46,59 @@ from src.optimization.optuna_wrapper import (
     tune_hyperparameters,
     optimize_hyperparameters_full,
 )
+from src.security.key_manager import KeyManager
+
+from src.backtesting.core.backtest_engine import BacktestEngine
+
+# Import dynamique des stratégies
+from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--backtest", action="store_true", help="Lancer un backtest quantitatif"
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="data/historical/BTCUSDT_1h.csv",
+        help="Chemin du CSV market data",
+    )
+    parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
+    parser.add_argument(
+        "--strategy",
+        type=str,
+        default="sma",
+        choices=["sma", "breakout", "arbitrage"],
+        help="Stratégie à utiliser",
+    )
+    # Ajoute ici d'autres paramètres si besoin (fast_window, slow_window, lookback, etc.)
+
+    args = parser.parse_args()
+
+    if args.backtest:
+        print("=== Lancement du backtesting quantitatif ===")
+        df = pd.read_csv(args.data)
+
+        # Choix de la stratégie
+        strategy_map = {
+            "sma": sma_strategy,
+            "breakout": breakout_strategy,
+            "arbitrage": arbitrage_strategy,
+        }
+        strategy_func = strategy_map[args.strategy]
+
+        # Exemple : utilise des paramètres par défaut, ou récupère-les via argparse
+        results = BacktestEngine(initial_capital=args.capital).run_backtest(
+            df, strategy_func
+        )
+        print("Résultats backtest :")
+        print(results)
+        exit(0)
 
 
 def debug_market_data_structure(market_data, pairs_valid, timeframes):
@@ -401,6 +452,21 @@ class TradingBotM4:
             "max_exposure": 10000,  # Maximum exposure in USDC
             "enabled_exchanges": ["binance", "kucoin", "huobi"],
         }
+        # Sécurité avancée: gestion de clé cold wallet
+        self.key_manager = KeyManager()
+        if not self.key_manager.has_key():
+            print(
+                "Aucune clé cold wallet détectée, génération d'une nouvelle clé sécurisée…"
+            )
+            pk = self.key_manager.generate_private_key()
+            self.key_manager.save_private_key()
+            print("Clé cold wallet générée et sauvegardée de manière chiffrée.")
+        else:
+            try:
+                self.key_manager.load_private_key()
+                print("Clé cold wallet chargée avec succès.")
+            except Exception as e:
+                print(f"Erreur de chargement de la clé cold wallet: {e}")
 
     async def detect_arbitrage_opportunities(self, pair=None):
         """Détecte les opportunités d'arbitrage avec vérification des volumes"""
@@ -523,6 +589,18 @@ class TradingBotM4:
 
         except Exception as e:
             self.logger.error(f"Erreur exécution arbitrage: {e}")
+
+        def secure_withdraw(self, address, amount, asset):
+            # Cette fonction serait appelée avant tout transfert sortant
+            # Demande la signature de l'opération
+            message = f"{address}|{amount}|{asset}|{get_current_time()}"
+            signature = self.key_manager.sign_message(message)
+            # Ici, tu pourrais envoyer la requête à l'exchange avec la signature pour logs/sécurité
+            print(
+                f"Retrait sécurisé demandé : {amount} {asset} vers {address}, signature: {signature}"
+            )
+            # (A compléter: appel API exchange avec signature, ou log d'audit)
+            return signature
 
     def _initialize_ai(self):
         """Initialise les composants d'IA"""
@@ -662,15 +740,20 @@ class TradingBotM4:
             self.logger.error(f"Erreur vérification stop-loss: {e}")
             return False
 
-    async def execute_trade(self, symbol, side, amount, price=None):
-        """Exécute un ordre de trading avec l'exécuteur intelligent"""
+    async def execute_trade(
+        self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
+    ):
+        """Exécute un ordre de trading avec l'exécuteur intelligent (support natif des ordres iceberg)"""
         if not self.is_live_trading:
-            self.logger.info(f"SIMULATION: {side} {amount} {symbol} @ {price}")
+            self.logger.info(
+                f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
+            )
             return {
                 "status": "simulated",
                 "symbol": symbol,
                 "side": side,
                 "amount": amount,
+                "iceberg": iceberg,
             }
 
         try:
@@ -690,13 +773,15 @@ class TradingBotM4:
                 "regime": self.regime,
             }
 
-            # Exécution de l'ordre avec notre exécuteur intelligent
+            # Exécution de l'ordre avec notre exécuteur intelligent (ajout iceberg)
             result = await self.executor.execute_order(
                 symbol=symbol,
                 side=side,
                 amount=amount,
                 orderbook=orderbook,
                 market_data=market_data,
+                iceberg=iceberg,
+                iceberg_visible_size=iceberg_visible_size,
             )
 
             # Enregistrement du résultat
@@ -708,10 +793,16 @@ class TradingBotM4:
                 self._update_performance_metrics(result)
 
                 # Notification Telegram
+                iceberg_info = (
+                    f"\n🧊 <b>Ordre Iceberg</b> ({result['n_suborders']} sous-ordres)"
+                    if result.get("iceberg")
+                    else ""
+                )
                 await self.telegram.send_message(
                     f"💰 <b>Ordre exécuté</b>\n"
                     f"📊 {side} {result['filled_amount']} {symbol} @ {result['avg_price']}\n"
                     f"💵 Total: ${float(result['filled_amount']) * float(result['avg_price']):.2f}"
+                    f"{iceberg_info}"
                 )
 
             return result
@@ -2243,12 +2334,59 @@ async def handle_shutdown(bot, message):
 
 if __name__ == "__main__":
     import sys
+    import argparse
+    import pandas as pd
+    from src.backtesting.core.backtest_engine import BacktestEngine
+    from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
+    # --- 1. Argument parsing avancé
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--backtest", action="store_true", help="Lancer un backtest quantitatif"
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="data/historical/BTCUSDT_1h.csv",
+        help="Chemin du CSV market data",
+    )
+    parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
+    parser.add_argument(
+        "--strategy",
+        type=str,
+        default="sma",
+        choices=["sma", "breakout", "arbitrage"],
+        help="Stratégie à utiliser",
+    )
+    # Ajoute ici d'autres paramètres si besoin...
+    args, unknown = parser.parse_known_args()
+
+    # --- 2. Mode AutoML/Tuning (prioritaire sur tout le reste)
     if "automl" in sys.argv or "tune" in sys.argv:
-        # Mode tuning seul
         import asyncio
 
         asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
+
+    # --- 3. Mode backtest CLI
+    elif args.backtest:
+        print("=== Lancement du backtesting quantitatif ===")
+        df = pd.read_csv(args.data)
+        strategy_map = {
+            "sma": sma_strategy,
+            "breakout": breakout_strategy,
+            "arbitrage": arbitrage_strategy,
+        }
+        strategy_func = strategy_map[args.strategy]
+
+        results = BacktestEngine(initial_capital=args.capital).run_backtest(
+            df, strategy_func
+        )
+        print("Résultats backtest :")
+        print(results)
+        sys.exit(0)
+
+    # --- 4. Lancement normal du bot
     else:
-        # Lancement normal du bot
+        import asyncio
+
         asyncio.run(run_clean_bot())
