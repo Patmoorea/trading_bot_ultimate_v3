@@ -2062,6 +2062,9 @@ async def run_clean_bot():
                     for tf in bot.config["TRADING"]["timeframes"]:
                         df = bot.ws_collector.get_dataframe(pair_key, tf)
                         if df is not None and not df.empty:
+                            print(
+                                f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}"
+                            )
                             # PATCH : transformer le DataFrame si colonnes nommées
                             if set(df.columns) == {
                                 "timestamp",
