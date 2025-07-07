@@ -2043,7 +2043,6 @@ async def run_clean_bot():
         while True:
             cycle += 1
             start = datetime.utcnow()
-            print(f"DEBUG: {pair_key} {tf} df.shape={df.shape} columns={df.columns}")
             try:
                 print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
 
