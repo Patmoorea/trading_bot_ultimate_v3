@@ -1650,10 +1650,10 @@ class TradingBotM4:
                 "performance": self.get_performance_metrics(),
             },
             "market_data": self.market_data,
-            "indicators": self.indicators,  # <-- ton dict d'indicateurs
+            "indicators": self.indicators,  # <--- AJOUT DÈS LA CRÉATION
         }
 
-        # Ajout des données d'IA si disponibles
+        # Ajoute les prédictions IA si besoin
         if self.ai_enabled:
             ai_predictions = {}
             for pair in self.pairs_valid:
@@ -2053,6 +2053,44 @@ async def run_clean_bot():
                 # Mise à jour des données
                 bot.current_cycle = cycle
                 bot.regime = regime
+
+                # Pour chaque paire et timeframe, calcule et stocke les indicateurs
+                bot.indicators = {}  # On réinitialise à chaque cycle !
+                for pair in bot.pairs_valid:
+                    pair_key = pair.replace("/", "")
+                    bot.indicators[pair_key] = {}
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        df = bot.ws_collector.get_dataframe(pair_key, tf)
+                        if df is not None and not df.empty:
+                            # Patch: transformer en colonnes numériques si besoin
+                            if set(df.columns) == {
+                                "timestamp",
+                                "open",
+                                "high",
+                                "low",
+                                "close",
+                                "volume",
+                            }:
+                                df2 = pd.DataFrame(
+                                    {
+                                        0: df["timestamp"],
+                                        1: df["open"],
+                                        2: df["high"],
+                                        3: df["low"],
+                                        4: df["close"],
+                                        5: df["volume"],
+                                    }
+                                )
+                            else:
+                                df2 = df
+                            try:
+                                indics = bot.add_indicators(df2)
+                                bot.indicators[pair_key][tf] = indics
+                            except Exception as e:
+                                bot.logger.error(
+                                    f"Error calculating indicators for {pair_key} {tf}: {e}"
+                                )
+
                 bot.save_shared_data()
 
                 # Calcul de la durée et rapports

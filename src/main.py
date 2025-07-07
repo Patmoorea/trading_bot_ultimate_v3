@@ -786,26 +786,25 @@ with tab2:
 
 with tab3:
     st.subheader("Analyse technique approfondie")
+    try:
+        with open(SHARED_DATA_PATH, "r") as f:
+            shared_data = json.load(f)
+        indicators = shared_data.get("indicators", {})
+    except Exception as e:
+        st.error(f"Erreur lecture indicateurs : {e}")
+        indicators = {}
 
-    # Métriques d'analyse
-    metrics = DashboardEnhancer().get_enhanced_metrics(market_data)
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("### Momentum")
-        st.metric("RSI", f"{metrics.get('rsi', 0):.2f}")
-        st.metric("MACD", f"{metrics.get('macd', 0):.2f}")
-
-    with col2:
-        st.markdown("### Tendance")
-        st.metric("EMA 20", f"{metrics.get('ema20', 0):.2f}")
-        st.metric("EMA 50", f"{metrics.get('ema50', 0):.2f}")
-
-    with col3:
-        st.markdown("### Volatilité")
-        st.metric("ATR", f"{metrics.get('atr', 0):.2f}")
-        st.metric("BB Width", f"{metrics.get('bb_width', 0):.2f}")
+    if indicators:
+        for symbol, tf_dict in indicators.items():
+            st.markdown(f"**{symbol}**")
+            for tf, indics in tf_dict.items():
+                st.markdown(f"*Timeframe : {tf}*")
+                df = pd.DataFrame.from_dict(indics, orient="index", columns=["value"])
+                st.dataframe(df.transpose(), use_container_width=True)
+    else:
+        st.info(
+            "Aucun indicateur technique disponible. Attends le prochain cycle de calcul."
+        )
 
 # --- Suite des tabs ---
 with tab4:
