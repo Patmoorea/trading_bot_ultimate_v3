@@ -9,7 +9,7 @@ import numpy as np
 import time
 from datetime import datetime, timezone, timedelta
 import argparse
-import pandas as pd
+import pandas_ta as ta
 from decimal import Decimal
 from dotenv import load_dotenv
 from binance.client import Client
@@ -1783,13 +1783,11 @@ class TradingBotM4:
 
     def add_indicators(self, df):
         """
-        Calcule TOUS les indicateurs possibles (130+) avec ta ou pandas-ta.
+        Calcule TOUS les indicateurs possibles (130+) avec pandas-ta ou ta.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur}
         """
         try:
-            import ta  # ou import pandas_ta as ta
-
-            # Gestion entrée : DataFrame, liste de dicts, liste de listes
+            # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
@@ -1816,24 +1814,42 @@ class TradingBotM4:
                 )
                 return None
 
-            # Calcul de TOUS les indicateurs
-            df_with_indicators = ta.add_all_ta_features(
-                df,
-                open="open",
-                high="high",
-                low="low",
-                close="close",
-                volume="volume",
-                fillna=True,
-            )
+            # 2. Check taille minimale du DataFrame pour éviter erreurs ta-lib/pandas-ta
+            MIN_LEN = 30
+            if len(df) < MIN_LEN:
+                self.logger.warning(
+                    f"Pas assez de données ({len(df)}) pour calculer les indicateurs"
+                )
+                return None
 
-            # On retourne TOUTES les colonnes ajoutées, sauf les colonnes d'origine
-            base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
-            indicators = {
-                col: df_with_indicators[col].iloc[-1]
-                for col in df_with_indicators.columns
-                if col not in base_cols
-            }
+            # 3. Calcul de TOUS les indicateurs
+            # Pour pandas-ta, utilise la stratégie "All" si dispo
+            if hasattr(df, "ta") and hasattr(df.ta, "strategy"):
+                df_ta = df.copy()
+                df_ta.ta.strategy("All")
+                base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
+                indicators = {
+                    col: df_ta[col].iloc[-1]
+                    for col in df_ta.columns
+                    if col not in base_cols
+                }
+            else:
+                # Pour ta-lib python (lib ta)
+                df_with_indicators = ta.add_all_ta_features(
+                    df,
+                    open="open",
+                    high="high",
+                    low="low",
+                    close="close",
+                    volume="volume",
+                    fillna=True,
+                )
+                base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
+                indicators = {
+                    col: df_with_indicators[col].iloc[-1]
+                    for col in df_with_indicators.columns
+                    if col not in base_cols
+                }
 
             self.logger.info(
                 f"✅ {len(indicators)} indicateurs extraits automatiquement"
