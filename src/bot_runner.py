@@ -2055,14 +2055,14 @@ async def run_clean_bot():
                 bot.regime = regime
 
                 # Pour chaque paire et timeframe, calcule et stocke les indicateurs
-                bot.indicators = {}  # On réinitialise à chaque cycle !
+                bot.indicators = {}
                 for pair in bot.pairs_valid:
                     pair_key = pair.replace("/", "")
                     bot.indicators[pair_key] = {}
                     for tf in bot.config["TRADING"]["timeframes"]:
                         df = bot.ws_collector.get_dataframe(pair_key, tf)
                         if df is not None and not df.empty:
-                            # Patch: transformer en colonnes numériques si besoin
+                            # PATCH : transformer le DataFrame si colonnes nommées
                             if set(df.columns) == {
                                 "timestamp",
                                 "open",
@@ -2086,6 +2086,7 @@ async def run_clean_bot():
                             try:
                                 indics = bot.add_indicators(df2)
                                 bot.indicators[pair_key][tf] = indics
+                                print(f"DEBUG {pair_key} {tf} indicators: {indics}")
                             except Exception as e:
                                 bot.logger.error(
                                     f"Error calculating indicators for {pair_key} {tf}: {e}"
