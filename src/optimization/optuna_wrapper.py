@@ -1,9 +1,9 @@
 import optuna
+import json
 
 
 def tune_hyperparameters():
     """Optimisation des hyperparamètres avec Optuna"""
-    # Import retardé pour éviter les dépendances circulaires
     from src.ai.hybrid_model import HybridAI
 
     def objective(trial):
@@ -14,7 +14,13 @@ def tune_hyperparameters():
 
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=10)
-    return study.best_params
+    best_params = study.best_params
+
+    # AJOUT : Sauvegarde dans un fichier JSON
+    with open("optuna_best_params.json", "w") as f:
+        json.dump(best_params, f, indent=2)
+
+    return best_params
 
 
 def optimize_hyperparameters_full():

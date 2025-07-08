@@ -1,9 +1,9 @@
-def breakout_strategy(df, lookback=20, take_profit=2.0):
+import pandas as pd
+
+def breakout_strategy(data: pd.DataFrame, window: int = 50, **kwargs) -> pd.Series:
     """
-    Stratégie Breakout simple : signal 1 si close casse le plus haut du lookback, -1 sinon.
+    Breakout: long si close > max(high N jours), flat sinon.
     """
-    high = df["high"].rolling(lookback).max()
-    signals = (df["close"] > high.shift(1)).astype(int)
-    signals = signals.where(signals == 1, -1)
-    signals.index = df.index
-    return signals
+    high_roll = data['high'].rolling(window=window).max()
+    signal = (data['close'] > high_roll.shift(1)).astype(int)
+    return signal
