@@ -60,6 +60,7 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
+
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
 ):
@@ -2265,7 +2266,7 @@ async def run_clean_bot():
         except Exception as e:
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
-    # Fonctions auxiliaires pour le traitement des données et l'analyse
+    await main()
 
 
 def prepare_ohlcv_data(ohlcv_data):
@@ -2623,4 +2624,5 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         import asyncio
+
         asyncio.run(run_clean_bot())
