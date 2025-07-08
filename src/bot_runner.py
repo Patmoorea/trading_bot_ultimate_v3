@@ -59,12 +59,6 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
-if __name__ == "__main__":
-    print(">>> BLOC __main__ EXECUTE <<<")
-    import asyncio
-
-    asyncio.run(run_clean_bot())
-
 
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
