@@ -61,6 +61,39 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 load_dotenv()
 
 
+def fetch_binance_ohlcv(
+    symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
+):
+    client = Client(api_key, api_secret)
+    klines = client.get_historical_klines(symbol, interval, start_str, end_str)
+    if not klines or len(klines) == 0:
+        print(f"Aucune donnée récupérée pour {symbol}")
+        return None
+    df = pd.DataFrame(
+        klines,
+        columns=[
+            "timestamp",
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "close_time",
+            "quote_asset_volume",
+            "number_of_trades",
+            "taker_buy_base_asset_volume",
+            "taker_buy_quote_asset_volume",
+            "ignore",
+        ],
+    )
+    df = df[["timestamp", "open", "high", "low", "close", "volume"]]
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    df[["open", "high", "low", "close", "volume"]] = df[
+        ["open", "high", "low", "close", "volume"]
+    ].astype(float)
+    return df
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -1989,11 +2022,13 @@ async def run_clean_bot():
     Fonction principale du bot de trading
     Gère l'initialisation, l'analyse de marché et l'exécution des stratégies
     """
+    print(">>> RUN_CLEAN_BOT DEMARRE <<<")
     orderflow_indicators = AdvancedIndicators()
     logger = logging.getLogger(__name__)
 
     async def initialize_bot():
         """Initialisation du bot et de ses composants"""
+        print(">>> INITIALIZE_BOT <<<")
         try:
             print("\n=== DÉMARRAGE DU BOT ===")
             print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
@@ -2539,23 +2574,51 @@ if __name__ == "__main__":
     # --- 3. Mode backtest CLI
     elif args.backtest:
         print("=== Lancement du backtesting quantitatif ===")
-        df = pd.read_csv(args.data)
+        # 1. Charge les paires depuis la config
+        config_path = "config/trading_pairs.json"
+        try:
+            with open(config_path, "r") as f:
+                config = json.load(f)
+            pairs = config.get("valid_pairs", ["BTC/USDT"])
+        except Exception as e:
+            print("Impossible de charger la config, on utilise BTC/USDT.")
+            pairs = ["BTC/USDT"]
+
+        # 2. Définis la période à backtester
+        nb_days = 30
+        end_dt = pd.Timestamp.utcnow()
+        start_dt = end_dt - pd.Timedelta(days=nb_days)
+        interval = Client.KLINE_INTERVAL_1HOUR
+
+        # 3. Stratégies
         strategy_map = {
             "sma": sma_strategy,
             "breakout": breakout_strategy,
             "arbitrage": arbitrage_strategy,
         }
-        strategy_func = strategy_map[args.strategy]
+        strategy_func = strategy_map.get(args.strategy, sma_strategy)
 
-        results = BacktestEngine(initial_capital=args.capital).run_backtest(
-            df, strategy_func
-        )
-        print("Résultats backtest :")
-        print(results)
+        api_key = os.getenv("BINANCE_API_KEY")
+        api_secret = os.getenv("BINANCE_API_SECRET")
+
+        for pair in pairs:
+            symbol = pair.replace("/", "")
+            print(f"Téléchargement des données pour {symbol}...")
+            df = fetch_binance_ohlcv(
+                symbol,
+                interval,
+                start_dt.strftime("%d %b %Y"),
+                end_dt.strftime("%d %b %Y"),
+                api_key=api_key,
+                api_secret=api_secret,
+            )
+            if df is None or len(df) == 0:
+                print(f"Données manquantes pour {pair}, backtest ignoré.")
+                continue
+
+            engine = BacktestEngine(initial_capital=args.capital)
+            print(f"Backtest sur {pair} ({len(df)} lignes)...")
+            results = engine.run_backtest(df, strategy_func)
+            print(f"Résultats du backtest pour {pair} :")
+            print(results)
         sys.exit(0)
-
-    # --- 4. Lancement normal du bot
-    else:
-        import asyncio
-
-        asyncio.run(run_clean_bot())
