@@ -1,4 +1,6 @@
 import os
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import warnings
 import logging
@@ -105,18 +107,21 @@ def main():
 
 def debug_market_data_structure(market_data, pairs_valid, timeframes):
     for pair in pairs_valid:
-        pair_key = pair.replace("/", "")
+        pair_key = pair.replace("/", "").upper()
         if pair_key not in market_data:
-            print(f"  ❌ ABSENT de market_data")
+            # print(f"  ❌ ABSENT de market_data")
             continue
         for tf in timeframes:
             tf_data = market_data[pair_key].get(tf)
             if tf_data is None:
-                print(f"  - {tf}: ❌ ABSENT")
+                # print(f"  - {tf}: ❌ ABSENT")
+                pass
             elif isinstance(tf_data, dict):
-                print(f"  - {tf}: OK, keys: {list(tf_data.keys())}")
+                # print(f"  - {tf}: OK, keys: {list(tf_data.keys())}")
+                pass
             else:
-                print(f"  - {tf}: Type inattendu: {type(tf_data)}")
+                # print(f"  - {tf}: Type inattendu: {type(tf_data)}")
+                pass
 
 
 # Charger les tokens Telegram depuis .env
@@ -379,7 +384,7 @@ class TradingBotM4:
         # >>>> AJOUT ICI <<<<
         self.ws_collector = BufferedWSCollector(
             symbols=[
-                s.replace("/", "").lower() for s in self.config["TRADING"]["pairs"]
+                s.replace("/", "").upper() for s in self.config["TRADING"]["pairs"]
             ],
             timeframes=self.config["TRADING"]["timeframes"],
             maxlen=2000,
@@ -1108,7 +1113,7 @@ class TradingBotM4:
             "    📊 Analyse par Timeframe/Paire :\n"
         )
         for pair in self.pairs_valid:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             for tf in ["1m", "5m", "15m", "1h", "4h", "1d"]:
                 if pair_key not in self.market_data or tf not in self.market_data.get(
                     pair_key, {}
@@ -1118,7 +1123,7 @@ class TradingBotM4:
         timeframes = ["1m", "5m", "15m", "1h", "4h", "1d"]
         for tf in timeframes:
             for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "")
+                pair_key = pair.replace("/", "").upper()
                 report += f"""
     🕒 {tf} | {pair} :
     ├─ 📈 Tendance: {self.get_trend_analysis(pair, tf)}
@@ -1131,7 +1136,7 @@ class TradingBotM4:
         if self.ai_enabled:
             report += "\n    🧠 Analyse IA :\n"
             for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "")
+                pair_key = pair.replace("/", "").upper()
                 if (
                     pair_key in self.market_data
                     and "ai_prediction" in self.market_data[pair_key]
@@ -1151,7 +1156,7 @@ class TradingBotM4:
         if self.news_enabled:
             report += "\n    📰 Analyse de Sentiment :\n"
             for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "")
+                pair_key = pair.replace("/", "").upper()
                 if (
                     pair_key in self.market_data
                     and "sentiment" in self.market_data[pair_key]
@@ -1212,7 +1217,7 @@ class TradingBotM4:
 
     def get_trend_analysis(self, pair, timeframe):
         try:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
                 trend = self.calculate_trend(self.market_data[pair_key][timeframe])
                 if trend > 0.02:
@@ -1227,7 +1232,7 @@ class TradingBotM4:
     def get_volatility_analysis(self, pair, timeframe):
         """Analyse de volatilité détaillée"""
         try:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
                 vol = self.calculate_volatility(self.market_data[pair_key][timeframe])
                 if vol > 0.8:
@@ -1243,7 +1248,7 @@ class TradingBotM4:
     def get_volume_analysis(self, pair, timeframe):
         """Analyse du volume"""
         try:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             if pair_key in self.market_data and timeframe in self.market_data[pair_key]:
                 data = self.market_data[pair_key][timeframe]
                 if (
@@ -1381,7 +1386,7 @@ class TradingBotM4:
             return
 
         for pair in self.pairs_valid:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
 
             # Préparation des features pour l'IA
             features = await self._prepare_features_for_ai(pair_key)
@@ -1659,7 +1664,7 @@ class TradingBotM4:
         if self.ai_enabled:
             ai_predictions = {}
             for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "")
+                pair_key = pair.replace("/", "").upper()
                 if (
                     pair_key in self.market_data
                     and "ai_prediction" in self.market_data[pair_key]
@@ -1734,7 +1739,7 @@ class TradingBotM4:
         # Données simulées pour toutes les paires configurées
         data = {}
         for pair in self.pairs_valid:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             data[pair_key] = {}
 
             # Génération de données OHLCV pour différents timeframes
@@ -1819,25 +1824,32 @@ class TradingBotM4:
                 return None
 
             # 2. Check taille minimale du DataFrame pour éviter erreurs ta-lib/pandas-ta
-            MIN_LEN = 30
-            if len(df) < MIN_LEN:
+            MIN_LEN = 30  # ou 50 pour plus de sécurité
+            if df is None or len(df) < MIN_LEN:
                 self.logger.warning(
-                    f"Pas assez de données ({len(df)}) pour calculer les indicateurs"
+                    f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
                 )
                 return None
 
             # 3. Sécurité : trier par timestamp pour tous les indicateurs (VWAP, etc.)
             if "timestamp" in df.columns:
-                df = df.sort_values("timestamp").reset_index(drop=True)
+                df = df.sort_values("timestamp")
+                df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
                 df = df.set_index("timestamp")
+                df = df[~df.index.duplicated(keep="last")]
+
+            if df.empty:
+                self.logger.warning(
+                    "DataFrame vide, impossible de calculer les indicateurs"
+                )
+                return None
 
             # 4. Calcul de TOUS les indicateurs
             indicators = {}
             base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
 
-            # Teste d'abord pandas-ta (stratégie "All")
             try:
                 import pandas_ta as ta
 
@@ -1850,11 +1862,17 @@ class TradingBotM4:
                         if col not in base_cols
                     }
                 else:
-                    # Fallback ta.add_all_ta_features (lib ta, pas pandas-ta)
+                    raise ImportError("pandas_ta n'est pas disponible correctement")
+            except Exception as e:
+                self.logger.warning(
+                    f"pandas_ta indisponible ou erreur ({e}), tentative avec ta..."
+                )
+                try:
                     import ta
 
+                    df_reset = df.copy().reset_index()
                     df_with_indicators = ta.add_all_ta_features(
-                        df,
+                        df_reset,
                         open="open",
                         high="high",
                         low="low",
@@ -1867,9 +1885,9 @@ class TradingBotM4:
                         for col in df_with_indicators.columns
                         if col not in base_cols
                     }
-            except ImportError:
-                self.logger.error("Ni pandas_ta ni ta n'est installé !")
-                return None
+                except ImportError:
+                    self.logger.error("Ni pandas_ta ni ta n'est installé !")
+                    return None
 
             self.logger.info(
                 f"✅ {len(indicators)} indicateurs extraits automatiquement"
@@ -1959,7 +1977,6 @@ async def run_clean_bot():
 
             if bot.is_live_trading:
                 await bot._fetch_real_market_data()
-                print("MARKET DATA KEYS:", list(bot.market_data.keys()))
                 for sym in bot.market_data:
                     print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
@@ -2061,7 +2078,6 @@ async def run_clean_bot():
                             except Exception as e:
                                 print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
 
-            print("MARKET DATA KEYS:", list(bot.market_data.keys()))
             for sym in bot.market_data:
                 print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
@@ -2117,7 +2133,7 @@ async def run_clean_bot():
                 bot.indicators = {}
                 print(f"PAIRS VALID: {bot.pairs_valid}")
                 for pair in bot.pairs_valid:
-                    pair_key = pair.replace("/", "")
+                    pair_key = pair.replace("/", "").upper()
                     for tf in bot.config["TRADING"]["timeframes"]:
                         df = bot.ws_collector.get_dataframe(pair_key.lower(), tf)
                         if df is not None and not df.empty:
@@ -2324,7 +2340,7 @@ async def execute_trade_decisions(bot, trade_decisions):
                 continue
 
             pair = decision["pair"]
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             side = "BUY" if decision["action"] == "buy" else "SELL"
 
             # Calcul du montant
