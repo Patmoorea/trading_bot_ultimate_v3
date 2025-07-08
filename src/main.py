@@ -20,6 +20,7 @@ import time
 
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
+from binance.client import Client
 
 # --- Configuration Streamlit ---
 st.set_page_config(
@@ -75,6 +76,39 @@ CURRENT_TIME = "2025-07-01 16:44:56"  # Date spécifique
 CURRENT_USER = "Patmoorea"
 CONFIG_FILE = "config.json"
 SHARED_DATA_PATH = "src/shared_data.json"
+
+
+def fetch_binance_ohlcv(
+    symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
+):
+    client = Client(api_key, api_secret)
+    klines = client.get_historical_klines(symbol, interval, start_str, end_str)
+    if not klines or len(klines) == 0:
+        st.error(f"Aucune donnée récupérée pour {symbol}")
+        return None
+    df = pd.DataFrame(
+        klines,
+        columns=[
+            "timestamp",
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "close_time",
+            "quote_asset_volume",
+            "number_of_trades",
+            "taker_buy_base_asset_volume",
+            "taker_buy_quote_asset_volume",
+            "ignore",
+        ],
+    )
+    df = df[["timestamp", "open", "high", "low", "close", "volume"]]
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    df[["open", "high", "low", "close", "volume"]] = df[
+        ["open", "high", "low", "close", "volume"]
+    ].astype(float)
+    return df
 
 
 def generate_dummy_returns(n_points=30, final_return=27.5):
@@ -854,17 +888,49 @@ with tab4:
 
     # Lancement du backtest
     if st.button("🚀 Lancer le backtest"):
-        progress_text = "Simulation en cours. Veuillez patienter..."
+        progress_text = "Téléchargement et simulation en cours..."
         my_bar = st.progress(0, text=progress_text)
 
-        for percent_complete in range(100):
-            time.sleep(0.01)
-            my_bar.progress(percent_complete + 1, text=progress_text)
+        # Charge les paires depuis la config
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+            pairs = config.get("pairs", ["BTC/USDT"])
+        except Exception as e:
+            st.warning("Impossible de charger la config, on utilise BTC/USDT.")
+            pairs = ["BTC/USDT"]
 
-        # Résultats simulés
-        results = bot_manager.get_performance_metrics()
+        # Définis la période
+        period_map = {"7j": 7, "30j": 30, "90j": 90, "180j": 180, "365j": 365}
+        nb_days = period_map.get(period, 30)
+        end_dt = pd.Timestamp.utcnow()
+        start_dt = end_dt - pd.Timedelta(days=nb_days)
+        interval = Client.KLINE_INTERVAL_1HOUR
 
-        # Affichage des résultats
+        for i, pair in enumerate(pairs):
+            symbol = pair.replace("/", "")
+            st.write(f"Téléchargement des données pour {symbol}...")
+            df = fetch_binance_ohlcv(
+                symbol,
+                interval,
+                start_dt.strftime("%d %b %Y"),
+                end_dt.strftime("%d %b %Y"),
+                api_key=os.getenv("BINANCE_API_KEY"),
+                api_secret=os.getenv("BINANCE_API_SECRET"),
+            )
+            if df is None or len(df) == 0:
+                st.error(f"Données manquantes pour {pair}, backtest ignoré.")
+                continue
+
+            # Sélectionne la bonne stratégie
+            strategy_func = strategy_options[strategy_name]
+            # Ajoute les params dynamiques si besoin
+            backtester = BacktestEngine(initial_capital=initial_capital)
+            results = backtester.run_backtest(df, strategy_func, **params)
+            st.write(f"Résultats du backtest pour {pair} :", results)
+
+            my_bar.progress(int((i + 1) / len(pairs) * 100), text=progress_text)
+
         st.success("Backtest terminé!")
 
         col1, col2, col3 = st.columns(3)
