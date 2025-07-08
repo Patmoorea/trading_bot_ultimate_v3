@@ -1796,10 +1796,14 @@ class TradingBotM4:
         import pandas as pd
 
         try:
+            print(
+                f"[DEBUG add_indicators] Entrée type: {type(df)}, shape: {getattr(df, 'shape', 'N/A')}"
+            )
             # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
+                    print("[DEBUG add_indicators] Liste reçue vide")
                     return None
                 if isinstance(df[0], dict):
                     df = pd.DataFrame(df)
@@ -1811,15 +1815,20 @@ class TradingBotM4:
                     self.logger.error(
                         "add_indicators: Format de liste non pris en charge"
                     )
+                    print("[DEBUG add_indicators] Format de liste non pris en charge")
                     return None
             if not isinstance(df, pd.DataFrame):
                 self.logger.error("add_indicators: df n'est pas un DataFrame")
+                print("[DEBUG add_indicators] df n'est pas un DataFrame")
                 return None
 
             required_cols = {"open", "high", "low", "close", "volume"}
             if not required_cols.issubset(df.columns):
                 self.logger.error(
                     f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
+                )
+                print(
+                    f"[DEBUG add_indicators] Colonnes manquantes: {required_cols - set(df.columns)}"
                 )
                 return None
 
@@ -1829,10 +1838,16 @@ class TradingBotM4:
                 self.logger.warning(
                     f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
                 )
+                print(
+                    f"[DEBUG add_indicators] DataFrame trop court ({0 if df is None else len(df)}) lignes"
+                )
                 return None
 
             # 3. Sécurité : trier par timestamp pour tous les indicateurs (VWAP, etc.)
             if "timestamp" in df.columns:
+                print(
+                    f"[DEBUG add_indicators] timestamp dtype: {df['timestamp'].dtype}"
+                )
                 df = df.sort_values("timestamp")
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
@@ -1844,7 +1859,11 @@ class TradingBotM4:
                 self.logger.warning(
                     "DataFrame vide, impossible de calculer les indicateurs"
                 )
+                print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
                 return None
+
+            # DEBUG: Affiche la taille du DataFrame
+            print(f"[DEBUG add_indicators] Calcul sur DF {df.shape}")
 
             # 4. Calcul de TOUS les indicateurs
             indicators = {}
@@ -1867,6 +1886,9 @@ class TradingBotM4:
                 self.logger.warning(
                     f"pandas_ta indisponible ou erreur ({e}), tentative avec ta..."
                 )
+                print(
+                    f"[DEBUG add_indicators] pandas_ta indisponible ou erreur ({e}), tentative avec ta..."
+                )
                 try:
                     import ta
 
@@ -1887,15 +1909,26 @@ class TradingBotM4:
                     }
                 except ImportError:
                     self.logger.error("Ni pandas_ta ni ta n'est installé !")
+                    print("[DEBUG add_indicators] Ni pandas_ta ni ta n'est installé !")
+                    return None
+                except Exception as e2:
+                    self.logger.error(f"Erreur ta.add_all_ta_features : {e2}")
+                    print(
+                        f"[DEBUG add_indicators] Exception ta.add_all_ta_features: {e2}"
+                    )
                     return None
 
             self.logger.info(
-                f"✅ {len(indicators)} indicateurs extraits automatiquement"
+                f"✅ {len(indicators)} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
+            )
+            print(
+                f"[DEBUG add_indicators] {len(indicators)} indicateurs extraits: {list(indicators.keys())[:5]}"
             )
             return indicators
 
         except Exception as e:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            print(f"[DEBUG add_indicators] Exception: {e}")
             return None
 
     async def analyze_signals(self, df, indicators):
@@ -2019,10 +2052,6 @@ async def run_clean_bot():
         """Exécute un cycle complet de trading"""
         try:
             # 0. Import avancé des indicateurs orderflow (à placer en haut du fichier !)
-            # from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
-            # Instanciation globale à faire avant la boucle :
-            # orderflow_indicators = AdvancedIndicators()
-            # Mais pour la version patch à chaud, on instancie ici :
             try:
                 from src.analysis.technical.advanced.advanced_indicators import (
                     AdvancedIndicators,
@@ -2040,6 +2069,9 @@ async def run_clean_bot():
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
+                    print(
+                        f"[DEBUG CYCLE] DF {pair_key} {tf} : {len(df) if df is not None else 'None'} lignes, colonnes: {list(df.columns) if df is not None else 'None'}"
+                    )
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
@@ -2055,11 +2087,9 @@ async def run_clean_bot():
                         # 1bis. Calcul et injection des indicateurs orderflow avancés
                         if orderflow_indicators is not None:
                             try:
-                                # Les méthodes attendent un DataFrame OHLCV, converti si besoin
                                 bid_ask = None
                                 liquidity_wave = None
                                 smart_money = None
-                                # Les méthodes sont peut-être protégées (_), adapter si nécessaire
                                 if hasattr(orderflow_indicators, "_bid_ask_ratio"):
                                     bid_ask = orderflow_indicators._bid_ask_ratio(df)
                                 if hasattr(orderflow_indicators, "_liquidity_wave"):
@@ -2077,9 +2107,13 @@ async def run_clean_bot():
                                 }
                             except Exception as e:
                                 print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
+                    else:
+                        print(
+                            f"[DEBUG CYCLE] DataFrame vide ou None pour {pair_key} {tf}"
+                        )
 
             for sym in bot.market_data:
-                print(f"{sym}: {list(bot.market_data[sym].keys())}")
+                print(f"[DEBUG MARKET_DATA] {sym}: {list(bot.market_data[sym].keys())}")
 
             # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
@@ -2102,94 +2136,100 @@ async def run_clean_bot():
             return trade_decisions, regime
 
         except Exception as e:
+            print(f"[DEBUG] Exception in execute_trading_cycle: {e}")
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
     # Fonction principale
-    try:
-        # Initialisation
-        bot, valid_pairs = await initialize_bot()
+    async def main():
+        try:
+            # Initialisation
+            bot, valid_pairs = await initialize_bot()
 
-        # Analyse initiale du marché
-        regime, _, _ = await bot.study_market("7d")
-        print(f"🔈 Régime de marché détecté: {regime}")
+            # Analyse initiale du marché
+            regime, _, _ = await bot.study_market("7d")
+            print(f"🔈 Régime de marché détecté: {regime}")
 
-        # Boucle principale
-        cycle = 0
-        while True:
-            cycle += 1
-            start = datetime.utcnow()
-            try:
-                print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
+            # Boucle principale
+            cycle = 0
+            while True:
+                cycle += 1
+                start = datetime.utcnow()
+                try:
+                    print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
 
-                # Exécution du cycle de trading
-                trade_decisions, regime = await execute_trading_cycle(bot, valid_pairs)
+                    # Exécution du cycle de trading
+                    trade_decisions, regime = await execute_trading_cycle(
+                        bot, valid_pairs
+                    )
 
-                # Mise à jour des données
-                bot.current_cycle = cycle
-                bot.regime = regime
+                    # Mise à jour des données
+                    bot.current_cycle = cycle
+                    bot.regime = regime
 
-                # Pour chaque paire et timeframe, calcule et stocke les indicateurs
-                bot.indicators = {}
-                print(f"PAIRS VALID: {bot.pairs_valid}")
-                for pair in bot.pairs_valid:
-                    pair_key = pair.replace("/", "").upper()
-                    for tf in bot.config["TRADING"]["timeframes"]:
-                        df = bot.ws_collector.get_dataframe(pair_key, tf)
-                        if df is not None and not df.empty:
-                            if set(df.columns) == {
-                                "timestamp",
-                                "open",
-                                "high",
-                                "low",
-                                "close",
-                                "volume",
-                            }:
-                                df2 = pd.DataFrame(
-                                    {
-                                        0: df["timestamp"],
-                                        1: df["open"],
-                                        2: df["high"],
-                                        3: df["low"],
-                                        4: df["close"],
-                                        5: df["volume"],
-                                    }
-                                )
+                    # Pour chaque paire et timeframe, calcule et stocke les indicateurs
+                    bot.indicators = {}
+                    print(f"[DEBUG] PAIRS VALID: {bot.pairs_valid}")
+                    for pair in bot.pairs_valid:
+                        pair_key = pair.replace("/", "").upper()
+                        for tf in bot.config["TRADING"]["timeframes"]:
+                            df = bot.ws_collector.get_dataframe(pair_key, tf)
+                            print(
+                                f"[DEBUG] DF {pair_key} {tf} : {len(df) if df is not None else 'None'} lignes, colonnes: {list(df.columns) if df is not None else 'None'}"
+                            )
+                            if df is not None and not df.empty:
+                                try:
+                                    indics = bot.add_indicators(df)
+                                    print(
+                                        f"[DEBUG] add_indicators result pour {pair_key} {tf}: {type(indics)} ({'OK' if indics else 'None/Empty'})"
+                                    )
+                                    if indics is not None:
+                                        print(
+                                            f"[DEBUG] Nb indicateurs extraits pour {pair_key} {tf}: {len(indics)} | Exemples: {list(indics.keys())[:5]}"
+                                        )
+                                    if pair_key not in bot.indicators:
+                                        bot.indicators[pair_key] = {}
+                                    bot.indicators[pair_key][tf] = indics
+                                except Exception as e:
+                                    print(
+                                        f"[DEBUG] Exception add_indicators {pair_key} {tf}: {e}"
+                                    )
+                                    bot.logger.error(
+                                        f"Error calculating indicators for {pair_key} {tf}: {e}"
+                                    )
                             else:
-                                print(f"SKIP: {pair_key} {tf} (no data)")
-                                df2 = df
-                            try:
-                                indics = bot.add_indicators(df2)
-                                if pair_key not in bot.indicators:
-                                    bot.indicators[pair_key] = {}
-                                bot.indicators[pair_key][tf] = indics
-                            except Exception as e:
-                                print(f"ERROR {pair_key} {tf}: {e}")
-                                bot.logger.error(
-                                    f"Error calculating indicators for {pair_key} {tf}: {e}"
+                                print(
+                                    f"[DEBUG] DataFrame vide ou None pour {pair_key} {tf}"
                                 )
 
-                bot.save_shared_data()
+                    print("[DEBUG] Structure finale de bot.indicators :")
+                    for k, v in bot.indicators.items():
+                        print(f"  {k}: {list(v.keys()) if isinstance(v, dict) else v}")
 
-                # Calcul de la durée et rapports
-                duration = (datetime.utcnow() - start).total_seconds()
-                print(f"✅ Cycle terminé en {duration:.1f}s")
+                    bot.save_shared_data()
 
-                # Envoi des mises à jour
-                await send_cycle_reports(bot, trade_decisions, cycle, regime, duration)
+                    # Calcul de la durée et rapports
+                    duration = (datetime.utcnow() - start).total_seconds()
+                    print(f"✅ Cycle terminé en {duration:.1f}s")
 
-            except Exception as e:
-                error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-                logger.error(error_msg)
-                await bot.telegram.send_message(error_msg)
+                    # Envoi des mises à jour
+                    await send_cycle_reports(
+                        bot, trade_decisions, cycle, regime, duration
+                    )
 
-            # Attente avant le prochain cycle
-            await asyncio.sleep(30)
+                except Exception as e:
+                    error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
+                    print(f"[DEBUG] Exception in main trading loop: {e}")
+                    logger.error(error_msg)
+                    await bot.telegram.send_message(error_msg)
 
-    except KeyboardInterrupt:
-        await handle_shutdown(bot, "👋 Bot arrêté proprement")
-    except Exception as e:
-        await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+                # Attente avant le prochain cycle
+                await asyncio.sleep(30)
+
+        except KeyboardInterrupt:
+            await handle_shutdown(bot, "👋 Bot arrêté proprement")
+        except Exception as e:
+            await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
     # Fonctions auxiliaires pour le traitement des données et l'analyse
 
