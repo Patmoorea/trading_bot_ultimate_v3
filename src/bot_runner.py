@@ -2621,3 +2621,6 @@ if __name__ == "__main__":
             print(f"Résultats du backtest pour {pair} :")
             print(results)
         sys.exit(0)
+    else:
+        import asyncio
+        asyncio.run(run_clean_bot())
