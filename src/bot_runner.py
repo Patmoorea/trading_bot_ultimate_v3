@@ -341,7 +341,7 @@ class WarningFilter:
 
     def write(self, message):
         if any(
-            word in message.lower()
+            word in message()
             for word in [
                 "warning",
                 "scriptruncontext",
@@ -850,16 +850,16 @@ class TradingBotM4:
             avg_price = float(trade_result["avg_price"])
             side = trade_result["side"]
 
-            if side.lower() == "buy":
+            if side() == "buy":
                 # Pour un achat, on ne sait pas encore si c'est gagnant
                 pass
-            elif side.lower() == "sell":
+            elif side() == "sell":
                 # Pour une vente, on peut calculer le profit par rapport au prix d'achat moyen
                 entry_price = trade_result.get("entry_price", 0)
                 if entry_price > 0:
                     profit_pct = (
                         (avg_price / entry_price - 1) * 100
-                        if side.lower() == "sell"
+                        if side() == "sell"
                         else (1 - avg_price / entry_price) * 100
                     )
                     profit_amount = filled_amount * avg_price * profit_pct / 100
@@ -2035,7 +2035,7 @@ async def run_clean_bot():
 
             # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
             for pair in bot.pairs_valid:
-                pair_key = pair.replace("/", "").lower()
+                pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
@@ -2135,7 +2135,7 @@ async def run_clean_bot():
                 for pair in bot.pairs_valid:
                     pair_key = pair.replace("/", "").upper()
                     for tf in bot.config["TRADING"]["timeframes"]:
-                        df = bot.ws_collector.get_dataframe(pair_key.lower(), tf)
+                        df = bot.ws_collector.get_dataframe(pair_key, tf)
                         if df is not None and not df.empty:
                             if set(df.columns) == {
                                 "timestamp",
@@ -2160,6 +2160,8 @@ async def run_clean_bot():
                                 df2 = df
                             try:
                                 indics = bot.add_indicators(df2)
+                                if pair_key not in bot.indicators:
+                                    bot.indicators[pair_key] = {}
                                 bot.indicators[pair_key][tf] = indics
                             except Exception as e:
                                 print(f"ERROR {pair_key} {tf}: {e}")
