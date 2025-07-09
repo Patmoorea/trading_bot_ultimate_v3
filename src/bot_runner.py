@@ -1823,15 +1823,17 @@ class TradingBotM4:
 
     def add_indicators(self, df):
         """
-        Calcule TOUS les indicateurs possibles (130+) avec pandas-ta ou ta.
+        Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur}
         """
         import pandas as pd
 
         try:
-            print(
-                f"[DEBUG add_indicators] Entrée type: {type(df)}, shape: {getattr(df, 'shape', 'N/A')}"
-            )
+            print("[DEBUG add_indicators] type(df):", type(df))
+            print("[DEBUG add_indicators] hasattr(df, 'ta'):", hasattr(df, "ta"))
+            if hasattr(df, "ta"):
+                print("[DEBUG add_indicators] type(df.ta):", type(df.ta))
+
             # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
                 if len(df) == 0:
@@ -1898,57 +1900,68 @@ class TradingBotM4:
             # DEBUG: Affiche la taille du DataFrame
             print(f"[DEBUG add_indicators] Calcul sur DF {df.shape}")
 
-            # 4. Calcul de TOUS les indicateurs
             indicators = {}
-            base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
-
             try:
+                df_ta = df.copy()
 
-                if hasattr(df, "ta") and hasattr(df.ta, "strategy"):
-                    df_ta = df.copy()
-                    df_ta.ta.strategy("All")
-                    indicators = {
-                        col: df_ta[col].iloc[-1]
-                        for col in df_ta.columns
-                        if col not in base_cols
-                    }
-                else:
-                    raise ImportError("pandas_ta n'est pas disponible correctement")
+                # SMA pour sma_strategy et breakout_strategy
+                df_ta["sma_20"] = df_ta.ta.sma(length=20)
+                df_ta["sma_50"] = df_ta.ta.sma(length=50)
+                # EMA pour ema_strategy
+                df_ta["ema_20"] = df_ta.ta.ema(length=20)
+                # RSI pour rsi_strategy
+                df_ta["rsi_14"] = df_ta.ta.rsi(length=14)
+                # MACD pour macd_strategy
+                macd = df_ta.ta.macd()
+                if macd is not None and not macd.empty:
+                    df_ta["macd"] = macd["MACD_12_26_9"]
+                    df_ta["macd_signal"] = macd["MACDs_12_26_9"]
+                    df_ta["macd_hist"] = macd["MACDh_12_26_9"]
+                # Bollinger Bands pour bollinger_strategy
+                bb = df_ta.ta.bbands(length=20, std=2.0)
+                if bb is not None and not bb.empty:
+                    df_ta["bb_lower"] = bb["BBL_20_2.0"]
+                    df_ta["bb_upper"] = bb["BBU_20_2.0"]
+                # Donchian Channels pour donchian_strategy et breakout_strategy
+                df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
+                df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
+                # Parabolic SAR pour parabolic_sar_strategy
+                psar = df_ta.ta.psar()
+                if psar is not None and not psar.empty:
+                    key = [col for col in psar.columns if col.startswith("PSAR")][0]
+                    df_ta["psar"] = psar[key]
+                # Momentum pour momentum_strategy
+                df_ta["momentum_10"] = df_ta.ta.mom(length=10)
+                # Mean Reversion (zscore) pour mean_reversion_strategy
+                df_ta["zscore_20"] = (
+                    df_ta["close"] - df_ta["close"].rolling(20).mean()
+                ) / df_ta["close"].rolling(20).std()
+
+                all_indics = [
+                    "sma_20",
+                    "sma_50",
+                    "ema_20",
+                    "rsi_14",
+                    "macd",
+                    "macd_signal",
+                    "macd_hist",
+                    "bb_lower",
+                    "bb_upper",
+                    "donchian_high",
+                    "donchian_low",
+                    "psar",
+                    "momentum_10",
+                    "zscore_20",
+                ]
+                indicators = {
+                    col: df_ta[col].iloc[-1] if col in df_ta.columns else None
+                    for col in all_indics
+                }
+
             except Exception as e:
-                self.logger.warning(
-                    f"pandas_ta indisponible ou erreur ({e}), tentative avec ta..."
-                )
-                print(
-                    f"[DEBUG add_indicators] pandas_ta indisponible ou erreur ({e}), tentative avec ta..."
-                )
-                try:
-                    import ta
-
-                    df_reset = df.copy().reset_index()
-                    df_with_indicators = ta.add_all_ta_features(
-                        df_reset,
-                        open="open",
-                        high="high",
-                        low="low",
-                        close="close",
-                        volume="volume",
-                        fillna=True,
-                    )
-                    indicators = {
-                        col: df_with_indicators[col].iloc[-1]
-                        for col in df_with_indicators.columns
-                        if col not in base_cols
-                    }
-                except ImportError:
-                    self.logger.error("Ni pandas_ta ni ta n'est installé !")
-                    print("[DEBUG add_indicators] Ni pandas_ta ni ta n'est installé !")
-                    return None
-                except Exception as e2:
-                    self.logger.error(f"Erreur ta.add_all_ta_features : {e2}")
-                    print(
-                        f"[DEBUG add_indicators] Exception ta.add_all_ta_features: {e2}"
-                    )
-                    return None
+                self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
+                print(f"[DEBUG] Exception pandas-ta indicateurs principaux : {e}")
+                indicators = {}
 
             self.logger.info(
                 f"✅ {len(indicators)} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
@@ -1962,48 +1975,6 @@ class TradingBotM4:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
             print(f"[DEBUG add_indicators] Exception: {e}")
             return None
-
-    async def analyze_signals(self, df, indicators):
-        action = "neutral"
-        confidence = 0.5
-
-        try:
-            if indicators:
-                # Signaux plus sensibles
-                trend_signal = 0
-                if indicators.get("sma_20", 0) > indicators.get("sma_50", 0):
-                    trend_signal += 0.4
-                else:
-                    trend_signal -= 0.4
-
-                momentum_signal = 0
-                rsi = indicators.get("rsi", 50)
-                if rsi > 70:
-                    momentum_signal -= 0.6
-                elif rsi < 30:
-                    momentum_signal += 0.6
-
-                macd = indicators.get("macd", 0)
-                macd_signal = indicators.get("macd_signal", 0)
-                macd_strength = abs(macd - macd_signal) / max(abs(macd), 0.01)
-                if macd > macd_signal:
-                    momentum_signal += 0.4 * macd_strength
-                else:
-                    momentum_signal -= 0.4 * macd_strength
-
-                combined_signal = (trend_signal + momentum_signal) / 2
-
-                if combined_signal > 0.15:  # Seuil plus bas
-                    action = "buy"
-                    confidence = 0.5 + min(0.5, abs(combined_signal))
-                elif combined_signal < -0.15:  # Seuil plus bas
-                    action = "sell"
-                    confidence = 0.5 + min(0.5, abs(combined_signal))
-
-        except Exception as e:
-            self.logger.error(f"Error analyzing signals: {e}")
-
-        return {"action": action, "confidence": confidence}
 
 
 def load_config():
