@@ -13,7 +13,7 @@ from datetime import datetime, timezone, timedelta
 import argparse
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+import pandas_ta as pta
 from decimal import Decimal
 from dotenv import load_dotenv
 from binance.client import Client
