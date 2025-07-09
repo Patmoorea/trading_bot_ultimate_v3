@@ -1827,6 +1827,7 @@ class TradingBotM4:
         Retourne un dictionnaire {nom_indicateur: dernière_valeur}
         """
         import pandas as pd
+        import numpy as np
 
         try:
             print("[DEBUG add_indicators] type(df):", type(df))
@@ -1878,7 +1879,7 @@ class TradingBotM4:
                 )
                 return None
 
-            # 3. Sécurité : trier par timestamp pour tous les indicateurs (VWAP, etc.)
+            # 3. Sécurité : trier par timestamp pour tous les indicateurs (pas d'index timestamp !)
             if "timestamp" in df.columns:
                 print(
                     f"[DEBUG add_indicators] timestamp dtype: {df['timestamp'].dtype}"
@@ -1887,8 +1888,8 @@ class TradingBotM4:
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
-                df = df.set_index("timestamp")
-                df = df[~df.index.duplicated(keep="last")]
+                # NE PAS faire de set_index ! (pandas-ta veut un RangeIndex)
+                print("[DEBUG add_indicators] Index type:", type(df.index))
 
             if df.empty:
                 self.logger.warning(
@@ -1968,6 +1969,29 @@ class TradingBotM4:
                     "momentum_10",
                     "zscore_20",
                 ]
+                print("[DEBUG] Colonnes calculées :", df_ta.columns)
+                for col in all_indics:
+                    if col in df_ta.columns:
+                        print(f"[DEBUG] {col} derniers : {df_ta[col].tail()}")
+                    else:
+                        print(f"[DEBUG] {col} ABSENT du DataFrame")
+
+                for col in all_indics:
+                    if col in df_ta.columns:
+                        val = df_ta[col].iloc[-1]
+                        print(
+                            f"[DEBUG] {col} iloc[-1]:",
+                            val,
+                            type(val),
+                            "isnan:",
+                            (
+                                pd.isna(val)
+                                if isinstance(val, (float, np.floating))
+                                else "N/A"
+                            ),
+                        )
+                # === FIN DEBUG ===
+
                 indicators = {
                     col: df_ta[col].iloc[-1] if col in df_ta.columns else None
                     for col in all_indics

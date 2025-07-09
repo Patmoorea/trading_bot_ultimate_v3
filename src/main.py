@@ -17,6 +17,7 @@ import websockets
 import asyncio
 import psutil
 import time
+import pytz
 
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
@@ -668,11 +669,13 @@ with st.sidebar:
 
     if status:
         # Status principal avec style
+        tahiti = pytz.timezone("Pacific/Tahiti")
+        now_tahiti = datetime.now(tahiti).strftime("%Y-%m-%d %H:%M:%S")
         st.markdown(
             f"""
             <div style='background-color: #0f3d40; padding: 10px; border-radius: 5px;'>
                 <h3 style='color: #00ff00; margin: 0;'>✅ Bot Actif</h3>
-                <p style='color: #ffffff; margin: 5px 0;'>Dernière mise à jour: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
+                <p style='color: #ffffff; margin: 5px 0;'>Dernière mise à jour: {now_tahiti} (heure Polynésie)</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -836,26 +839,37 @@ with tab3:
 
                 # -------- ASTUCE 1 : Lister tous les noms d'indicateurs --------
                 with st.expander("Voir tous les noms d'indicateurs"):
-                    st.write(list(indics.keys()))
+                    # PATCH: Vérification pour éviter l'AttributeError
+                    if indics is not None:
+                        st.write(list(indics.keys()))
+                    else:
+                        st.warning(
+                            "Pas assez de données pour les indicateurs sur ce timeframe !"
+                        )
 
                 # -------- ASTUCE 2 : Filtrer dynamiquement --------
                 search = st.text_input(
                     f"Filtrer les indicateurs pour {symbol} {tf}",
                     key=f"search_{symbol}_{tf}",
                 )
-                if search:
-                    filtered = {
-                        k: v for k, v in indics.items() if search.lower() in k.lower()
-                    }
-                else:
-                    filtered = indics
+                if indics is not None:
+                    if search:
+                        filtered = {
+                            k: v
+                            for k, v in indics.items()
+                            if search.lower() in k.lower()
+                        }
+                    else:
+                        filtered = indics
 
-                if filtered:
-                    df = pd.DataFrame(filtered, index=[0]).T
-                    df.columns = ["Dernière valeur"]
-                    st.dataframe(df, use_container_width=True)
+                    if filtered:
+                        df = pd.DataFrame(filtered, index=[0]).T
+                        df.columns = ["Dernière valeur"]
+                        st.dataframe(df, use_container_width=True)
+                    else:
+                        st.info("Aucun indicateur ne correspond à ce filtre.")
                 else:
-                    st.info("Aucun indicateur ne correspond à ce filtre.")
+                    st.info("Aucun indicateur calculé (pas assez de données)")
     else:
         st.info(
             "Aucun indicateur technique disponible. Attends le prochain cycle de calcul."
@@ -1052,10 +1066,12 @@ with st.sidebar:
 
 # Footer avec informations détaillées
 st.sidebar.divider()
+tahiti = pytz.timezone("Pacific/Tahiti")
+now_tahiti = datetime.now(tahiti).strftime("%Y-%m-%d %H:%M:%S")
 st.sidebar.markdown(
     f"""
 ### 📊 Informations système
-- 🕒 Dernière mise à jour: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC 
+- 🕒 Dernière mise à jour: {now_tahiti} (heure Polynésie) 
 - 👤 Session: {CURRENT_USER}
 - 🌐 Version: 4.0.1
 - 📡 Status: En ligne
