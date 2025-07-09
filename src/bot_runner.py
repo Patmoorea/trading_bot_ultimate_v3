@@ -1903,7 +1903,6 @@ class TradingBotM4:
             base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
 
             try:
-                import pandas_ta as ta
 
                 if hasattr(df, "ta") and hasattr(df.ta, "strategy"):
                     df_ta = df.copy()
