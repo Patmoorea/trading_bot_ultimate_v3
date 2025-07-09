@@ -1905,23 +1905,36 @@ class TradingBotM4:
                 df_ta = df.copy()
 
                 # SMA pour sma_strategy et breakout_strategy
-                df_ta["sma_20"] = df_ta.ta.sma(length=20)
-                df_ta["sma_50"] = df_ta.ta.sma(length=50)
+                sma_20 = df_ta.ta.sma(length=20, append=False)
+                if sma_20 is not None and not sma_20.empty and "SMA_20" in sma_20:
+                    df_ta["sma_20"] = sma_20["SMA_20"]
+                sma_50 = df_ta.ta.sma(length=50, append=False)
+                if sma_50 is not None and not sma_50.empty and "SMA_50" in sma_50:
+                    df_ta["sma_50"] = sma_50["SMA_50"]
                 # EMA pour ema_strategy
-                df_ta["ema_20"] = df_ta.ta.ema(length=20)
+                ema_20 = df_ta.ta.ema(length=20, append=False)
+                if ema_20 is not None and not ema_20.empty and "EMA_20" in ema_20:
+                    df_ta["ema_20"] = ema_20["EMA_20"]
                 # RSI pour rsi_strategy
-                df_ta["rsi_14"] = df_ta.ta.rsi(length=14)
+                rsi_14 = df_ta.ta.rsi(length=14, append=False)
+                if rsi_14 is not None and not rsi_14.empty and "RSI_14" in rsi_14:
+                    df_ta["rsi_14"] = rsi_14["RSI_14"]
                 # MACD pour macd_strategy
                 macd = df_ta.ta.macd()
                 if macd is not None and not macd.empty:
-                    df_ta["macd"] = macd["MACD_12_26_9"]
-                    df_ta["macd_signal"] = macd["MACDs_12_26_9"]
-                    df_ta["macd_hist"] = macd["MACDh_12_26_9"]
+                    if "MACD_12_26_9" in macd:
+                        df_ta["macd"] = macd["MACD_12_26_9"]
+                    if "MACDs_12_26_9" in macd:
+                        df_ta["macd_signal"] = macd["MACDs_12_26_9"]
+                    if "MACDh_12_26_9" in macd:
+                        df_ta["macd_hist"] = macd["MACDh_12_26_9"]
                 # Bollinger Bands pour bollinger_strategy
                 bb = df_ta.ta.bbands(length=20, std=2.0)
                 if bb is not None and not bb.empty:
-                    df_ta["bb_lower"] = bb["BBL_20_2.0"]
-                    df_ta["bb_upper"] = bb["BBU_20_2.0"]
+                    if "BBL_20_2.0" in bb:
+                        df_ta["bb_lower"] = bb["BBL_20_2.0"]
+                    if "BBU_20_2.0" in bb:
+                        df_ta["bb_upper"] = bb["BBU_20_2.0"]
                 # Donchian Channels pour donchian_strategy et breakout_strategy
                 df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
                 df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
@@ -1931,7 +1944,9 @@ class TradingBotM4:
                     key = [col for col in psar.columns if col.startswith("PSAR")][0]
                     df_ta["psar"] = psar[key]
                 # Momentum pour momentum_strategy
-                df_ta["momentum_10"] = df_ta.ta.mom(length=10)
+                mom_10 = df_ta.ta.mom(length=10, append=False)
+                if mom_10 is not None and not mom_10.empty and "MOM_10" in mom_10:
+                    df_ta["momentum_10"] = mom_10["MOM_10"]
                 # Mean Reversion (zscore) pour mean_reversion_strategy
                 df_ta["zscore_20"] = (
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
@@ -1964,10 +1979,10 @@ class TradingBotM4:
                 indicators = {}
 
             self.logger.info(
-                f"✅ {len(indicators)} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
+                f"✅ {len([v for v in indicators.values() if v is not None])} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
             )
             print(
-                f"[DEBUG add_indicators] {len(indicators)} indicateurs extraits: {list(indicators.keys())[:5]}"
+                f"[DEBUG add_indicators] {len([v for v in indicators.values() if v is not None])} indicateurs extraits: {list(indicators.keys())[:5]}"
             )
             return indicators
 
