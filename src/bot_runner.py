@@ -2621,10 +2621,10 @@ async def send_trade_notification(bot, decision, trade_result, amount):
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
-        # Mise à jour Telegram standard
+        # 1. Mise à jour Telegram standard
         await bot.send_telegram_updates()
 
-        # Rapport des trades si nécessaire
+        # 2. Rapport des trades si nécessaire
         if trade_decisions:
             trade_report = "💹 <b>Trades exécutés</b>\n\n"
             for trade in trade_decisions:
@@ -2639,6 +2639,50 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
             await bot.telegram.send_message(trade_report)
         else:
             await bot.telegram.send_cycle_update(cycle, regime, duration)
+
+        # 3. ====== AJOUT : Rapport d'analyse de marché complet (news+sentiment+signaux) ======
+
+        # Préparation des données pour le rapport
+        indicators_analysis = bot.indicators
+        regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
+
+        # Charger le sentiment/news si dispo
+        news_sentiment = None
+        try:
+            with open(bot.data_file, "r") as f:
+                shared_data = json.load(f)
+            news_sentiment = shared_data.get("sentiment", None)
+        except Exception:
+            news_sentiment = None
+
+        # Générer les décisions de trade par TF/paire (exemple basique, adapte à tes signaux réels)
+        trade_decisions_dict = {}
+        for pair in bot.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            for tf in bot.config["TRADING"]["timeframes"]:
+                tf_key = f"{tf}|{pair}"
+                trade_decisions_dict[tf_key] = {
+                    "action": "LONG",  # À adapter selon ta logique
+                    "confidence": 0.75,
+                    "tech": 0.8,
+                    "ai": 0.7,
+                    "sentiment": (
+                        news_sentiment.get("scores", [{}])[0].get("sentiment", 0.5)
+                        if news_sentiment
+                        else 0.5
+                    ),
+                }
+
+        # Génère le rapport enrichi
+        rapport = _generate_analysis_report(
+            indicators_analysis,
+            regime_name,
+            news_sentiment=news_sentiment,
+            trade_decisions=trade_decisions_dict,
+        )
+
+        # Envoi sur Telegram
+        await bot.telegram.send_message(rapport)
 
     except Exception as e:
         logging.error(f"Erreur envoi rapports: {e}")
