@@ -2635,16 +2635,20 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                     else "⚠️" if status == "simulated" else "❌"
                 )
                 trade_report += f"{emoji} {trade['pair']}: {trade['action'].upper()} ({trade['confidence']:.0%})\n"
-
             await bot.telegram.send_message(trade_report)
         else:
             await bot.telegram.send_cycle_update(cycle, regime, duration)
 
-        # 3. ====== AJOUT : Rapport d'analyse de marché complet (news+sentiment+signaux) ======
+        # 3. ====== RAPPORT ANALYSE COMPLET (news + décisions + multi-TF/paire) ======
 
-        # Préparation des données pour le rapport
-        indicators_analysis = bot.indicators
-        regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
+        # Construction d'un dict { "1m | BTC/USDT": {...}, ... }
+        indicators_analysis = {}
+        for pair in bot.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            for tf in bot.config["TRADING"]["timeframes"]:
+                tf_key = f"{tf} | {pair}"
+                indics = bot.indicators.get(pair_key, {}).get(tf, {})
+                indicators_analysis[tf_key] = indics if indics else {}
 
         # Charger le sentiment/news si dispo
         news_sentiment = None
@@ -2655,25 +2659,23 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         except Exception:
             news_sentiment = None
 
-        # Générer les décisions de trade par TF/paire (exemple basique, adapte à tes signaux réels)
+        # Générer les décisions de trade par TF/paire
         trade_decisions_dict = {}
-        for pair in bot.pairs_valid:
-            pair_key = pair.replace("/", "").upper()
-            for tf in bot.config["TRADING"]["timeframes"]:
-                tf_key = f"{tf}|{pair}"
-                trade_decisions_dict[tf_key] = {
-                    "action": "LONG",  # À adapter selon ta logique
-                    "confidence": 0.75,
-                    "tech": 0.8,
-                    "ai": 0.7,
-                    "sentiment": (
-                        news_sentiment.get("scores", [{}])[0].get("sentiment", 0.5)
-                        if news_sentiment
-                        else 0.5
-                    ),
-                }
+        for tf_key in indicators_analysis.keys():
+            trade_decisions_dict[tf_key] = {
+                "action": "LONG",  # À adapter selon ta logique
+                "confidence": 0.75,
+                "tech": 0.8,
+                "ai": 0.7,
+                "sentiment": (
+                    news_sentiment.get("scores", [{}])[0].get("sentiment", 0.5)
+                    if news_sentiment
+                    else 0.5
+                ),
+            }
 
-        # Génère le rapport enrichi
+        regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
+
         rapport = _generate_analysis_report(
             indicators_analysis,
             regime_name,
