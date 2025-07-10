@@ -112,6 +112,76 @@ def fetch_binance_ohlcv(
     return df
 
 
+def _generate_analysis_report(
+    indicators_analysis, regime, news_sentiment=None, trade_decisions=None
+):
+    """Génère un rapport d'analyse détaillé avec news et décisions de trade"""
+    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    report = [
+        "📊 Analyse complète du marché:",
+        f"Date: {current_time} UTC",
+        f"Régime: {regime}",
+        "\nTendances principales:",
+    ]
+    # Ajout de l'analyse des news si disponible
+    if news_sentiment:
+        try:
+            report.extend(
+                [
+                    "\n📰 Analyse des News:",
+                    f"Sentiment: {news_sentiment.get('overall_sentiment', 0):.2%}",
+                    f"Impact estimé: {news_sentiment.get('impact_score', 0):.2%}",
+                    f"Événements majeurs: {news_sentiment.get('major_events', 'Aucun')}",
+                ]
+            )
+        except Exception as e:
+            report.append(f"\n📰 Erreur sur analyse news : {e}")
+    else:
+        report.append("\n📰 Analyse des News: Aucune donnée disponible.")
+
+    # Ajout des dernières news si disponible
+    major_news = news_sentiment.get("latest_news", []) if news_sentiment else []
+    if major_news:
+        report.append("Dernières news :")
+        for news in major_news[:3]:
+            report.append(f"- {news}")
+
+    # Analyse par timeframe
+    for timeframe, analysis in indicators_analysis.items():
+        try:
+            report.append(f"\n⏰ {timeframe}:")
+            trend_strength = analysis.get("trend", {}).get("trend_strength", 0)
+            volatility = analysis.get("volatility", {}).get("current_volatility", 0)
+            volume_profile = analysis.get("volume", {}).get("volume_profile", {})
+            report.extend(
+                [
+                    f"- Force de la tendance: {trend_strength:.2%}",
+                    f"- Volatilité: {volatility:.2%}",
+                    f"- Volume: {volume_profile.get('strength', 'N/A')}",
+                    f"- Signal dominant: {analysis.get('dominant_signal', 'Neutre')}",
+                ]
+            )
+            # Ajout de la décision de trade si disponible
+            if trade_decisions and timeframe in trade_decisions:
+                dec = trade_decisions[timeframe]
+                report.append(
+                    f"└─ 🎯 Décision de trade: {dec['action'].upper()} "
+                    f"(Conf: {dec['confidence']:.2f}, "
+                    f"Tech: {dec.get('tech',0):.2f}, "
+                    f"IA: {dec.get('ai',0):.2f}, "
+                    f"Sentiment: {dec.get('sentiment',0):.2f})"
+                )
+        except Exception as e:
+            report.extend(
+                [
+                    f"\n⏰ {timeframe}:",
+                    "- Données non disponibles",
+                    "- Analyse en cours...",
+                ]
+            )
+    return "\n".join(report)
+
+
 def generate_dummy_returns(n_points=30, final_return=27.5):
     """Génère des rendements simulés"""
     return np.linspace(0, final_return, n_points)
@@ -827,6 +897,24 @@ with tab3:
         with open(SHARED_DATA_PATH, "r") as f:
             shared_data = json.load(f)
         indicators = shared_data.get("indicators", {})
+        # --- PATCH: Ajout d'exemple news/trade_decisions pour le rapport ---
+        news_sentiment = shared_data.get("news_sentiment", None)
+        # Pour l'exemple, tu peux générer des fausses décisions :
+        trade_decisions = {
+            tf: {
+                "action": "LONG" if i % 2 == 0 else "NEUTRAL",
+                "confidence": 0.7 + i * 0.05,
+                "tech": 0.8,
+                "ai": 0.7,
+                "sentiment": 0.6,
+            }
+            for i, tf in enumerate(indicators.keys())
+        }
+        regime = shared_data.get("regime", "Indéterminé")
+        analysis_report = _generate_analysis_report(
+            indicators, regime, news_sentiment, trade_decisions
+        )
+        st.code(analysis_report, language="markdown")
     except Exception as e:
         st.error(f"Erreur lecture indicateurs : {e}")
         indicators = {}
@@ -836,18 +924,13 @@ with tab3:
             st.markdown(f"### {symbol}")
             for tf, indics in tf_dict.items():
                 st.markdown(f"**Timeframe : {tf}**")
-
-                # -------- ASTUCE 1 : Lister tous les noms d'indicateurs --------
                 with st.expander("Voir tous les noms d'indicateurs"):
-                    # PATCH: Vérification pour éviter l'AttributeError
                     if indics is not None:
                         st.write(list(indics.keys()))
                     else:
                         st.warning(
                             "Pas assez de données pour les indicateurs sur ce timeframe !"
                         )
-
-                # -------- ASTUCE 2 : Filtrer dynamiquement --------
                 search = st.text_input(
                     f"Filtrer les indicateurs pour {symbol} {tf}",
                     key=f"search_{symbol}_{tf}",
@@ -861,7 +944,6 @@ with tab3:
                         }
                     else:
                         filtered = indics
-
                     if filtered:
                         df = pd.DataFrame(filtered, index=[0]).T
                         df.columns = ["Dernière valeur"]

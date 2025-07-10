@@ -1913,17 +1913,33 @@ class TradingBotM4:
 
                 # --- Calcul des indicateurs ---
                 sma_20 = df_ta.ta.sma(length=20, append=False)
-                if sma_20 is not None and not sma_20.empty and "SMA_20" in sma_20:
-                    df_ta["sma_20"] = sma_20["SMA_20"]
+                if sma_20 is not None and not sma_20.empty:
+                    if isinstance(sma_20, pd.Series):
+                        df_ta["sma_20"] = sma_20
+                    elif "SMA_20" in sma_20:
+                        df_ta["sma_20"] = sma_20["SMA_20"]
+
                 sma_50 = df_ta.ta.sma(length=50, append=False)
-                if sma_50 is not None and not sma_50.empty and "SMA_50" in sma_50:
-                    df_ta["sma_50"] = sma_50["SMA_50"]
+                if sma_50 is not None and not sma_50.empty:
+                    if isinstance(sma_50, pd.Series):
+                        df_ta["sma_50"] = sma_50
+                    elif "SMA_50" in sma_50:
+                        df_ta["sma_50"] = sma_50["SMA_50"]
+
                 ema_20 = df_ta.ta.ema(length=20, append=False)
-                if ema_20 is not None and not ema_20.empty and "EMA_20" in ema_20:
-                    df_ta["ema_20"] = ema_20["EMA_20"]
+                if ema_20 is not None and not ema_20.empty:
+                    if isinstance(ema_20, pd.Series):
+                        df_ta["ema_20"] = ema_20
+                    elif "EMA_20" in ema_20:
+                        df_ta["ema_20"] = ema_20["EMA_20"]
+
                 rsi_14 = df_ta.ta.rsi(length=14, append=False)
-                if rsi_14 is not None and not rsi_14.empty and "RSI_14" in rsi_14:
-                    df_ta["rsi_14"] = rsi_14["RSI_14"]
+                if rsi_14 is not None and not rsi_14.empty:
+                    if isinstance(rsi_14, pd.Series):
+                        df_ta["rsi_14"] = rsi_14
+                    elif "RSI_14" in rsi_14:
+                        df_ta["rsi_14"] = rsi_14["RSI_14"]
+
                 macd = df_ta.ta.macd()
                 if macd is not None and not macd.empty:
                     if "MACD_12_26_9" in macd:
@@ -1932,21 +1948,29 @@ class TradingBotM4:
                         df_ta["macd_signal"] = macd["MACDs_12_26_9"]
                     if "MACDh_12_26_9" in macd:
                         df_ta["macd_hist"] = macd["MACDh_12_26_9"]
+
                 bb = df_ta.ta.bbands(length=20, std=2.0)
                 if bb is not None and not bb.empty:
                     if "BBL_20_2.0" in bb:
                         df_ta["bb_lower"] = bb["BBL_20_2.0"]
                     if "BBU_20_2.0" in bb:
                         df_ta["bb_upper"] = bb["BBU_20_2.0"]
+
                 df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
                 df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
+
                 psar = df_ta.ta.psar()
                 if psar is not None and not psar.empty:
                     key = [col for col in psar.columns if col.startswith("PSAR")][0]
                     df_ta["psar"] = psar[key]
+
                 mom_10 = df_ta.ta.mom(length=10, append=False)
-                if mom_10 is not None and not mom_10.empty and "MOM_10" in mom_10:
-                    df_ta["momentum_10"] = mom_10["MOM_10"]
+                if mom_10 is not None and not mom_10.empty:
+                    if isinstance(mom_10, pd.Series):
+                        df_ta["momentum_10"] = mom_10
+                    elif "MOM_10" in mom_10:
+                        df_ta["momentum_10"] = mom_10["MOM_10"]
+
                 df_ta["zscore_20"] = (
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
                 ) / df_ta["close"].rolling(20).std()
@@ -2374,7 +2398,19 @@ async def generate_trade_decision(bot, pair, combined_score, data, signal):
 
         # Logging de la décision
         print(f"📡 {pair}: {final_action.upper()} ({confidence:.0%})")
-
+        print(
+            f"[TRADE-DECISION] {pair} | Action: {final_action.upper()} | Confiance: {confidence:.2f} | Score: {combined_score:.4f} | Tech: {signal['confidence']:.2f} | AI: {data.get('ai_prediction', 0.5):.2f} | Sentiment: {data.get('sentiment',0):.2f}"
+        )
+        await bot.telegram.send_message(
+            f"🔔 <b>Décision de Trade</b>\n"
+            f"Pair: {pair}\n"
+            f"Action: <b>{final_action.upper()}</b>\n"
+            f"Confiance: {confidence:.2f}\n"
+            f"Score global: {combined_score:.4f}\n"
+            f"Tech: {signal['confidence']:.2f}\n"
+            f"AI: {data.get('ai_prediction', 0.5):.2f}\n"
+            f"Sentiment: {data.get('sentiment',0):.2f}"
+        )
         # Préparation de la décision
         return {
             "pair": pair,
