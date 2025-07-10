@@ -2028,6 +2028,20 @@ async def run_clean_bot():
             bot = TradingBotM4()
             bot.pairs_valid = valid_pairs
 
+            # --- PATCH PRÉCHARGEMENT HISTORIQUE ---
+            if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
+                for symbol in bot.config["TRADING"]["pairs"]:
+                    symbol_binance = symbol.replace("/", "").upper()
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        try:
+                            bot.ws_collector.preload_historical(
+                                bot.binance_client, symbol_binance, tf, limit=2000
+                            )
+                            print(f"Préchargement {symbol_binance} {tf} OK")
+                        except Exception as e:
+                            print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
+            # --- FIN PATCH ---
+
             if not await bot._setup_components():
                 raise Exception("Échec de l'initialisation des composants")
 
