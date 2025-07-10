@@ -61,6 +61,76 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 load_dotenv()
 
 
+def _generate_analysis_report(
+    indicators_analysis, regime, news_sentiment=None, trade_decisions=None
+):
+    """Génère un rapport d'analyse détaillé avec news et décisions de trade"""
+    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    report = [
+        "📊 Analyse complète du marché:",
+        f"Date: {current_time} UTC",
+        f"Régime: {regime}",
+        "\nTendances principales:",
+    ]
+    # Ajout de l'analyse des news si disponible
+    if news_sentiment:
+        try:
+            report.extend(
+                [
+                    "\n📰 Analyse des News:",
+                    f"Sentiment: {news_sentiment.get('overall_sentiment', 0):.2%}",
+                    f"Impact estimé: {news_sentiment.get('impact_score', 0):.2%}",
+                    f"Événements majeurs: {news_sentiment.get('major_events', 'Aucun')}",
+                ]
+            )
+        except Exception as e:
+            report.append(f"\n📰 Erreur sur analyse news : {e}")
+    else:
+        report.append("\n📰 Analyse des News: Aucune donnée disponible.")
+
+    # Ajout des dernières news si disponible
+    major_news = news_sentiment.get("latest_news", []) if news_sentiment else []
+    if major_news:
+        report.append("Dernières news :")
+        for news in major_news[:3]:
+            report.append(f"- {news}")
+
+    # Analyse par timeframe
+    for timeframe, analysis in indicators_analysis.items():
+        try:
+            report.append(f"\n⏰ {timeframe}:")
+            trend_strength = analysis.get("trend", {}).get("trend_strength", 0)
+            volatility = analysis.get("volatility", {}).get("current_volatility", 0)
+            volume_profile = analysis.get("volume", {}).get("volume_profile", {})
+            report.extend(
+                [
+                    f"- Force de la tendance: {trend_strength:.2%}",
+                    f"- Volatilité: {volatility:.2%}",
+                    f"- Volume: {volume_profile.get('strength', 'N/A')}",
+                    f"- Signal dominant: {analysis.get('dominant_signal', 'Neutre')}",
+                ]
+            )
+            # Ajout de la décision de trade si disponible
+            if trade_decisions and timeframe in trade_decisions:
+                dec = trade_decisions[timeframe]
+                report.append(
+                    f"└─ 🎯 Décision de trade: {dec['action'].upper()} "
+                    f"(Conf: {dec['confidence']:.2f}, "
+                    f"Tech: {dec.get('tech',0):.2f}, "
+                    f"IA: {dec.get('ai',0):.2f}, "
+                    f"Sentiment: {dec.get('sentiment',0):.2f})"
+                )
+        except Exception as e:
+            report.extend(
+                [
+                    f"\n⏰ {timeframe}:",
+                    "- Données non disponibles",
+                    "- Analyse en cours...",
+                ]
+            )
+    return "\n".join(report)
+
+
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
 ):
