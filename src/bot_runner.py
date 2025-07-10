@@ -1824,7 +1824,7 @@ class TradingBotM4:
     def add_indicators(self, df):
         """
         Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
-        Retourne un dictionnaire {nom_indicateur: dernière_valeur}
+        Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
         """
         import pandas as pd
         import numpy as np
@@ -1879,7 +1879,7 @@ class TradingBotM4:
                 )
                 return None
 
-            # 3. Sécurité : trier par timestamp pour tous les indicateurs (pas d'index timestamp !)
+            # 3. Sécurité : trier par timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
                 print(
                     f"[DEBUG add_indicators] timestamp dtype: {df['timestamp'].dtype}"
@@ -1888,7 +1888,6 @@ class TradingBotM4:
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
-                # NE PAS faire de set_index ! (pandas-ta veut un RangeIndex)
                 print("[DEBUG add_indicators] Index type:", type(df.index))
 
             if df.empty:
@@ -1898,29 +1897,24 @@ class TradingBotM4:
                 print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
                 return None
 
-            # DEBUG: Affiche la taille du DataFrame
             print(f"[DEBUG add_indicators] Calcul sur DF {df.shape}")
 
-            indicators = {}
             try:
                 df_ta = df.copy()
 
-                # SMA pour sma_strategy et breakout_strategy
+                # --- Calcul des indicateurs ---
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty and "SMA_20" in sma_20:
                     df_ta["sma_20"] = sma_20["SMA_20"]
                 sma_50 = df_ta.ta.sma(length=50, append=False)
                 if sma_50 is not None and not sma_50.empty and "SMA_50" in sma_50:
                     df_ta["sma_50"] = sma_50["SMA_50"]
-                # EMA pour ema_strategy
                 ema_20 = df_ta.ta.ema(length=20, append=False)
                 if ema_20 is not None and not ema_20.empty and "EMA_20" in ema_20:
                     df_ta["ema_20"] = ema_20["EMA_20"]
-                # RSI pour rsi_strategy
                 rsi_14 = df_ta.ta.rsi(length=14, append=False)
                 if rsi_14 is not None and not rsi_14.empty and "RSI_14" in rsi_14:
                     df_ta["rsi_14"] = rsi_14["RSI_14"]
-                # MACD pour macd_strategy
                 macd = df_ta.ta.macd()
                 if macd is not None and not macd.empty:
                     if "MACD_12_26_9" in macd:
@@ -1929,26 +1923,21 @@ class TradingBotM4:
                         df_ta["macd_signal"] = macd["MACDs_12_26_9"]
                     if "MACDh_12_26_9" in macd:
                         df_ta["macd_hist"] = macd["MACDh_12_26_9"]
-                # Bollinger Bands pour bollinger_strategy
                 bb = df_ta.ta.bbands(length=20, std=2.0)
                 if bb is not None and not bb.empty:
                     if "BBL_20_2.0" in bb:
                         df_ta["bb_lower"] = bb["BBL_20_2.0"]
                     if "BBU_20_2.0" in bb:
                         df_ta["bb_upper"] = bb["BBU_20_2.0"]
-                # Donchian Channels pour donchian_strategy et breakout_strategy
                 df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
                 df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
-                # Parabolic SAR pour parabolic_sar_strategy
                 psar = df_ta.ta.psar()
                 if psar is not None and not psar.empty:
                     key = [col for col in psar.columns if col.startswith("PSAR")][0]
                     df_ta["psar"] = psar[key]
-                # Momentum pour momentum_strategy
                 mom_10 = df_ta.ta.mom(length=10, append=False)
                 if mom_10 is not None and not mom_10.empty and "MOM_10" in mom_10:
                     df_ta["momentum_10"] = mom_10["MOM_10"]
-                # Mean Reversion (zscore) pour mean_reversion_strategy
                 df_ta["zscore_20"] = (
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
                 ) / df_ta["close"].rolling(20).std()
@@ -1976,37 +1965,27 @@ class TradingBotM4:
                     else:
                         print(f"[DEBUG] {col} ABSENT du DataFrame")
 
+                indicators = {}
                 for col in all_indics:
                     if col in df_ta.columns:
-                        val = df_ta[col].iloc[-1]
-                        print(
-                            f"[DEBUG] {col} iloc[-1]:",
-                            val,
-                            type(val),
-                            "isnan:",
-                            (
-                                pd.isna(val)
-                                if isinstance(val, (float, np.floating))
-                                else "N/A"
-                            ),
+                        last_valid = df_ta[col].dropna()
+                        indicators[col] = (
+                            last_valid.iloc[-1] if not last_valid.empty else None
                         )
-                # === FIN DEBUG ===
-
-                indicators = {
-                    col: df_ta[col].iloc[-1] if col in df_ta.columns else None
-                    for col in all_indics
-                }
+                    else:
+                        indicators[col] = None
 
             except Exception as e:
                 self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
                 print(f"[DEBUG] Exception pandas-ta indicateurs principaux : {e}")
                 indicators = {}
 
+            n_valid = len([v for v in indicators.values() if v is not None])
             self.logger.info(
-                f"✅ {len([v for v in indicators.values() if v is not None])} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
+                f"✅ {n_valid} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
             )
             print(
-                f"[DEBUG add_indicators] {len([v for v in indicators.values() if v is not None])} indicateurs extraits: {list(indicators.keys())[:5]}"
+                f"[DEBUG add_indicators] {n_valid} indicateurs extraits: {list(indicators.keys())[:5]}"
             )
             return indicators
 
