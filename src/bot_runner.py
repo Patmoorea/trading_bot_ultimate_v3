@@ -1890,6 +1890,15 @@ class TradingBotM4:
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
                 print("[DEBUG add_indicators] Index type:", type(df.index))
 
+                # >>> AJOUTE ICI <<<
+                print(
+                    df[["timestamp", "open", "high", "low", "close", "volume"]].tail(10)
+                )
+                print(df.dtypes)
+                print("SMA20:", df.ta.sma(length=20).tail())
+                print("RSI14:", df.ta.rsi(length=14).tail())
+                # <<< FIN AJOUT >>>
+
             if df.empty:
                 self.logger.warning(
                     "DataFrame vide, impossible de calculer les indicateurs"
