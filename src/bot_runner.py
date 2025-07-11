@@ -1305,31 +1305,42 @@ class TradingBotM4:
 
     def calculate_trend(self, data):
         try:
-            print("[DEBUG calculate_trend] data keys:", list(data.keys()))
-            print("[DEBUG calculate_trend] closes:", data.get("close", []))
-            if isinstance(data, dict) and "close" in data:
-                closes = data["close"][-20:]
-                if not closes or len(closes) < 10:
-                    return 0.0
-                ma_fast = sum(closes[-10:]) / 10
-                ma_slow = sum(closes) / len(closes)
-                trend = (ma_fast / ma_slow) - 1
-                return float(trend)
-            return 0.0
+            closes = [
+                c for c in data.get("close", []) if c is not None and not np.isnan(c)
+            ]
+            if len(closes) < 10:
+                return 0.0
+            closes = closes[-20:]
+            if len(closes) < 10:
+                return 0.0
+            ma_fast = np.mean(closes[-10:])
+            ma_slow = np.mean(closes)
+            if ma_slow == 0 or np.isnan(ma_fast) or np.isnan(ma_slow):
+                return 0.0
+            trend = (ma_fast / ma_slow) - 1
+            return float(trend)
         except Exception as e:
             print("DEBUG calculate_trend error:", e)
             return 0.0
 
     def calculate_volatility(self, data):
         try:
-            if isinstance(data, dict) and "close" in data:
-                closes = data["close"][-20:]
-                if not closes or len(closes) < 2:
-                    return 0.0
-                returns = np.diff(np.log(closes))
-                return float(np.std(returns) * np.sqrt(252))
-            return 0.0
+            closes = [
+                c
+                for c in data.get("close", [])
+                if c is not None and not np.isnan(c) and c > 0
+            ]
+            if len(closes) < 2:
+                return 0.0
+            closes = closes[-20:]
+            if len(closes) < 2 or any(c <= 0 for c in closes):
+                return 0.0  # protège contre log(0) ou log négatif
+            returns = np.diff(np.log(closes))
+            if np.isnan(returns).any():
+                return 0.0
+            return float(np.std(returns) * np.sqrt(252))
         except Exception as e:
+            print("DEBUG calculate_volatility error:", e)
             return 0.0
 
     def calculate_volume_profile(self, data):
@@ -1935,8 +1946,7 @@ class TradingBotM4:
         import numpy as np
 
         try:
-            print("[DEBUG add_indicators] type(df):", type(df))
-            print("[DEBUG add_indicators] hasattr(df, 'ta'):", hasattr(df, "ta"))
+
             if hasattr(df, "ta"):
                 print("[DEBUG add_indicators] type(df.ta):", type(df.ta))
 
@@ -1944,7 +1954,6 @@ class TradingBotM4:
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
-                    print("[DEBUG add_indicators] Liste reçue vide")
                     return None
                 if isinstance(df[0], dict):
                     df = pd.DataFrame(df)
@@ -1956,20 +1965,15 @@ class TradingBotM4:
                     self.logger.error(
                         "add_indicators: Format de liste non pris en charge"
                     )
-                    print("[DEBUG add_indicators] Format de liste non pris en charge")
                     return None
             if not isinstance(df, pd.DataFrame):
                 self.logger.error("add_indicators: df n'est pas un DataFrame")
-                print("[DEBUG add_indicators] df n'est pas un DataFrame")
                 return None
 
             required_cols = {"open", "high", "low", "close", "volume"}
             if not required_cols.issubset(df.columns):
                 self.logger.error(
                     f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
-                )
-                print(
-                    f"[DEBUG add_indicators] Colonnes manquantes: {required_cols - set(df.columns)}"
                 )
                 return None
 
@@ -1979,21 +1983,14 @@ class TradingBotM4:
                 self.logger.warning(
                     f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
                 )
-                print(
-                    f"[DEBUG add_indicators] DataFrame trop court ({0 if df is None else len(df)}) lignes"
-                )
                 return None
 
             # 3. Sécurité : trier par timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
-                print(
-                    f"[DEBUG add_indicators] timestamp dtype: {df['timestamp'].dtype}"
-                )
                 df = df.sort_values("timestamp")
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
-                print("[DEBUG add_indicators] Index type:", type(df.index))
 
                 # >>> AJOUTE ICI <<<
                 print(
