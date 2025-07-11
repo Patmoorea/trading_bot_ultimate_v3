@@ -942,7 +942,10 @@ with tab3:
                 st.markdown(f"**Timeframe : {tf}**")
                 with st.expander("Voir tous les noms d'indicateurs"):
                     if indics is not None:
-                        st.write(list(indics.keys()))
+                        if isinstance(indics, dict):
+                            st.write(list(indics.keys()))
+                        else:
+                            st.write(f"Valeur : {indics}")
                     else:
                         st.warning(
                             "Pas assez de données pour les indicateurs sur ce timeframe !"

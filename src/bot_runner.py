@@ -2311,90 +2311,88 @@ async def run_clean_bot():
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
-        # Fonction principale
-        async def main():
-            try:
-                # Initialisation
-                bot, valid_pairs = await initialize_bot()
+    # Fonction principale
+    async def main():
+        try:
+            # Initialisation
+            bot, valid_pairs = await initialize_bot()
 
-                # Analyse initiale du marché
-                regime, _, _ = await bot.study_market("7d")
-                print(f"🔈 Régime de marché détecté: {regime}")
+            # Analyse initiale du marché
+            regime, _, _ = await bot.study_market("7d")
+            print(f"🔈 Régime de marché détecté: {regime}")
 
-                # Boucle principale
-                cycle = 0
-                while True:
-                    cycle += 1
-                    start = datetime.utcnow()
-                    try:
-                        print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
+            # Boucle principale
+            cycle = 0
+            while True:
+                cycle += 1
+                start = datetime.utcnow()
+                try:
+                    print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
 
-                        # Exécution du cycle de trading
-                        trade_decisions, regime = await execute_trading_cycle(
-                            bot, valid_pairs
-                        )
+                    # Exécution du cycle de trading
+                    trade_decisions, regime = await execute_trading_cycle(
+                        bot, valid_pairs
+                    )
 
-                        # Mise à jour des données
-                        bot.current_cycle = cycle
-                        bot.regime = regime
+                    # Mise à jour des données
+                    bot.current_cycle = cycle
+                    bot.regime = regime
 
-                        # Pour chaque paire et timeframe, calcule et stocke les indicateurs
-                        # -------- PATCH : Format dashboard-compatible ---------
-                        bot.indicators = {}
-                        for pair in bot.pairs_valid:
-                            pair_key = pair.replace("/", "").upper()
-                            for tf in bot.config["TRADING"]["timeframes"]:
-                                if (
-                                    pair_key in bot.market_data
-                                    and tf in bot.market_data[pair_key]
-                                ):
-                                    trend = bot.calculate_trend(
-                                        bot.market_data[pair_key][tf]
-                                    )
-                                    volatility = bot.calculate_volatility(
-                                        bot.market_data[pair_key][tf]
-                                    )
-                                    volume_profile = bot.calculate_volume_profile(
-                                        bot.market_data[pair_key][tf]
-                                    )
-                                    dominant_signal = bot.get_dominant_signal(pair, tf)
-                                    tf_key = f"{tf} | {pair}"
-                                    bot.indicators[tf_key] = {
-                                        "trend": {"trend_strength": trend},
-                                        "volatility": {
-                                            "current_volatility": volatility
-                                        },
-                                        "volume": {"volume_profile": volume_profile},
-                                        "dominant_signal": dominant_signal,
-                                    }
-                        # -------- FIN PATCH ---------
+                    # Pour chaque paire et timeframe, calcule et stocke les indicateurs
+                    # -------- PATCH : Format dashboard-compatible ---------
+                    bot.indicators = {}
+                    for pair in bot.pairs_valid:
+                        pair_key = pair.replace("/", "").upper()
+                        for tf in bot.config["TRADING"]["timeframes"]:
+                            if (
+                                pair_key in bot.market_data
+                                and tf in bot.market_data[pair_key]
+                            ):
+                                trend = bot.calculate_trend(
+                                    bot.market_data[pair_key][tf]
+                                )
+                                volatility = bot.calculate_volatility(
+                                    bot.market_data[pair_key][tf]
+                                )
+                                volume_profile = bot.calculate_volume_profile(
+                                    bot.market_data[pair_key][tf]
+                                )
+                                dominant_signal = bot.get_dominant_signal(pair, tf)
+                                tf_key = f"{tf} | {pair}"
+                                bot.indicators[tf_key] = {
+                                    "trend": {"trend_strength": trend},
+                                    "volatility": {"current_volatility": volatility},
+                                    "volume": {"volume_profile": volume_profile},
+                                    "dominant_signal": dominant_signal,
+                                }
+                    # -------- FIN PATCH ---------
 
-                        bot.save_shared_data()
+                    bot.save_shared_data()
 
-                        # Calcul de la durée et rapports
-                        duration = (datetime.utcnow() - start).total_seconds()
-                        print(f"✅ Cycle terminé en {duration:.1f}s")
+                    # Calcul de la durée et rapports
+                    duration = (datetime.utcnow() - start).total_seconds()
+                    print(f"✅ Cycle terminé en {duration:.1f}s")
 
-                        # Envoi des mises à jour
-                        await send_cycle_reports(
-                            bot, trade_decisions, cycle, regime, duration
-                        )
+                    # Envoi des mises à jour
+                    await send_cycle_reports(
+                        bot, trade_decisions, cycle, regime, duration
+                    )
 
-                    except Exception as e:
-                        error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
+                except Exception as e:
+                    error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
 
-                        logger.error(error_msg)
-                        await bot.telegram.send_message(error_msg)
+                    logger.error(error_msg)
+                    await bot.telegram.send_message(error_msg)
 
-                    # Attente avant le prochain cycle
-                    await asyncio.sleep(30)
+                # Attente avant le prochain cycle
+                await asyncio.sleep(30)
 
-            except KeyboardInterrupt:
-                await handle_shutdown(bot, "👋 Bot arrêté proprement")
-            except Exception as e:
-                await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+        except KeyboardInterrupt:
+            await handle_shutdown(bot, "👋 Bot arrêté proprement")
+        except Exception as e:
+            await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
-        await main()
+    await main()
 
 
 def prepare_ohlcv_data(ohlcv_data):
