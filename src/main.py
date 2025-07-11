@@ -127,12 +127,22 @@ def _generate_analysis_report(
     # Ajout de l'analyse des news si disponible
     if news_sentiment:
         try:
+            # Cast sécurisé pour éviter le bug format code '%' for object of type 'str'
+            try:
+                sentiment = float(news_sentiment.get("overall_sentiment", 0) or 0)
+            except Exception:
+                sentiment = 0.0
+            try:
+                impact = float(news_sentiment.get("impact_score", 0) or 0)
+            except Exception:
+                impact = 0.0
+            major_events = news_sentiment.get("major_events", "Aucun")
             report.extend(
                 [
                     "\n📰 Analyse des News:",
-                    f"Sentiment: {news_sentiment.get('overall_sentiment', 0):.2%}",
-                    f"Impact estimé: {news_sentiment.get('impact_score', 0):.2%}",
-                    f"Événements majeurs: {news_sentiment.get('major_events', 'Aucun')}",
+                    f"Sentiment: {sentiment:.2%}",
+                    f"Impact estimé: {impact:.2%}",
+                    f"Événements majeurs: {major_events}",
                 ]
             )
         except Exception as e:

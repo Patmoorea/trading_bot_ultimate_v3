@@ -1305,6 +1305,8 @@ class TradingBotM4:
 
     def calculate_trend(self, data):
         try:
+            print("[DEBUG calculate_trend] data keys:", list(data.keys()))
+            print("[DEBUG calculate_trend] closes:", data.get("close", []))
             if isinstance(data, dict) and "close" in data:
                 closes = data["close"][-20:]
                 if not closes or len(closes) < 10:
@@ -1335,14 +1337,16 @@ class TradingBotM4:
             if isinstance(data, dict) and "volume" in data:
                 volumes = data["volume"][-20:]
                 if not volumes or len(volumes) < 2:
-                    return 1.0
+                    return {"strength": 1.0}
                 current_vol = volumes[-1]
                 avg_vol = sum(volumes) / len(volumes)
-                return float(current_vol / avg_vol) if avg_vol > 0 else 1.0
-            return 1.0
+                return {
+                    "strength": float(current_vol / avg_vol) if avg_vol > 0 else 1.0
+                }
+            return {"strength": 1.0}
         except Exception as e:
             print("DEBUG calculate_volume_profile error:", e)
-        return 1.0
+            return {"strength": 1.0}
 
     def get_trend_analysis(self, pair, timeframe):
         try:
@@ -1386,7 +1390,12 @@ class TradingBotM4:
                     and isinstance(data["volume"], list)
                     and len(data["volume"]) >= 2
                 ):
-                    vol = self.calculate_volume_profile(data)
+                    vol_dict = self.calculate_volume_profile(data)
+                    # Sécurisation : toujours prendre la clé 'strength' si c'est un dict
+                    if isinstance(vol_dict, dict):
+                        vol = vol_dict.get("strength", 1.0)
+                    else:
+                        vol = vol_dict  # fallback : float direct si jamais
                     if vol > 1.5:
                         return "Fort"
                     elif vol > 0.7:
@@ -2289,7 +2298,7 @@ async def run_clean_bot():
                         print(f"")
 
             for sym in bot.market_data:
-                print(f"[DEBUG MARKET_DATA] {sym}: {list(bot.market_data[sym].keys())}")
+                print(f"")
 
             # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
