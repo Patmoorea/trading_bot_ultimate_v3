@@ -936,45 +936,27 @@ with tab3:
         indicators = {}
 
     if indicators:
-        for symbol, tf_dict in indicators.items():
-            st.markdown(f"### {symbol}")
-            for tf, indics in tf_dict.items():
-                st.markdown(f"**Timeframe : {tf}**")
-                with st.expander("Voir tous les noms d'indicateurs"):
-                    if indics is not None:
-                        if isinstance(indics, dict):
-                            st.write(list(indics.keys()))
-                        else:
-                            st.write(f"Valeur : {indics}")
-                    else:
-                        st.warning(
-                            "Pas assez de données pour les indicateurs sur ce timeframe !"
-                        )
-                search = st.text_input(
-                    f"Filtrer les indicateurs pour {symbol} {tf}",
-                    key=f"search_{symbol}_{tf}",
-                )
-                if indics is not None:
-                    if search:
-                        filtered = {
-                            k: v
-                            for k, v in indics.items()
-                            if search.lower() in k.lower()
-                        }
-                    else:
-                        filtered = indics
-                    if isinstance(filtered, dict) and filtered:
-                        df = pd.DataFrame(filtered, index=[0]).T
-                        df.columns = ["Dernière valeur"]
-                        st.dataframe(df, use_container_width=True)
-                    elif isinstance(filtered, str):
-                        st.info(f"Valeur : {filtered}")
-                    else:
-                        st.info(
-                            "Aucun indicateur ne correspond à ce filtre ou mauvais format."
-                        )
-                else:
-                    st.info("Aucun indicateur calculé (pas assez de données)")
+        for tf_key, indic in indicators.items():
+            st.markdown(f"### {tf_key}")
+
+            # Affichage des indicateurs techniques détaillés (ta)
+            if "ta" in indic and indic["ta"]:
+                st.subheader("Indicateurs techniques détaillés")
+                try:
+                    df_ta = pd.DataFrame(indic["ta"], index=[0]).T
+                    df_ta.columns = ["Dernière valeur"]
+                    st.dataframe(df_ta, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Erreur d'affichage des indicateurs techniques: {e}")
+            else:
+                st.info("Aucun indicateur technique détaillé.")
+
+            # Affichage synthétique
+            st.subheader("Synthèse agrégée")
+            synth = {k: v for k, v in indic.items() if k != "ta"}
+            st.json(synth)
+
+            st.markdown("---")
     else:
         st.info(
             "Aucun indicateur technique disponible. Attends le prochain cycle de calcul."
