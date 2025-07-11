@@ -2198,7 +2198,7 @@ async def run_clean_bot():
                 auto_cfg = bot.auto_strategy_config
                 if (
                     pair_key.upper() == auto_cfg["pair"].upper()
-                    and "1h" == auto_cfg["timeframe"]
+                    and tf == auto_cfg["timeframe"]
                 ):
 
                     action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
@@ -2828,7 +2828,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
         df.columns = [col.lower() for col in df.columns]  # Sécurité
-        best_config, best_score = auto_generate_and_backtest(df, n_strats=50)
+        best_config, best_score = auto_generate_and_backtest(df, n_strats=args.auto_n)
         print("Meilleure stratégie trouvée :", best_config)
         print("Score (profit brut sur l'historique):", best_score)
 
