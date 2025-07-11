@@ -57,6 +57,8 @@ from src.backtesting.core.backtest_engine import BacktestEngine
 # Import dynamique des stratégies
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
+from src.ai.auto_strategy_generator import auto_generate_and_backtest
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -2702,9 +2704,6 @@ async def handle_shutdown(bot, message):
 
 
 if __name__ == "__main__":
-    import sys
-    from src.backtesting.core.backtest_engine import BacktestEngine
-    from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
     # --- 1. Argument parsing avancé
     parser = argparse.ArgumentParser()
@@ -2718,6 +2717,16 @@ if __name__ == "__main__":
         help="Chemin du CSV market data",
     )
     parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--backtest", action="store_true", help="Lancer un backtest quantitatif"
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="data/historical/BTCUSDT_1h.csv",
+        help="Chemin du CSV market data",
+    )
     parser.add_argument(
         "--strategy",
         type=str,
@@ -2725,14 +2734,111 @@ if __name__ == "__main__":
         choices=["sma", "breakout", "arbitrage"],
         help="Stratégie à utiliser",
     )
+    # Arguments pour auto-stratégie
+    parser.add_argument(
+        "--auto-strategy",
+        action="store_true",
+        help="Active l'auto-stratégie (recherche + utilisation)",
+    )
+    parser.add_argument(
+        "--auto-pair",
+        type=str,
+        default="BTCUSDT",
+        help="Paire à utiliser pour l'auto-stratégie",
+    )
+    parser.add_argument(
+        "--auto-timeframe",
+        type=str,
+        default="1h",
+        help="Timeframe à utiliser pour l'auto-stratégie",
+    )
+    parser.add_argument(
+        "--auto-days",
+        type=int,
+        default=30,
+        help="Nombre de jours d'historique pour l'auto-stratégie",
+    )
+    parser.add_argument(
+        "--auto-n", type=int, default=50, help="Nombre de stratégies à générer/tester"
+    )
+    args, unknown = parser.parse_known_args()
+
     # Ajoute ici d'autres paramètres si besoin...
     args, unknown = parser.parse_known_args()
 
     # --- 2. Mode AutoML/Tuning (prioritaire sur tout le reste)
     if "automl" in sys.argv or "tune" in sys.argv:
-        import asyncio
-
         asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
+
+    # --- 3. Mode auto-strategy (AUTO-ML stratégies)
+    elif "auto-strategy" in sys.argv:
+        # Paramètres pour Binance
+        api_key = os.getenv("BINANCE_API_KEY")
+        api_secret = os.getenv("BINANCE_API_SECRET")
+
+        symbol = "BTCUSDT"  # Tu peux mettre ce que tu veux
+        interval = Client.KLINE_INTERVAL_1HOUR
+        nb_days = 30
+        from datetime import datetime, timedelta
+
+        end_dt = datetime.utcnow()
+        start_dt = end_dt - timedelta(days=nb_days)
+        start_str = start_dt.strftime("%d %b %Y")
+        end_str = end_dt.strftime("%d %b %Y")
+
+        # Récupère les données Binance
+        df = fetch_binance_ohlcv(
+            symbol,
+            interval,
+            start_str,
+            end_str,
+            api_key=api_key,
+            api_secret=api_secret,
+        )
+        if df is None or len(df) == 0:
+            print("Aucune donnée récupérée sur Binance, impossible d’auto-stratégie.")
+            sys.exit(1)
+
+        df.columns = [col.lower() for col in df.columns]  # Sécurité
+        best_config, best_score = auto_generate_and_backtest(df, n_strats=50)
+        print("Meilleure stratégie trouvée :", best_config)
+        print("Score (profit brut sur l'historique):", best_score)
+
+        # Sauvegarde pour usage live
+        if not os.path.exists("config"):
+            os.makedirs("config", exist_ok=True)
+        with open("config/auto_strategy.json", "w") as f:
+            json.dump(
+                {
+                    "pair": symbol,
+                    "timeframe": tf_str,
+                    "config": best_config,
+                    "score": best_score,
+                    "date": datetime.utcnow().isoformat(),
+                },
+                f,
+                indent=4,
+            )
+
+        # Envoi rapport Telegram
+        TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+        TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+        if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+            from src.bot_runner import TelegramNotifier, get_current_time, CURRENT_USER
+            import asyncio
+
+            notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+            rapport = (
+                f"🔬 <b>Auto-Strategy Report</b>\n\n"
+                f"Paire: <b>{symbol}</b>\nTimeframe: <b>{tf_str}</b>\n"
+                f"Meilleure config trouvée : <code>{best_config}</code>\n"
+                f"Score (profit brut): <b>{best_score:.2f}</b>\n"
+                f"Date: {get_current_time()}\n"
+                f"Utilisateur: {CURRENT_USER}"
+            )
+            asyncio.run(notifier.send_message(rapport))
+
+        sys.exit(0)
 
     # --- 3. Mode backtest CLI
     elif args.backtest:
@@ -2786,6 +2892,4 @@ if __name__ == "__main__":
             print(results)
         sys.exit(0)
     else:
-        import asyncio
-
         asyncio.run(run_clean_bot())
