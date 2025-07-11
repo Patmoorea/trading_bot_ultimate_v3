@@ -1992,23 +1992,12 @@ class TradingBotM4:
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-                # >>> AJOUTE ICI <<<
-                print(
-                    df[["timestamp", "open", "high", "low", "close", "volume"]].tail(10)
-                )
-                print(df.dtypes)
-                print("SMA20:", df.ta.sma(length=20).tail())
-                print("RSI14:", df.ta.rsi(length=14).tail())
-                # <<< FIN AJOUT >>>
-
             if df.empty:
                 self.logger.warning(
                     "DataFrame vide, impossible de calculer les indicateurs"
                 )
                 print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
                 return None
-
-            print(f"[DEBUG add_indicators] Calcul sur DF {df.shape}")
 
             try:
                 df_ta = df.copy()
@@ -2125,7 +2114,6 @@ class TradingBotM4:
 
         except Exception as e:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            print(f"[DEBUG add_indicators] Exception: {e}")
             return None
 
 
