@@ -2200,7 +2200,6 @@ async def run_clean_bot():
                     pair_key.upper() == auto_cfg["pair"].upper()
                     and "1h" == auto_cfg["timeframe"]
                 ):
-                    from src.ai.auto_strategy_generator import appliquer_config_strategy
 
                     action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
                     # Tu peux adapter la confiance selon ta logique - ici 1.0 par défaut
@@ -2805,10 +2804,10 @@ if __name__ == "__main__":
         api_key = os.getenv("BINANCE_API_KEY")
         api_secret = os.getenv("BINANCE_API_SECRET")
 
-        symbol = "BTCUSDT"  # Tu peux mettre ce que tu veux
-        interval = Client.KLINE_INTERVAL_1HOUR
-        nb_days = 30
-        from datetime import datetime, timedelta
+        symbol = args.auto_pair.upper()
+        tf_str = args.auto_timeframe.lower()
+        interval = getattr(Client, f"KLINE_INTERVAL_{tf_str.upper()}")
+        nb_days = args.auto_days
 
         end_dt = datetime.utcnow()
         start_dt = end_dt - timedelta(days=nb_days)
