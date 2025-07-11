@@ -1200,17 +1200,34 @@ class TradingBotM4:
 
     async def _save_sentiment_data(self, sentiment_scores, news_data):
         """Sauvegarde les données de sentiment pour l'interface"""
-        # Formatage des données pour l'interface
+        import numpy as np
+
         headlines = []
         if isinstance(news_data, list):
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(item["title"])
 
+        # Calcul d'un score global
+        avg_sentiment = (
+            float(np.mean([item.get("sentiment", 0) for item in sentiment_scores]))
+            if sentiment_scores
+            else 0
+        )
+        impact_score = (
+            float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores]))
+            if sentiment_scores
+            else 0
+        )
+        major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
+
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
             "latest_news": headlines,
+            "overall_sentiment": avg_sentiment,
+            "impact_score": impact_score,
+            "major_events": major_events,
         }
 
         # Mise à jour du fichier shared_data.json
@@ -2358,12 +2375,20 @@ async def run_clean_bot():
                                     bot.market_data[pair_key][tf]
                                 )
                                 dominant_signal = bot.get_dominant_signal(pair, tf)
+                                # Ajoute les indicateurs techniques bruts
+                                df = bot.ws_collector.get_dataframe(pair_key, tf)
+                                indics = (
+                                    bot.add_indicators(df)
+                                    if df is not None and not df.empty
+                                    else {}
+                                )
                                 tf_key = f"{tf} | {pair}"
                                 bot.indicators[tf_key] = {
                                     "trend": {"trend_strength": trend},
                                     "volatility": {"current_volatility": volatility},
                                     "volume": {"volume_profile": volume_profile},
                                     "dominant_signal": dominant_signal,
+                                    "ta": indics if indics else {},
                                 }
                     # -------- FIN PATCH ---------
 

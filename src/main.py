@@ -963,12 +963,16 @@ with tab3:
                         }
                     else:
                         filtered = indics
-                    if filtered:
+                    if isinstance(filtered, dict) and filtered:
                         df = pd.DataFrame(filtered, index=[0]).T
                         df.columns = ["Dernière valeur"]
                         st.dataframe(df, use_container_width=True)
+                    elif isinstance(filtered, str):
+                        st.info(f"Valeur : {filtered}")
                     else:
-                        st.info("Aucun indicateur ne correspond à ce filtre.")
+                        st.info(
+                            "Aucun indicateur ne correspond à ce filtre ou mauvais format."
+                        )
                 else:
                     st.info("Aucun indicateur calculé (pas assez de données)")
     else:
