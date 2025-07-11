@@ -2290,7 +2290,9 @@ async def run_clean_bot():
             # 4. Analyse des paires
             trade_decisions = []
             for pair in valid_pairs:
-                decision = await market_analysis_cycle(bot, pair, bot.market_data)
+                decision = await market_analysis_cycle(
+                    bot, pair, bot.market_data, tf=tf
+                )
                 if decision:
                     trade_decisions.append(decision)
 
