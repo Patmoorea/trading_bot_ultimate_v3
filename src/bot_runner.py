@@ -58,6 +58,7 @@ from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
 from src.ai.auto_strategy_generator import auto_generate_and_backtest
+from src.ai.auto_strategy_generator import appliquer_config_strategy
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -579,6 +580,12 @@ class TradingBotM4:
                 print("Clé cold wallet chargée avec succès.")
             except Exception as e:
                 print(f"Erreur de chargement de la clé cold wallet: {e}")
+
+        self.auto_strategy_config = None
+        if os.path.exists("config/auto_strategy.json"):
+            with open("config/auto_strategy.json", "r") as f:
+                self.auto_strategy_config = json.load(f)
+            print("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
     def get_binance_real_balance(self, asset="USDC"):
         if self.is_live_trading and self.binance_client:
@@ -2178,14 +2185,36 @@ async def run_clean_bot():
             if not market_data or pair_key not in market_data:
                 return None
 
-            # Ici :
+            # Récupère les données OHLCV pour la paire et le timeframe "1h"
             ohlcv_df = bot.ws_collector.get_dataframe(pair_key, "1h")
             if ohlcv_df is None or len(ohlcv_df) < 20:
                 return None
 
             indicators_data = bot.add_indicators(ohlcv_df)
-            signal = await bot.analyze_signals(ohlcv_df, indicators_data)
-            # etc...
+
+            # === PATCH AUTO-STRATEGIE ===
+            # Utilisation de la stratégie auto si elle existe et correspond à la paire/timeframe
+            if hasattr(bot, "auto_strategy_config") and bot.auto_strategy_config:
+                auto_cfg = bot.auto_strategy_config
+                if (
+                    pair_key.upper() == auto_cfg["pair"].upper()
+                    and "1h" == auto_cfg["timeframe"]
+                ):
+                    from src.ai.auto_strategy_generator import appliquer_config_strategy
+
+                    action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
+                    # Tu peux adapter la confiance selon ta logique - ici 1.0 par défaut
+                    signal = {"action": action, "confidence": 1.0}
+                else:
+                    # Fallback classique
+                    signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+            else:
+                signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+            # === FIN PATCH AUTO-STRATEGIE ===
+
+            # ... Ajoute ici le reste de ta logique (ex: return, collecte, etc.)
+            return signal
+
         except Exception as e:
             logger.error(f"Erreur analyse {pair}: {e}")
             return None
