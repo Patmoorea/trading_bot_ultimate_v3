@@ -67,7 +67,8 @@ load_dotenv()
 def _generate_analysis_report(
     indicators_analysis, regime, news_sentiment=None, trade_decisions=None
 ):
-    """Génère un rapport d'analyse détaillé avec news et décisions de trade"""
+    from datetime import datetime
+
     current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     report = [
         "📊 Analyse complète du marché:",
@@ -75,15 +76,18 @@ def _generate_analysis_report(
         f"Régime: {regime}",
         "\nTendances principales:",
     ]
-    # Ajout de l'analyse des news si disponible
+    # Analyse des news
     if news_sentiment:
         try:
+            sentiment = float(news_sentiment.get("overall_sentiment", 0) or 0)
+            impact = float(news_sentiment.get("impact_score", 0) or 0)
+            major_events = news_sentiment.get("major_events", "Aucun")
             report.extend(
                 [
                     "\n📰 Analyse des News:",
-                    f"Sentiment: {news_sentiment.get('overall_sentiment', 0):.2%}",
-                    f"Impact estimé: {news_sentiment.get('impact_score', 0):.2%}",
-                    f"Événements majeurs: {news_sentiment.get('major_events', 'Aucun')}",
+                    f"Sentiment: {sentiment:.2%}",
+                    f"Impact estimé: {impact:.2%}",
+                    f"Événements majeurs: {major_events}",
                 ]
             )
         except Exception as e:
@@ -91,37 +95,50 @@ def _generate_analysis_report(
     else:
         report.append("\n📰 Analyse des News: Aucune donnée disponible.")
 
-    # Ajout des dernières news si disponible
     major_news = news_sentiment.get("latest_news", []) if news_sentiment else []
     if major_news:
         report.append("Dernières news :")
         for news in major_news[:3]:
             report.append(f"- {news}")
 
-    # Analyse par timeframe
     for timeframe, analysis in indicators_analysis.items():
         try:
             report.append(f"\n⏰ {timeframe}:")
-            trend_strength = analysis.get("trend", {}).get("trend_strength", 0)
-            volatility = analysis.get("volatility", {}).get("current_volatility", 0)
+            trend_strength = float(
+                analysis.get("trend", {}).get("trend_strength", 0) or 0
+            )
+            volatility = float(
+                analysis.get("volatility", {}).get("current_volatility", 0) or 0
+            )
             volume_profile = analysis.get("volume", {}).get("volume_profile", {})
+            # Cohérence volume (float ou dict)
+            if isinstance(volume_profile, dict):
+                volume_strength = volume_profile.get("strength", "N/A")
+            else:
+                volume_strength = volume_profile
             report.extend(
                 [
                     f"- Force de la tendance: {trend_strength:.2%}",
                     f"- Volatilité: {volatility:.2%}",
-                    f"- Volume: {volume_profile.get('strength', 'N/A')}",
+                    f"- Volume: {volume_strength}",
                     f"- Signal dominant: {analysis.get('dominant_signal', 'Neutre')}",
                 ]
             )
-            # Ajout de la décision de trade si disponible
             if trade_decisions and timeframe in trade_decisions:
                 dec = trade_decisions[timeframe]
+                try:
+                    confidence = float(dec.get("confidence", 0))
+                    tech = float(dec.get("tech", 0))
+                    ia = float(dec.get("ai", 0))
+                    sentiment_trade = float(dec.get("sentiment", 0))
+                except Exception:
+                    confidence = tech = ia = sentiment_trade = 0.0
                 report.append(
                     f"└─ 🎯 Décision de trade: {dec['action'].upper()} "
-                    f"(Conf: {dec['confidence']:.2f}, "
-                    f"Tech: {dec.get('tech',0):.2f}, "
-                    f"IA: {dec.get('ai',0):.2f}, "
-                    f"Sentiment: {dec.get('sentiment',0):.2f})"
+                    f"(Conf: {confidence:.2f}, "
+                    f"Tech: {tech:.2f}, "
+                    f"IA: {ia:.2f}, "
+                    f"Sentiment: {sentiment_trade:.2f})"
                 )
         except Exception as e:
             report.extend(
@@ -2070,12 +2087,12 @@ class TradingBotM4:
                     "momentum_10",
                     "zscore_20",
                 ]
-                print("[DEBUG] Colonnes calculées :", df_ta.columns)
+
                 for col in all_indics:
                     if col in df_ta.columns:
-                        print(f"[DEBUG] {col} derniers : {df_ta[col].tail()}")
+                        print(f"")
                     else:
-                        print(f"[DEBUG] {col} ABSENT du DataFrame")
+                        print(f"")
 
                 indicators = {}
                 for col in all_indics:
@@ -2089,7 +2106,6 @@ class TradingBotM4:
 
             except Exception as e:
                 self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
-                print(f"[DEBUG] Exception pandas-ta indicateurs principaux : {e}")
                 indicators = {}
 
             n_valid = len([v for v in indicators.values() if v is not None])
@@ -2233,9 +2249,7 @@ async def run_clean_bot():
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
-                    print(
-                        f"[DEBUG CYCLE] DF {pair_key} {tf} : {len(df) if df is not None else 'None'} lignes, colonnes: {list(df.columns) if df is not None else 'None'}"
-                    )
+
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
@@ -2272,9 +2286,7 @@ async def run_clean_bot():
                             except Exception as e:
                                 print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
                     else:
-                        print(
-                            f"[DEBUG CYCLE] DataFrame vide ou None pour {pair_key} {tf}"
-                        )
+                        print(f"")
 
             for sym in bot.market_data:
                 print(f"[DEBUG MARKET_DATA] {sym}: {list(bot.market_data[sym].keys())}")
@@ -2302,7 +2314,6 @@ async def run_clean_bot():
             return trade_decisions, regime
 
         except Exception as e:
-            print(f"[DEBUG] Exception in execute_trading_cycle: {e}")
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
@@ -2335,40 +2346,28 @@ async def run_clean_bot():
 
                     # Pour chaque paire et timeframe, calcule et stocke les indicateurs
                     bot.indicators = {}
-                    print(f"[DEBUG] PAIRS VALID: {bot.pairs_valid}")
                     for pair in bot.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
                         for tf in bot.config["TRADING"]["timeframes"]:
                             df = bot.ws_collector.get_dataframe(pair_key, tf)
-                            print(
-                                f"[DEBUG] DF {pair_key} {tf} : {len(df) if df is not None else 'None'} lignes, colonnes: {list(df.columns) if df is not None else 'None'}"
-                            )
+
                             if df is not None and not df.empty:
                                 try:
                                     indics = bot.add_indicators(df)
-                                    print(
-                                        f"[DEBUG] add_indicators result pour {pair_key} {tf}: {type(indics)} ({'OK' if indics else 'None/Empty'})"
-                                    )
+
                                     if indics is not None:
-                                        print(
-                                            f"[DEBUG] Nb indicateurs extraits pour {pair_key} {tf}: {len(indics)} | Exemples: {list(indics.keys())[:5]}"
-                                        )
+                                        print(f"")
                                     if pair_key not in bot.indicators:
                                         bot.indicators[pair_key] = {}
                                     bot.indicators[pair_key][tf] = indics
                                 except Exception as e:
-                                    print(
-                                        f"[DEBUG] Exception add_indicators {pair_key} {tf}: {e}"
-                                    )
+
                                     bot.logger.error(
                                         f"Error calculating indicators for {pair_key} {tf}: {e}"
                                     )
                             else:
-                                print(
-                                    f"[DEBUG] DataFrame vide ou None pour {pair_key} {tf}"
-                                )
+                                print(f"")
 
-                    print("[DEBUG] Structure finale de bot.indicators :")
                     for k, v in bot.indicators.items():
                         print(f"  {k}: {list(v.keys()) if isinstance(v, dict) else v}")
 
@@ -2385,7 +2384,7 @@ async def run_clean_bot():
 
                 except Exception as e:
                     error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-                    print(f"[DEBUG] Exception in main trading loop: {e}")
+
                     logger.error(error_msg)
                     await bot.telegram.send_message(error_msg)
 
