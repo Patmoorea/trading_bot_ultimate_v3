@@ -1228,9 +1228,6 @@ class TradingBotM4:
             "major_events": major_events,
         }
 
-        # Log pour debug
-        self.logger.info(f"[SENTIMENT] Data to write: {sentiment_data}")
-
         # Mise à jour du fichier shared_data.json
         try:
             with open(self.data_file, "r") as f:
@@ -2155,12 +2152,6 @@ class TradingBotM4:
                     "momentum_10",
                     "zscore_20",
                 ]
-
-                for col in all_indics:
-                    if col in df_ta.columns:
-                        print(f"")
-                    else:
-                        print(f"")
 
                 indicators = {}
                 for col in all_indics:
