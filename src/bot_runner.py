@@ -2869,7 +2869,13 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                     if status == "completed"
                     else "⚠️" if status == "simulated" else "❌"
                 )
-                trade_report += f"{emoji} {trade['pair']}: {trade['action'].upper()} ({trade['confidence']:.0%})\n"
+                # Ajout d'une sécurité sur la clé pair
+                pair_str = trade.get("pair", "INCONNU")
+                action_str = trade.get("action", "INCONNU")
+                conf_str = f"{trade.get('confidence', 0):.0%}"
+                trade_report += (
+                    f"{emoji} {pair_str}: {action_str.upper()} ({conf_str})\n"
+                )
             await bot.telegram.send_message(trade_report)
         else:
             await bot.telegram.send_cycle_update(cycle, regime, duration)
@@ -2897,7 +2903,14 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         # Générer les décisions de trade par TF/paire
         trade_decisions_dict = {}
         for tf_key in indicators_analysis.keys():
+            # On découpe tf_key pour retrouver la paire et la timeframe
+            try:
+                tf, pair = tf_key.split(" | ")
+            except Exception:
+                tf, pair = "unknown", tf_key
             trade_decisions_dict[tf_key] = {
+                "pair": pair,
+                "tf": tf,
                 "action": "LONG",  # À adapter selon ta logique
                 "confidence": 0.75,
                 "tech": 0.8,
