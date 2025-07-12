@@ -617,21 +617,6 @@ class TradingBotM4:
             )
         else:
             print(f"[STRATEGY] Stratégie STANDARD appliquée")
-            # Vérification de la paire et timeframe
-            if (
-                ohlcv_df is not None
-                and "timestamp" in ohlcv_df
-                and "close" in ohlcv_df
-                and hasattr(auto_cfg, "pair")
-                and hasattr(auto_cfg, "timeframe")
-            ):
-                # Applique la stratégie auto-générée
-                try:
-                    action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
-                    return {"action": action, "confidence": 1.0}
-                except Exception as e:
-                    self.logger.warning(f"Erreur auto-stratégie: {e}")
-                    # Continue dans la logique classique si erreur
 
         # 2. Extraction de tous les indicateurs utiles
         close = ohlcv_df["close"].iloc[-1] if "close" in ohlcv_df else None
@@ -722,7 +707,7 @@ class TradingBotM4:
 
         # 5. Sentiment News
         sentiment_score = 0
-        if self.news_enabled:
+        if getattr(self, "news_enabled", False):
             # Cherche un score de sentiment récent pour la paire (dans market_data)
             if hasattr(self, "market_data"):
                 # Cherche la clé la plus probable (BTCUSDT, ETHUSDT...)
@@ -759,6 +744,7 @@ class TradingBotM4:
             f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
             f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
         )
+
         return decision
 
     def get_binance_real_balance(self, asset="USDC"):
