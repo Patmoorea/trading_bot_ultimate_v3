@@ -1401,6 +1401,7 @@ class TradingBotM4:
         )
         report = (
             f"Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): {get_current_time()}\n"
+            f"Cycle: {cycle if cycle is not None else self.current_cycle}\n"
             f"Current User's Login: {CURRENT_USER}\n"
             "╔═════════════════════════════════════════════════╗\n"
             "║           RAPPORT D'ANALYSE DE MARCHÉ           ║\n"
@@ -2418,8 +2419,14 @@ async def run_clean_bot():
                     signal = {"action": action, "confidence": 1.0}
                 else:
                     signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+                    signal["pair"] = pair
+                    signal["tf"] = tf
+                    return signal
             else:
                 signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+                signal["pair"] = pair
+                signal["tf"] = tf
+                return signal
             # === FIN PATCH AUTO-STRATEGIE ===
 
             return signal
@@ -2856,9 +2863,6 @@ async def send_trade_notification(bot, decision, trade_result, amount):
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
-        # 1. Mise à jour Telegram standard
-        await bot.send_telegram_updates()
-
         # 2. Rapport des trades si nécessaire
         if trade_decisions:
             trade_report = "💹 <b>Trades exécutés</b>\n\n"
