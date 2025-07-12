@@ -1958,19 +1958,6 @@ class TradingBotM4:
             self.logger.error(f"Error identifying key levels: {e}")
             return []
 
-    async def generate_market_analysis_report(self, cycle=None):
-        performance = self.get_performance_metrics()
-        if not performance:
-            performance = {
-                "balance": 0,
-                "win_rate": 0,
-                "profit_factor": 0,
-                "total_trades": 0,
-            }
-        await self.telegram.send_performance_update(performance)
-        report = await self.generate_market_analysis_report(cycle=self.current_cycle)
-        await self.telegram.send_message(report)
-
     def initialize_shared_data(self):
         """Initialise le fichier de données partagées"""
         data = {
