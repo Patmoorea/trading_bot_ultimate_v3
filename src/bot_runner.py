@@ -1969,7 +1969,9 @@ class TradingBotM4:
                 "total_trades": 0,
             }
         await self.telegram.send_performance_update(performance)
-        report = await self.generate_market_analysis_report()
+        report = await self.generate_market_analysis_report(
+            cycle=self.current_cycle
+        )  # <-- AJOUT ici
         await self.telegram.send_message(report)
 
     def initialize_shared_data(self):
@@ -2378,9 +2380,6 @@ async def run_clean_bot():
                 await bot._fetch_real_market_data()
                 for sym in bot.market_data:
                     print(f"{sym}: {list(bot.market_data[sym].keys())}")
-
-            # Rapport initial
-            initial_report = await bot.generate_market_analysis_report()
 
             await bot.telegram.send_message(
                 "🚀 <b>Bot Trading démarré</b>\n"
