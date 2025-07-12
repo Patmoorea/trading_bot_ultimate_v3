@@ -612,6 +612,11 @@ class TradingBotM4:
         # 1. Auto-stratégie (si présente et applicable)
         if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
             auto_cfg = self.auto_strategy_config
+            print(
+                f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''}"
+            )
+        else:
+            print(f"[STRATEGY] Stratégie STANDARD appliquée")
             # Vérification de la paire et timeframe
             if (
                 ohlcv_df is not None
@@ -705,11 +710,13 @@ class TradingBotM4:
         # 4. IA/Deep Learning
         ai_score = 0
         if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
+            print(f"[AI] Prédiction IA sollicitée")
             try:
                 # Prépare les features comme dans _prepare_features_for_ai
                 features = await self._prepare_features_for_ai(ohlcv_df)
                 if features is not None:
                     ai_score = float(self.dl_model.predict(features))
+                    print(f"[AI] Score IA (DL): {ai_score:.4f}")
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
 
@@ -758,10 +765,11 @@ class TradingBotM4:
         return None
 
     async def detect_arbitrage_opportunities(self, pair=None):
-        """Détecte les opportunités d'arbitrage avec vérification des volumes"""
+        """Détecte les opportunités d'arbitrage avec vérification des volumes et logs détaillés"""
         if not self.is_live_trading:
+            print("[ARBITRAGE] Pas en mode live trading, détection annulée.")
             return []
-
+        print("[ARBITRAGE] Démarrage détection arbitrage…")
         opportunities = []
         pairs_to_check = [pair] if pair else self.pairs_valid
         MIN_PROFIT_THRESHOLD = 0.15
@@ -782,14 +790,14 @@ class TradingBotM4:
                     ]
 
                     # Prix Binance comme référence (doit être await si async)
-                    binance_ticker = (
-                        await self.binance_client.fetch_ticker(pair_key)
-                        if hasattr(self.binance_client, "fetch_ticker")
-                        and asyncio.iscoroutinefunction(
-                            self.binance_client.fetch_ticker
+                    if hasattr(
+                        self.binance_client, "fetch_ticker"
+                    ) and asyncio.iscoroutinefunction(self.binance_client.fetch_ticker):
+                        binance_ticker = await self.binance_client.fetch_ticker(
+                            pair_key
                         )
-                        else self.binance_client.get_ticker(symbol=pair_key)
-                    )
+                    else:
+                        binance_ticker = self.binance_client.get_ticker(symbol=pair_key)
                     binance_price = float(
                         binance_ticker.get("lastPrice")
                         or binance_ticker.get("last")
@@ -828,24 +836,40 @@ class TradingBotM4:
                                     "volume_24h": binance_volume * binance_price,
                                     "estimated_profit": profit_pct - 0.2,  # Après frais
                                 }
+                                print(
+                                    f"[ARBITRAGE] OPPORTUNITÉ: {current_pair}: {binance_price} (Binance) <> {exchange_price} ({exchange['name']}) | Diff: {profit_pct:.2f}%"
+                                )
                                 opportunities.append(opportunity)
+                                # Log aussi dans logger/info si tu veux garder historique fichier
                                 self.logger.info(
                                     f"Opportunité d'arbitrage détectée pour {current_pair}: {opportunity}"
                                 )
 
                         except Exception as e:
+                            print(f"[ARBITRAGE] Erreur sur {exchange['name']}: {e}")
                             self.logger.error(f"Erreur sur {exchange['name']}: {e}")
                             continue
 
                 except Exception as e:
+                    print(
+                        f"[ARBITRAGE] Erreur lors du traitement de {current_pair}: {e}"
+                    )
                     self.logger.error(
                         f"Erreur lors du traitement de {current_pair}: {e}"
                     )
                     continue
 
+            if opportunities:
+                print(
+                    f"[ARBITRAGE] {len(opportunities)} opportunités détectées ce cycle."
+                )
+            else:
+                print("[ARBITRAGE] Aucune opportunité détectée ce cycle.")
+
             return opportunities
 
         except Exception as e:
+            print(f"[ARBITRAGE] Erreur globale détection arbitrage: {e}")
             self.logger.error(f"Erreur globale détection arbitrage: {e}")
             return []
 
@@ -1032,8 +1056,11 @@ class TradingBotM4:
     async def execute_trade(
         self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
     ):
-        """Exécute un ordre de trading avec l'exécuteur intelligent (support natif des ordres iceberg)"""
+        """Exécute un ordre de trading avec logs détaillés"""
         if not self.is_live_trading:
+            print(
+                f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
+            )
             self.logger.info(
                 f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
             )
@@ -1046,6 +1073,9 @@ class TradingBotM4:
             }
 
         try:
+            print(
+                f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
+            )
             # Récupération du carnet d'ordres
             bid, ask = await self.binance_connector.get_order_book(symbol)
             orderbook = {"bids": [[float(bid), 1.0]], "asks": [[float(ask), 1.0]]}
@@ -1075,6 +1105,9 @@ class TradingBotM4:
 
             # Enregistrement du résultat
             if result["status"] == "completed":
+                print(
+                    f"[ORDER] Exécuté avec succès: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
+                )
                 self.logger.info(
                     f"Order executed: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
                 )
@@ -1093,14 +1126,18 @@ class TradingBotM4:
                     f"💵 Total: ${float(result['filled_amount']) * float(result['avg_price']):.2f}"
                     f"{iceberg_info}"
                 )
+            else:
+                print(f"[ORDER] Echec d'exécution: {side} {amount} {symbol}")
 
             return result
 
         except BinanceAPIException as e:
+            print(f"[ORDER] Binance API error: {e}")
             self.logger.error(f"Binance API error: {e}")
             await self.telegram.send_message(f"⚠️ Erreur API Binance: {e}")
             return {"status": "error", "reason": str(e)}
         except Exception as e:
+            print(f"[ORDER] Execution error: {e}")
             self.logger.error(f"Execution error: {e}")
             await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
             return {"status": "error", "reason": str(e)}
@@ -1269,6 +1306,7 @@ class TradingBotM4:
             return {}
 
     async def _news_analysis_loop(self):
+        print("[NEWS] Lancement boucle d'analyse des news…")
         """Boucle d'analyse des news (version propre sans print/debug)"""
         while True:
             try:
@@ -1298,7 +1336,9 @@ class TradingBotM4:
                     await self.telegram.send_news_summary(news_data[:5])
                 except Exception:
                     pass
-
+                print(
+                    f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
+                )
             except Exception as e:
                 self.logger.error(f"News analysis error: {e}")
 
@@ -1664,6 +1704,10 @@ class TradingBotM4:
             # Si l'IA est activée, ajoutez les prédictions de l'IA
             if self.ai_enabled:
                 await self._add_ai_predictions()
+
+            print(
+                f"[MARKET ANALYSIS] Régime détecté: {self.regime} | Volatilité: {volatility:.4f} | Tendance: {trend:.4f}"
+            )
 
             return self.regime, self.market_data, {}
         except Exception as e:
@@ -2750,8 +2794,15 @@ async def execute_trade_decisions(bot, trade_decisions):
     try:
         for decision in trade_decisions:
             if not bot.is_live_trading or abs(decision["confidence"]) <= 0.5:
+                print(
+                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Trading Live: False"
+                )
                 continue
-
+            if abs(decision["confidence"]) <= 0.5:
+                print(
+                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Confiance trop faible: {decision['confidence']:.2f}"
+                )
+                continue
             pair = decision["pair"]
             pair_key = pair.replace("/", "").upper()
             side = "BUY" if decision["action"] == "buy" else "SELL"
@@ -2766,12 +2817,21 @@ async def execute_trade_decisions(bot, trade_decisions):
 
             # Exécution de l'ordre
             trade_result = await bot.execute_trade(pair_key, side, amount)
+            if trade_result["status"] == "completed":
+                print(
+                    f"[ORDER] Trade exécuté: {pair} {decision.get('tf')} {side} {amount}"
+                )
+            else:
+                print(
+                    f"[ORDER] Trade NON exécuté: {pair} {decision.get('tf')} {side} {amount}"
+                )
 
             # Notification du résultat
             if trade_result["status"] == "completed":
                 await send_trade_notification(bot, decision, trade_result, amount)
 
     except Exception as e:
+        print(f"[ERROR] {str(e)}")
         logging.error(f"Erreur exécution trades: {e}")
 
 
