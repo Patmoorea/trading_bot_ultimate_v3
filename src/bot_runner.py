@@ -748,11 +748,18 @@ class TradingBotM4:
 
         # 8. Détermination du signal final
         if total_score > 0.6:
-            return {"action": "buy", "confidence": min(1, abs(total_score))}
+            decision = {"action": "buy", "confidence": min(1, abs(total_score))}
         elif total_score < -0.6:
-            return {"action": "sell", "confidence": min(1, abs(total_score))}
+            decision = {"action": "sell", "confidence": min(1, abs(total_score))}
         else:
-            return {"action": "neutral", "confidence": abs(total_score)}
+            decision = {"action": "neutral", "confidence": abs(total_score)}
+
+        print(
+            f"[TRADE DECISION] {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''} | "
+            f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
+            f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
+        )
+        return decision
 
     def get_binance_real_balance(self, asset="USDC"):
         if self.is_live_trading and self.binance_client:
@@ -1336,9 +1343,23 @@ class TradingBotM4:
                     await self.telegram.send_news_summary(news_data[:5])
                 except Exception:
                     pass
-                print(
-                    f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
-                )
+
+                # === LOG SENTIMENT GLOBAL ===
+                try:
+                    with open(self.data_file, "r") as f:
+                        shared_data = json.load(f)
+                    sentiment_data = shared_data.get("sentiment", {})
+                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
+                    impact_score = sentiment_data.get("impact_score", 0)
+                    major_events = sentiment_data.get("major_events", "")
+                    print(
+                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
+                    )
+                except Exception as e:
+                    print(
+                        f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
+                    )
+
             except Exception as e:
                 self.logger.error(f"News analysis error: {e}")
 
