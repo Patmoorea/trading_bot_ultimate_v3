@@ -2012,14 +2012,7 @@ class TradingBotM4:
         Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
         """
-        import pandas as pd
-        import numpy as np
-
         try:
-
-            if hasattr(df, "ta"):
-                print("[DEBUG add_indicators] type(df.ta):", type(df.ta))
-
             # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
                 if len(df) == 0:
