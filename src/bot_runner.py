@@ -2058,11 +2058,6 @@ class TradingBotM4:
                 asyncio.create_task(self._news_analysis_loop())
                 self.logger.info("News analysis loop started")
 
-                # Lancement du processus d'analyse des news
-                if self.news_enabled and self.news_analyzer:
-                    asyncio.create_task(self._news_analysis_loop())
-                    self.logger.info("News analysis loop started")
-
                 # Initialisation des connexions WebSocket Binance si en mode trading réel
                 if self.is_live_trading:
                     # Ici vous pouvez initialiser les connexions WebSocket
@@ -2486,11 +2481,12 @@ async def run_clean_bot():
             # 4. Analyse des paires
             trade_decisions = []
             for pair in valid_pairs:
-                decision = await market_analysis_cycle(
-                    bot, pair, bot.market_data, tf=tf
-                )
-                if decision:
-                    trade_decisions.append(decision)
+                for tf in bot.config["TRADING"]["timeframes"]:
+                    decision = await market_analysis_cycle(
+                        bot, pair, bot.market_data, tf=tf
+                    )
+                    if decision:
+                        trade_decisions.append(decision)
 
             # 5. Exécution des trades
             await execute_trade_decisions(bot, trade_decisions)
@@ -2939,15 +2935,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
 
-    parser.add_argument(
-        "--backtest", action="store_true", help="Lancer un backtest quantitatif"
-    )
-    parser.add_argument(
-        "--data",
-        type=str,
-        default="data/historical/BTCUSDT_1h.csv",
-        help="Chemin du CSV market data",
-    )
     parser.add_argument(
         "--strategy",
         type=str,
