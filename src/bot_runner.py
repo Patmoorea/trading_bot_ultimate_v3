@@ -556,15 +556,7 @@ class TradingBotM4:
         self.ai_weight = 0.3  # Add AI weight initialization
         self.ai_enabled = False  # Initialize AI status
         self.pairs_valid = []
-        # Initialize shared data
-        self.initialize_shared_data()
 
-        # Initialize environment
-        print("Checking environment setup...")
-        self.env = TradingEnv(
-            trading_pairs=self.config["TRADING"]["pairs"],
-            timeframes=self.config["TRADING"]["timeframes"],
-        )
         print(f"Trading pairs: {self.pairs_valid}")
         print(f"Environment initialized: {hasattr(self, 'env')}")
         if hasattr(self, "env"):
@@ -2891,24 +2883,18 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
 
         # Générer les décisions de trade par TF/paire
         trade_decisions_dict = {}
-        for tf_key in indicators_analysis.keys():
-            # On découpe tf_key pour retrouver la paire et la timeframe
-            try:
-                tf, pair = tf_key.split(" | ")
-            except Exception:
-                tf, pair = "unknown", tf_key
+        for decision in trade_decisions:
+            tf = decision.get("tf", "1h")
+            pair = decision.get("pair", "")
+            tf_key = f"{tf} | {pair}"
             trade_decisions_dict[tf_key] = {
                 "pair": pair,
                 "tf": tf,
-                "action": "LONG",  # À adapter selon ta logique
-                "confidence": 0.75,
-                "tech": 0.8,
-                "ai": 0.7,
-                "sentiment": (
-                    news_sentiment.get("scores", [{}])[0].get("sentiment", 0.5)
-                    if news_sentiment
-                    else 0.5
-                ),
+                "action": decision.get("action", "NEUTRAL").upper(),
+                "confidence": decision.get("confidence", 0),
+                "tech": decision.get("signals", {}).get("technical", 0),
+                "ai": decision.get("signals", {}).get("ai", 0),
+                "sentiment": decision.get("signals", {}).get("sentiment", 0),
             }
 
         regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
@@ -2952,7 +2938,7 @@ if __name__ == "__main__":
         help="Chemin du CSV market data",
     )
     parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
-    parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
     )
