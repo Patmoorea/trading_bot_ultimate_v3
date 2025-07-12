@@ -1148,8 +1148,8 @@ class TradingBotM4:
 
                 try:
                     await self._save_sentiment_data(sentiment_scores, news_data)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
 
                 try:
                     await self.telegram.send_news_summary(news_data[:5])
@@ -1200,8 +1200,6 @@ class TradingBotM4:
 
     async def _save_sentiment_data(self, sentiment_scores, news_data):
         """Sauvegarde les données de sentiment pour l'interface"""
-        import numpy as np
-
         headlines = []
         if isinstance(news_data, list):
             for item in news_data[:10]:
@@ -1230,6 +1228,9 @@ class TradingBotM4:
             "major_events": major_events,
         }
 
+        # Log pour debug
+        self.logger.info(f"[SENTIMENT] Data to write: {sentiment_data}")
+
         # Mise à jour du fichier shared_data.json
         try:
             with open(self.data_file, "r") as f:
@@ -1239,6 +1240,10 @@ class TradingBotM4:
 
             with open(self.data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
+
+            self.logger.info(
+                f"[SENTIMENT] Data written successfully to {self.data_file}"
+            )
 
         except Exception as e:
             self.logger.error(f"Error saving sentiment data: {e}")
@@ -1271,12 +1276,12 @@ class TradingBotM4:
             for pair in self.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 report += f"""
-    🕒 {tf} | {pair} :
-    ├─ 📈 Tendance: {self.get_trend_analysis(pair, tf)}
-    ├─ 📊 Volatilité: {self.get_volatility_analysis(pair, tf)}
-    ├─ 📉 Volume: {self.get_volume_analysis(pair, tf)}
-    └─ 🎯 Signal dominant: {self.get_dominant_signal(pair, tf)}
-    """
+        🕒 {tf} | {pair} :
+        ├─ 📈 Tendance: {self.get_trend_analysis(pair, tf)}
+        ├─ 📊 Volatilité: {self.get_volatility_analysis(pair, tf)}
+        ├─ 📉 Volume: {self.get_volume_analysis(pair, tf)}
+        └─ 🎯 Signal dominant: {self.get_dominant_signal(pair, tf)}
+        """
 
         # Ajout des informations d'IA si disponibles
         if self.ai_enabled:
@@ -1294,11 +1299,44 @@ class TradingBotM4:
                         else "VENTE" if ai_score < 0.4 else "NEUTRE"
                     )
                     report += f"""
-    🤖 {pair} :
-    └─ Prédiction: {ai_signal} ({ai_score:.2f})
-    """
+        🤖 {pair} :
+        └─ Prédiction: {ai_signal} ({ai_score:.2f})
+        """
 
-        # Ajout des informations de sentiment si disponibles
+        # --- AJOUT : Section news/sentiment globale détaillée ---
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+            news_sentiment = shared_data.get("sentiment", None)
+        except Exception:
+            news_sentiment = None
+
+        if news_sentiment and isinstance(news_sentiment, dict):
+            try:
+                sentiment = float(news_sentiment.get("overall_sentiment", 0) or 0)
+            except Exception:
+                sentiment = 0.0
+            try:
+                impact = float(news_sentiment.get("impact_score", 0) or 0)
+            except Exception:
+                impact = 0.0
+            major_events = news_sentiment.get("major_events", "Aucun")
+            report += (
+                "\n📰 Analyse des News:\n"
+                f"Sentiment: {sentiment:.2%}\n"
+                f"Impact estimé: {impact:.2%}\n"
+                f"Événements majeurs: {major_events}\n"
+            )
+            # Ajout des dernières news si dispo
+            major_news = news_sentiment.get("latest_news", [])
+            if major_news:
+                report += "Dernières news :\n"
+                for news in major_news[:3]:
+                    report += f"- {news}\n"
+        else:
+            report += "\n📰 Analyse des News: Aucune donnée disponible.\n"
+
+        # Ajout des informations de sentiment par paire si disponibles
         if self.news_enabled:
             report += "\n    📰 Analyse de Sentiment :\n"
             for pair in self.pairs_valid:
@@ -1314,9 +1352,9 @@ class TradingBotM4:
                         else "Négatif" if sentiment_score < -0.2 else "Neutre"
                     )
                     report += f"""
-    📊 {pair} :
-    └─ Sentiment: {sentiment_type} ({sentiment_score:.2f})
-    """
+        📊 {pair} :
+        └─ Sentiment: {sentiment_type} ({sentiment_score:.2f})
+        """
 
         return report
 
@@ -1812,34 +1850,52 @@ class TradingBotM4:
             json.dump(data, f, indent=4)
 
     def save_shared_data(self):
-        """Met à jour les données partagées"""
-        data = {
-            "timestamp": get_current_time(),
-            "user": CURRENT_USER,
-            "bot_status": {
-                "regime": self.regime,
-                "cycle": self.current_cycle,
-                "last_update": get_current_time(),
-                "performance": self.get_performance_metrics(),
-            },
-            "market_data": self.market_data,
-            "indicators": self.indicators,  # <--- AJOUT DÈS LA CRÉATION
-        }
+        """Met à jour les données partagées sans effacer la clé 'sentiment'"""
+        try:
+            # Charger les données existantes pour préserver 'sentiment'
+            if os.path.exists(self.data_file):
+                with open(self.data_file, "r") as f:
+                    data = json.load(f)
+            else:
+                data = {}
 
-        # Ajoute les prédictions IA si besoin
-        if self.ai_enabled:
-            ai_predictions = {}
-            for pair in self.pairs_valid:
-                pair_key = pair.replace("/", "").upper()
-                if (
-                    pair_key in self.market_data
-                    and "ai_prediction" in self.market_data[pair_key]
-                ):
-                    ai_predictions[pair] = self.market_data[pair_key]["ai_prediction"]
-            data["ai_predictions"] = ai_predictions
+            # MAJ des sections
+            data.update(
+                {
+                    "timestamp": get_current_time(),
+                    "user": CURRENT_USER,
+                    "bot_status": {
+                        "regime": self.regime,
+                        "cycle": self.current_cycle,
+                        "last_update": get_current_time(),
+                        "performance": self.get_performance_metrics(),
+                    },
+                    "market_data": self.market_data,
+                    "indicators": self.indicators,
+                }
+            )
 
-        with open(self.data_file, "w") as f:
-            json.dump(data, f, indent=4)
+            # Ajoute les prédictions IA si besoin
+            if self.ai_enabled:
+                ai_predictions = {}
+                for pair in self.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    if (
+                        pair_key in self.market_data
+                        and "ai_prediction" in self.market_data[pair_key]
+                    ):
+                        ai_predictions[pair] = self.market_data[pair_key][
+                            "ai_prediction"
+                        ]
+                data["ai_predictions"] = ai_predictions
+
+            # NE PAS EFFACER 'sentiment' si déjà présent
+            # (on ne touche pas à data["sentiment"])
+
+            with open(self.data_file, "w") as f:
+                json.dump(data, f, indent=4)
+        except Exception as e:
+            self.logger.error(f"Error saving shared data: {e}")
 
     def get_performance_metrics(self):
         """Récupère les métriques de performance actuelles"""
@@ -2132,6 +2188,156 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
             return None
+
+
+async def analyze_signals(self, ohlcv_df, indicators):
+    """
+    Fusionne toute la puissance d'analyse du bot :
+    - Auto-stratégie si présente
+    - Indicateurs techniques avancés (SMA, EMA, RSI, MACD, BB, PSAR, etc.)
+    - IA (Deep Learning et/ou PPO)
+    - Sentiment News
+    - Arbitrage (signal d'opportunité)
+    Retourne une décision de trade {"action": "buy"/"sell"/"neutral", "confidence": float}
+    """
+
+    # 1. Auto-stratégie (si présente et applicable)
+    if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
+        auto_cfg = self.auto_strategy_config
+        # Vérification de la paire et timeframe
+        if (
+            ohlcv_df is not None
+            and "timestamp" in ohlcv_df
+            and "close" in ohlcv_df
+            and hasattr(auto_cfg, "pair")
+            and hasattr(auto_cfg, "timeframe")
+        ):
+            # Applique la stratégie auto-générée
+            try:
+                action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
+                return {"action": action, "confidence": 1.0}
+            except Exception as e:
+                self.logger.warning(f"Erreur auto-stratégie: {e}")
+                # Continue dans la logique classique si erreur
+
+    # 2. Extraction de tous les indicateurs utiles
+    close = ohlcv_df["close"].iloc[-1] if "close" in ohlcv_df else None
+    prev_close = (
+        ohlcv_df["close"].iloc[-2]
+        if "close" in ohlcv_df and len(ohlcv_df) >= 2
+        else None
+    )
+    sma_20 = indicators.get("sma_20")
+    sma_50 = indicators.get("sma_50")
+    ema_20 = indicators.get("ema_20")
+    rsi_14 = indicators.get("rsi_14")
+    macd = indicators.get("macd")
+    macd_signal = indicators.get("macd_signal")
+    macd_hist = indicators.get("macd_hist")
+    bb_upper = indicators.get("bb_upper")
+    bb_lower = indicators.get("bb_lower")
+    psar = indicators.get("psar")
+    momentum_10 = indicators.get("momentum_10")
+    zscore_20 = indicators.get("zscore_20")
+
+    # 3. Score technique composite
+    tech_score = 0
+    tech_factors = 0
+
+    # Tendance par rapport aux moyennes mobiles
+    if close and sma_20:
+        tech_factors += 1
+        tech_score += np.tanh((close - sma_20) / (sma_20 * 0.01))  # normalisation
+    if close and sma_50:
+        tech_factors += 1
+        tech_score += np.tanh((close - sma_50) / (sma_50 * 0.01))
+    if close and ema_20:
+        tech_factors += 1
+        tech_score += np.tanh((close - ema_20) / (ema_20 * 0.01))
+    # RSI
+    if rsi_14:
+        tech_factors += 1
+        tech_score += (rsi_14 - 50) / 50  # normalisé entre -1 et +1
+    # MACD
+    if macd and macd_signal:
+        tech_factors += 1
+        tech_score += np.tanh(macd - macd_signal)
+    # MACD histogramme
+    if macd_hist:
+        tech_factors += 1
+        tech_score += np.tanh(macd_hist)
+    # Bollinger Bands
+    if bb_upper and bb_lower and close:
+        tech_factors += 1
+        # Si on touche la borne inférieure : surachat, borne supérieure : survente
+        if close < bb_lower:
+            tech_score -= 1
+        elif close > bb_upper:
+            tech_score += 1
+    # PSAR (si croisement)
+    if psar and prev_close:
+        tech_factors += 1
+        if prev_close < psar and close > psar:
+            tech_score += 1  # signal haussier
+        elif prev_close > psar and close < psar:
+            tech_score -= 1  # signal baissier
+    # Momentum
+    if momentum_10:
+        tech_factors += 1
+        tech_score += np.tanh(momentum_10 / (abs(close) + 1e-8))
+    # Z-Score (écart à la moyenne)
+    if zscore_20:
+        tech_factors += 1
+        tech_score += zscore_20
+
+    # Normalisation du score technique
+    if tech_factors > 0:
+        tech_score /= tech_factors
+
+    # 4. IA/Deep Learning
+    ai_score = 0
+    if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
+        try:
+            # Prépare les features comme dans _prepare_features_for_ai
+            features = await self._prepare_features_for_ai(ohlcv_df)
+            if features is not None:
+                ai_score = float(self.dl_model.predict(features))
+        except Exception as e:
+            self.logger.warning(f"Erreur IA analyse_signals: {e}")
+
+    # 5. Sentiment News
+    sentiment_score = 0
+    if self.news_enabled:
+        # Cherche un score de sentiment récent pour la paire (dans market_data)
+        if hasattr(self, "market_data"):
+            # Cherche la clé la plus probable (BTCUSDT, ETHUSDT...)
+            symbol_key = None
+            for k in self.market_data.keys():
+                if k in ohlcv_df.columns or k[:3] in ohlcv_df.columns:
+                    symbol_key = k
+                    break
+            if symbol_key and "sentiment" in self.market_data[symbol_key]:
+                sentiment_score = self.market_data[symbol_key]["sentiment"]
+
+    # 6. Arbitrage (opportunité = force du signal d’arbitrage)
+    arbitrage_score = 0
+    # (Tu peux ajouter ici une logique pour noter un score positif si une opportunité d'arbitrage est détectée)
+
+    # 7. Score global pondéré
+    total_score = (
+        0.5 * tech_score
+        + 0.3 * ai_score
+        + 0.15 * sentiment_score
+        + 0.05 * arbitrage_score
+    )
+
+    # 8. Détermination du signal final
+    if total_score > 0.6:
+        return {"action": "buy", "confidence": min(1, abs(total_score))}
+    elif total_score < -0.6:
+        return {"action": "sell", "confidence": min(1, abs(total_score))}
+    else:
+        return {"action": "neutral", "confidence": abs(total_score)}
 
 
 def load_config():

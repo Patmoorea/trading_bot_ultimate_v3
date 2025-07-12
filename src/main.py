@@ -124,9 +124,10 @@ def _generate_analysis_report(
         f"Régime: {regime}",
         "\nTendances principales:",
     ]
-    # Ajout de l'analyse des news si disponible
-    if news_sentiment:
-        try:
+
+    # Ajout de l'analyse des news (toujours, même si pas de news)
+    try:
+        if news_sentiment and isinstance(news_sentiment, dict):
             # Cast sécurisé pour éviter le bug format code '%' for object of type 'str'
             try:
                 sentiment = float(news_sentiment.get("overall_sentiment", 0) or 0)
@@ -145,20 +146,19 @@ def _generate_analysis_report(
                     f"Événements majeurs: {major_events}",
                 ]
             )
-        except Exception as e:
-            report.append(f"\n📰 Erreur sur analyse news : {e}")
-    else:
-        report.append("\n📰 Analyse des News: Aucune donnée disponible.")
-
-    # Ajout des dernières news si disponible
-    major_news = news_sentiment.get("latest_news", []) if news_sentiment else []
-    if major_news:
-        report.append("Dernières news :")
-        for news in major_news[:3]:
-            report.append(f"- {news}")
+            # Ajout des dernières news si disponible
+            major_news = news_sentiment.get("latest_news", [])
+            if major_news:
+                report.append("Dernières news :")
+                for news in major_news[:3]:
+                    report.append(f"- {news}")
+        else:
+            report.append("\n📰 Analyse des News: Aucune donnée disponible.")
+    except Exception as e:
+        report.append(f"\n📰 Erreur sur analyse news : {e}")
 
     # Analyse par timeframe
-    for timeframe, analysis in indicators_analysis.items():
+    for timeframe, analysis in (indicators_analysis or {}).items():
         try:
             report.append(f"\n⏰ {timeframe}:")
             trend_strength = analysis.get("trend", {}).get("trend_strength", 0)
@@ -190,6 +190,7 @@ def _generate_analysis_report(
                     "- Analyse en cours...",
                 ]
             )
+
     return "\n".join(report)
 
 
@@ -905,16 +906,17 @@ with tab2:
 with tab3:
     st.subheader("Analyse technique approfondie")
     try:
+        # Lecture sécurisée du fichier JSON partagé
         with open(SHARED_DATA_PATH, "r") as f:
             shared_data = json.load(f)
-        indicators = shared_data.get("indicators", {})
-        regime = shared_data.get("regime", "Indéterminé")
+        if not isinstance(shared_data, dict):
+            st.error("Le fichier shared_data.json est mal formé.")
+            shared_data = {}
 
-        # --- Calcul du vrai sentiment news ---
-        sentiment_analyzer = SentimentAnalyzer()
-        news_sentiment = sentiment_analyzer.get_aggregated_sentiment(
-            "BTCUSDT"
-        )  # ou la paire de ton choix
+        # Récupération défensive des clés
+        indicators = shared_data.get("indicators") or {}
+        regime = shared_data.get("regime", "Indéterminé")
+        news_sentiment = shared_data.get("sentiment", None)
 
         # --- Calcul des vraies décisions de trade (exemple simple, à adapter selon ta logique) ---
         trade_decisions = {}
@@ -924,9 +926,18 @@ with tab3:
                 "confidence": round(0.7 + 0.05 * i, 2),
                 "tech": round(0.75 + 0.03 * i, 2),
                 "ai": round(0.72 + 0.02 * i, 2),
-                "sentiment": round(news_sentiment.get("score", 0.5), 2),
+                # Correction ici : news_sentiment peut être None, et la clé c'est "overall_sentiment"
+                "sentiment": round(
+                    (
+                        news_sentiment.get("overall_sentiment", 0.5)
+                        if news_sentiment
+                        else 0.5
+                    ),
+                    2,
+                ),
             }
 
+        # Génération du rapport d'analyse
         analysis_report = _generate_analysis_report(
             indicators, regime, news_sentiment, trade_decisions
         )
