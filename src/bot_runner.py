@@ -277,8 +277,10 @@ MARKET_REGIMES = {
 
 
 def get_current_time():
-    """Retourne le temps actuel au format UTC"""
-    return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    utc_now = datetime.utcnow()
+    polynesie_offset = timedelta(hours=-10)
+    local_dt = utc_now + polynesie_offset
+    return local_dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
 # Constantes

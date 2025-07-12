@@ -80,6 +80,13 @@ CONFIG_FILE = "config.json"
 SHARED_DATA_PATH = "src/shared_data.json"
 
 
+def get_current_time():
+    utc_now = datetime.utcnow()
+    polynesie_offset = timedelta(hours=-10)
+    local_dt = utc_now + polynesie_offset
+    return local_dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
 ):
@@ -117,10 +124,10 @@ def _generate_analysis_report(
     indicators_analysis, regime, news_sentiment=None, trade_decisions=None
 ):
     """Génère un rapport d'analyse détaillé avec news et décisions de trade"""
-    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    current_time = get_current_time()
     report = [
         "📊 Analyse complète du marché:",
-        f"Date: {current_time} UTC",
+        f"Date: {current_time}",
         f"Régime: {regime}",
         "\nTendances principales:",
     ]
@@ -197,11 +204,6 @@ def _generate_analysis_report(
 def generate_dummy_returns(n_points=30, final_return=27.5):
     """Génère des rendements simulés"""
     return np.linspace(0, final_return, n_points)
-
-
-def get_current_time():
-    # Pour test/développement, retourner une date fixe
-    return CURRENT_TIME
 
 
 def load_status():
