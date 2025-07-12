@@ -555,7 +555,7 @@ class TradingBotM4:
         self.indicators = {}
         self.ai_weight = 0.3  # Add AI weight initialization
         self.ai_enabled = False  # Initialize AI status
-        self.pairs_valid = []
+        self.pairs_valid = self.config["TRADING"]["pairs"]
 
         print(f"Trading pairs: {self.pairs_valid}")
         print(f"Environment initialized: {hasattr(self, 'env')}")
@@ -2465,10 +2465,12 @@ async def run_clean_bot():
                             except Exception as e:
                                 print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
                     else:
-                        print(f"")
+                        # Ajout d'un log utile pour debug volume/DF vide
+                        print(f"[DEBUG] DataFrame vide pour {pair_key} {tf}")
 
+            # Log debug sur la structure finale (optionnel)
             for sym in bot.market_data:
-                print(f"")
+                print(f"[DEBUG] {sym}: {list(bot.market_data[sym].keys())}")
 
             # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
@@ -2478,7 +2480,7 @@ async def run_clean_bot():
             # 3. Détection d'arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 4. Analyse des paires
+            # 4. Analyse des paires pour CHAQUE timeframe
             trade_decisions = []
             for pair in valid_pairs:
                 for tf in bot.config["TRADING"]["timeframes"]:
@@ -2924,6 +2926,7 @@ if __name__ == "__main__":
 
     # --- 1. Argument parsing avancé
     parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
     )
@@ -2934,7 +2937,6 @@ if __name__ == "__main__":
         help="Chemin du CSV market data",
     )
     parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
-
     parser.add_argument(
         "--strategy",
         type=str,
@@ -2942,7 +2944,6 @@ if __name__ == "__main__":
         choices=["sma", "breakout", "arbitrage"],
         help="Stratégie à utiliser",
     )
-    # Arguments pour auto-stratégie
     parser.add_argument(
         "--auto-strategy",
         action="store_true",
@@ -2969,6 +2970,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--auto-n", type=int, default=50, help="Nombre de stratégies à générer/tester"
     )
+    args, unknown = parser.parse_known_args()
     args, unknown = parser.parse_known_args()
 
     # Ajoute ici d'autres paramètres si besoin...
