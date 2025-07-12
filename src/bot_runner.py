@@ -1971,7 +1971,7 @@ class TradingBotM4:
         await self.telegram.send_performance_update(performance)
         report = await self.generate_market_analysis_report(
             cycle=self.current_cycle
-        )  # <-- AJOUT ici
+        )  # <-- ici
         await self.telegram.send_message(report)
 
     def initialize_shared_data(self):
@@ -2348,6 +2348,7 @@ async def run_clean_bot():
     async def initialize_bot():
         """Initialisation du bot et de ses composants"""
         print(">>> INITIALIZE_BOT <<<")
+        bot = None
         try:
             print("\n=== DÉMARRAGE DU BOT ===")
             print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
@@ -2381,6 +2382,7 @@ async def run_clean_bot():
                 for sym in bot.market_data:
                     print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
+            initial_report = await bot.generate_market_analysis_report(cycle=0)
             await bot.telegram.send_message(
                 "🚀 <b>Bot Trading démarré</b>\n"
                 "✅ Initialisation réussie\n"
