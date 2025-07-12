@@ -795,8 +795,15 @@ with st.sidebar:
             }
 
 # --- Tabs principaux ---
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["📊 Trading", "📈 Graphiques", "🔬 Analyse", "🧪 Backtest", "📈 Performance"]
+tab1, tab2, tab3, tab4, tab5, tab_logs = st.tabs(
+    [
+        "📊 Trading",
+        "📈 Graphiques",
+        "🔬 Analyse",
+        "🧪 Backtest",
+        "📈 Performance",
+        "📝 Logs",
+    ]
 )
 
 with tab1:
@@ -1147,6 +1154,20 @@ with tab5:
             delta=None,
             help="Capital final",
         )
+
+with tab_logs:
+    st.subheader("📝 Logs du Bot (live)")
+    try:
+        with open("src/bot_logs.txt", "r") as f:
+            logs = f.readlines()
+        st.text(
+            "".join(logs[-200:])
+        )  # Les 200 derniers logs, adapte selon la taille voulue
+    except Exception as e:
+        st.info("Aucun log à afficher ou erreur de lecture.")
+    if st.button("🗑️ Vider les logs"):
+        open("src/bot_logs.txt", "w").close()
+        st.success("Logs vidés !")
 
 # --- Système d'alertes ---
 alert_system = AlertSystem()

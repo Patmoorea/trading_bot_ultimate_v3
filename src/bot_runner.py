@@ -63,6 +63,17 @@ from src.ai.auto_strategy_generator import appliquer_config_strategy
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
+LOG_FILE = "src/bot_logs.txt"
+
+
+def log_dashboard(message):
+    print(message)
+    try:
+        with open(LOG_FILE, "a") as f:
+            f.write(f"{datetime.utcnow().isoformat()} | {message}\n")
+    except Exception as e:
+        print(f"[LOG ERROR] {e}")
+
 
 def _generate_analysis_report(
     indicators_analysis, regime, news_sentiment=None, trade_decisions=None
@@ -209,6 +220,7 @@ def main():
 
     if args.backtest:
         print("=== Lancement du backtesting quantitatif ===")
+        log_dashboard("=== Lancement du backtesting quantitatif ===")
         df = pd.read_csv(args.data)
 
         # Choix de la stratégie
@@ -224,6 +236,7 @@ def main():
             df, strategy_func
         )
         print("Résultats backtest :")
+        log_dashboard("Résultats backtest :")
         print(results)
         exit(0)
 
@@ -528,7 +541,9 @@ class TradingBotM4:
             self.arbitrage_engine = ArbitrageEngine()
             self.brokers = self.arbitrage_engine.brokers
             print("✅ ArbitrageEngine initialisé avec succès")
+            log_dashboard("✅ ArbitrageEngine initialisé avec succès")
         except Exception as e:
+            log_dashboard(f"⚠️ Erreur initialisation ArbitrageEngine: {e}")
             print(f"⚠️ Erreur initialisation ArbitrageEngine: {e}")
             self.arbitrage_engine = None
             self.brokers = {}
@@ -597,6 +612,7 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             print("✅ Auto-stratégie chargée :", self.auto_strategy_config)
+            log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
     async def analyze_signals(self, ohlcv_df, indicators):
         """
@@ -615,8 +631,12 @@ class TradingBotM4:
             print(
                 f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''}"
             )
+            log_dashboard(
+                f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''}"
+            )
         else:
             print(f"[STRATEGY] Stratégie STANDARD appliquée")
+            log_dashboard(f"[STRATEGY] Stratégie STANDARD appliquée")
 
         # 2. Extraction de tous les indicateurs utiles
         close = ohlcv_df["close"].iloc[-1] if "close" in ohlcv_df else None
@@ -696,12 +716,14 @@ class TradingBotM4:
         ai_score = 0
         if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
             print(f"[AI] Prédiction IA sollicitée")
+            log_dashboard(f"[AI] Prédiction IA sollicitée")
             try:
                 # Prépare les features comme dans _prepare_features_for_ai
                 features = await self._prepare_features_for_ai(ohlcv_df)
                 if features is not None:
                     ai_score = float(self.dl_model.predict(features))
                     print(f"[AI] Score IA (DL): {ai_score:.4f}")
+                    log_dashboard(f"[AI] Score IA (DL): {ai_score:.4f}")
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
 
@@ -744,7 +766,11 @@ class TradingBotM4:
             f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
             f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
         )
-
+        log_dashboard(
+            f"[TRADE DECISION] {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''} | "
+            f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
+            f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
+        )
         return decision
 
     def get_binance_real_balance(self, asset="USDC"):
@@ -761,8 +787,10 @@ class TradingBotM4:
         """Détecte les opportunités d'arbitrage avec vérification des volumes et logs détaillés"""
         if not self.is_live_trading:
             print("[ARBITRAGE] Pas en mode live trading, détection annulée.")
+            log_dashboard("[ARBITRAGE] Pas en mode live trading, détection annulée.")
             return []
         print("[ARBITRAGE] Démarrage détection arbitrage…")
+        log_dashboard("[ARBITRAGE] Démarrage détection arbitrage…")
         opportunities = []
         pairs_to_check = [pair] if pair else self.pairs_valid
         MIN_PROFIT_THRESHOLD = 0.15
@@ -830,6 +858,9 @@ class TradingBotM4:
                                     "estimated_profit": profit_pct - 0.2,  # Après frais
                                 }
                                 print(
+                                    f"[ARBITRAGE] OPPORTUNITÉ: {current_pair}: {binance_price} (Binance) <> {exchange_price} ({exchange['name']}) | Diff: {profit_pct:.2f}%"
+                                )
+                                log_dashboard(
                                     f"[ARBITRAGE] OPPORTUNITÉ: {current_pair}: {binance_price} (Binance) <> {exchange_price} ({exchange['name']}) | Diff: {profit_pct:.2f}%"
                                 )
                                 opportunities.append(opportunity)
@@ -912,7 +943,7 @@ class TradingBotM4:
         """Initialise les composants d'IA"""
         try:
             print("Initialisation des modèles d'IA...")
-
+            log_dashboard("Initialisation des modèles d'IA...")
             if not self.env:
                 raise ValueError("L'environnement de trading n'est pas initialisé")
 
@@ -936,7 +967,7 @@ class TradingBotM4:
 
             self.ai_enabled = True
             print("✅ Modèles d'IA initialisés avec succès")
-
+            log_dashboard("✅ Modèles d'IA initialisés avec succès")
         except Exception as e:
             print(f"❌ Erreur initialisation IA: {str(e)}")
             self.ai_enabled = False
@@ -993,7 +1024,7 @@ class TradingBotM4:
                 raise ValueError("PPO model failed to initialize")
 
             print("✅ PPO Strategy initialized successfully")
-
+            log_dashboard("✅ PPO Strategy initialized successfully")
         except Exception as e:
             print(f"❌ Erreur initialisation PPO: {str(e)}")
             self.ppo_strategy = None
@@ -1011,9 +1042,13 @@ class TradingBotM4:
             self.news_analyzer = None
 
         print(f"🔄 Bot initialisé avec Telegram: {bool(TELEGRAM_BOT_TOKEN)}")
+        log_dashboard(f"🔄 Bot initialisé avec Telegram: {bool(TELEGRAM_BOT_TOKEN)}")
         print(f"🔄 Trading en direct: {self.is_live_trading}")
+        log_dashboard(f"🔄 Trading en direct: {self.is_live_trading}")
         print(f"🔄 IA activée: {self.ai_enabled}")
+        log_dashboard(f"🔄 IA activée: {self.ai_enabled}")
         print(f"🔄 Analyse de news activée: {self.news_enabled}")
+        log_dashboard(f"🔄 Analyse de news activée: {self.news_enabled}")
 
     def check_stop_loss(self, symbol, side):
         """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
@@ -1054,6 +1089,9 @@ class TradingBotM4:
             print(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
             )
+            log_dashboard(
+                f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
+            )
             self.logger.info(
                 f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
             )
@@ -1067,6 +1105,9 @@ class TradingBotM4:
 
         try:
             print(
+                f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
+            )
+            log_dashboard(
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
             )
             # Récupération du carnet d'ordres
@@ -1099,6 +1140,9 @@ class TradingBotM4:
             # Enregistrement du résultat
             if result["status"] == "completed":
                 print(
+                    f"[ORDER] Exécuté avec succès: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
+                )
+                log_dashboard(
                     f"[ORDER] Exécuté avec succès: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
                 )
                 self.logger.info(
@@ -1300,6 +1344,7 @@ class TradingBotM4:
 
     async def _news_analysis_loop(self):
         print("[NEWS] Lancement boucle d'analyse des news…")
+        log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         """Boucle d'analyse des news (version propre sans print/debug)"""
         while True:
             try:
@@ -1339,6 +1384,9 @@ class TradingBotM4:
                     impact_score = sentiment_data.get("impact_score", 0)
                     major_events = sentiment_data.get("major_events", "")
                     print(
+                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
+                    )
+                    log_dashboard(
                         f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
                     )
                 except Exception as e:
@@ -1713,6 +1761,9 @@ class TradingBotM4:
                 await self._add_ai_predictions()
 
             print(
+                f"[MARKET ANALYSIS] Régime détecté: {self.regime} | Volatilité: {volatility:.4f} | Tendance: {trend:.4f}"
+            )
+            log_dashboard(
                 f"[MARKET ANALYSIS] Régime détecté: {self.regime} | Volatilité: {volatility:.4f} | Tendance: {trend:.4f}"
             )
 
@@ -2529,6 +2580,7 @@ async def run_clean_bot():
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             print(f"🎯 Stratégie active: {strategy}")
+            log_dashboard(f"🎯 Stratégie active: {strategy}")
 
             # 3. Détection d'arbitrage
             await handle_arbitrage_opportunities(bot)
@@ -2561,7 +2613,7 @@ async def run_clean_bot():
             # Analyse initiale du marché
             regime, _, _ = await bot.study_market("7d")
             print(f"🔈 Régime de marché détecté: {regime}")
-
+            log_dashboard(f"🔈 Régime de marché détecté: {regime}")
             # Boucle principale
             cycle = 0
             while True:
@@ -2741,6 +2793,9 @@ async def generate_trade_decision(bot, pair, combined_score, data, signal):
         print(
             f"[TRADE-DECISION] {pair} | Action: {final_action.upper()} | Confiance: {confidence:.2f} | Score: {combined_score:.4f} | Tech: {signal['confidence']:.2f} | AI: {data.get('ai_prediction', 0.5):.2f} | Sentiment: {data.get('sentiment',0):.2f}"
         )
+        log_dashboard(
+            f"[TRADE-DECISION] {pair} | Action: {final_action.upper()} | Confiance: {confidence:.2f} | Score: {combined_score:.4f} | Tech: {signal['confidence']:.2f} | AI: {data.get('ai_prediction', 0.5):.2f} | Sentiment: {data.get('sentiment',0):.2f}"
+        )
         await bot.telegram.send_message(
             f"🔔 <b>Décision de Trade</b>\n"
             f"Pair: {pair}\n"
@@ -2776,7 +2831,7 @@ async def handle_arbitrage_opportunities(bot):
             return
 
         print(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
-
+        log_dashboard(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
         for opp in opportunities:
             # Logging de l'opportunité
             print(
