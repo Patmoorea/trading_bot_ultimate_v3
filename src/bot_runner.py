@@ -1394,8 +1394,7 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Error saving sentiment data: {e}")
 
-    async def generate_market_analysis_report(self):
-        """Génère un rapport d'analyse de marché détaillé"""
+    async def generate_market_analysis_report(self, cycle=None):
         debug_market_data_structure(
             self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
         )
