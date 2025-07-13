@@ -1265,12 +1265,10 @@ class TradingBotM4:
                 val = current_signals[signal_type]
                 # PATCH: si c'est un dict, on essaie de prendre la clé 'value' ou on force à 0.0
                 if isinstance(val, dict):
-                    if "value" in val and isinstance(val["value"], (float, int)):
-                        val = float(val["value"])
-                    else:
-                        val = 0.0
-                # Si val n'est pas un float/int, on force à 0.0 pour éviter toute erreur
-                if not isinstance(val, (float, int)):
+                    val = float(
+                        val.get("value", 0.0)
+                    )  # Récupère la clé 'value', sinon 0.0
+                elif not isinstance(val, (float, int)):
                     val = 0.0
                 technical_weight = 1 - self.ai_weight
                 current_signals[signal_type] = (
@@ -1792,7 +1790,10 @@ class TradingBotM4:
     # ... dans la méthode async def _add_ai_predictions(self): ...
 
     async def _add_ai_predictions(self):
-        """Ajoute les prédictions des modèles d'IA aux données de marché"""
+        """
+        Ajoute les prédictions des modèles d'IA aux données de marché.
+        Corrige tout problème de shape sur ppo_features avant l'appel à PPO.
+        """
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
 
@@ -1830,9 +1831,10 @@ class TradingBotM4:
                         ]
                     )
                     # === PATCH SÉCURITÉ SHAPE ===
-                    # Corrige toute shape inattendue avant d'appeler PPO
                     if ppo_features.shape == (1, 42):
                         ppo_features = ppo_features.reshape(-1)
+                    if len(ppo_features.shape) == 2 and ppo_features.shape[0] == 1:
+                        ppo_features = ppo_features.flatten()
                     if ppo_features.shape != (504,):
                         print(
                             f"[SKIP PPO] {pair_key}, shape {ppo_features.shape}, pas assez de data"
