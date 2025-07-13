@@ -681,7 +681,6 @@ class TradingBotM4:
                 features = await self._prepare_features_for_ai(symbol)
                 log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
-                    X = features_to_array(features)
                     ai_score = float(self.dl_model.predict(features))
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
@@ -1174,25 +1173,30 @@ class TradingBotM4:
             self.logger.error(f"Error updating performance metrics: {e}")
 
     async def _prepare_features_for_ai(self, symbol):
-        """Prépare les features pour les modèles d'IA"""
+        """Prépare les features pour les modèles d'IA (adapté pour PPO et DL)"""
         try:
-            # Récupération des données OHLCV récentes
-            ohlcv = self.market_data.get(symbol, {}).get("1h", {})
+            # === 1. Paramétrage du nombre de steps ===
+            N_STEPS = 63  # Mets ici la valeur voulue pour PPO : 504/8 = 63
 
+            # 2. Récupération des données OHLCV récentes
+            ohlcv = self.market_data.get(symbol, {}).get("1h", {})
             if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
                 return None
 
-            # Normalisation des données
             closes = np.array(ohlcv.get("close", []))
             highs = np.array(ohlcv.get("high", []))
             lows = np.array(ohlcv.get("low", []))
             volumes = np.array(ohlcv.get("volume", []))
 
-            if len(closes) < 20:
+            if (
+                len(closes) < N_STEPS
+                or len(highs) < N_STEPS
+                or len(lows) < N_STEPS
+                or len(volumes) < N_STEPS
+            ):
                 return None
 
-            # Calcul des indicateurs techniques
-            # RSI
+            # 3. Calcul des indicateurs techniques
             delta = np.diff(closes)
             gain = (delta > 0) * delta
             loss = (delta < 0) * -delta
@@ -1201,31 +1205,30 @@ class TradingBotM4:
             rs = avg_gain / avg_loss if avg_loss > 0 else 0
             rsi = 100 - (100 / (1 + rs))
 
-            # MACD
             ema12 = np.mean(closes[-12:]) if len(closes) >= 12 else closes[-1]
             ema26 = np.mean(closes[-26:]) if len(closes) >= 26 else closes[-1]
             macd = ema12 - ema26
 
-            # Volatilité
             volatility = (
-                np.std(delta[-20:]) / np.mean(closes[-20:]) if len(delta) >= 20 else 0
+                np.std(delta[-N_STEPS:]) / np.mean(closes[-N_STEPS:])
+                if len(delta) >= N_STEPS
+                else 0
             )
-
-            # Volume relatif
-            avg_volume = np.mean(volumes[-20:]) if len(volumes) >= 20 else volumes[-1]
+            avg_volume = (
+                np.mean(volumes[-N_STEPS:]) if len(volumes) >= N_STEPS else volumes[-1]
+            )
             vol_ratio = volumes[-1] / avg_volume if avg_volume > 0 else 1
 
-            # Construire le tableau de features normalisées
+            # 4. Construction du dict features (arrays shape (N_STEPS,) ou scalaires broadcast)
             features = {
-                "close": closes[-20:]
-                / closes[-20],  # Normalisation par rapport au premier point
-                "high": highs[-20:] / highs[-20],
-                "low": lows[-20:] / lows[-20],
-                "volume": volumes[-20:] / volumes[-20],
-                "rsi": rsi / 100,  # Normalisation entre 0 et 1
-                "macd": (macd + 100) / 200,  # Normalisation arbitraire
-                "volatility": min(1, volatility * 10),  # Normalisation avec cap à 1
-                "vol_ratio": min(1, vol_ratio / 3),  # Normalisation avec cap à 1
+                "close": closes[-N_STEPS:] / closes[-N_STEPS],
+                "high": highs[-N_STEPS:] / highs[-N_STEPS],
+                "low": lows[-N_STEPS:] / lows[-N_STEPS],
+                "volume": volumes[-N_STEPS:] / volumes[-N_STEPS],
+                "rsi": rsi / 100,
+                "macd": (macd + 100) / 200,
+                "volatility": min(1, volatility * 10),
+                "vol_ratio": min(1, vol_ratio / 3),
             }
 
             return features
@@ -1756,6 +1759,8 @@ class TradingBotM4:
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
 
+        N_STEPS = 63  # Doit matcher N_STEPS utilisé dans _prepare_features_for_ai et le shape attendu par PPO (8*63=504)
+
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
 
@@ -1767,13 +1772,13 @@ class TradingBotM4:
                     # Prédiction du modèle CNN-LSTM
                     dl_prediction = self.dl_model.predict(features)
 
-                    # CORRECTION : la PPO attend un array plat, pas un dict
+                    # Construction du vecteur pour PPO : array plat de shape (504,)
                     ppo_features = np.concatenate(
                         [
                             (
                                 features[k]
                                 if isinstance(features[k], np.ndarray)
-                                else np.full(20, features[k])
+                                else np.full(N_STEPS, features[k])
                             )
                             for k in [
                                 "close",
@@ -1788,6 +1793,14 @@ class TradingBotM4:
                         ]
                     )
                     print("PPO features shape:", ppo_features.shape)  # doit être (504,)
+
+                    # SÉCURITÉ : skip si la shape n'est pas bonne
+                    if ppo_features.shape != (504,):
+                        print(
+                            f"[SKIP PPO] {pair_key}, shape {ppo_features.shape}, pas assez de data"
+                        )
+                        continue
+
                     ppo_action = self.ppo_strategy.get_action(ppo_features)
 
                     # Fusion des signaux IA avec les signaux techniques
