@@ -517,7 +517,6 @@ class TradingBotM4:
                 "verbose": 1,
             },
         }
-        # >>>> AJOUT ICI <<<<
         self.ws_collector = BufferedWSCollector(
             symbols=[
                 s.replace("/", "").upper() for s in self.config["TRADING"]["pairs"]
@@ -533,6 +532,7 @@ class TradingBotM4:
         self.indicators = {}
         self.ai_weight = 0.3
         self.ai_enabled = False
+        self.pairs_valid = self.config["TRADING"]["pairs"]
 
         # Initialisation de l'arbitrage engine
         try:
@@ -554,31 +554,11 @@ class TradingBotM4:
         )
         print("✅ Environnement initialisé avec succès")
 
-        # Initialisation de l'IA
+        # Initialisation de l'IA (modèle réel uniquement)
         self._initialize_ai()
 
-        # --- PATCH: MODE DÉMO IA ---
-        class FakeModel:
-            def predict(self, features):
-                return 0.66  # valeur de test, change-la si besoin
-
-        # Force le modèle IA de démo (mock)
-        self.dl_model = FakeModel()
-        self.ai_enabled = True
-        # --- FIN PATCH ---
-
-        # Initialize shared data
+        # Initialise les données partagées
         self.initialize_shared_data()
-
-        # Initialize basic attributes
-        self.data_file = SHARED_DATA_PATH
-        self.current_cycle = 0
-        self.regime = MARKET_REGIMES["RANGING"]
-        self.market_data = {}
-        self.indicators = {}
-        self.ai_weight = 0.3  # Add AI weight initialization
-        self.ai_enabled = False  # Initialize AI status
-        self.pairs_valid = self.config["TRADING"]["pairs"]
 
         print(f"Trading pairs: {self.pairs_valid}")
         print(f"Environment initialized: {hasattr(self, 'env')}")
@@ -593,8 +573,8 @@ class TradingBotM4:
 
         # Configuration de l'arbitrage
         self.arbitrage_config = {
-            "min_profit": 0.5,  # 0.5% minimum profit
-            "max_exposure": 10000,  # Maximum exposure in USDC
+            "min_profit": 0.5,
+            "max_exposure": 10000,
             "enabled_exchanges": ["binance", "kucoin", "huobi"],
         }
         # Sécurité avancée: gestion de clé cold wallet
@@ -621,23 +601,15 @@ class TradingBotM4:
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators):
         """
-        Fusionne toute la puissance d'analyse du bot :
-        - Auto-stratégie si présente
-        - Indicateurs techniques avancés (SMA, EMA, RSI, MACD, BB, PSAR, etc.)
-        - IA (Deep Learning et/ou PPO)
-        - Sentiment News
-        - Arbitrage (signal d'opportunité)
-        Retourne une décision de trade {"action": "buy"/"sell"/"neutral", "confidence": float, "signals": {...}}
+        Analyse la paire, retourne la décision réelle (plus aucun patch de test IA)
         """
-
-        # 1. Auto-stratégie (si présente et applicable)
         if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
             auto_cfg = self.auto_strategy_config
             log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {symbol}")
         else:
             log_dashboard(f"[STRATEGY] Stratégie STANDARD appliquée")
 
-        # 2. Extraction de tous les indicateurs utiles
+        # Indicateurs techniques
         close = ohlcv_df["close"].iloc[-1] if "close" in ohlcv_df else None
         prev_close = (
             ohlcv_df["close"].iloc[-2]
@@ -657,74 +629,54 @@ class TradingBotM4:
         momentum_10 = indicators.get("momentum_10")
         zscore_20 = indicators.get("zscore_20")
 
-        # 3. Score technique composite
         tech_score = 0
         tech_factors = 0
+        # Tech scoring inchangé...
 
-        # Tendance par rapport aux moyennes mobiles
         if close and sma_20:
             tech_factors += 1
-            tech_score += np.tanh((close - sma_20) / (sma_20 * 0.01))  # normalisation
+            tech_score += np.tanh((close - sma_20) / (sma_20 * 0.01))
         if close and sma_50:
             tech_factors += 1
             tech_score += np.tanh((close - sma_50) / (sma_50 * 0.01))
         if close and ema_20:
             tech_factors += 1
             tech_score += np.tanh((close - ema_20) / (ema_20 * 0.01))
-        # RSI
         if rsi_14:
             tech_factors += 1
-            tech_score += (rsi_14 - 50) / 50  # normalisé entre -1 et +1
-        # MACD
+            tech_score += (rsi_14 - 50) / 50
         if macd and macd_signal:
             tech_factors += 1
             tech_score += np.tanh(macd - macd_signal)
-        # MACD histogramme
         if macd_hist:
             tech_factors += 1
             tech_score += np.tanh(macd_hist)
-        # Bollinger Bands
         if bb_upper and bb_lower and close:
             tech_factors += 1
-            # Si on touche la borne inférieure : surachat, borne supérieure : survente
             if close < bb_lower:
                 tech_score -= 1
             elif close > bb_upper:
                 tech_score += 1
-        # PSAR (si croisement)
         if psar and prev_close:
             tech_factors += 1
             if prev_close < psar and close > psar:
-                tech_score += 1  # signal haussier
+                tech_score += 1
             elif prev_close > psar and close < psar:
-                tech_score -= 1  # signal baissier
-        # Momentum
+                tech_score -= 1
         if momentum_10:
             tech_factors += 1
             tech_score += np.tanh(momentum_10 / (abs(close) + 1e-8))
-        # Z-Score (écart à la moyenne)
         if zscore_20:
             tech_factors += 1
             tech_score += zscore_20
-
-        # Normalisation du score technique
         if tech_factors > 0:
             tech_score /= tech_factors
 
-        # 4. IA/Deep Learning
+        # === IA réelle uniquement ===
         ai_score = 0
-        # DEBUG Patch pour forcer IA à ON
-        self.ai_enabled = True
-        self.dl_model = object()  # Mock un objet pour passer la condition
-
-        def fake_predict(features):
-            return 0.66
-
-        self.dl_model.predict = fake_predict
         if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
             log_dashboard(f"[AI] Prédiction IA sollicitée pour {symbol}")
             try:
-                # Prépare les features avec la clé du symbole
                 features = await self._prepare_features_for_ai(symbol)
                 log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
@@ -733,10 +685,8 @@ class TradingBotM4:
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
 
-        # 5. Sentiment News
         sentiment_score = 0
         if getattr(self, "news_enabled", False):
-            # Cherche un score de sentiment récent pour la paire (dans market_data)
             if hasattr(self, "market_data"):
                 if (
                     symbol in self.market_data
@@ -747,11 +697,8 @@ class TradingBotM4:
             f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score}"
         )
 
-        # 6. Arbitrage (opportunité = force du signal d’arbitrage)
         arbitrage_score = 0
-        # (Tu peux ajouter ici une logique pour noter un score positif si une opportunité d'arbitrage est détectée)
 
-        # 7. Score global pondéré
         total_score = (
             0.5 * tech_score
             + 0.3 * ai_score
@@ -759,7 +706,6 @@ class TradingBotM4:
             + 0.05 * arbitrage_score
         )
 
-        # 8. Détermination du signal final et stockage des sous-scores pour le reporting
         decision = {
             "action": "neutral",
             "confidence": abs(total_score),
@@ -773,9 +719,6 @@ class TradingBotM4:
             decision["action"] = "buy"
         elif total_score < -0.6:
             decision["action"] = "sell"
-
-        # (optionnel) log debug ici pour vérifier
-        # log_dashboard(f"[DEBUG DECISION OBJ] {decision}")
 
         return decision
 
