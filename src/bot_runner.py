@@ -79,7 +79,6 @@ def log_dashboard(message):
 def _generate_analysis_report(
     indicators_analysis, regime, news_sentiment=None, trade_decisions=None
 ):
-    from datetime import datetime
 
     current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     report = [
@@ -2323,6 +2322,25 @@ class TradingBotM4:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
             return None
 
+    def train_cnn_lstm_on_live(self, pair="BTCUSDT", tf="1h"):
+        """
+        Entraîne le modèle CNN-LSTM sur les données live de ws_collector pour la paire/timeframe donnée,
+        et sauvegarde les poids dans src/models/cnn_lstm_model.pth
+        """
+        try:
+            from src.ai.train_cnn_lstm import train_with_live_data
+        except ImportError:
+            print("Impossible d'importer train_with_live_data")
+            return
+        pair_key = pair.replace("/", "").upper()
+        print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
+        df_live = self.ws_collector.get_dataframe(pair_key, tf)
+        if df_live is not None and not df_live.empty:
+            print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
+            train_with_live_data(df_live)
+        else:
+            print("Aucune donnée live disponible pour entraîner le modèle.")
+
 
 def load_config():
     """Charge la configuration"""
@@ -3169,19 +3187,10 @@ if __name__ == "__main__":
             print(results)
         sys.exit(0)
     elif "train-cnn-lstm" in sys.argv:
-        # Entraînement IA CNN-LSTM sur données live collectées par le bot
-
         bot = TradingBotM4()
-        # Choisis la paire et le timeframe pour l'entraînement
-        pair_key = "BTCUSDT"
-        tf = "1h"
-        print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
-        df_live = bot.ws_collector.get_dataframe(pair_key, tf)
-        if df_live is not None and not df_live.empty:
-            print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
-            train_with_live_data(df_live)
-        else:
-            print("Aucune donnée live disponible pour entraîner le modèle.")
+        # Modifie ici la paire/timeframe si besoin
+        bot.train_cnn_lstm_on_live(pair="BTCUSDT", tf="1h")
         sys.exit(0)
+
     else:
         asyncio.run(run_clean_bot())
