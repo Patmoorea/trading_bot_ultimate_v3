@@ -617,7 +617,7 @@ class TradingBotM4:
         - IA (Deep Learning et/ou PPO)
         - Sentiment News
         - Arbitrage (signal d'opportunité)
-        Retourne une décision de trade {"action": "buy"/"sell"/"neutral", "confidence": float}
+        Retourne une décision de trade {"action": "buy"/"sell"/"neutral", "confidence": float, "signals": {...}}
         """
 
         # 1. Auto-stratégie (si présente et applicable)
@@ -741,19 +741,24 @@ class TradingBotM4:
             + 0.05 * arbitrage_score
         )
 
-        # 8. Détermination du signal final
+        # 8. Détermination du signal final et stockage des sous-scores pour le reporting
+        decision = {
+            "action": "neutral",
+            "confidence": abs(total_score),
+            "signals": {
+                "technical": tech_score,
+                "ai": ai_score,
+                "sentiment": sentiment_score,
+            },
+        }
         if total_score > 0.6:
-            decision = {"action": "buy", "confidence": min(1, abs(total_score))}
+            decision["action"] = "buy"
         elif total_score < -0.6:
-            decision = {"action": "sell", "confidence": min(1, abs(total_score))}
-        else:
-            decision = {"action": "neutral", "confidence": abs(total_score)}
+            decision["action"] = "sell"
 
-        log_dashboard(
-            f"[TRADE DECISION] {symbol} | "
-            f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
-            f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
-        )
+        # (optionnel) log debug ici pour vérifier
+        # log_dashboard(f"[DEBUG DECISION OBJ] {decision}")
+
         return decision
 
     def get_binance_real_balance(self, asset="USDC"):
@@ -2554,6 +2559,18 @@ async def run_clean_bot():
                     if decision:
                         trade_decisions.append(decision)
 
+            # === AJOUT : LOG DES DÉCISIONS FINALES ===
+            for decision in trade_decisions:
+                signals = decision.get("signals", {})
+                log_dashboard(
+                    f"[TRADE DECISION] {decision['pair']} | "
+                    f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
+                    f"Tech: {signals.get('technical', 0):.2f} | "
+                    f"IA: {signals.get('ai', 0):.2f} | "
+                    f"Sentiment: {signals.get('sentiment', 0):.2f}"
+                )
+            # === FIN AJOUT ===
+
             # 5. Exécution des trades
             await execute_trade_decisions(bot, trade_decisions)
 
@@ -2917,7 +2934,7 @@ async def send_trade_notification(bot, decision, trade_result, amount):
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
-        # 2. Rapport des trades si nécessaire
+        # 1. Rapport des trades si nécessaire
         if trade_decisions:
             trade_report = "💹 <b>Trades exécutés</b>\n\n"
             for trade in trade_decisions:
@@ -2927,7 +2944,6 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                     if status == "completed"
                     else "⚠️" if status == "simulated" else "❌"
                 )
-                # Ajout d'une sécurité sur la clé pair
                 pair_str = trade.get("pair", "INCONNU")
                 action_str = trade.get("action", "INCONNU")
                 conf_str = f"{trade.get('confidence', 0):.0%}"
@@ -2938,7 +2954,7 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         else:
             await bot.telegram.send_cycle_update(cycle, regime, duration)
 
-        # 3. ====== RAPPORT ANALYSE COMPLET (news + décisions + multi-TF/paire) ======
+        # 2. ====== RAPPORT ANALYSE COMPLET (news + décisions + multi-TF/paire) ======
 
         # Construction d'un dict { "1m | BTC/USDT": {...}, ... }
         indicators_analysis = {}
@@ -2958,7 +2974,7 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         except Exception:
             news_sentiment = None
 
-        # Générer les décisions de trade par TF/paire
+        # Générer les décisions de trade par TF/paire (clé = f"{tf} | {pair}")
         trade_decisions_dict = {}
         for decision in trade_decisions:
             tf = decision.get("tf", "1h")
@@ -2973,6 +2989,16 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                 "ai": decision.get("signals", {}).get("ai", 0),
                 "sentiment": decision.get("signals", {}).get("sentiment", 0),
             }
+
+        # PATCH : Sauvegarde des décisions dans shared_data.json pour dashboard Streamlit
+        try:
+            with open(bot.data_file, "r") as f:
+                shared_data = json.load(f)
+            shared_data["trade_decisions"] = trade_decisions_dict
+            with open(bot.data_file, "w") as f:
+                json.dump(shared_data, f, indent=4)
+        except Exception as e:
+            logging.error(f"Erreur sauvegarde trade_decisions : {e}")
 
         regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
 

@@ -930,21 +930,18 @@ with tab3:
         # --- Calcul des vraies décisions de trade (exemple simple, à adapter selon ta logique) ---
         trade_decisions = {}
         for i, tf in enumerate(indicators.keys()):
-            trade_decisions[tf] = {
-                "action": "LONG" if i % 2 == 0 else "NEUTRAL",
-                "confidence": round(0.7 + 0.05 * i, 2),
-                "tech": round(0.75 + 0.03 * i, 2),
-                "ai": round(0.72 + 0.02 * i, 2),
-                # Correction ici : news_sentiment peut être None, et la clé c'est "overall_sentiment"
-                "sentiment": round(
-                    (
-                        news_sentiment.get("overall_sentiment", 0.5)
-                        if news_sentiment
-                        else 0.5
-                    ),
-                    2,
-                ),
-            }
+            trade_decisions = {}
+            if "trade_decisions" in shared_data:
+                trade_decisions = shared_data["trade_decisions"]
+            else:
+                for tf in indicators.keys():
+                    trade_decisions[tf] = {
+                        "action": "NEUTRAL",  # Valeur par défaut
+                        "confidence": 0.0,
+                        "tech": 0.0,
+                        "ai": 0.0,
+                        "sentiment": 0.0,
+                    }
 
         # Génération du rapport d'analyse
         analysis_report = _generate_analysis_report(
