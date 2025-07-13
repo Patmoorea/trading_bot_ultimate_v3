@@ -1238,35 +1238,46 @@ class TradingBotM4:
             return None
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
-        """Fusionne les signaux techniques et d'IA"""
+        """
+        Fusionne les signaux techniques et d'IA pour une paire donnée.
+        Corrige le bug "unsupported operand type(s) for *: 'dict' and 'float'"
+        en s'assurant que chaque signal est bien un float.
+        """
         try:
-            # Récupération des signaux techniques actuels
+            # 1. Récupération ou initialisation des signaux techniques actuels
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
             if "signals" not in self.market_data[symbol]:
                 self.market_data[symbol]["signals"] = {
-                    "trend": 0,
-                    "momentum": 0,
-                    "volatility": 0,
+                    "trend": 0.0,
+                    "momentum": 0.0,
+                    "volatility": 0.0,
                 }
 
             current_signals = self.market_data[symbol]["signals"]
 
-            # Conversion des prédictions IA en signaux (-1 à 1)
+            # 2. Conversion des prédictions IA en score combiné (-1 à 1)
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
-            # Fusion pondérée des signaux avec protection contre dict
+            # 3. Fusion pondérée des signaux avec protection contre dict
             for signal_type in current_signals:
                 val = current_signals[signal_type]
+                # PATCH: si c'est un dict, on essaie de prendre la clé 'value' ou on force à 0.0
                 if isinstance(val, dict):
-                    val = val.get("value", 0.0)
+                    if "value" in val and isinstance(val["value"], (float, int)):
+                        val = float(val["value"])
+                    else:
+                        val = 0.0
+                # Si val n'est pas un float/int, on force à 0.0 pour éviter toute erreur
+                if not isinstance(val, (float, int)):
+                    val = 0.0
                 technical_weight = 1 - self.ai_weight
                 current_signals[signal_type] = (
                     val * technical_weight + ai_signal * self.ai_weight
                 )
 
-            # Mise à jour des signaux
+            # 4. Mise à jour des signaux dans market_data
             self.market_data[symbol]["signals"] = current_signals
             self.market_data[symbol]["ai_prediction"] = float(ai_signal)
 
@@ -1388,7 +1399,10 @@ class TradingBotM4:
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(item["title"])
-
+        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores}")
+        print(
+            f"[DEBUG SENTIMENT GLOBAL] avg_sentiment={avg_sentiment} impact={impact_score} major_events={major_events}"
+        )
         # Calcul d'un score global
         avg_sentiment = (
             float(np.mean([item.get("sentiment", 0) for item in sentiment_scores]))
