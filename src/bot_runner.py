@@ -609,7 +609,7 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
-    async def analyze_signals(self, ohlcv_df, indicators):
+    async def analyze_signals(self, symbol, ohlcv_df, indicators):
         """
         Fusionne toute la puissance d'analyse du bot :
         - Auto-stratégie si présente
@@ -623,9 +623,7 @@ class TradingBotM4:
         # 1. Auto-stratégie (si présente et applicable)
         if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
             auto_cfg = self.auto_strategy_config
-            log_dashboard(
-                f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''}"
-            )
+            log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {symbol}")
         else:
             log_dashboard(f"[STRATEGY] Stratégie STANDARD appliquée")
 
@@ -706,10 +704,11 @@ class TradingBotM4:
         # 4. IA/Deep Learning
         ai_score = 0
         if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
-            log_dashboard(f"[AI] Prédiction IA sollicitée")
+            log_dashboard(f"[AI] Prédiction IA sollicitée pour {symbol}")
             try:
-                # Prépare les features comme dans _prepare_features_for_ai
-                features = await self._prepare_features_for_ai(ohlcv_df)
+                # Prépare les features avec la clé du symbole
+                features = await self._prepare_features_for_ai(symbol)
+                log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
                     ai_score = float(self.dl_model.predict(features))
                     log_dashboard(f"[AI] Score IA (DL): {ai_score:.4f}")
@@ -721,14 +720,14 @@ class TradingBotM4:
         if getattr(self, "news_enabled", False):
             # Cherche un score de sentiment récent pour la paire (dans market_data)
             if hasattr(self, "market_data"):
-                # Cherche la clé la plus probable (BTCUSDT, ETHUSDT...)
-                symbol_key = None
-                for k in self.market_data.keys():
-                    if k in ohlcv_df.columns or k[:3] in ohlcv_df.columns:
-                        symbol_key = k
-                        break
-                if symbol_key and "sentiment" in self.market_data[symbol_key]:
-                    sentiment_score = self.market_data[symbol_key]["sentiment"]
+                if (
+                    symbol in self.market_data
+                    and "sentiment" in self.market_data[symbol]
+                ):
+                    sentiment_score = self.market_data[symbol]["sentiment"]
+        log_dashboard(
+            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score}"
+        )
 
         # 6. Arbitrage (opportunité = force du signal d’arbitrage)
         arbitrage_score = 0
@@ -751,7 +750,7 @@ class TradingBotM4:
             decision = {"action": "neutral", "confidence": abs(total_score)}
 
         log_dashboard(
-            f"[TRADE DECISION] {ohlcv_df.name if hasattr(ohlcv_df, 'name') else ''} | "
+            f"[TRADE DECISION] {symbol} | "
             f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
             f"Tech: {tech_score:.2f} | IA: {ai_score:.2f} | Sentiment: {sentiment_score:.2f}"
         )
@@ -2431,7 +2430,7 @@ async def run_clean_bot():
 
     async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
         try:
-            pair_key = pair.replace("/", "")
+            pair_key = pair.replace("/", "").upper()
             if not market_data or pair_key not in market_data:
                 return None
 
@@ -2451,12 +2450,16 @@ async def run_clean_bot():
                     action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
                     signal = {"action": action, "confidence": 1.0}
                 else:
-                    signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+                    # Appel standard
+                    signal = await bot.analyze_signals(
+                        pair_key, ohlcv_df, indicators_data
+                    )
                     signal["pair"] = pair
                     signal["tf"] = tf
                     return signal
             else:
-                signal = await bot.analyze_signals(ohlcv_df, indicators_data)
+                # Appel standard
+                signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data)
                 signal["pair"] = pair
                 signal["tf"] = tf
                 return signal
