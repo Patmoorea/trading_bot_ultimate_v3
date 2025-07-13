@@ -1342,16 +1342,19 @@ class TradingBotM4:
             await asyncio.sleep(self.news_update_interval)
 
     async def _update_sentiment_data(self, sentiment_scores):
-        """Met à jour les données de marché avec le sentiment"""
+        """
+        Met à jour les données de marché avec le sentiment :
+        - Applique le score spécifique à chaque symbole si trouvé dans sentiment_scores.
+        - Sinon, applique le score global à chaque paire qui n'a pas de score spécifique ou dont le score est 0.
+        """
         # 1. Applique le score spécifique si présent dans sentiment_scores
         for item in sentiment_scores:
             symbol = item.get("symbol", "")
             score = item.get("sentiment", 0)
             if symbol and symbol in self.market_data:
-                # Mise à jour des données de marché avec le sentiment
+                # Mise à jour des données de marché avec le sentiment spécifique
                 self.market_data[symbol]["sentiment"] = score
                 self.market_data[symbol]["sentiment_timestamp"] = time.time()
-
                 # Ajustement des signaux en fonction du sentiment
                 if "signals" in self.market_data[symbol]:
                     signals = self.market_data[symbol]["signals"]
@@ -1369,7 +1372,7 @@ class TradingBotM4:
                         sentiment_adjustment = score * sentiment_weight * time_factor
                         signals[signal_type] += sentiment_adjustment
 
-        # 2. PATCH : Applique le sentiment global à toutes les paires qui n'ont rien ou 0
+        # 2. Applique le sentiment global aux paires sans score spécifique ou à 0
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
@@ -1391,6 +1394,7 @@ class TradingBotM4:
                 ):
                     self.market_data[pair_key]["sentiment"] = global_sentiment
                     self.market_data[pair_key]["sentiment_timestamp"] = time.time()
+                    print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {global_sentiment}")
 
     async def _save_sentiment_data(self, sentiment_scores, news_data):
         """Sauvegarde les données de sentiment pour l'interface"""
@@ -1399,10 +1403,7 @@ class TradingBotM4:
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(item["title"])
-        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores}")
-        print(
-            f"[DEBUG SENTIMENT GLOBAL] avg_sentiment={avg_sentiment} impact={impact_score} major_events={major_events}"
-        )
+
         # Calcul d'un score global
         avg_sentiment = (
             float(np.mean([item.get("sentiment", 0) for item in sentiment_scores]))
@@ -1415,6 +1416,12 @@ class TradingBotM4:
             else 0
         )
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
+
+        # DEBUG prints placés APRÈS le calcul des variables
+        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores}")
+        print(
+            f"[DEBUG SENTIMENT GLOBAL] avg_sentiment={avg_sentiment} impact={impact_score} major_events={major_events}"
+        )
 
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
@@ -1782,6 +1789,8 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Error fetching market data: {e}")
 
+    # ... dans la méthode async def _add_ai_predictions(self): ...
+
     async def _add_ai_predictions(self):
         """Ajoute les prédictions des modèles d'IA aux données de marché"""
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
@@ -1820,14 +1829,17 @@ class TradingBotM4:
                             ]
                         ]
                     )
-                    print("PPO features shape:", ppo_features.shape)  # doit être (504,)
-
-                    # SÉCURITÉ : skip si la shape n'est pas bonne
+                    # === PATCH SÉCURITÉ SHAPE ===
+                    # Corrige toute shape inattendue avant d'appeler PPO
+                    if ppo_features.shape == (1, 42):
+                        ppo_features = ppo_features.reshape(-1)
                     if ppo_features.shape != (504,):
                         print(
                             f"[SKIP PPO] {pair_key}, shape {ppo_features.shape}, pas assez de data"
                         )
                         continue
+
+                    print("PPO features shape:", ppo_features.shape)  # doit être (504,)
 
                     ppo_action = self.ppo_strategy.get_action(ppo_features)
 
