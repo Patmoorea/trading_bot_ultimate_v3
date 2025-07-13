@@ -1254,12 +1254,14 @@ class TradingBotM4:
             # Conversion des prédictions IA en signaux (-1 à 1)
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
-            # Fusion pondérée des signaux
+            # Fusion pondérée des signaux avec protection contre dict
             for signal_type in current_signals:
+                val = current_signals[signal_type]
+                if isinstance(val, dict):
+                    val = val.get("value", 0.0)
                 technical_weight = 1 - self.ai_weight
                 current_signals[signal_type] = (
-                    current_signals[signal_type] * technical_weight
-                    + ai_signal * self.ai_weight
+                    val * technical_weight + ai_signal * self.ai_weight
                 )
 
             # Mise à jour des signaux
@@ -1766,8 +1768,9 @@ class TradingBotM4:
                     # Prédiction du modèle CNN-LSTM
                     dl_prediction = self.dl_model.predict(features)
 
-                    # Recommandation du modèle PPO
-                    ppo_action = self.ppo_strategy.get_action(features)
+                    # CORRECTION : la PPO attend un array plat, pas un dict
+                    ppo_features = features_to_array(features).flatten()
+                    ppo_action = self.ppo_strategy.get_action(ppo_features)
 
                     # Fusion des signaux IA avec les signaux techniques
                     await self._merge_signals(pair_key, dl_prediction, ppo_action)
