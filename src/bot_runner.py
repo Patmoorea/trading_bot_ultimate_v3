@@ -2569,6 +2569,7 @@ async def run_clean_bot():
             # Analyse initiale du marché
             regime, _, _ = await bot.study_market("7d")
             log_dashboard(f"🔈 Régime de marché détecté: {regime}")
+
             # Boucle principale
             cycle = 0
             while True:
@@ -2582,12 +2583,11 @@ async def run_clean_bot():
                         bot, valid_pairs
                     )
 
-                    # Mise à jour des données
+                    # Mise à jour des données du bot
                     bot.current_cycle = cycle
                     bot.regime = regime
 
-                    # Pour chaque paire et timeframe, calcule et stocke les indicateurs
-                    # -------- PATCH : Format dashboard-compatible ---------
+                    # Calcul et stockage des indicateurs pour chaque paire/timeframe
                     bot.indicators = {}
                     for pair in bot.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
@@ -2621,22 +2621,29 @@ async def run_clean_bot():
                                     "dominant_signal": dominant_signal,
                                     "ta": indics if indics else {},
                                 }
-                    # -------- FIN PATCH ---------
 
+                    # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
 
-                    # Calcul de la durée et rapports
+                    # === Entraînement automatique IA toutes les 50 itérations ===
+                    if cycle % 50 == 0:
+                        print(
+                            "=== Entraînement automatique du modèle IA (CNN-LSTM) ==="
+                        )
+                        bot.train_cnn_lstm_on_live(pair="BTCUSDT", tf="1h")
+                    # === Fin entraînement IA auto ===
+
+                    # Calcul de la durée du cycle et affichage
                     duration = (datetime.utcnow() - start).total_seconds()
                     print(f"✅ Cycle terminé en {duration:.1f}s")
 
-                    # Envoi des mises à jour
+                    # Envoi des mises à jour et rapports Telegram
                     await send_cycle_reports(
                         bot, trade_decisions, cycle, regime, duration
                     )
 
                 except Exception as e:
                     error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-
                     logger.error(error_msg)
                     await bot.telegram.send_message(error_msg)
 
@@ -2648,6 +2655,7 @@ async def run_clean_bot():
         except Exception as e:
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
+    # Démarrage de la boucle principale
     await main()
 
 
