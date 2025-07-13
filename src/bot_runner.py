@@ -681,8 +681,8 @@ class TradingBotM4:
                 features = await self._prepare_features_for_ai(symbol)
                 log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
-                    ai_score = float(self.dl_model.predict(X))
-                    log_dashboard(f"[AI] Score IA (DL): {ai_score:.4f}")
+                    X = features_to_array(features)
+                    ai_score = float(self.dl_model.predict(features))
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
 
