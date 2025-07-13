@@ -59,6 +59,7 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 
 from src.ai.auto_strategy_generator import auto_generate_and_backtest
 from src.ai.auto_strategy_generator import appliquer_config_strategy
+from src.ai.train_cnn_lstm import train_with_live_data
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -3166,6 +3167,21 @@ if __name__ == "__main__":
             results = engine.run_backtest(df, strategy_func)
             print(f"Résultats du backtest pour {pair} :")
             print(results)
+        sys.exit(0)
+    elif "train-cnn-lstm" in sys.argv:
+        # Entraînement IA CNN-LSTM sur données live collectées par le bot
+
+        bot = TradingBotM4()
+        # Choisis la paire et le timeframe pour l'entraînement
+        pair_key = "BTCUSDT"
+        tf = "1h"
+        print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
+        df_live = bot.ws_collector.get_dataframe(pair_key, tf)
+        if df_live is not None and not df_live.empty:
+            print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
+            train_with_live_data(df_live)
+        else:
+            print("Aucune donnée live disponible pour entraîner le modèle.")
         sys.exit(0)
     else:
         asyncio.run(run_clean_bot())
