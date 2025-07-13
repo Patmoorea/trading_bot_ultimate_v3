@@ -896,7 +896,7 @@ class TradingBotM4:
             # Configuration de l'environnement PPO
             env_config = {
                 "env": self.env,
-                "input_dim": 42,
+                "input_dim": 504,
                 "learning_rate": self.config["AI"]["learning_rate"],
                 "batch_size": self.config["AI"]["batch_size"],
                 "n_epochs": self.config["AI"]["n_epochs"],
@@ -950,7 +950,7 @@ class TradingBotM4:
             print("Configuration de la stratégie PPO...")
             env_config = {
                 "env": self.env,
-                "input_dim": 42,
+                "input_dim": 504,
                 "learning_rate": 3e-4,
                 "batch_size": 64,
                 "n_epochs": 10,

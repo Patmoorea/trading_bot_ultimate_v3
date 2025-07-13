@@ -11,22 +11,13 @@ class PPOStrategy(BaseStrategy):
         super().__init__(config)
         self.logger = logging.getLogger(__name__)
 
-        # Vérification de l'environnement
         self.env = config.get("env")
         if self.env is None:
-            self.logger.error("Environnement manquant dans la configuration")
             raise ValueError("Environnement manquant dans la configuration")
 
-        # Vérification des dimensions
-        if not hasattr(self.env, "observation_space") or not hasattr(
-            self.env, "action_space"
-        ):
-            self.logger.error(
-                "Environnement mal configuré (observation_space ou action_space manquant)"
-            )
-            raise ValueError("Environnement mal configuré")
+        self.input_dim = config.get("input_dim", 504)  # <--- PATCH: 504 par défaut
+        self.action_dim = len(self.env.trading_pairs)
 
-        # Configuration PPO
         self.ppo_config = {
             "policy": "MlpPolicy",
             "learning_rate": config.get("learning_rate", 3e-4),
@@ -64,7 +55,7 @@ class PPOStrategy(BaseStrategy):
             raise ValueError("Environnement manquant dans la configuration")
 
         # Dimensions
-        self.input_dim = config.get("input_dim", 42)
+        self.input_dim = config.get("input_dim", 504)
         self.action_dim = len(self.env.trading_pairs)
 
         # Configuration PPO avec valeurs par défaut
