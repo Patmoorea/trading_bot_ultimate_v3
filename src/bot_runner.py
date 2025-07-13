@@ -1017,10 +1017,10 @@ class TradingBotM4:
             self.news_enabled = False
             self.news_analyzer = None
 
-        log_dashboard(f"🔄 Bot initialisé avec Telegram: {bool(TELEGRAM_BOT_TOKEN)}")
-        log_dashboard(f"🔄 Trading en direct: {self.is_live_trading}")
-        log_dashboard(f"🔄 IA activée: {self.ai_enabled}")
-        log_dashboard(f"🔄 Analyse de news activée: {self.news_enabled}")
+        log_dashboard(f"✅ Bot initialisé avec Telegram: {bool(TELEGRAM_BOT_TOKEN)}")
+        log_dashboard(f"✅ Trading en direct: {self.is_live_trading}")
+        log_dashboard(f"✅ IA activée: {self.ai_enabled}")
+        log_dashboard(f"✅ Analyse de news activée: {self.news_enabled}")
 
     def check_stop_loss(self, symbol, side):
         """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
