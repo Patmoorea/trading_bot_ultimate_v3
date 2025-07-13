@@ -1246,3 +1246,60 @@
 2025-07-13T04:35:14.675103 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
 2025-07-13T04:35:14.677721 | 🎯 Stratégie active: Range/Scalping
 2025-07-13T04:35:14.677954 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:37:18.293754 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-13T04:37:18.294501 | Initialisation des modèles d'IA...
+2025-07-13T04:37:18.989593 | ✅ Modèles d'IA initialisés avec succès
+2025-07-13T04:37:20.560156 | ✅ PPO Strategy initialized successfully
+2025-07-13T04:37:24.621557 | ✅ Bot initialisé avec Telegram: True
+2025-07-13T04:37:24.621744 | ✅ Trading en direct: True
+2025-07-13T04:37:24.621779 | ✅ IA activée: True
+2025-07-13T04:37:24.621808 | ✅ Analyse de news activée: True
+2025-07-13T04:37:36.296027 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-13T04:37:58.688623 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:37:58.689964 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-13T04:37:59.207239 | [NEWS] Score sentiment global: -0.21 | Impact: 0.57 | Événements: Indian Crypto Exchange CoinDCX Denies Moving User Funds After WazirX Allegations; Stellar Performance From XLM as It Posts Top 24H Percentage Gain Among Top 20 Cryptos; Another BTC Mining Firm Moves Into Ethereum Reserve, Hailing ETH as ‘Digital Gold’
+2025-07-13T04:38:06.115342 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:38:06.116071 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:38:06.116328 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:38:35.760004 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.795880 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.829563 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.863970 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.898136 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.932705 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:35.967441 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:36.001817 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:36.036169 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:36.070196 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:36.105206 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:38:36.139479 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:16.824627 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:39:16.825421 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:39:16.825603 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:39:28.330614 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.367314 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.402641 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.437226 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.471935 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.506736 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.541473 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.576780 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.611717 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.647035 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.682139 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:39:28.717432 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:09.676206 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0299 | Tendance: -0.0003
+2025-07-13T04:40:09.677906 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:40:09.678162 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:40:20.406087 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.487574 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.545176 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.583841 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.622160 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.660727 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.700383 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.735322 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.770390 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.806022 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.841101 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:40:20.875994 | [STRATEGY] Stratégie STANDARD appliquée
