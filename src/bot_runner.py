@@ -681,7 +681,6 @@ class TradingBotM4:
                 features = await self._prepare_features_for_ai(symbol)
                 log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
-                    X = features_to_array(features)
                     ai_score = float(self.dl_model.predict(X))
                     log_dashboard(f"[AI] Score IA (DL): {ai_score:.4f}")
             except Exception as e:
@@ -1769,7 +1768,26 @@ class TradingBotM4:
                     dl_prediction = self.dl_model.predict(features)
 
                     # CORRECTION : la PPO attend un array plat, pas un dict
-                    ppo_features = features_to_array(features).flatten()
+                    ppo_features = np.concatenate(
+                        [
+                            (
+                                features[k]
+                                if isinstance(features[k], np.ndarray)
+                                else np.full(20, features[k])
+                            )
+                            for k in [
+                                "close",
+                                "high",
+                                "low",
+                                "volume",
+                                "rsi",
+                                "macd",
+                                "volatility",
+                                "vol_ratio",
+                            ]
+                        ]
+                    )
+                    print("PPO features shape:", ppo_features.shape)  # doit être (504,)
                     ppo_action = self.ppo_strategy.get_action(ppo_features)
 
                     # Fusion des signaux IA avec les signaux techniques
