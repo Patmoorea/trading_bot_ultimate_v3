@@ -60,6 +60,7 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 from src.ai.auto_strategy_generator import auto_generate_and_backtest
 from src.ai.auto_strategy_generator import appliquer_config_strategy
 from src.ai.train_cnn_lstm import train_with_live_data
+from src.ai.deep_learning_model import features_to_array
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -680,7 +681,8 @@ class TradingBotM4:
                 features = await self._prepare_features_for_ai(symbol)
                 log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
-                    ai_score = float(self.dl_model.predict(features))
+                    X = features_to_array(features)
+                    ai_score = float(self.dl_model.predict(X))
                     log_dashboard(f"[AI] Score IA (DL): {ai_score:.4f}")
             except Exception as e:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
