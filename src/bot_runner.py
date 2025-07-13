@@ -2341,6 +2341,30 @@ class TradingBotM4:
         else:
             print("Aucune donnée live disponible pour entraîner le modèle.")
 
+    def train_cnn_lstm_on_all_live(self):
+        """
+        Entraîne le modèle CNN-LSTM sur toutes les paires et timeframes de la config,
+        en utilisant les données live du ws_collector.
+        """
+        try:
+            from src.ai.train_cnn_lstm import train_with_live_data
+        except ImportError:
+            print("Impossible d'importer train_with_live_data")
+            return
+
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            for tf in self.config["TRADING"]["timeframes"]:
+                print(f"→ Entraînement IA sur {pair_key} / {tf}")
+                df_live = self.ws_collector.get_dataframe(pair_key, tf)
+                if df_live is not None and not df_live.empty:
+                    print(
+                        f"  {len(df_live)} lignes live trouvées, entraînement en cours…"
+                    )
+                    train_with_live_data(df_live)
+                else:
+                    print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
+
 
 def load_config():
     """Charge la configuration"""
@@ -2628,9 +2652,10 @@ async def run_clean_bot():
                     # === Entraînement automatique IA toutes les 50 itérations ===
                     if cycle % 50 == 0:
                         print(
-                            "=== Entraînement automatique du modèle IA (CNN-LSTM) ==="
+                            "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
                         )
-                        bot.train_cnn_lstm_on_live(pair="BTCUSDT", tf="1h")
+                        bot.train_cnn_lstm_on_all_live()
+
                     # === Fin entraînement IA auto ===
 
                     # Calcul de la durée du cycle et affichage
