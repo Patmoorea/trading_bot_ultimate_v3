@@ -1186,3 +1186,12 @@
 2025-07-13T04:27:17.460998 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.14 | Tech: 0.29 | IA: 0.00 | Sentiment: 0.00
 2025-07-13T04:27:17.461030 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.08 | Tech: 0.16 | IA: 0.00 | Sentiment: 0.00
 2025-07-13T04:27:17.461065 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.37 | Tech: 0.73 | IA: 0.00 | Sentiment: 0.00
+2025-07-13T04:31:33.121839 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-13T04:31:33.123522 | Initialisation des modèles d'IA...
+2025-07-13T04:31:33.750393 | ✅ Modèles d'IA initialisés avec succès
+2025-07-13T04:31:35.300967 | ✅ PPO Strategy initialized successfully
+2025-07-13T04:31:39.169245 | ✅ Bot initialisé avec Telegram: True
+2025-07-13T04:31:39.169407 | ✅ Trading en direct: True
+2025-07-13T04:31:39.169444 | ✅ IA activée: True
+2025-07-13T04:31:39.169474 | ✅ Analyse de news activée: True
+2025-07-13T04:31:54.330555 | [NEWS] Lancement boucle d'analyse des news…
