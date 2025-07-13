@@ -557,6 +557,16 @@ class TradingBotM4:
         # Initialisation de l'IA
         self._initialize_ai()
 
+        # --- PATCH: MODE DÉMO IA ---
+        class FakeModel:
+            def predict(self, features):
+                return 0.66  # valeur de test, change-la si besoin
+
+        # Force le modèle IA de démo (mock)
+        self.dl_model = FakeModel()
+        self.ai_enabled = True
+        # --- FIN PATCH ---
+
         # Initialize shared data
         self.initialize_shared_data()
 

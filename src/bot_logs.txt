@@ -1195,3 +1195,54 @@
 2025-07-13T04:31:39.169444 | ✅ IA activée: True
 2025-07-13T04:31:39.169474 | ✅ Analyse de news activée: True
 2025-07-13T04:31:54.330555 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-13T04:32:09.936879 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:32:09.937880 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-13T04:32:21.870033 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:32:21.870964 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:32:21.871272 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:32:23.507582 | [NEWS] Score sentiment global: -0.21 | Impact: 0.57 | Événements: Indian Crypto Exchange CoinDCX Denies Moving User Funds After WazirX Allegations; Stellar Performance From XLM as It Posts Top 24H Percentage Gain Among Top 20 Cryptos; Another BTC Mining Firm Moves Into Ethereum Reserve, Hailing ETH as ‘Digital Gold’
+2025-07-13T04:32:49.209364 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.248020 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.283028 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.317890 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.352811 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.387911 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.422831 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.457508 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.492376 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.526132 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.559288 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:32:49.593006 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:29.923866 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:33:29.924702 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:33:29.924930 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:33:40.849546 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:40.886876 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:40.921297 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:40.955056 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:40.988437 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.022462 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.056006 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.090082 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.124110 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.158086 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.192136 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:33:41.226813 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:22.429526 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:34:22.430224 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:34:22.430551 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-13T04:34:33.229920 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.265727 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.300384 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.334288 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.368230 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.402055 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.436279 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.471604 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.506530 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.540795 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.575968 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:34:33.611192 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-13T04:35:14.675103 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0298 | Tendance: -0.0004
+2025-07-13T04:35:14.677721 | 🎯 Stratégie active: Range/Scalping
+2025-07-13T04:35:14.677954 | [ARBITRAGE] Démarrage détection arbitrage…
