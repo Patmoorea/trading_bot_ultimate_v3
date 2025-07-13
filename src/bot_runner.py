@@ -1332,6 +1332,7 @@ class TradingBotM4:
 
     async def _update_sentiment_data(self, sentiment_scores):
         """Met à jour les données de marché avec le sentiment"""
+        # 1. Applique le score spécifique si présent dans sentiment_scores
         for item in sentiment_scores:
             symbol = item.get("symbol", "")
             score = item.get("sentiment", 0)
@@ -1343,29 +1344,42 @@ class TradingBotM4:
                 # Ajustement des signaux en fonction du sentiment
                 if "signals" in self.market_data[symbol]:
                     signals = self.market_data[symbol]["signals"]
-
-                    # Le sentiment influence tous les signaux
                     for signal_type in signals:
-                        # Ajustement proportionnel au sentiment avec pondération du temps
-                        time_factor = 1.0  # Diminue avec le temps
+                        time_factor = 1.0
                         if "sentiment_timestamp" in self.market_data[symbol]:
                             elapsed_time = (
                                 time.time()
                                 - self.market_data[symbol]["sentiment_timestamp"]
                             )
-                            time_factor = max(
-                                0.2, 1.0 - (elapsed_time / (3600 * 12))
-                            )  # Décroît sur 12h
-
-                        # Ajuster le poids du sentiment en fonction de son intensité
+                            time_factor = max(0.2, 1.0 - (elapsed_time / (3600 * 12)))
                         sentiment_weight = self.news_weight * (1 + abs(score))
-
-                        # Donner plus d'importance aux nouvelles très positives ou très négatives
                         if abs(score) > 0.7:
                             sentiment_weight *= 1.5
-
                         sentiment_adjustment = score * sentiment_weight * time_factor
                         signals[signal_type] += sentiment_adjustment
+
+        # 2. PATCH : Applique le sentiment global à toutes les paires qui n'ont rien ou 0
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+            news_sentiment = shared_data.get("sentiment", None)
+            if news_sentiment:
+                global_sentiment = news_sentiment.get("overall_sentiment", 0)
+            else:
+                global_sentiment = 0
+        except Exception:
+            global_sentiment = 0
+
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            if pair_key in self.market_data:
+                # Si pas de score spécifique ou à zéro, on applique le global
+                if (
+                    "sentiment" not in self.market_data[pair_key]
+                    or self.market_data[pair_key]["sentiment"] == 0
+                ):
+                    self.market_data[pair_key]["sentiment"] = global_sentiment
+                    self.market_data[pair_key]["sentiment_timestamp"] = time.time()
 
     async def _save_sentiment_data(self, sentiment_scores, news_data):
         """Sauvegarde les données de sentiment pour l'interface"""
