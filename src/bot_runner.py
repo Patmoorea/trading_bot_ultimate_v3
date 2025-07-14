@@ -1254,13 +1254,13 @@ class TradingBotM4:
             current_signals = self.market_data[symbol]["signals"]
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
+            # 1. Conversion de tous les signaux AVANT la fusion
             for signal_type in list(current_signals.keys()):
                 val = current_signals[signal_type]
                 print(
-                    f"[DEBUG] {symbol} | {signal_type} | type={type(val)} | val={val}"
+                    f"[DEBUG PRE-FUSION] {symbol} | {signal_type} | type={type(val)} | val={val}"
                 )
 
-                # Conversion ultra-robuste
                 if isinstance(val, dict):
                     for key in (
                         "value",
@@ -1285,11 +1285,12 @@ class TradingBotM4:
                 elif not isinstance(val, (float, int)):
                     val = 0.0
 
-                # ÉCRASE la valeur convertie AVANT tout calcul
-                current_signals[signal_type] = val
+                current_signals[signal_type] = val  # ECRASE ICI
 
+            # 2. FUSION : ici jamais de dict possible !
+            for signal_type in list(current_signals.keys()):
+                val = current_signals[signal_type]
                 technical_weight = 1 - self.ai_weight
-                # Utilise la valeur convertie (jamais dict ici)
                 current_signals[signal_type] = (
                     val * technical_weight + ai_signal * self.ai_weight
                 )
