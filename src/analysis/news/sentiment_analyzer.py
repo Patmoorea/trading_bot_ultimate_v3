@@ -15,20 +15,19 @@ import numpy as np
 
 class SymbolExtractor:
     """
-    Extraction avancée des symboles crypto depuis les titres et textes des news.
-    Utilise un mapping regex et analyse contextuelle (BTC, ETH, SOL, etc).
+    Extraction robuste des symboles crypto via mapping et contextuel (paires standard).
     """
 
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
         self.symbol_mapping = symbol_mapping or {
             "bitcoin": "BTC",
-            "ethereum": "ETH",
             "btc": "BTC",
+            "ethereum": "ETH",
             "eth": "ETH",
             "cardano": "ADA",
+            "ada": "ADA",
             "solana": "SOL",
             "sol": "SOL",
-            "ada": "ADA",
             "ripple": "XRP",
             "xrp": "XRP",
             "dogecoin": "DOGE",
@@ -53,50 +52,38 @@ class SymbolExtractor:
             "uni": "UNI",
             "stellar": "XLM",
             "xlm": "XLM",
-            "vechain": "VET",
-            "vet": "VET",
-            "aptos": "APT",
-            "apt": "APT",
-            "arbitrum": "ARB",
-            "arb": "ARB",
-            "optimism": "OP",
-            "op": "OP",
-            "the sandbox": "SAND",
-            "sand": "SAND",
-            "decentraland": "MANA",
-            "mana": "MANA",
-            # Ajoute d'autres ici selon besoin
+            # ... complète selon tes besoins ...
         }
-        # Compile regex patterns for all known tickers/names (mot entier uniquement)
+        # Set of all tickers for fast lookup (BTC, ETH…)
+        self.known_tickers = set(self.symbol_mapping.values())
+
+        # Compile regex for all mapping names
         self.regex_patterns = [
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
             for name, ticker in self.symbol_mapping.items()
         ]
 
     def extract_symbols(self, text: str) -> List[str]:
-        """
-        Extraction robuste des symboles à partir d'un texte (titre+contenu).
-        - Mapping regex sur tous les mots clés et tickers connus.
-        - Extraction contextuelle des paires du style BTC/USDT, ETHUSDT, $BTC, etc.
-        """
+        found: Set[str] = set()
         if not text:
             return []
-        found: Set[str] = set()
 
-        # 1. Mapping regex sur tous les noms connus
+        # 1. Mapping regex strict (mots connus)
         for pattern, ticker in self.regex_patterns:
             if pattern.search(text):
                 found.add(ticker)
 
-        # 2. Extraction contextuelle : paires du type BTC/USDT, ETHUSDT, $DOGE, etc.
-        for match in re.findall(
-            r"\b([A-Z]{2,6})(?:[-/])?(USDT|USD|EUR|BTC)?\b", text.upper()
+        # 2. Paires crypto (BTCUSDT, ETHUSD, DOGE/BTC, etc) : On ne garde que si le ticker est connu
+        # BTCUSDT, ETHUSD, DOGE/BTC, etc
+        for pair in re.findall(
+            r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
         ):
-            ticker = match[0]
-            if ticker not in {"USD", "USDT", "EUR", "BTC"} and len(ticker) >= 3:
+            ticker = pair[0]
+            if ticker in self.known_tickers:
                 found.add(ticker)
-        for match in re.findall(r"\$([A-Z]{2,6})\b", text.upper()):
-            if match not in {"USD", "USDT", "EUR", "BTC"} and len(match) >= 3:
+        # $BTC, $ETH
+        for match in re.findall(r"\$([A-Z]{3,5})\b", text.upper()):
+            if match in self.known_tickers:
                 found.add(match)
         return list(found)
 
