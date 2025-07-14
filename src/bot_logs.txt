@@ -106482,3 +106482,11 @@
 2025-07-14T02:56:54.416640 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0332 | Tendance: 0.0031
 2025-07-14T02:56:54.427317 | 🎯 Stratégie active: Range/Scalping
 2025-07-14T02:56:54.427486 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-14T03:27:36.027885 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-14T03:27:36.031505 | Initialisation des modèles d'IA...
+2025-07-14T03:27:36.760842 | ✅ Modèles d'IA initialisés avec succès
+2025-07-14T03:27:38.327425 | ✅ PPO Strategy initialized successfully
+2025-07-14T03:27:38.330930 | ✅ Bot initialisé avec Telegram: True
+2025-07-14T03:27:38.331059 | ✅ Trading en direct: True
+2025-07-14T03:27:38.331149 | ✅ IA activée: True
+2025-07-14T03:27:38.331221 | ✅ Analyse de news activée: False

@@ -545,13 +545,9 @@ class TradingBotM4:
         self.indicators = {}
         self.news_analyzer = NewsSentimentAnalyzer(self.config)
         self.news_enabled = True
+
         self.news_weight = 0.15
-
-        if volatilité < 0.03:  # Marché plat
-            self.ai_weight = 0.3
-        else:
-            self.ai_weight = 0.5
-
+        self.ai_weight = 0.5
         self.ensure_float = lambda x: (
             float(x) if isinstance(x, (int, float, str)) else 0.0
         )
