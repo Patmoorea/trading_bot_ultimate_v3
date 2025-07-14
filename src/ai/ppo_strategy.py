@@ -11,13 +11,17 @@ class PPOStrategy(BaseStrategy):
         super().__init__(config)
         self.logger = logging.getLogger(__name__)
 
+        # Vérification de l'environnement
         self.env = config.get("env")
         if self.env is None:
+            self.logger.error("Environnement manquant dans la configuration")
             raise ValueError("Environnement manquant dans la configuration")
 
-        self.input_dim = config.get("input_dim", 504)  # <--- PATCH: 504 par défaut
+        # Dimensions
+        self.input_dim = config.get("input_dim", 504)  # PATCH: 504 par défaut
         self.action_dim = len(self.env.trading_pairs)
 
+        # Configuration PPO
         self.ppo_config = {
             "policy": "MlpPolicy",
             "learning_rate": config.get("learning_rate", 3e-4),
@@ -37,48 +41,6 @@ class PPOStrategy(BaseStrategy):
         except Exception as e:
             self.logger.error(f"❌ Erreur initialisation PPO: {str(e)}")
             self.model = None
-
-        # Vérification des dimensions
-        if not hasattr(self.env, "observation_space") or not hasattr(
-            self.env, "action_space"
-        ):
-            self.logger.error(
-                "Environnement mal configuré (observation_space ou action_space manquant)"
-            )
-            return
-        super().__init__(config)
-        self.logger = logging.getLogger(__name__)
-
-        # Vérification de l'environnement
-        self.env = config.get("env")
-        if self.env is None:
-            raise ValueError("Environnement manquant dans la configuration")
-
-        # Dimensions
-        self.input_dim = config.get("input_dim", 504)
-        self.action_dim = len(self.env.trading_pairs)
-
-        # Configuration PPO avec valeurs par défaut
-        self.ppo_config = {
-            "policy": "MlpPolicy",
-            "learning_rate": 3e-4,
-            "n_steps": 2048,
-            "batch_size": 64,
-            "n_epochs": 10,
-            "gamma": 0.99,
-            "gae_lambda": 0.95,
-            "clip_range": 0.2,
-            "verbose": 1,
-            "policy_kwargs": {"net_arch": [64, 64], "activation_fn": torch.nn.ReLU},
-        }
-
-        # Initialisation explicite du modèle
-        try:
-            self.model = PPO(env=self.env, **self.ppo_config)
-            self.logger.info("✅ Modèle PPO initialisé")
-        except Exception as e:
-            self.logger.error(f"❌ Erreur initialisation PPO: {str(e)}")
-            raise  # Relever l'erreur pour voir la pile complète
 
     def get_action(self, state: np.ndarray) -> Dict[str, Any]:
         """
@@ -134,7 +96,7 @@ class PPOStrategy(BaseStrategy):
             return np.zeros((1, self.input_dim))
 
     def _calculate_confidence(self, state: np.ndarray) -> float:
-        """Calcul du score de confiance"""
+        """Calcul du score de confiance compatible avec Categorical/Normal SB3"""
         try:
             if self.model is None:
                 return 0.0
@@ -142,8 +104,17 @@ class PPOStrategy(BaseStrategy):
             with torch.no_grad():
                 state_tensor = torch.FloatTensor(state)
                 dist = self.model.policy.get_distribution(state_tensor)
-                probs = dist.distribution.probs
-                return float(torch.max(probs))
+                # Pour Categorical (actions discrètes)
+                if hasattr(dist.distribution, "probs"):
+                    probs = dist.distribution.probs
+                    return float(torch.max(probs))
+                # Pour Normal (actions continues)
+                elif hasattr(dist.distribution, "mean"):
+                    std = dist.distribution.stddev
+                    confidence = 1.0 / (1.0 + float(std.mean()))
+                    return confidence
+                else:
+                    return 0.0
 
         except Exception as e:
             self.logger.error(f"Erreur calcul confiance: {str(e)}")
@@ -153,11 +124,11 @@ class PPOStrategy(BaseStrategy):
         """Conversion action -> décision"""
         try:
             if isinstance(action, np.ndarray):
-                action = action.item()
-
+                action = action.flatten()[
+                    0
+                ]  # PATCH: .flatten()[0] pour éviter les erreurs array > 1
             actions = {0: "HOLD", 1: "BUY", 2: "SELL"}
             return actions.get(int(action), "HOLD")
-
         except Exception as e:
             self.logger.error(f"Erreur conversion action: {str(e)}")
             return "HOLD"

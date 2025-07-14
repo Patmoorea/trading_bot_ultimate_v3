@@ -1239,12 +1239,9 @@ class TradingBotM4:
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         """
-        Fusionne les signaux techniques et d'IA pour une paire donnée.
-        Corrige le bug "unsupported operand type(s) for *: 'dict' and 'float'"
-        en s'assurant que chaque signal est bien un float.
+        FUSION ROBUSTE des signaux IA/techniques pour éviter le bug dict * float !
         """
         try:
-            # 1. Récupération ou initialisation des signaux techniques actuels
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
@@ -1256,18 +1253,13 @@ class TradingBotM4:
                 }
 
             current_signals = self.market_data[symbol]["signals"]
-
-            # 2. Conversion des prédictions IA en score combiné (-1 à 1)
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
-            # 3. Fusion pondérée des signaux avec protection contre dict
             for signal_type in current_signals:
                 val = current_signals[signal_type]
-                # PATCH: si c'est un dict, on essaie de prendre la clé 'value' ou on force à 0.0
+                # PATCH: robust fetching of float for dict, fallback 0.0
                 if isinstance(val, dict):
-                    val = float(
-                        val.get("value", 0.0)
-                    )  # Récupère la clé 'value', sinon 0.0
+                    val = float(val.get("value", val.get("strength", 0.0)))
                 elif not isinstance(val, (float, int)):
                     val = 0.0
                 technical_weight = 1 - self.ai_weight
@@ -1275,10 +1267,8 @@ class TradingBotM4:
                     val * technical_weight + ai_signal * self.ai_weight
                 )
 
-            # 4. Mise à jour des signaux dans market_data
             self.market_data[symbol]["signals"] = current_signals
             self.market_data[symbol]["ai_prediction"] = float(ai_signal)
-
             return current_signals
 
         except Exception as e:
