@@ -1017,7 +1017,7 @@ class TradingBotM4:
 
         # Initialisation de l'analyseur de sentiment
         try:
-            self.news_analyzer = NewsSentimentAnalyzer()
+            self.news_analyzer = NewsSentimentAnalyzer(self.config)
             self.news_enabled = True
             self.news_weight = 0.2  # Influence des news dans la décision (20%)
             self.news_update_interval = 300  # 5 minutes
@@ -2551,14 +2551,14 @@ async def run_clean_bot():
             print("\n=== DÉMARRAGE DU BOT ===")
             print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
 
-            # Configuration initiale
+            # 1. Configuration initiale
             valid_pairs = load_config()
 
-            # Création et configuration du bot
+            # 2. Création et configuration du bot
             bot = TradingBotM4()
             bot.pairs_valid = valid_pairs
 
-            # --- PATCH PRÉCHARGEMENT HISTORIQUE ---
+            # 3. Préchargement historique (optionnel, sécurisé)
             if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
                 for symbol in bot.config["TRADING"]["pairs"]:
                     symbol_binance = symbol.replace("/", "").upper()
@@ -2570,30 +2570,45 @@ async def run_clean_bot():
                             print(f"Préchargement {symbol_binance} {tf} OK")
                         except Exception as e:
                             print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
-            # --- FIN PATCH ---
 
-            if not await bot._setup_components():
-                raise Exception("Échec de l'initialisation des composants")
+            # 4. Setup des composants internes (websockets, news, etc)
+            ok = await bot._setup_components()
+            if not ok:
+                print("❌ Echec de l'initialisation des composants.")
+                return None, None
 
-            if bot.is_live_trading:
+            # 5. Chargement des données de marché réelles si trading live
+            if getattr(bot, "is_live_trading", False):
                 await bot._fetch_real_market_data()
                 for sym in bot.market_data:
                     print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
-            initial_report = await bot.generate_market_analysis_report(cycle=0)
-            await bot.telegram.send_message(
-                "🚀 <b>Bot Trading démarré</b>\n"
-                "✅ Initialisation réussie\n"
-                f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
-                f"{initial_report}"
-            )
+            # 6. Premier rapport d'analyse
+            try:
+                initial_report = await bot.generate_market_analysis_report(cycle=0)
+            except Exception as e:
+                initial_report = (
+                    f"[ERREUR] Impossible de générer le rapport initial: {e}"
+                )
+
+            # 7. Envoi du message Telegram d'initialisation
+            try:
+                await bot.telegram.send_message(
+                    "🚀 <b>Bot Trading démarré</b>\n"
+                    "✅ Initialisation réussie\n"
+                    f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
+                    f"{initial_report}"
+                )
+            except Exception as e:
+                print(f"Erreur lors de l'envoi Telegram : {e}")
 
             print("✅ Bot initialized successfully")
             return bot, valid_pairs
 
         except Exception as e:
-            logger.error(f"Erreur d'initialisation: {e}")
-            raise
+            logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
+            print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
+            return None, None
 
     async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
         try:
@@ -2747,6 +2762,9 @@ async def run_clean_bot():
         try:
             # Initialisation
             bot, valid_pairs = await initialize_bot()
+            if bot is None:
+                print("Erreur critique à l'initialisation du bot. Arrêt.")
+                return
 
             # Analyse initiale du marché
             regime, _, _ = await bot.study_market("7d")
