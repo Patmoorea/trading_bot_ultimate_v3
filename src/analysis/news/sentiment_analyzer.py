@@ -1,3 +1,4 @@
+from typing import Dict, Any, List
 import os
 import json
 import asyncio
@@ -46,7 +47,15 @@ class NewsSource:
 class SymbolExtractor:
     """Enhanced symbol extraction with comprehensive cryptocurrency patterns."""
 
-    def __init__(self):
+    def __init__(self, config: Dict[str, Any]):
+        self.max_text_length = config.get("max_text_length", 512)
+        self.batch_size = config.get("batch_size", 8)
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        # Initialize model
+        model_name = config.get("sentiment_model", "ProsusAI/finbert")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
         self.symbol_patterns = {
             r"\b(?:BTC|BITCOIN)\b": "BTC",
             r"\b(?:ETH|ETHEREUM)\b": "ETH",
@@ -166,6 +175,66 @@ class NewsSentimentAnalyzer:
         self.max_text_length = config.get("news", {}).get("max_text_length", 512)
         self._sentiment_cache = {}
         self._cache_ttl = 300
+        """Initialise l'analyseur de sentiment avec configuration"""
+        self.config = config
+        self.logger = logging.getLogger(__name__)
+
+        # Configuration des paramètres
+        self.max_text_length = config.get("max_text_length", 512)
+        self.batch_size = config.get("batch_size", 8)
+
+        # Initialisation du modèle
+        model_name = config.get("model_name", "ProsusAI/finbert")
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            self.logger.info(f"Modèle de sentiment {model_name} chargé avec succès")
+        except Exception as e:
+            self.logger.error(f"Erreur de chargement du modèle: {str(e)}")
+            raise
+
+    def analyze_batch(self, news_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Analyse par lot des articles de news"""
+        if not news_items:
+            self.logger.debug("Aucun article à analyser")
+            return []
+
+        results = []
+        try:
+            for item in news_items:
+                processed_item = self._process_item(item)
+                if processed_item:
+                    results.append(processed_item)
+
+            if results:
+                sentiments = [
+                    x["sentiment"] for x in results if x.get("sentiment") is not None
+                ]
+                if sentiments:
+                    self.logger.info(
+                        f"Analyse terminée: {len(sentiments)}/{len(news_items)} articles | "
+                        f"Moyenne: {np.mean(sentiments):.3f} ± {np.std(sentiments):.3f}"
+                    )
+
+        except Exception as e:
+            self.logger.error(f"Erreur d'analyse: {str(e)}", exc_info=True)
+
+        return results
+
+    def _process_item(self, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Traitement d'un article individuel"""
+        try:
+            text = f"{item.get('title', '')}. {item.get('content', '')}"[
+                : self.max_text_length
+            ]
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True)
+            outputs = self.model(**inputs)
+            sentiment = outputs.logits.softmax(dim=1)[0][1].item()  # Score positif
+
+            return {**item, "sentiment": float(sentiment), "processed_text": text}
+        except Exception as e:
+            self.logger.warning(f"Échec traitement article: {str(e)}")
+            return None
 
     async def _save_state(self, path: Optional[str] = None):
         """
@@ -544,47 +613,92 @@ class NewsSentimentAnalyzer:
             self.logger.debug(f"Error parsing timestamp: {e}")
             return datetime.now().timestamp()
 
-    def analyze_sentiment_batch(self, news_items: List[NewsItem]) -> List[NewsItem]:
-        """Analyze sentiment for a batch of news items with enhanced processing."""
+    def analyze_sentiment_batch(
+        self, news_items: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Analyze sentiment for a batch of news items with enhanced processing.
+
+        Args:
+            news_items: List of news items with 'title' and 'text' fields
+
+        Returns:
+            List of items with added 'sentiment' field
+        """
         if not news_items:
             self.logger.debug("No news items to analyze")
             return []
 
-        try:
-            # Prepare texts for analysis
-            texts = []
-            for item in news_items:
-                combined_text = f"{item.title}. {item.text}"
-                # Truncate to max length
-                if len(combined_text) > self.max_text_length:
-                    combined_text = combined_text[: self.max_text_length]
-                texts.append(combined_text)
+        # Initialize default values if not set
+        max_text_length = getattr(
+            self, "max_text_length", 512
+        )  # Default transformer limit
+        batch_size = getattr(self, "batch_size", 8)  # Conservative batch size
 
-            # Process in batches to avoid memory issues
-            results = []
-            for i in range(0, len(texts), self.batch_size):
-                batch_texts = texts[i : i + self.batch_size]
-                batch_items = news_items[i : i + self.batch_size]
-                batch_results = self._process_sentiment_batch(batch_texts, batch_items)
-                results.extend(batch_results)
+        try:
+            # Pre-process texts
+            processed_items = []
+            for item in news_items:
+                text = f"{item.get('title', '')}. {item.get('text', '')}"[
+                    :max_text_length
+                ]
+                processed_items.append(
+                    {
+                        **item,
+                        "processed_text": text,
+                        "sentiment": None,  # Initialize field
+                    }
+                )
+
+            # Process in batches
+            for i in range(0, len(processed_items), batch_size):
+                batch = processed_items[i : i + batch_size]
+                texts = [item["processed_text"] for item in batch]
+
+                try:
+                    # Get model predictions (adapt to your actual model)
+                    inputs = self.tokenizer(
+                        texts,
+                        padding=True,
+                        truncation=True,
+                        return_tensors="pt",
+                        max_length=max_text_length,
+                    )
+                    outputs = self.model(**inputs)
+                    predictions = outputs.logits.softmax(dim=-1)[
+                        :, 1
+                    ].tolist()  # Positive class
+
+                    # Update items with predictions
+                    for item, pred in zip(batch, predictions):
+                        item["sentiment"] = float(pred)
+
+                except RuntimeError as e:
+                    self.logger.warning(f"Batch {i//batch_size} failed: {str(e)}")
+                    continue
 
             # Calculate statistics
             sentiments = [
-                item.sentiment for item in results if item.sentiment is not None
+                item["sentiment"]
+                for item in processed_items
+                if item["sentiment"] is not None
             ]
             if sentiments:
-                mean_sentiment = np.mean(sentiments)
-                std_sentiment = np.std(sentiments)
+                stats = {
+                    "mean": float(np.mean(sentiments)),
+                    "std": float(np.std(sentiments)),
+                    "count": len(sentiments),
+                }
                 self.logger.info(
-                    f"Sentiment analysis complete: {len(results)} items, "
-                    f"mean={mean_sentiment:.4f}, std={std_sentiment:.4f}"
+                    f"Analyzed {len(sentiments)}/{len(news_items)} items | "
+                    f"Mean: {stats['mean']:.3f} ± {stats['std']:.3f}"
                 )
 
-            return results
+            return processed_items
 
         except Exception as e:
-            self.logger.error(f"Error in sentiment analysis: {e}")
-            return news_items  # Return original items without sentiment
+            self.logger.error(f"Critical analysis failure: {str(e)}", exc_info=True)
+            # Return items with null sentiment to maintain pipeline
+            return [{**item, "sentiment": None} for item in news_items]
 
     def _process_sentiment_batch(
         self, texts: List[str], items: List[NewsItem]

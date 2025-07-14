@@ -621,35 +621,59 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
     async def _news_analysis_loop(self):
-        """Boucle périodique d'analyse des news et propagation du sentiment"""
+        log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
             try:
                 if not self.news_enabled or not self.news_analyzer:
-                    await asyncio.sleep(self.news_analyzer.update_interval)
+                    await asyncio.sleep(self.news_update_interval)
                     continue
 
-                print("[NEWS] Lancement boucle d'analyse des news…")
-                # 1. Récupération + analyse des news (avec annotation du sentiment)
-                analyzed_news = await self.news_analyzer.update_analysis()
+                self.logger.info("Fetching latest news for sentiment analysis")
+                news_data = await self.news_analyzer.fetch_all_news()
 
-                # 2. Propagation du score de sentiment aux paires de trading
-                for pair in self.pairs_valid:
-                    pair_key = pair.replace("/", "").upper()
-                    sentiment = await self.news_analyzer.get_symbol_sentiment(pair_key)
-                    if pair_key in self.market_data:
-                        self.market_data[pair_key]["sentiment"] = sentiment
-                    else:
-                        self.market_data[pair_key] = {"sentiment": sentiment}
-                    print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {sentiment:.4f}")
+                sentiment_scores = []
+                try:
+                    sentiment_scores = await self.news_analyzer.update_analysis()
+                except Exception:
+                    self.logger.error("Erreur update_analysis", exc_info=True)
+                    # sentiment_scores reste []
 
-                # 3. Sauvegarde des données pour l'interface/dashboard
-                await self._save_sentiment_data(analyzed_news)
+                try:
+                    await self._update_sentiment_data(sentiment_scores)
+                except Exception:
+                    pass
+
+                try:
+                    await self._save_sentiment_data(sentiment_scores, news_data)
+                except Exception as e:
+                    self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
+
+                try:
+                    await self.telegram.send_news_summary(news_data[:5])
+                except Exception:
+                    pass
+
+                # === LOG SENTIMENT GLOBAL ===
+                try:
+                    with open(self.data_file, "r") as f:
+                        shared_data = json.load(f)
+                    sentiment_data = shared_data.get("sentiment", {})
+                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
+                    impact_score = sentiment_data.get("impact_score", 0)
+                    major_events = sentiment_data.get("major_events", "")
+
+                    log_dashboard(
+                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
+                    )
+                except Exception as e:
+                    print(
+                        f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
+                    )
 
             except Exception as e:
-                print(f"[NEWS] News loop error: {str(e)}")
-                self.logger.error(f"News loop error: {str(e)}")
+                self.logger.error(f"News analysis error: {e}")
 
-            await asyncio.sleep(self.news_analyzer.update_interval)
+            await asyncio.sleep(self.news_update_interval)
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators):
         """
@@ -1387,6 +1411,11 @@ class TradingBotM4:
                     analyzed_news = await self.news_analyzer.update_analysis()
                 except Exception:
                     sentiment_scores = []
+                    try:
+                        sentiment_scores = await self.news_analyzer.update_analysis()
+                    except Exception:
+                        self.logger.error("Erreur update_analysis", exc_info=True)
+                        # sentiment_scores reste = []
 
                 try:
                     await self._update_sentiment_data(sentiment_scores)
