@@ -1,13 +1,10 @@
-from typing import Dict, Any, List
 import os
 import json
 import asyncio
 import re
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Tuple, Set
+from datetime import datetime
+from typing import List, Dict, Optional, Set
 import logging
-from dataclasses import dataclass
-from email.utils import parsedate_to_datetime
 import aiohttp
 import ssl
 from bs4 import BeautifulSoup
@@ -16,242 +13,363 @@ import torch
 import numpy as np
 
 
-@dataclass
-class NewsItem:
-    """Data class for news items with sentiment analysis."""
-
-    title: str
-    text: str
-    source: str
-    timestamp: float
-    url: str
-    symbols: List[str]
-    source_weight: float
-    sentiment: Optional[float] = None
-    impact_score: Optional[float] = None
-    confidence: Optional[float] = None
-
-
-@dataclass
-class NewsSource:
-    """Configuration for news sources."""
-
-    name: str
-    url: str
-    type: str  # 'rss' or 'json'
-    weight: float
-    enabled: bool = True
-    timeout: int = 30
-
-
 class SymbolExtractor:
-    """Enhanced symbol extraction with comprehensive cryptocurrency patterns."""
+    """
+    Extraction avancée des symboles crypto depuis les titres et textes des news.
+    Utilise un mapping regex et analyse contextuelle (BTC, ETH, SOL, etc).
+    """
 
-    def __init__(self, config: Dict[str, Any]):
-        self.max_text_length = config.get("max_text_length", 512)
-        self.batch_size = config.get("batch_size", 8)
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-        # Initialize model
-        model_name = config.get("sentiment_model", "ProsusAI/finbert")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        self.symbol_patterns = {
-            r"\b(?:BTC|BITCOIN)\b": "BTC",
-            r"\b(?:ETH|ETHEREUM)\b": "ETH",
-            r"\b(?:SOL|SOLANA)\b": "SOL",
-            r"\b(?:ADA|CARDANO)\b": "ADA",
-            r"\b(?:DOT|POLKADOT)\b": "DOT",
-            r"\b(?:AVAX|AVALANCHE)\b": "AVAX",
-            r"\b(?:MATIC|POLYGON)\b": "MATIC",
-            r"\b(?:LINK|CHAINLINK)\b": "LINK",
-            r"\b(?:UNI|UNISWAP)\b": "UNI",
-            r"\b(?:ATOM|COSMOS)\b": "ATOM",
-            r"\b(?:ALGO|ALGORAND)\b": "ALGO",
-            r"\b(?:XRP|RIPPLE)\b": "XRP",
-            r"\b(?:LTC|LITECOIN)\b": "LTC",
-            r"\b(?:BCH|BITCOIN CASH)\b": "BCH",
-            r"\b(?:XLM|STELLAR)\b": "XLM",
-            r"\b(?:DOGE|DOGECOIN)\b": "DOGE",
-            r"\b(?:SHIB|SHIBA INU)\b": "SHIB",
-            r"\b(?:NEAR|NEAR PROTOCOL)\b": "NEAR",
-            r"\b(?:FTM|FANTOM)\b": "FTM",
-            r"\b(?:SAND|SANDBOX)\b": "SAND",
-            r"\b(?:MANA|DECENTRALAND)\b": "MANA",
-            r"\b(?:APE|APECOIN)\b": "APE",
-            r"\b(?:CRO|CRONOS)\b": "CRO",
-            r"\b(?:HBAR|HEDERA)\b": "HBAR",
-            r"\b(?:VET|VECHAIN)\b": "VET",
-            r"\b(?:ICP|INTERNET COMPUTER)\b": "ICP",
-            r"\b(?:THETA|THETA NETWORK)\b": "THETA",
-            r"\b(?:FIL|FILECOIN)\b": "FIL",
-            r"\b(?:TRX|TRON)\b": "TRX",
-            r"\b(?:ETC|ETHEREUM CLASSIC)\b": "ETC",
-            r"\b(?:XMR|MONERO)\b": "XMR",
-            r"\b(?:AAVE)\b": "AAVE",
-            r"\b(?:MKR|MAKER)\b": "MKR",
-            r"\b(?:COMP|COMPOUND)\b": "COMP",
-            r"\b(?:SUSHI|SUSHISWAP)\b": "SUSHI",
-            r"\b(?:YFI|YEARN FINANCE)\b": "YFI",
-            r"\b(?:SNX|SYNTHETIX)\b": "SNX",
-            r"\b(?:CRV|CURVE)\b": "CRV",
-            r"\b(?:BAL|BALANCER)\b": "BAL",
-            r"\b(?:ZRX|0X)\b": "ZRX",
-            r"\b(?:BAT|BASIC ATTENTION TOKEN)\b": "BAT",
-            r"\b(?:ENJ|ENJIN)\b": "ENJ",
-            r"\b(?:CHZ|CHILIZ)\b": "CHZ",
-            r"\b(?:HOT|HOLO)\b": "HOT",
-            r"\b(?:ZIL|ZILLIQA)\b": "ZIL",
-            r"\b(?:QTUM)\b": "QTUM",
-            r"\b(?:ONT|ONTOLOGY)\b": "ONT",
-            r"\b(?:ZEC|ZCASH)\b": "ZEC",
-            r"\b(?:DASH)\b": "DASH",
-            r"\b(?:DCR|DECRED)\b": "DCR",
-            r"\b(?:DGB|DIGIBYTE)\b": "DGB",
-            r"\b(?:RVN|RAVENCOIN)\b": "RVN",
-            r"\b(?:WAVES)\b": "WAVES",
-            r"\b(?:KSM|KUSAMA)\b": "KSM",
-            r"\b(?:FLOW)\b": "FLOW",
-            r"\b(?:EGLD|ELROND)\b": "EGLD",
-            r"\b(?:ONE|HARMONY)\b": "ONE",
-            r"\b(?:CELO)\b": "CELO",
-            r"\b(?:AR|ARWEAVE)\b": "AR",
-            r"\b(?:GRT|GRAPH)\b": "GRT",
-            r"\b(?:LRC|LOOPRING)\b": "LRC",
-            r"\b(?:ENS|ETHEREUM NAME SERVICE)\b": "ENS",
-            r"\b(?:IMX|IMMUTABLE X)\b": "IMX",
-            r"\b(?:GALA)\b": "GALA",
-            r"\b(?:AXS|AXIE INFINITY)\b": "AXS",
-            r"\b(?:SLP|SMOOTH LOVE POTION)\b": "SLP",
+    def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
+        self.symbol_mapping = symbol_mapping or {
+            "bitcoin": "BTC",
+            "ethereum": "ETH",
+            "btc": "BTC",
+            "eth": "ETH",
+            "cardano": "ADA",
+            "solana": "SOL",
+            "sol": "SOL",
+            "ada": "ADA",
+            "ripple": "XRP",
+            "xrp": "XRP",
+            "dogecoin": "DOGE",
+            "doge": "DOGE",
+            "polkadot": "DOT",
+            "dot": "DOT",
+            "binance": "BNB",
+            "bnb": "BNB",
+            "matic": "MATIC",
+            "polygon": "MATIC",
+            "litecoin": "LTC",
+            "ltc": "LTC",
+            "shiba": "SHIB",
+            "shib": "SHIB",
+            "tron": "TRX",
+            "trx": "TRX",
+            "avalanche": "AVAX",
+            "avax": "AVAX",
+            "chainlink": "LINK",
+            "link": "LINK",
+            "uniswap": "UNI",
+            "uni": "UNI",
+            "stellar": "XLM",
+            "xlm": "XLM",
+            "vechain": "VET",
+            "vet": "VET",
+            "aptos": "APT",
+            "apt": "APT",
+            "arbitrum": "ARB",
+            "arb": "ARB",
+            "optimism": "OP",
+            "op": "OP",
+            "the sandbox": "SAND",
+            "sand": "SAND",
+            "decentraland": "MANA",
+            "mana": "MANA",
+            # Ajoute d'autres ici selon besoin
         }
-        self.compiled_patterns = {
-            re.compile(pattern, re.IGNORECASE): symbol
-            for pattern, symbol in self.symbol_patterns.items()
-        }
+        # Compile regex patterns for all known tickers/names (mot entier uniquement)
+        self.regex_patterns = [
+            (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
+            for name, ticker in self.symbol_mapping.items()
+        ]
 
     def extract_symbols(self, text: str) -> List[str]:
+        """
+        Extraction robuste des symboles à partir d'un texte (titre+contenu).
+        - Mapping regex sur tous les mots clés et tickers connus.
+        - Extraction contextuelle des paires du style BTC/USDT, ETHUSDT, $BTC, etc.
+        """
         if not text:
             return []
-        symbols = set()
-        text_upper = text.upper()
-        for pattern, symbol in self.compiled_patterns.items():
-            if pattern.search(text):
-                symbols.add(symbol)
-        symbols.update(self._extract_contextual_symbols(text_upper))
-        return list(symbols)
+        found: Set[str] = set()
 
-    def _extract_contextual_symbols(self, text: str) -> Set[str]:
-        symbols = set()
-        trading_pairs = re.findall(r"\b([A-Z]{2,5})[-/]?USDT?\b", text)
-        for pair in trading_pairs:
-            if pair in ["USDT", "USD", "EUR", "GBP"]:
-                continue
-            symbols.add(pair)
-        price_patterns = re.findall(r"\$([A-Z]{2,5})\b", text)
-        symbols.update(price_patterns)
-        return symbols
+        # 1. Mapping regex sur tous les noms connus
+        for pattern, ticker in self.regex_patterns:
+            if pattern.search(text):
+                found.add(ticker)
+
+        # 2. Extraction contextuelle : paires du type BTC/USDT, ETHUSDT, $DOGE, etc.
+        for match in re.findall(
+            r"\b([A-Z]{2,6})(?:[-/])?(USDT|USD|EUR|BTC)?\b", text.upper()
+        ):
+            ticker = match[0]
+            if ticker not in {"USD", "USDT", "EUR", "BTC"} and len(ticker) >= 3:
+                found.add(ticker)
+        for match in re.findall(r"\$([A-Z]{2,6})\b", text.upper()):
+            if match not in {"USD", "USDT", "EUR", "BTC"} and len(match) >= 3:
+                found.add(match)
+        return list(found)
 
 
 class NewsSentimentAnalyzer:
-    """Advanced news sentiment analyzer for cryptocurrency trading."""
+    """
+    Analyseur avancé des news crypto avec extraction robuste des symboles et analyse de sentiment.
+    """
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
-        self.symbol_extractor = SymbolExtractor()
+
+        self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
+
+        # Modèle FinBERT (lazy)
         self._model = None
         self._tokenizer = None
-        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.news_sources = self._initialize_sources()
-        self.symbol_mapping = config.get("symbol_mapping", {})
-        self.news_buffer: List[NewsItem] = []
-        self.max_buffer_size = config.get("news", {}).get("max_buffer_size", 500)
+
+        self.sources = [
+            {
+                "name": "CoinDesk",
+                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+                "type": "rss",
+                "weight": 0.9,
+            },
+            {
+                "name": "CryptoCompare",
+                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
+                "type": "json",
+                "weight": 0.7,
+            },
+            {
+                "name": "Cointelegraph",
+                "url": "https://cointelegraph.com/rss",
+                "type": "rss",
+                "weight": 0.8,
+            },
+        ]
+
+        self.news_buffer: List[Dict] = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
-        self.min_confidence_threshold = config.get("news", {}).get(
-            "min_confidence", 0.6
-        )
-        self.batch_size = config.get("news", {}).get("batch_size", 16)
-        self.max_text_length = config.get("news", {}).get("max_text_length", 512)
-        self._sentiment_cache = {}
-        self._cache_ttl = 300
-        """Initialise l'analyseur de sentiment avec configuration"""
-        self.config = config
-        self.logger = logging.getLogger(__name__)
 
-        # Configuration des paramètres
-        self.max_text_length = config.get("max_text_length", 512)
-        self.batch_size = config.get("batch_size", 8)
+    @property
+    def model(self):
+        if self._model is None:
+            self._model = AutoModelForSequenceClassification.from_pretrained(
+                "ProsusAI/finbert"
+            )
+        return self._model
 
-        # Initialisation du modèle
-        model_name = config.get("model_name", "ProsusAI/finbert")
+    @property
+    def tokenizer(self):
+        if self._tokenizer is None:
+            self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+        return self._tokenizer
+
+    async def fetch_all_news(self) -> List[Dict]:
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers
+        ) as session:
+            tasks = [self._fetch_source(session, source) for source in self.sources]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            valid_news = []
+            for result in results:
+                if isinstance(result, list):
+                    valid_news.extend(result)
+
+            print(f"\n[NEWS DEBUG] {len(valid_news)} news récupérées ce cycle")
+            if valid_news:
+                for idx, n in enumerate(valid_news[:5]):
+                    print(
+                        f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}"
+                    )
+            else:
+                print("  (Aucune news récupérée)")
+            return valid_news
+
+    async def _fetch_source(
+        self, session: aiohttp.ClientSession, source: Dict
+    ) -> List[Dict]:
         try:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-            self.logger.info(f"Modèle de sentiment {model_name} chargé avec succès")
+            async with session.get(source["url"], timeout=30) as response:
+                if response.status != 200:
+                    return []
+                if source["type"] == "rss":
+                    content = await response.text()
+                    return self._parse_rss(content, source)
+                else:
+                    data = await response.json()
+                    return self._parse_json(data, source)
         except Exception as e:
-            self.logger.error(f"Erreur de chargement du modèle: {str(e)}")
-            raise
-
-    def analyze_batch(self, news_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Analyse par lot des articles de news"""
-        if not news_items:
-            self.logger.debug("Aucun article à analyser")
+            self.logger.error(f"Error fetching {source['name']}: {str(e)}")
             return []
 
-        results = []
+    def _parse_rss(self, content: str, source: Dict) -> List[Dict]:
         try:
-            for item in news_items:
-                processed_item = self._process_item(item)
-                if processed_item:
-                    results.append(processed_item)
+            soup = BeautifulSoup(content, "xml")
+            items = soup.find_all("item")
+            return [self._parse_rss_item(item, source) for item in items]
+        except Exception as e:
+            self.logger.error(f"Error parsing RSS {source['name']}: {str(e)}")
+            return []
 
-            if results:
-                sentiments = [
-                    x["sentiment"] for x in results if x.get("sentiment") is not None
-                ]
-                if sentiments:
-                    self.logger.info(
-                        f"Analyse terminée: {len(sentiments)}/{len(news_items)} articles | "
-                        f"Moyenne: {np.mean(sentiments):.3f} ± {np.std(sentiments):.3f}"
-                    )
+    def _parse_rss_item(self, item, source: Dict) -> Dict:
+        title = item.find("title").text if item.find("title") else ""
+        description = item.find("description").text if item.find("description") else ""
+        url = item.find("link").text if item.find("link") else ""
+        # Extraction avancée des symboles (titre + description)
+        symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
+        return {
+            "title": title,
+            "text": description,
+            "source": source["name"],
+            "timestamp": self._parse_timestamp(item),
+            "url": url,
+            "symbols": symbols,
+            "source_weight": source["weight"],
+        }
+
+    def analyze_sentiment_batch(self, news_items: List[Dict]) -> List[Dict]:
+        print("[DEBUG] analyze_sentiment_batch entrée")
+        if not news_items:
+            print("[SENTIMENT] Aucun article à analyser.")
+            return []
+
+        try:
+            print("[DEBUG] Après try, news_items size:", len(news_items))
+            texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
+            print("[DEBUG] Nombre de textes à analyser:", len(texts))
+            inputs = self.tokenizer(
+                texts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512,
+            )
+            print("[DEBUG] Inputs batch prêt")
+
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+                scores = torch.nn.functional.softmax(outputs.logits, dim=-1)
+            print("[DEBUG] Softmax scores:", scores.tolist()[:5])
+
+            results = []
+            for i, item in enumerate(news_items):
+                sentiment = float(scores[i][1] - scores[i][0])
+                results.append(
+                    {
+                        **item,
+                        "sentiment": sentiment,
+                        "impact_score": (
+                            self._calculate_impact(item, sentiment)
+                            if hasattr(self, "_calculate_impact")
+                            else 1.0
+                        ),
+                    }
+                )
+            mean_sent = np.mean([res["sentiment"] for res in results]) if results else 0
+            print(
+                f"[SENTIMENT DEBUG] Moyenne batch: {mean_sent:.4f} sur {len(results)} news"
+            )
+            for i, res in enumerate(results[:5]):
+                print(
+                    f"  - Sentiment {i+1}: {res['sentiment']:.4f} | Titre: {res['title'][:60]}"
+                )
+            return results
 
         except Exception as e:
-            self.logger.error(f"Erreur d'analyse: {str(e)}", exc_info=True)
+            print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
+            self.logger.error(f"Error in sentiment analysis: {str(e)}")
+            return []
 
-        return results
-
-    def _process_item(self, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Traitement d'un article individuel"""
+    async def update_analysis(self):
         try:
-            text = f"{item.get('title', '')}. {item.get('content', '')}"[
-                : self.max_text_length
-            ]
-            inputs = self.tokenizer(text, return_tensors="pt", truncation=True)
-            outputs = self.model(**inputs)
-            sentiment = outputs.logits.softmax(dim=1)[0][1].item()  # Score positif
+            # 1. Récupération des news
+            raw_news = await self.fetch_all_news()
+            print(f"[DEBUG update_analysis] Fetched {len(raw_news)} news.")
 
-            return {**item, "sentiment": float(sentiment), "processed_text": text}
+            # 2. Analyse de sentiment (obligatoire AVANT le buffer)
+            analyzed_news = self.analyze_sentiment_batch(raw_news)
+            print(
+                f"[DEBUG update_analysis] Sentiment analyzed for {len(analyzed_news)} news."
+            )
+
+            # 3. Affiche les sentiments trouvés
+            for n in analyzed_news[:10]:
+                print(
+                    f"[DEBUG SENTIMENT BATCH] {n.get('title', '')[:40]} | {n.get('symbols', [])} | sentiment={n.get('sentiment', 'NA')}"
+                )
+
+            # 4. Mise à jour du buffer (garder les 200 plus récentes)
+            self.news_buffer = [
+                *self.news_buffer[-100:],  # Garde les 100 précédentes
+                *analyzed_news,
+            ][
+                -200:
+            ]  # Limite totale à 200
+
+            # 5. Sauvegarde de l'état
+            await self._save_state()
+
+            return analyzed_news
+
         except Exception as e:
-            self.logger.warning(f"Échec traitement article: {str(e)}")
-            return None
+            self.logger.error(f"Error in news update: {str(e)}")
+            return []
+
+    async def get_symbol_sentiment(self, symbol: str) -> float:
+        """
+        Calcule un score de sentiment pondéré et décayé pour un symbole donné.
+        - symbol: string comme 'BTCUSDT' ou 'ETH/USDT'
+        - Utilise les news du buffer, pondère par impact_score et applique un decay temporel.
+        - Fallback sur le sous-symbole (ex: 'BTC' pour 'BTCUSDT') si rien ne matche.
+        """
+        try:
+            symbol_key = symbol.replace("/", "").upper()  # ex: BTCUSDT
+            underlying = symbol_key.replace("USDT", "").replace("USD", "")
+            total = 0.0
+            total_weight = 0.0
+            current_time = datetime.now().timestamp()
+            matched = False
+
+            for news in self.news_buffer:
+                news_symbols = news.get("symbols", [])
+                if symbol_key in news_symbols or underlying in news_symbols:
+                    matched = True
+                    hours_old = (
+                        current_time - news.get("timestamp", current_time)
+                    ) / 3600
+                    decay = 0.5 ** (hours_old / 24)  # half-life 24h
+                    sentiment = news.get("sentiment", 0)
+                    impact = news.get("impact_score", 1) or 1
+                    total += sentiment * impact * decay
+                    total_weight += impact * decay
+
+            if not matched:
+                print(
+                    f"[DEBUG SENTIMENT] Aucun match trouvé pour {symbol_key} ni {underlying}"
+                )
+
+            score = total / max(total_weight, 1e-6) if total_weight > 0 else 0.0
+            print(
+                f"[DEBUG SENTIMENT] symbol={symbol_key}/{underlying} | sentiment_score={score:.4f} | total={total:.4f} | total_weight={total_weight:.4f}"
+            )
+            return score
+
+        except Exception as e:
+            self.logger.error(f"Error getting sentiment for {symbol}: {str(e)}")
+            return 0.0
 
     async def _save_state(self, path: Optional[str] = None):
-        """
-        Sauvegarde l'état courant des news (buffer, config, etc).
-        """
+        path = path or self.config.get("news", {}).get(
+            "storage_path", "data/news_analysis.json"
+        )
         try:
-            path = path or self.config.get("news", {}).get(
-                "storage_path", "data/news_analysis.json"
-            )
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "w") as f:
                 json.dump(
                     {
                         "last_updated": datetime.now().isoformat(),
                         "news_count": len(self.news_buffer),
-                        "symbol_mapping": self.symbol_mapping,
-                        # Tu peux aussi ajouter le sentiment global, top_symbols, etc
+                        "symbol_mapping": self.symbol_extractor.symbol_mapping,
                     },
                     f,
                     indent=2,
@@ -259,742 +377,80 @@ class NewsSentimentAnalyzer:
         except Exception as e:
             self.logger.error(f"Error saving state: {str(e)}")
 
-    def _initialize_sources(self) -> List[NewsSource]:
-        """Initialize news sources from configuration."""
-        default_sources = [
-            NewsSource(
-                name="CoinDesk",
-                url="https://www.coindesk.com/arc/outboundfeeds/rss/",
-                type="rss",
-                weight=0.9,
-            ),
-            NewsSource(
-                name="CryptoCompare",
-                url="https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
-                type="json",
-                weight=0.7,
-            ),
-            NewsSource(
-                name="Cointelegraph",
-                url="https://cointelegraph.com/rss",
-                type="rss",
-                weight=0.8,
-            ),
-            NewsSource(
-                name="CoinTelegraph Bitcoin",
-                url="https://cointelegraph.com/rss/tag/bitcoin",
-                type="rss",
-                weight=0.85,
-            ),
-            NewsSource(
-                name="CryptoNews",
-                url="https://cryptonews.com/news/feed/",
-                type="rss",
-                weight=0.75,
-            ),
-            NewsSource(
-                name="Decrypt", url="https://decrypt.co/feed", type="rss", weight=0.8
-            ),
-        ]
-
-        # Override with config if provided
-        config_sources = self.config.get("news", {}).get("sources", [])
-        if config_sources:
-            return [NewsSource(**source) for source in config_sources]
-
-        return default_sources
-
-    @property
-    def model(self):
-        """Lazy loading of the sentiment analysis model."""
-        if self._model is None:
-            try:
-                model_name = self.config.get("news", {}).get(
-                    "model_name", "ProsusAI/finbert"
-                )
-                self._model = AutoModelForSequenceClassification.from_pretrained(
-                    model_name
-                )
-                self._model.to(self._device)
-                self._model.eval()
-                self.logger.info(
-                    f"Loaded sentiment model: {model_name} on {self._device}"
-                )
-            except Exception as e:
-                self.logger.error(f"Failed to load sentiment model: {e}")
-                raise
-        return self._model
-
-    @property
-    def tokenizer(self):
-        """Lazy loading of the tokenizer."""
-        if self._tokenizer is None:
-            try:
-                model_name = self.config.get("news", {}).get(
-                    "model_name", "ProsusAI/finbert"
-                )
-                self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-                self.logger.info(f"Loaded tokenizer: {model_name}")
-            except Exception as e:
-                self.logger.error(f"Failed to load tokenizer: {e}")
-                raise
-        return self._tokenizer
-
-    async def fetch_all_news(self) -> List[NewsItem]:
-        """Fetch news from all configured sources."""
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
-
-        timeout = aiohttp.ClientTimeout(total=60)
-
-        async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=ssl_context, limit=10),
-            headers=headers,
-            timeout=timeout,
-        ) as session:
-            # Filter enabled sources
-            active_sources = [source for source in self.news_sources if source.enabled]
-
-            # Create tasks for concurrent fetching
-            tasks = [
-                self._fetch_source_with_retry(session, source)
-                for source in active_sources
-            ]
-
-            # Execute with timeout and error handling
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            # Process results
-            all_news = []
-            for i, result in enumerate(results):
-                source_name = active_sources[i].name
-                if isinstance(result, Exception):
-                    self.logger.error(f"Error fetching {source_name}: {result}")
-                elif isinstance(result, list):
-                    all_news.extend(result)
-                    self.logger.debug(
-                        f"Fetched {len(result)} articles from {source_name}"
-                    )
-
-            # Enhance symbols and deduplicate
-            enhanced_news = self._enhance_and_deduplicate(all_news)
-
-            self.logger.info(
-                f"Successfully fetched {len(enhanced_news)} unique news articles"
-            )
-            return enhanced_news
-
-    async def _fetch_source_with_retry(
-        self, session: aiohttp.ClientSession, source: NewsSource, max_retries: int = 3
-    ) -> List[NewsItem]:
-        """Fetch news from a single source with retry logic."""
-        for attempt in range(max_retries):
-            try:
-                async with session.get(source.url, timeout=source.timeout) as response:
-                    if response.status == 200:
-                        if source.type == "rss":
-                            content = await response.text()
-                            return self._parse_rss(content, source)
-                        else:
-                            data = await response.json()
-                            return self._parse_json(data, source)
-                    else:
-                        self.logger.warning(f"HTTP {response.status} for {source.name}")
-
-            except asyncio.TimeoutError:
-                self.logger.warning(
-                    f"Timeout fetching {source.name} (attempt {attempt + 1})"
-                )
-            except Exception as e:
-                self.logger.error(
-                    f"Error fetching {source.name} (attempt {attempt + 1}): {e}"
-                )
-
-            if attempt < max_retries - 1:
-                await asyncio.sleep(2**attempt)  # Exponential backoff
-
-        return []
-
-    def _enhance_and_deduplicate(self, news_items: List[NewsItem]) -> List[NewsItem]:
-        """Enhance symbol extraction and remove duplicates."""
-        seen_urls = set()
-        seen_titles = set()
-        unique_news = []
-
-        for item in news_items:
-            # Skip duplicates based on URL or title similarity
-            if item.url in seen_urls:
-                continue
-
-            title_key = item.title.lower().strip()[
-                :100
-            ]  # First 100 chars for similarity
-            if title_key in seen_titles:
-                continue
-
-            # Enhance symbol extraction
-            title_symbols = self.symbol_extractor.extract_symbols(item.title)
-            text_symbols = self.symbol_extractor.extract_symbols(item.text)
-            combined_symbols = list(set(item.symbols + title_symbols + text_symbols))
-
-            # Create enhanced item
-            enhanced_item = NewsItem(
-                title=item.title,
-                text=item.text,
-                source=item.source,
-                timestamp=item.timestamp,
-                url=item.url,
-                symbols=combined_symbols,
-                source_weight=item.source_weight,
-            )
-
-            unique_news.append(enhanced_item)
-            seen_urls.add(item.url)
-            seen_titles.add(title_key)
-
-        # Sort by timestamp (newest first)
-        unique_news.sort(key=lambda x: x.timestamp, reverse=True)
-
-        return unique_news
-
-    def _parse_rss(self, content: str, source: NewsSource) -> List[NewsItem]:
-        """Parse RSS feed content."""
+    def _parse_json(self, data, source=None):
         try:
-            soup = BeautifulSoup(content, "xml")
-            items = soup.find_all("item")
-
-            news_items = []
-            for item in items:
-                try:
-                    news_item = self._parse_rss_item(item, source)
-                    if news_item:
-                        news_items.append(news_item)
-                except Exception as e:
-                    self.logger.debug(f"Error parsing RSS item from {source.name}: {e}")
-
-            return news_items
-
-        except Exception as e:
-            self.logger.error(f"Error parsing RSS from {source.name}: {e}")
-            return []
-
-    def _parse_rss_item(self, item, source: NewsSource) -> Optional[NewsItem]:
-        """Parse individual RSS item."""
-        try:
-            title_elem = item.find("title")
-            desc_elem = item.find("description")
-            link_elem = item.find("link")
-
-            title = title_elem.text.strip() if title_elem else ""
-            description = desc_elem.text.strip() if desc_elem else ""
-            url = link_elem.text.strip() if link_elem else ""
-
-            if not title:
-                return None
-
-            # Clean description (remove HTML tags)
-            if description:
-                description = BeautifulSoup(description, "html.parser").get_text()
-
-            timestamp = self._parse_timestamp(item)
-            symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
-
-            return NewsItem(
-                title=title,
-                text=description,
-                source=source.name,
-                timestamp=timestamp,
-                url=url,
-                symbols=symbols,
-                source_weight=source.weight,
-            )
-
-        except Exception as e:
-            self.logger.debug(f"Error parsing RSS item: {e}")
-            return None
-
-    def _parse_json(self, data: Dict, source: NewsSource) -> List[NewsItem]:
-        """Parse JSON API response."""
-        try:
-            # Handle different JSON structures
             if isinstance(data, dict) and "Data" in data:
                 news_items = data["Data"]
             elif isinstance(data, dict):
-                news_items = (
-                    data.get("data", [])
-                    or data.get("news", [])
-                    or data.get("articles", [])
-                )
+                news_items = data.get("data", []) or data.get("news", []) or []
+            elif isinstance(data, str):
+                data = json.loads(data)
+                news_items = data.get("Data", []) or data.get("data", []) or []
             else:
                 return []
 
-            parsed_items = []
+            formatted = []
             for item in news_items:
-                try:
-                    news_item = self._parse_json_item(item, source)
-                    if news_item:
-                        parsed_items.append(news_item)
-                except Exception as e:
-                    self.logger.debug(
-                        f"Error parsing JSON item from {source.name}: {e}"
-                    )
-
-            return parsed_items
-
-        except Exception as e:
-            self.logger.error(f"Error parsing JSON from {source.name}: {e}")
-            return []
-
-    def _parse_json_item(self, item: Dict, source: NewsSource) -> Optional[NewsItem]:
-        """Parse individual JSON news item."""
-        try:
-            title = item.get("title", "").strip()
-            text = (
-                item.get("body", "")
-                or item.get("text", "")
-                or item.get("description", "")
-            )
-            url = item.get("url", "") or item.get("guid", "")
-
-            if not title:
-                return None
-
-            timestamp = self._parse_timestamp(item)
-            symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
-
-            return NewsItem(
-                title=title,
-                text=text.strip(),
-                source=source.name,
-                timestamp=timestamp,
-                url=url,
-                symbols=symbols,
-                source_weight=source.weight,
-            )
-
-        except Exception as e:
-            self.logger.debug(f"Error parsing JSON item: {e}")
-            return None
-
-    def _parse_timestamp(self, item) -> float:
-        """Parse timestamp from various formats."""
-        try:
-            # Handle different timestamp formats
-            if hasattr(item, "get"):  # JSON item
-                if "published_on" in item:
-                    return float(item["published_on"])
-                elif "publishedAt" in item:
-                    return datetime.fromisoformat(
-                        item["publishedAt"].replace("Z", "+00:00")
-                    ).timestamp()
-                elif "pubDate" in item:
-                    return parsedate_to_datetime(item["pubDate"]).timestamp()
-            else:  # RSS item
-                pub_date = item.find("pubDate")
-                if pub_date:
-                    return parsedate_to_datetime(pub_date.text).timestamp()
-
-                # Try other date fields
-                for date_field in ["dc:date", "published", "updated"]:
-                    date_elem = item.find(date_field)
-                    if date_elem:
-                        return datetime.fromisoformat(
-                            date_elem.text.replace("Z", "+00:00")
-                        ).timestamp()
-
-            return datetime.now().timestamp()
-
-        except Exception as e:
-            self.logger.debug(f"Error parsing timestamp: {e}")
-            return datetime.now().timestamp()
-
-    def analyze_sentiment_batch(
-        self, news_items: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """Analyze sentiment for a batch of news items with enhanced processing.
-
-        Args:
-            news_items: List of news items with 'title' and 'text' fields
-
-        Returns:
-            List of items with added 'sentiment' field
-        """
-        if not news_items:
-            self.logger.debug("No news items to analyze")
-            return []
-
-        # Initialize default values if not set
-        max_text_length = getattr(
-            self, "max_text_length", 512
-        )  # Default transformer limit
-        batch_size = getattr(self, "batch_size", 8)  # Conservative batch size
-
-        try:
-            # Pre-process texts
-            processed_items = []
-            for item in news_items:
-                text = f"{item.get('title', '')}. {item.get('text', '')}"[
-                    :max_text_length
-                ]
-                processed_items.append(
+                title = item.get("title", "")
+                text = item.get("body", "") or item.get("text", "")
+                # Extraction avancée des symboles (titre + texte)
+                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+                formatted.append(
                     {
-                        **item,
-                        "processed_text": text,
-                        "sentiment": None,  # Initialize field
+                        "title": title,
+                        "text": text,
+                        "source": source["name"] if source else "Unknown",
+                        "timestamp": self._parse_timestamp(item),
+                        "url": item.get("url", ""),
+                        "symbols": symbols,
+                        "source_weight": (
+                            source["weight"] if source and "weight" in source else 1.0
+                        ),
                     }
                 )
-
-            # Process in batches
-            for i in range(0, len(processed_items), batch_size):
-                batch = processed_items[i : i + batch_size]
-                texts = [item["processed_text"] for item in batch]
-
-                try:
-                    # Get model predictions (adapt to your actual model)
-                    inputs = self.tokenizer(
-                        texts,
-                        padding=True,
-                        truncation=True,
-                        return_tensors="pt",
-                        max_length=max_text_length,
-                    )
-                    outputs = self.model(**inputs)
-                    predictions = outputs.logits.softmax(dim=-1)[
-                        :, 1
-                    ].tolist()  # Positive class
-
-                    # Update items with predictions
-                    for item, pred in zip(batch, predictions):
-                        item["sentiment"] = float(pred)
-
-                except RuntimeError as e:
-                    self.logger.warning(f"Batch {i//batch_size} failed: {str(e)}")
-                    continue
-
-            # Calculate statistics
-            sentiments = [
-                item["sentiment"]
-                for item in processed_items
-                if item["sentiment"] is not None
-            ]
-            if sentiments:
-                stats = {
-                    "mean": float(np.mean(sentiments)),
-                    "std": float(np.std(sentiments)),
-                    "count": len(sentiments),
-                }
-                self.logger.info(
-                    f"Analyzed {len(sentiments)}/{len(news_items)} items | "
-                    f"Mean: {stats['mean']:.3f} ± {stats['std']:.3f}"
-                )
-
-            return processed_items
-
+            return formatted
         except Exception as e:
-            self.logger.error(f"Critical analysis failure: {str(e)}", exc_info=True)
-            # Return items with null sentiment to maintain pipeline
-            return [{**item, "sentiment": None} for item in news_items]
-
-    def _process_sentiment_batch(
-        self, texts: List[str], items: List[NewsItem]
-    ) -> List[NewsItem]:
-        """Process a single batch for sentiment analysis."""
-        try:
-            # Tokenize
-            inputs = self.tokenizer(
-                texts,
-                return_tensors="pt",
-                padding=True,
-                truncation=True,
-                max_length=self.max_text_length,
-            )
-
-            # Move to device
-            inputs = {k: v.to(self._device) for k, v in inputs.items()}
-
-            # Inference
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-                probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
-
-            # Process results
-            results = []
-            for i, item in enumerate(items):
-                probs = probabilities[i].cpu().numpy()
-
-                # Calculate sentiment score (positive - negative)
-                sentiment_score = float(
-                    probs[1] - probs[0]
-                )  # Assuming [negative, positive, neutral]
-                confidence = float(np.max(probs))
-
-                # Calculate impact score
-                impact_score = self._calculate_impact_score(
-                    item, sentiment_score, confidence
-                )
-
-                # Create new item with sentiment data
-                enhanced_item = NewsItem(
-                    title=item.title,
-                    text=item.text,
-                    source=item.source,
-                    timestamp=item.timestamp,
-                    url=item.url,
-                    symbols=item.symbols,
-                    source_weight=item.source_weight,
-                    sentiment=sentiment_score,
-                    impact_score=impact_score,
-                    confidence=confidence,
-                )
-
-                results.append(enhanced_item)
-
-            return results
-
-        except Exception as e:
-            self.logger.error(f"Error processing sentiment batch: {e}")
-            return items
-
-    def _calculate_impact_score(
-        self, item: NewsItem, sentiment: float, confidence: float
-    ) -> float:
-        """Calculate impact score based on various factors."""
-        try:
-            # Base impact from source weight
-            impact = item.source_weight
-
-            # Adjust for sentiment magnitude
-            impact *= 1 + abs(sentiment)
-
-            # Adjust for confidence
-            impact *= confidence
-
-            # Adjust for recency (more recent = higher impact)
-            hours_old = (datetime.now().timestamp() - item.timestamp) / 3600
-            recency_factor = max(0.1, 1.0 - (hours_old / 48))  # Decay over 48 hours
-            impact *= recency_factor
-
-            # Adjust for symbol count (more symbols = potentially higher impact)
-            symbol_factor = min(2.0, 1.0 + len(item.symbols) * 0.1)
-            impact *= symbol_factor
-
-            # Normalize to reasonable range
-            return min(5.0, max(0.1, impact))
-
-        except Exception as e:
-            self.logger.debug(f"Error calculating impact score: {e}")
-            return 1.0
-
-    async def update_analysis(self) -> List[NewsItem]:
-        """Update news analysis with new data."""
-        try:
-            self.logger.info("Starting news analysis update")
-
-            # Fetch new news
-            raw_news = await self.fetch_all_news()
-            self.logger.info(f"Fetched {len(raw_news)} raw news items")
-
-            if not raw_news:
-                self.logger.warning("No news items fetched")
-                return []
-
-            # Analyze sentiment
-            analyzed_news = self.analyze_sentiment_batch(raw_news)
-            self.logger.info(f"Analyzed sentiment for {len(analyzed_news)} news items")
-
-            # Update buffer
-            self._update_news_buffer(analyzed_news)
-
-            # Save state
-            await self._save_state()
-
-            # Clear sentiment cache
-            self._sentiment_cache.clear()
-
-            self.logger.info(
-                f"News analysis update complete. Buffer size: {len(self.news_buffer)}"
-            )
-            return analyzed_news
-
-        except Exception as e:
-            self.logger.error(f"Error in news analysis update: {e}")
+            self.logger.error(f"Error parsing JSON news: {e}")
             return []
 
-    def _update_news_buffer(self, new_items: List[NewsItem]):
-        """Update the news buffer with new items."""
-        # Add new items to buffer
-        self.news_buffer.extend(new_items)
-
-        # Remove duplicates based on URL
-        seen_urls = set()
-        unique_items = []
-        for item in self.news_buffer:
-            if item.url not in seen_urls:
-                unique_items.append(item)
-                seen_urls.add(item.url)
-
-        # Sort by timestamp (newest first) and limit size
-        unique_items.sort(key=lambda x: x.timestamp, reverse=True)
-        self.news_buffer = unique_items[: self.max_buffer_size]
-
-        self.logger.debug(f"Updated news buffer: {len(self.news_buffer)} items")
-
-    async def get_symbol_sentiment(self, symbol: str) -> float:
-        """Get weighted sentiment score for a specific symbol."""
+    def _parse_timestamp(self, item):
         try:
-            # Check cache first
-            cache_key = f"{symbol}_{int(datetime.now().timestamp() / self._cache_ttl)}"
-            if cache_key in self._sentiment_cache:
-                return self._sentiment_cache[cache_key]
+            if isinstance(item, dict):
+                if "published_on" in item:
+                    return int(item["published_on"])
+                if "pubDate" in item:
+                    from email.utils import parsedate_to_datetime
 
-            # Normalize symbol
-            symbol_key = symbol.replace("/", "").upper()
-            underlying = (
-                symbol_key.replace("USDT", "").replace("USD", "").replace("EUR", "")
-            )
-
-            # Calculate weighted sentiment
-            total_sentiment = 0.0
-            total_weight = 0.0
-            current_time = datetime.now().timestamp()
-            matched_items = 0
-
-            for item in self.news_buffer:
-                if not item.sentiment or not item.symbols:
-                    continue
-
-                # Check if symbol matches
-                item_symbols = [s.upper() for s in item.symbols]
-                if symbol_key in item_symbols or underlying in item_symbols:
-                    matched_items += 1
-
-                    # Calculate time decay
-                    hours_old = (current_time - item.timestamp) / 3600
-                    time_decay = 0.5 ** (hours_old / 24)  # Half-life of 24 hours
-
-                    # Calculate weight
-                    weight = (
-                        (item.impact_score or 1.0)
-                        * time_decay
-                        * (item.confidence or 1.0)
-                    )
-
-                    # Apply confidence threshold
-                    if (item.confidence or 0) >= self.min_confidence_threshold:
-                        total_sentiment += item.sentiment * weight
-                        total_weight += weight
-
-            # Calculate final score
-            if total_weight > 0:
-                sentiment_score = total_sentiment / total_weight
+                    return int(parsedate_to_datetime(item["pubDate"]).timestamp())
             else:
-                sentiment_score = 0.0
+                pub_date = item.find("pubDate")
+                if pub_date:
+                    from email.utils import parsedate_to_datetime
 
-            # Cache result
-            self._sentiment_cache[cache_key] = sentiment_score
+                    return int(parsedate_to_datetime(pub_date.text).timestamp())
+            return int(datetime.now().timestamp())
+        except Exception:
+            return int(datetime.now().timestamp())
 
-            self.logger.debug(
-                f"Symbol sentiment for {symbol}: {sentiment_score:.4f} "
-                f"(matched {matched_items} items, total_weight={total_weight:.4f})"
-            )
-
-            return sentiment_score
-
-        except Exception as e:
-            self.logger.error(f"Error getting sentiment for {symbol}: {e}")
-            return 0.0
-
-    def get_sentiment_summary(self) -> Dict:
+    def _calculate_impact(self, news: Dict, sentiment: float) -> float:
         """
-        Retourne une synthèse globale du sentiment issu des news :
-        - Sentiment global (moyenne pondérée)
-        - Nombre total de news analysées
-        - Sentiment par symbole le plus fréquent
-        - Top news les plus “impactantes” (positives ou négatives)
+        Calcule un score d'impact pour la pondération du sentiment.
+        Peut être ajusté selon la source, la fraîcheur, la longueur, etc.
         """
-        try:
-            if not self.news_buffer:
-                return {
-                    "sentiment_global": 0.0,
-                    "n_news": 0,
-                    "top_symbols": [],
-                    "top_news": [],
-                }
+        impact = news.get("source_weight", 1.0)
+        # Bonus ou malus selon le score de sentiment
+        impact *= 1.0 + min(1.0, abs(sentiment))
+        # Bonus fraîcheur (moins de 24h = 1.0, sinon decay)
+        hours_old = (
+            datetime.now().timestamp()
+            - news.get("timestamp", datetime.now().timestamp())
+        ) / 3600
+        impact *= max(0.1, 1.0 - (hours_old / 48))
+        # Bonus nombre de symboles
+        n_symbols = len(news.get("symbols", []))
+        impact *= min(2.0, 1.0 + n_symbols * 0.1)
+        return max(0.1, min(5.0, impact))
 
-            total = 0.0
-            total_weight = 0.0
-            symbol_stats = {}
-            for item in self.news_buffer:
-                if item.sentiment is None or item.impact_score is None:
-                    continue
-                weight = item.impact_score
-                total += item.sentiment * weight
-                total_weight += weight
-                for sym in item.symbols:
-                    sym = sym.upper()
-                    if sym not in symbol_stats:
-                        symbol_stats[sym] = {"total": 0.0, "weight": 0.0, "count": 0}
-                    symbol_stats[sym]["total"] += item.sentiment * weight
-                    symbol_stats[sym]["weight"] += weight
-                    symbol_stats[sym]["count"] += 1
-
-            sentiment_global = total / total_weight if total_weight > 0 else 0.0
-
-            top_symbols = []
-            if symbol_stats:
-                sorted_syms = sorted(
-                    symbol_stats.items(), key=lambda x: x[1]["count"], reverse=True
-                )[:5]
-                for sym, stats in sorted_syms:
-                    avg = (
-                        stats["total"] / stats["weight"] if stats["weight"] > 0 else 0.0
-                    )
-                    top_symbols.append(
-                        {
-                            "symbol": sym,
-                            "sentiment": avg,
-                            "n_news": stats["count"],
-                        }
-                    )
-
-            top_news = sorted(
-                [
-                    item
-                    for item in self.news_buffer
-                    if item.sentiment is not None and item.impact_score is not None
-                ],
-                key=lambda x: abs(x.sentiment) * x.impact_score,
-                reverse=True,
-            )[:3]
-            top_news_list = [
-                {
-                    "title": n.title,
-                    "sentiment": n.sentiment,
-                    "impact_score": n.impact_score,
-                    "symbols": n.symbols,
-                    "source": n.source,
-                    "url": n.url,
-                    "timestamp": n.timestamp,
-                }
-                for n in top_news
-            ]
-
-            return {
-                "sentiment_global": sentiment_global,
-                "n_news": len(self.news_buffer),
-                "top_symbols": top_symbols,
-                "top_news": top_news_list,
-            }
-        except Exception as e:
-            self.logger.error(f"Error in get_sentiment_summary: {e}")
-            return {
-                "sentiment_global": 0.0,
-                "n_news": 0,
-                "top_symbols": [],
-                "top_news": [],
-            }
+    # Pour compatibilité legacy :
+    def _extract_symbols(self, text: str) -> List[str]:
+        return self.symbol_extractor.extract_symbols(text)
