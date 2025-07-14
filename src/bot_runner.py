@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from src.analysis.news.cointelegraph_fetcher import fetch_cointelegraph_news
+from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 
 # Obtenir le chemin racine du projet (un niveau au-dessus de l'emplacement du script)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -517,6 +518,17 @@ class TradingBotM4:
                 "n_epochs": 10,
                 "verbose": 1,
             },
+            "news": {
+                "sentiment_weight": 0.15,
+                "update_interval": 300,
+                "storage_path": "data/news_analysis.json",
+                "symbol_mapping": {
+                    "bitcoin": "BTC",
+                    "ethereum": "ETH",
+                    "cardano": "ADA",
+                    "solana": "SOL",
+                },
+            },
         }
         self.ws_collector = BufferedWSCollector(
             symbols=[
@@ -531,7 +543,19 @@ class TradingBotM4:
         self.regime = MARKET_REGIMES["RANGING"]
         self.market_data = {}
         self.indicators = {}
-        self.ai_weight = 0.3
+        self.news_analyzer = NewsSentimentAnalyzer(self.config)
+        self.news_enabled = True
+        self.news_weight = 0.15
+
+        if volatilité < 0.03:  # Marché plat
+            self.ai_weight = 0.3
+        else:
+            self.ai_weight = 0.5
+
+        self.ensure_float = lambda x: (
+            float(x) if isinstance(x, (int, float, str)) else 0.0
+        )
+        self.technical_weight = 0.6  # Poids des signaux techniques (60%)
         self.ai_enabled = False
         self.pairs_valid = self.config["TRADING"]["pairs"]
 
@@ -599,6 +623,31 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
+
+    async def _news_analysis_loop(self):
+        """Boucle périodique d'analyse des news"""
+        while True:
+            try:
+                if not self.news_enabled:
+                    await asyncio.sleep(self.news_analyzer.update_interval)
+                    continue
+
+                analyzed_news = await self.news_analyzer.update_analysis()
+
+                # Propagation aux paires de trading
+                for pair in self.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    sentiment = await self.news_analyzer.get_symbol_sentiment(pair_key)
+                    self.market_data[pair_key]["sentiment"] = sentiment
+                    self.logger.debug(f"[SENTIMENT] {pair_key} <- {sentiment:.2f}")
+
+                # Sauvegarde des données pour l'interface
+                await self._save_sentiment_data(analyzed_news)
+
+            except Exception as e:
+                self.logger.error(f"News loop error: {str(e)}")
+
+            await asyncio.sleep(self.news_analyzer.update_interval)
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators):
         """
@@ -679,7 +728,7 @@ class TradingBotM4:
             log_dashboard(f"[AI] Prédiction IA sollicitée pour {symbol}")
             try:
                 features = await self._prepare_features_for_ai(symbol)
-                log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
+                # log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
                     ai_score = float(self.dl_model.predict(features))
             except Exception as e:
@@ -1239,83 +1288,86 @@ class TradingBotM4:
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         try:
-            print("=== DEBUG _merge_signals CALLED ===")
+            # 1. Vérification et initialisation des poids
+            if not hasattr(self, "ai_weight"):
+                self.ai_weight = 0.4  # Valeur par défaut
+
+            # Conversion robuste du ai_weight si nécessaire
+            try:
+                ai_weight = float(self.ai_weight)
+            except (TypeError, ValueError):
+                self.logger.error(
+                    "ai_weight invalide, utilisation de la valeur par défaut 0.4"
+                )
+                ai_weight = 0.4
+
+            technical_weight = 1.0 - ai_weight
+
+            # 2. Initialisation des structures
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
-            if "signals" not in self.market_data[symbol]:
-                self.market_data[symbol]["signals"] = {
-                    "trend": 0.0,
-                    "momentum": 0.0,
-                    "volatility": 0.0,
-                }
+            default_signals = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
 
-            current_signals = self.market_data[symbol]["signals"]
-            print(f"[DEBUG SIGNALS DICT] {current_signals}")
-            for k, v in current_signals.items():
-                print(f"[DEBUG KEY] {k}: type={type(v)} val={v}")
+            current_signals = self.market_data[symbol].get(
+                "signals", default_signals.copy()
+            )
 
-            ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
+            # 3. Fonction de conversion universelle
+            def safe_float(value, context=""):
+                """Convertit n'importe quelle entrée en float de manière sécurisée"""
+                if isinstance(value, (float, int)):
+                    return float(value)
 
-            # Conversion
-            for signal_type in list(current_signals.keys()):
-                val = current_signals[signal_type]
-                if isinstance(val, dict):
-                    for key in (
-                        "value",
-                        "strength",
-                        "score",
-                        "trend",
-                        "momentum",
-                        "volatility",
-                    ):
-                        v = val.get(key)
-                        if isinstance(v, (float, int)):
-                            val = float(v)
-                            break
-                    else:
-                        val = 0.0
-                elif isinstance(val, (list, tuple)):
-                    val = (
-                        float(val[0])
-                        if val and isinstance(val[0], (float, int))
-                        else 0.0
-                    )
-                elif not isinstance(val, (float, int)):
-                    val = 0.0
+                if isinstance(value, dict):
+                    # Extraction depuis les dictionnaires
+                    for key in ["value", "action", "score", "prediction", "weight"]:
+                        if key in value:
+                            try:
+                                return float(value[key])
+                            except (TypeError, ValueError):
+                                continue
 
-                current_signals[signal_type] = val
+                    # Fallback: premier float trouvé
+                    for v in value.values():
+                        try:
+                            return float(v)
+                        except (TypeError, ValueError):
+                            continue
 
-            print(f"[DEBUG FULL SIGNALS DICT AVANT FUSION] {current_signals}")
-            print(f"[DEBUG TYPE current_signals] {type(current_signals)}")
-            for k, v in current_signals.items():
-                print(f"[DEBUG KEY at FUSION] {k} : {type(v)} : {v}")
-
-            # FUSION - attrape le type qui plante
-            for signal_type in list(current_signals.keys()):
-                val = current_signals[signal_type]
-                print(
-                    f"[DEBUG FUSION] {symbol} | {signal_type} | type={type(val)} | val={val}"
+                # Fallback final
+                self.logger.warning(
+                    f"Conversion impossible pour {context}, utilisation de 0.0"
                 )
-                technical_weight = 1 - self.ai_weight
-                try:
-                    current_signals[signal_type] = (
-                        val * technical_weight + ai_signal * self.ai_weight
-                    )
-                except Exception as e:
-                    print(
-                        f"[FUSION ERROR] signal_type={signal_type} val={val} type={type(val)}"
-                    )
-                    raise
+                return 0.0
 
-            self.market_data[symbol]["signals"] = current_signals
-            self.market_data[symbol]["ai_prediction"] = float(ai_signal)
-            return current_signals
+            # 4. Conversion des entrées
+            dl_value = safe_float(dl_prediction, "dl_prediction")
+            ppo_value = safe_float(ppo_action, "ppo_action")
+            ai_signal = dl_value * 0.7 + ppo_value * 0.3
+
+            # 5. Nettoyage des signaux existants
+            clean_signals = {
+                k: safe_float(v, f"signal {k}")
+                for k, v in current_signals.items()
+                if k in default_signals
+            }
+
+            # 6. Fusion finale
+            merged_signals = {
+                k: (v * technical_weight + ai_signal * ai_weight)
+                for k, v in clean_signals.items()
+            }
+
+            # 7. Sauvegarde des résultats
+            self.market_data[symbol]["signals"] = merged_signals
+            self.market_data[symbol]["ai_prediction"] = ai_signal
+
+            return merged_signals
 
         except Exception as e:
-            print(f"!!! ERROR in _merge_signals: {e}")
-            self.logger.error(f"Error merging signals: {e}")
-            return {}
+            self.logger.error(f"ERREUR dans _merge_signals: {str(e)}", exc_info=True)
+            return default_signals.copy()
 
     async def _news_analysis_loop(self):
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")

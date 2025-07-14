@@ -1468,7 +1468,7 @@ class TradingBotM4:
                     > indicators["trend"]["sma_slow"].iloc[-1]
                     else "bearish"
                 ),
-                "trend_strength": indicators["trend"]["adx"].iloc[-1],
+                "trend_strength": float(indicators["trend"]["adx"].iloc[-1]),
                 "trend_direction": (
                     1 if indicators["trend"]["vortex_ind_diff"].iloc[-1] > 0 else -1
                 ),
@@ -1522,7 +1522,7 @@ class TradingBotM4:
                     > indicators["volatility"]["kch"].iloc[-1]
                     else "breakdown"
                 ),
-                "atr_volatility": indicators["volatility"]["atr"].iloc[-1],
+                "atr_volatility": float(indicators["volatility"]["atr"].iloc[-1]),
             }
 
             # Analyse du volume
@@ -1546,13 +1546,29 @@ class TradingBotM4:
                 ),
             }
 
-            # Décision finale
+            # Structure finale : champs principaux (float/str), détails dans *_details
             signal = {
                 "timestamp": pd.Timestamp.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-                "trend": trend_analysis,
-                "momentum": momentum_analysis,
-                "volatility": volatility_analysis,
-                "volume": volume_analysis,
+                # Champs principaux homogènes
+                "trend": float(trend_analysis.get("trend_strength", 0.0)),
+                "momentum": float(
+                    1
+                    if momentum_analysis.get("rsi_signal") == "oversold"
+                    else (
+                        -1 if momentum_analysis.get("rsi_signal") == "overbought" else 0
+                    )
+                ),
+                "volatility": float(volatility_analysis.get("atr_volatility", 0.0)),
+                "volume": float(
+                    1
+                    if volume_analysis.get("mfi_signal") == "buy"
+                    else -1 if volume_analysis.get("mfi_signal") == "sell" else 0
+                ),
+                # Champs détaillés (dicts complets, pour logs ou affichage)
+                "trend_details": trend_analysis,
+                "momentum_details": momentum_analysis,
+                "volatility_details": volatility_analysis,
+                "volume_details": volume_analysis,
                 "recommendation": self._generate_recommendation(
                     trend_analysis,
                     momentum_analysis,
