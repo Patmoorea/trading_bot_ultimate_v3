@@ -621,26 +621,32 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
     async def _news_analysis_loop(self):
-        """Boucle périodique d'analyse des news"""
+        """Boucle périodique d'analyse des news et propagation du sentiment"""
         while True:
             try:
-                if not self.news_enabled:
+                if not self.news_enabled or not self.news_analyzer:
                     await asyncio.sleep(self.news_analyzer.update_interval)
                     continue
 
+                print("[NEWS] Lancement boucle d'analyse des news…")
+                # 1. Récupération + analyse des news (avec annotation du sentiment)
                 analyzed_news = await self.news_analyzer.update_analysis()
 
-                # Propagation aux paires de trading
+                # 2. Propagation du score de sentiment aux paires de trading
                 for pair in self.pairs_valid:
                     pair_key = pair.replace("/", "").upper()
                     sentiment = await self.news_analyzer.get_symbol_sentiment(pair_key)
-                    self.market_data[pair_key]["sentiment"] = sentiment
-                    self.logger.debug(f"[SENTIMENT] {pair_key} <- {sentiment:.2f}")
+                    if pair_key in self.market_data:
+                        self.market_data[pair_key]["sentiment"] = sentiment
+                    else:
+                        self.market_data[pair_key] = {"sentiment": sentiment}
+                    print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {sentiment:.4f}")
 
-                # Sauvegarde des données pour l'interface
+                # 3. Sauvegarde des données pour l'interface/dashboard
                 await self._save_sentiment_data(analyzed_news)
 
             except Exception as e:
+                print(f"[NEWS] News loop error: {str(e)}")
                 self.logger.error(f"News loop error: {str(e)}")
 
             await asyncio.sleep(self.news_analyzer.update_interval)
@@ -1378,7 +1384,7 @@ class TradingBotM4:
                 news_data = await self.news_analyzer.fetch_all_news()
 
                 try:
-                    sentiment_scores = self.news_analyzer.analyze_sentiment(news_data)
+                    analyzed_news = await self.news_analyzer.update_analysis()
                 except Exception:
                     sentiment_scores = []
 
@@ -1474,15 +1480,14 @@ class TradingBotM4:
                     self.market_data[pair_key]["sentiment_timestamp"] = time.time()
                     print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {global_sentiment}")
 
-    async def _save_sentiment_data(self, sentiment_scores, news_data):
-        """Sauvegarde les données de sentiment pour l'interface"""
+    async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         headlines = []
+        if news_data is None:
+            news_data = sentiment_scores
         if isinstance(news_data, list):
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(item["title"])
-
-        # Calcul d'un score global
         avg_sentiment = (
             float(np.mean([item.get("sentiment", 0) for item in sentiment_scores]))
             if sentiment_scores
@@ -1494,13 +1499,10 @@ class TradingBotM4:
             else 0
         )
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
-
-        # DEBUG prints placés APRÈS le calcul des variables
-        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores}")
+        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
         print(
             f"[DEBUG SENTIMENT GLOBAL] avg_sentiment={avg_sentiment} impact={impact_score} major_events={major_events}"
         )
-
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
@@ -1509,21 +1511,15 @@ class TradingBotM4:
             "impact_score": impact_score,
             "major_events": major_events,
         }
-
-        # Mise à jour du fichier shared_data.json
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-
             shared_data["sentiment"] = sentiment_data
-
             with open(self.data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
-
             self.logger.info(
                 f"[SENTIMENT] Data written successfully to {self.data_file}"
             )
-
         except Exception as e:
             self.logger.error(f"Error saving sentiment data: {e}")
 
