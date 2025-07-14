@@ -1257,7 +1257,7 @@ class TradingBotM4:
 
             for signal_type in current_signals:
                 val = current_signals[signal_type]
-                # PATCH: robust conversion to float for dict, fallback 0.0
+                # Conversion robuste : dict -> float, sinon 0.0
                 if isinstance(val, dict):
                     if "value" in val:
                         val = float(val["value"])
