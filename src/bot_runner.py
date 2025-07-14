@@ -1238,10 +1238,9 @@ class TradingBotM4:
             return None
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
-        """
-        Fusion robuste des signaux techniques et IA pour éviter le bug dict * float !
-        """
         try:
+            print("=== DEBUG _merge_signals CALLED ===")
+
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
@@ -1255,19 +1254,42 @@ class TradingBotM4:
             current_signals = self.market_data[symbol]["signals"]
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
-            for signal_type in current_signals:
+            for signal_type in list(current_signals.keys()):
                 val = current_signals[signal_type]
-                # Conversion robuste : dict -> float, sinon 0.0
+                print(
+                    f"[DEBUG] {symbol} | {signal_type} | type={type(val)} | val={val}"
+                )
+
+                # Conversion ultra-robuste
                 if isinstance(val, dict):
-                    if "value" in val:
-                        val = float(val["value"])
-                    elif "strength" in val:
-                        val = float(val["strength"])
+                    for key in (
+                        "value",
+                        "strength",
+                        "score",
+                        "trend",
+                        "momentum",
+                        "volatility",
+                    ):
+                        v = val.get(key)
+                        if isinstance(v, (float, int)):
+                            val = float(v)
+                            break
                     else:
                         val = 0.0
+                elif isinstance(val, (list, tuple)):
+                    val = (
+                        float(val[0])
+                        if val and isinstance(val[0], (float, int))
+                        else 0.0
+                    )
                 elif not isinstance(val, (float, int)):
                     val = 0.0
+
+                # ÉCRASE la valeur convertie AVANT tout calcul
+                current_signals[signal_type] = val
+
                 technical_weight = 1 - self.ai_weight
+                # Utilise la valeur convertie (jamais dict ici)
                 current_signals[signal_type] = (
                     val * technical_weight + ai_signal * self.ai_weight
                 )
@@ -1277,6 +1299,7 @@ class TradingBotM4:
             return current_signals
 
         except Exception as e:
+            print(f"!!! ERROR in _merge_signals: {e}")
             self.logger.error(f"Error merging signals: {e}")
             return {}
 
