@@ -87,6 +87,22 @@ def safe(val, default="N/A", fmt="{:,.2f}"):
         return default
 
 
+def safe_float(val, default=0.0):
+    """Convertit une valeur en float de manière sécurisée"""
+    try:
+        if val is None:
+            return default
+        if isinstance(val, (int, float)):
+            return float(val)
+        if isinstance(val, str):
+            return float(val.replace(",", ""))
+        if hasattr(val, "__float__"):
+            return float(val)
+        return default
+    except (ValueError, TypeError, AttributeError):
+        return default
+
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -278,7 +294,7 @@ class TradingBotM4:
                 },
             },
             "AI": {
-                "confidence_threshold": 0.75,
+                "confidence_threshold": 0.35,  # Réduit de 0.75 à 0.35
                 "min_training_size": 1000,
                 "learning_rate": 0.0001,
                 "batch_size": 32,
@@ -2174,18 +2190,24 @@ Take Profit: {take_profit}""",
             best_pair_idx = np.argmax(buy_actions)
 
             # Construire la décision
+            # Logique de décision améliorée avec plusieurs niveaux
+            if confidence > self.config["AI"]["confidence_threshold"]:
+                action = "buy"
+            elif confidence > 0.25:  # Seuil intermédiaire
+                action = "buy" if technical_score > 0.3 else "neutral"
+            elif confidence < -0.25:
+                action = "sell"
+            else:
+                action = "neutral"
+
             decision = {
-                "action": (
-                    "buy"
-                    if confidence > self.config["AI"]["confidence_threshold"]
-                    else "wait"
-                ),
+                "action": action,
                 "symbol": self.pairs_valid[best_pair_idx],
                 "confidence": confidence,
                 "timestamp": timestamp,
                 "regime": regime,
                 "technical_score": technical_score,
-                "news_impact": news_sentiment["sentiment"],
+                "news_impact": news_sentiment.get("sentiment", 0),
                 "value_estimate": float(value.detach().numpy()),
                 "position_size": buy_actions[best_pair_idx],
             }
@@ -2243,7 +2265,8 @@ Take Profit: {take_profit}""",
 
         if (
             decision
-            and decision["confidence"] > self.config["AI"]["confidence_threshold"]
+            and decision["action"] in ["buy", "sell"]
+            and decision["confidence"] > 0.2  # Seuil plus bas pour l'exécution
         ):
             try:
                 # Vérification des opportunités d'arbitrage

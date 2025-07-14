@@ -631,12 +631,19 @@ class TradingBotM4:
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
 
-                sentiment_scores = []
+                sentiment_analysis = {}
                 try:
-                    sentiment_scores = await self.news_analyzer.update_analysis()
+                    sentiment_analysis = await self.news_analyzer.update_analysis()
                 except Exception:
                     self.logger.error("Erreur update_analysis", exc_info=True)
-                    # sentiment_scores reste []
+                    # sentiment_analysis reste {}
+
+                # Extract the items list from the analysis result
+                sentiment_scores = (
+                    sentiment_analysis.get("items", [])
+                    if isinstance(sentiment_analysis, dict)
+                    else []
+                )
 
                 try:
                     await self._update_sentiment_data(sentiment_scores)
@@ -707,46 +714,72 @@ class TradingBotM4:
 
         tech_score = 0
         tech_factors = 0
-        # Tech scoring inchangé...
-
+        
+        # Calcul des scores techniques avec amplification
         if close and sma_20:
             tech_factors += 1
-            tech_score += np.tanh((close - sma_20) / (sma_20 * 0.01))
+            pct_diff = (close - sma_20) / sma_20 * 100  # Pourcentage de différence
+            tech_score += np.clip(pct_diff * 2, -1, 1)  # Amplifier et limiter
+            
         if close and sma_50:
             tech_factors += 1
-            tech_score += np.tanh((close - sma_50) / (sma_50 * 0.01))
+            pct_diff = (close - sma_50) / sma_50 * 100
+            tech_score += np.clip(pct_diff * 1.5, -1, 1)
+            
         if close and ema_20:
             tech_factors += 1
-            tech_score += np.tanh((close - ema_20) / (ema_20 * 0.01))
+            pct_diff = (close - ema_20) / ema_20 * 100
+            tech_score += np.clip(pct_diff * 2.5, -1, 1)
+            
         if rsi_14:
             tech_factors += 1
-            tech_score += (rsi_14 - 50) / 50
+            # RSI plus réactif : suracheté/survendu plus marqué
+            if rsi_14 > 70:
+                tech_score -= 0.8  # Signal de vente fort
+            elif rsi_14 < 30:
+                tech_score += 0.8  # Signal d'achat fort
+            else:
+                tech_score += (rsi_14 - 50) / 25  # Signal graduel
+                
         if macd and macd_signal:
             tech_factors += 1
-            tech_score += np.tanh(macd - macd_signal)
+            macd_diff = macd - macd_signal
+            tech_score += np.clip(macd_diff * 10, -1, 1)  # Amplifier MACD
+            
         if macd_hist:
             tech_factors += 1
-            tech_score += np.tanh(macd_hist)
+            tech_score += np.clip(macd_hist * 15, -1, 1)  # Amplifier histogramme
+            
         if bb_upper and bb_lower and close:
             tech_factors += 1
-            if close < bb_lower:
-                tech_score -= 1
-            elif close > bb_upper:
-                tech_score += 1
-        if psar and prev_close:
+            bb_position = (close - bb_lower) / (bb_upper - bb_lower)
+            if bb_position < 0.2:
+                tech_score += 0.6  # Proche de la bande inférieure = achat
+            elif bb_position > 0.8:
+                tech_score -= 0.6  # Proche de la bande supérieure = vente
+                
+        if psar and prev_close and close:
             tech_factors += 1
             if prev_close < psar and close > psar:
-                tech_score += 1
+                tech_score += 0.8  # Signal d'achat fort
             elif prev_close > psar and close < psar:
-                tech_score -= 1
-        if momentum_10:
+                tech_score -= 0.8  # Signal de vente fort
+                
+        if momentum_10 and close:
             tech_factors += 1
-            tech_score += np.tanh(momentum_10 / (abs(close) + 1e-8))
+            momentum_pct = momentum_10 / close * 100
+            tech_score += np.clip(momentum_pct * 5, -1, 1)
+            
         if zscore_20:
             tech_factors += 1
-            tech_score += zscore_20
+            tech_score += np.clip(zscore_20 * 0.5, -1, 1)
+            
+        # Moyenne pondérée au lieu de simple division
         if tech_factors > 0:
-            tech_score /= tech_factors
+            tech_score = tech_score / tech_factors
+            # Amplifier le score final si plusieurs indicateurs convergent
+            if abs(tech_score) > 0.3:
+                tech_score *= 1.2
 
         # === IA réelle uniquement ===
         ai_score = 0
@@ -769,15 +802,16 @@ class TradingBotM4:
                 ):
                     sentiment_score = self.market_data[symbol]["sentiment"]
         log_dashboard(
-            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score}"
+            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
         )
 
         arbitrage_score = 0
 
+        # Amplifier les scores pour avoir des décisions plus marquées
         total_score = (
-            0.5 * tech_score
-            + 0.3 * ai_score
-            + 0.15 * sentiment_score
+            0.4 * tech_score * 2.0  # Amplifier le score technique
+            + 0.3 * ai_score * 1.5   # Amplifier légèrement l'IA
+            + 0.25 * sentiment_score * 3.0  # Amplifier fortement le sentiment
             + 0.05 * arbitrage_score
         )
 
@@ -790,10 +824,18 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             },
         }
-        if total_score > 0.6:
+        if total_score > 0.3:
             decision["action"] = "buy"
-        elif total_score < -0.6:
+        elif total_score < -0.3:
             decision["action"] = "sell"
+
+        # Log détaillé pour debug
+        log_dashboard(
+            f"[ANALYZE_SIGNALS] {symbol} | "
+            f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sentiment: {sentiment_score:.3f} | "
+            f"Total: {total_score:.3f} | Action: {decision['action'].upper()} | "
+            f"Confidence: {decision['confidence']:.3f}"
+        )
 
         return decision
 
@@ -967,6 +1009,7 @@ class TradingBotM4:
 
             # Initialisation du modèle Deep Learning
             self.dl_model = DeepLearningModel()
+            self.dl_model.initialize()  # S'assurer que le modèle est initialisé
 
             # Configuration de l'environnement PPO
             env_config = {
@@ -1407,15 +1450,19 @@ class TradingBotM4:
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
 
+                sentiment_analysis = {}
                 try:
-                    analyzed_news = await self.news_analyzer.update_analysis()
+                    sentiment_analysis = await self.news_analyzer.update_analysis()
                 except Exception:
-                    sentiment_scores = []
-                    try:
-                        sentiment_scores = await self.news_analyzer.update_analysis()
-                    except Exception:
-                        self.logger.error("Erreur update_analysis", exc_info=True)
-                        # sentiment_scores reste = []
+                    self.logger.error("Erreur update_analysis", exc_info=True)
+                    # sentiment_analysis reste {}
+
+                # Extract the items list from the analysis result
+                sentiment_scores = (
+                    sentiment_analysis.get("items", [])
+                    if isinstance(sentiment_analysis, dict)
+                    else []
+                )
 
                 try:
                     await self._update_sentiment_data(sentiment_scores)
@@ -1499,15 +1546,18 @@ class TradingBotM4:
 
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
-            if pair_key in self.market_data:
-                # Si pas de score spécifique ou à zéro, on applique le global
-                if (
-                    "sentiment" not in self.market_data[pair_key]
-                    or self.market_data[pair_key]["sentiment"] == 0
-                ):
-                    self.market_data[pair_key]["sentiment"] = global_sentiment
-                    self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                    print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {global_sentiment}")
+            # Assurer que la clé existe dans market_data
+            if pair_key not in self.market_data:
+                self.market_data[pair_key] = {}
+            
+            # Si pas de score spécifique ou à zéro, on applique le global
+            if (
+                "sentiment" not in self.market_data[pair_key]
+                or self.market_data[pair_key]["sentiment"] == 0
+            ):
+                self.market_data[pair_key]["sentiment"] = global_sentiment
+                self.market_data[pair_key]["sentiment_timestamp"] = time.time()
+                print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {global_sentiment}")
 
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         headlines = []

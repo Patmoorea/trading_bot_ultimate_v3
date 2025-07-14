@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from typing import Dict, Any, List
 
-self.logger = logging.getLogger(__name__)
+# self.logger = logging.getLogger(__name__)  # Commenté car hors classe
 
 
 def compute_rsi(prices: pd.Series, period: int = 14) -> float:

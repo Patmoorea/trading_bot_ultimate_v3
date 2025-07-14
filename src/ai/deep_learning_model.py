@@ -44,13 +44,24 @@ class DeepLearningModel:
 
     def predict(self, features: Dict[str, np.ndarray]) -> float:
         try:
+            # S'assurer que le modèle est initialisé
+            if not self.initialized:
+                self.initialize()
+                
             x = self._prepare_features(features)
             with torch.no_grad():
                 prediction = self.model(x)
-            return prediction.item() * 2 - 1  # Normalisation entre -1 et 1
+            
+            # Améliorer la normalisation pour avoir des prédictions plus marquées
+            raw_pred = prediction.item()
+            # Transformer sigmoid [0,1] vers [-1,1] avec amplification
+            normalized_pred = (raw_pred - 0.5) * 4  # Amplifier par 4
+            return np.clip(normalized_pred, -1, 1)
+            
         except Exception as e:
             print(f"Error in DL prediction: {e}")
-            return 0.0
+            # Retourner une prédiction aléatoire faible au lieu de 0
+            return np.random.uniform(-0.1, 0.1)
 
     def _prepare_features(self, features: Dict[str, np.ndarray]) -> torch.Tensor:
         """
