@@ -1239,7 +1239,7 @@ class TradingBotM4:
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         """
-        FUSION ROBUSTE des signaux IA/techniques pour éviter le bug dict * float !
+        Fusion robuste des signaux techniques et IA pour éviter le bug dict * float !
         """
         try:
             if symbol not in self.market_data:
@@ -1257,9 +1257,14 @@ class TradingBotM4:
 
             for signal_type in current_signals:
                 val = current_signals[signal_type]
-                # PATCH: robust fetching of float for dict, fallback 0.0
+                # PATCH: robust conversion to float for dict, fallback 0.0
                 if isinstance(val, dict):
-                    val = float(val.get("value", val.get("strength", 0.0)))
+                    if "value" in val:
+                        val = float(val["value"])
+                    elif "strength" in val:
+                        val = float(val["strength"])
+                    else:
+                        val = 0.0
                 elif not isinstance(val, (float, int)):
                     val = 0.0
                 technical_weight = 1 - self.ai_weight
