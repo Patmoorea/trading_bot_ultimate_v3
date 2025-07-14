@@ -1240,7 +1240,6 @@ class TradingBotM4:
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         try:
             print("=== DEBUG _merge_signals CALLED ===")
-
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
@@ -1252,15 +1251,15 @@ class TradingBotM4:
                 }
 
             current_signals = self.market_data[symbol]["signals"]
+            print(f"[DEBUG SIGNALS DICT] {current_signals}")
+            for k, v in current_signals.items():
+                print(f"[DEBUG KEY] {k}: type={type(v)} val={v}")
+
             ai_signal = dl_prediction * 0.7 + ppo_action * 0.3
 
-            # 1. Conversion de tous les signaux AVANT la fusion
+            # Conversion
             for signal_type in list(current_signals.keys()):
                 val = current_signals[signal_type]
-                print(
-                    f"[DEBUG PRE-FUSION] {symbol} | {signal_type} | type={type(val)} | val={val}"
-                )
-
                 if isinstance(val, dict):
                     for key in (
                         "value",
@@ -1285,15 +1284,29 @@ class TradingBotM4:
                 elif not isinstance(val, (float, int)):
                     val = 0.0
 
-                current_signals[signal_type] = val  # ECRASE ICI
+                current_signals[signal_type] = val
 
-            # 2. FUSION : ici jamais de dict possible !
+            print(f"[DEBUG FULL SIGNALS DICT AVANT FUSION] {current_signals}")
+            print(f"[DEBUG TYPE current_signals] {type(current_signals)}")
+            for k, v in current_signals.items():
+                print(f"[DEBUG KEY at FUSION] {k} : {type(v)} : {v}")
+
+            # FUSION - attrape le type qui plante
             for signal_type in list(current_signals.keys()):
                 val = current_signals[signal_type]
-                technical_weight = 1 - self.ai_weight
-                current_signals[signal_type] = (
-                    val * technical_weight + ai_signal * self.ai_weight
+                print(
+                    f"[DEBUG FUSION] {symbol} | {signal_type} | type={type(val)} | val={val}"
                 )
+                technical_weight = 1 - self.ai_weight
+                try:
+                    current_signals[signal_type] = (
+                        val * technical_weight + ai_signal * self.ai_weight
+                    )
+                except Exception as e:
+                    print(
+                        f"[FUSION ERROR] signal_type={signal_type} val={val} type={type(val)}"
+                    )
+                    raise
 
             self.market_data[symbol]["signals"] = current_signals
             self.market_data[symbol]["ai_prediction"] = float(ai_signal)
