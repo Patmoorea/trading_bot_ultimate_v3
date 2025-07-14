@@ -112276,3 +112276,4 @@
 2025-07-14T17:43:44.846051 | ✅ Trading en direct: True
 2025-07-14T17:43:44.846122 | ✅ IA activée: True
 2025-07-14T17:43:44.846188 | ✅ Analyse de news activée: True
+2025-07-14T17:43:57.271491 | [NEWS] Lancement boucle d'analyse des news…
