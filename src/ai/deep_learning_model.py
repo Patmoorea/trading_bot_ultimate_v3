@@ -65,15 +65,16 @@ class DeepLearningModel:
             
             raw_pred = prediction.item()
             print(f"[DL] raw_pred: {raw_pred}")
-            normalized_pred = (raw_pred - 0.5) * 2  # [-1, 1]
-            print(f"[DL] normalized_pred: {normalized_pred}")
+            # Pas de normalisation : déjà entre 0 et 1 grâce au sigmoid
+            print(f"[DL] normalized_pred: {raw_pred}")
 
-            return np.clip(normalized_pred, -1, 1)
+            return float(raw_pred)
             
         except Exception as e:
             print(f"Error in DL prediction: {e}")
             # Retourner une prédiction aléatoire faible au lieu de 0
-            return np.random.uniform(-0.1, 0.1)
+            return np.random.uniform(0.0, 0.1)
+        
     def _prepare_features(self, features: Dict[str, np.ndarray]) -> torch.Tensor:
         """
         Transforme le dict de features en un tensor shape (batch=1, 7, N)
