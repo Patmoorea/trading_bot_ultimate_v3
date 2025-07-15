@@ -3240,6 +3240,12 @@ async def execute_trade_decisions(bot, trade_decisions):
         logging.error(f"Erreur exécution trades: {e}")
 
 
+def save_best_params(best_params, path="config/best_hyperparams.json"):
+    import json
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(best_params, f, indent=2)
+
 async def run_automl_tuning(bot, mode="cnn_lstm"):
     """Lance une optimisation AutoML/Optuna complète (manuelle ou auto)"""
     print("🔬 Lancement AutoML/Optuna...")
@@ -3247,11 +3253,15 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
     start = time.time()
     if mode == "cnn_lstm":
+        from src.optimization.optuna_wrapper import tune_hyperparameters
         best_params = tune_hyperparameters()
         print("✅ Optuna tuning terminé. Meilleurs hyperparams:", best_params)
+        save_best_params(best_params)  # <-- Sauvegarde automatique
     elif mode == "full":
+        from src.optimization.optuna_wrapper import optimize_hyperparameters_full
         best_trials = optimize_hyperparameters_full()
         print("✅ Optuna full tuning terminé. Résumé:", best_trials)
+        # Si besoin, tu peux aussi sauvegarder best_trials ici
     else:
         print("❌ Mode AutoML inconnu")
         return

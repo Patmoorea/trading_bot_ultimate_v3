@@ -9,6 +9,13 @@ SEQ_LEN = 20
 FUTURE_SHIFT = 10
 THRESHOLD = 0.002
 
+def load_best_params(path="config/best_hyperparams.json"):
+    if os.path.exists(path):
+        import json
+        with open(path) as f:
+            return json.load(f)
+    return {}
+
 def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
     """
     Prépare les features et labels pour l'entraînement IA.
@@ -73,6 +80,12 @@ def add_dl_features(df):
     return df
 
 def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth"):
+    # Charge les meilleurs hyperparams issus d'Optuna/AutoML
+    best_params = load_best_params()
+    lr = best_params.get("lr", 0.001)
+    n_epochs = best_params.get("n_epochs", 100)
+    batch_size = best_params.get("batch_size", 64)
+
     X, y = load_data_from_df(df_live)
     if X is None or y is None:
         print("Pas assez de données pour entraîner le modèle.")
@@ -82,10 +95,8 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
         X, y, test_size=0.1, shuffle=True, random_state=42
     )
     model = CNNLSTMModel()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.BCELoss()
-    n_epochs = 20
-    batch_size = 64
     for epoch in range(n_epochs):
         model.train()
         idxs = np.random.permutation(len(X_train))
@@ -96,12 +107,11 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             yb = torch.FloatTensor(y_train[i : i + batch_size])
             optimizer.zero_grad()
             out = model(xb)
-            print("DEBUG out min:", out.min().item(), "out max:", out.max().item())
-            print("DEBUG yb min:", yb.min().item(), "yb max:", yb.max().item())
             loss = loss_fn(out, yb)
             loss.backward()
             optimizer.step()
             batch_losses.append(loss.item())
+        print(f"Epoch {epoch+1}/{n_epochs} - Train Loss: {np.mean(batch_losses):.6f}")
         model.eval()
         with torch.no_grad():
             xb = torch.FloatTensor(X_val).transpose(1, 2)
@@ -109,10 +119,6 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             y_pred = model(xb)
             val_loss = loss_fn(y_pred, yb).item()
             acc = ((y_pred > 0.5).float() == yb).float().mean().item()
-        print(
-            f"Epoch {epoch+1}/{n_epochs} - Train Loss: {np.mean(batch_losses):.4f}  Val Loss: {val_loss:.4f}  Val Acc: {acc:.3f}"
-        )
-
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     torch.save(model.state_dict(), model_save_path)
     print(f"✅ Modèle entraîné et sauvegardé à {model_save_path}")
