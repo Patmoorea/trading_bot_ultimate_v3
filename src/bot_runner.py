@@ -794,24 +794,25 @@ class TradingBotM4:
                 self.logger.warning(f"Erreur IA analyse_signals: {e}")
 
         sentiment_score = 0
+        pair_key = symbol.replace("/", "").upper()
         if getattr(self, "news_enabled", False):
             if hasattr(self, "market_data"):
                 if (
-                    symbol in self.market_data
-                    and "sentiment" in self.market_data[symbol]
+                    pair_key in self.market_data
+                    and "sentiment" in self.market_data[pair_key]
                 ):
-                    sentiment_score = self.market_data[symbol]["sentiment"]
+                    sentiment_score = self.market_data[pair_key]["sentiment"]
         log_dashboard(
             f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
         )
 
         arbitrage_score = 0
 
-        # Amplifier les scores pour avoir des décisions plus marquées
+         # Amplifier les scores pour avoir des décisions plus marquées
         total_score = (
-            0.4 * tech_score * 2.0  # Amplifier le score technique
-            + 0.3 * ai_score * 1.5   # Amplifier légèrement l'IA
-            + 0.25 * sentiment_score * 3.0  # Amplifier fortement le sentiment
+            0.4 * tech_score * 1.2      # Amplification réduite
+            + 0.3 * ai_score * 1.0      # Pas d'amplification
+            + 0.3 * sentiment_score * 1.5   # Amplification réduite + poids augmenté
             + 0.05 * arbitrage_score
         )
 
@@ -824,9 +825,9 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             },
         }
-        if total_score > 0.3:
+        if total_score > 0.2:          # Seuil abaissé
             decision["action"] = "buy"
-        elif total_score < -0.3:
+        elif total_score < -0.2:       # Seuil abaissé
             decision["action"] = "sell"
 
         # Log détaillé pour debug
@@ -836,7 +837,10 @@ class TradingBotM4:
             f"Total: {total_score:.3f} | Action: {decision['action'].upper()} | "
             f"Confidence: {decision['confidence']:.3f}"
         )
-
+        log_dashboard(
+            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
+        )
+        print(f"### SENTIMENT CHECK {symbol} = {sentiment_score}")
         return decision
 
     def get_binance_real_balance(self, asset="USDC"):
@@ -1501,38 +1505,27 @@ class TradingBotM4:
 
             await asyncio.sleep(self.news_update_interval)
 
+
     async def _update_sentiment_data(self, sentiment_scores):
         """
         Met à jour les données de marché avec le sentiment :
-        - Applique le score spécifique à chaque symbole si trouvé dans sentiment_scores.
-        - Sinon, applique le score global à chaque paire qui n'a pas de score spécifique ou dont le score est 0.
+        - Applique le score spécifique à chaque symbole sur toutes les paires concernées (BTC, ETH, etc.)
+        - Applique le score global sinon.
+        - Enregistre tout dans shared_data.json pour usage persistant.
         """
-        # 1. Applique le score spécifique si présent dans sentiment_scores
+        # 1. Applique le score spécifique à chaque symbole sur toutes les paires concernées
         for item in sentiment_scores:
-            symbol = item.get("symbol", "")
+            symbol = item.get("symbol", "").upper()
             score = item.get("sentiment", 0)
-            if symbol and symbol in self.market_data:
-                # Mise à jour des données de marché avec le sentiment spécifique
-                self.market_data[symbol]["sentiment"] = score
-                self.market_data[symbol]["sentiment_timestamp"] = time.time()
-                # Ajustement des signaux en fonction du sentiment
-                if "signals" in self.market_data[symbol]:
-                    signals = self.market_data[symbol]["signals"]
-                    for signal_type in signals:
-                        time_factor = 1.0
-                        if "sentiment_timestamp" in self.market_data[symbol]:
-                            elapsed_time = (
-                                time.time()
-                                - self.market_data[symbol]["sentiment_timestamp"]
-                            )
-                            time_factor = max(0.2, 1.0 - (elapsed_time / (3600 * 12)))
-                        sentiment_weight = self.news_weight * (1 + abs(score))
-                        if abs(score) > 0.7:
-                            sentiment_weight *= 1.5
-                        sentiment_adjustment = score * sentiment_weight * time_factor
-                        signals[signal_type] += sentiment_adjustment
+            if not symbol:
+                continue
+            for key in self.market_data:
+                if symbol in key.upper():
+                    self.market_data[key]["sentiment"] = score
+                    self.market_data[key]["sentiment_timestamp"] = time.time()
+                    print(f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}")
 
-        # 2. Applique le sentiment global aux paires sans score spécifique ou à 0
+        # 2. Récupère la valeur globale du sentiment depuis le fichier partagé
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
@@ -1541,23 +1534,45 @@ class TradingBotM4:
                 global_sentiment = news_sentiment.get("overall_sentiment", 0)
             else:
                 global_sentiment = 0
-        except Exception:
+        except Exception as e:
+            print(f"[DEBUG ERROR] Could not read global sentiment from file: {e}")
             global_sentiment = 0
 
+        print(f"[DEBUG SENTIMENT GLOBAL FINAL] avg_sentiment={global_sentiment}")
+
+        # 3. Applique le score global aux paires sans score spécifique ou à 0
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
-            # Assurer que la clé existe dans market_data
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
-            
-            # Si pas de score spécifique ou à zéro, on applique le global
+
+            # NE PAS écraser un score ≠ 0
             if (
                 "sentiment" not in self.market_data[pair_key]
                 or self.market_data[pair_key]["sentiment"] == 0
             ):
                 self.market_data[pair_key]["sentiment"] = global_sentiment
                 self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                print(f"[DEBUG PROPAG SENTIMENT] {pair_key} <- {global_sentiment}")
+                print(f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}")
+
+        # 4. Sauvegarde tous les sentiments dans shared_data.json
+        symbol_sentiments = {
+            key: data.get("sentiment", 0) for key, data in self.market_data.items()
+        }
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            shared_data = {}
+        shared_data["last_sentiment_update"] = time.time()
+        shared_data["sentiment_by_symbol"] = symbol_sentiments
+        # On ne touche pas à shared_data["sentiment"]["overall_sentiment"] ici pour éviter d'écraser le calcul initial !
+        try:
+            with open(self.data_file, "w") as f:
+                json.dump(shared_data, f, indent=2)
+            print("[SENTIMENT SAVE] shared_data.json mis à jour avec les sentiments")
+        except Exception as e:
+            print(f"[SENTIMENT SAVE ERROR] {e}")
 
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         headlines = []
@@ -1567,11 +1582,17 @@ class TradingBotM4:
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(item["title"])
-        avg_sentiment = (
-            float(np.mean([item.get("sentiment", 0) for item in sentiment_scores]))
-            if sentiment_scores
-            else 0
-        )
+
+        # --- PATCH: UTILISE LE SCORE GLOBAL CALCULE PAR L'ANALYSEUR ---
+        sentiment_global = 0
+        try:
+            # Utilise la méthode de l'analyseur si dispo
+            summary = self.news_analyzer.get_sentiment_summary()
+            if isinstance(summary, dict):
+                sentiment_global = summary.get("sentiment_global", 0)
+        except Exception:
+            sentiment_global = 0
+
         impact_score = (
             float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores]))
             if sentiment_scores
@@ -1580,13 +1601,13 @@ class TradingBotM4:
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
         print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
         print(
-            f"[DEBUG SENTIMENT GLOBAL] avg_sentiment={avg_sentiment} impact={impact_score} major_events={major_events}"
+            f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
         )
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
             "latest_news": headlines,
-            "overall_sentiment": avg_sentiment,
+            "overall_sentiment": sentiment_global,   # PATCH: c'est ici qu'on change !
             "impact_score": impact_score,
             "major_events": major_events,
         }
@@ -2908,7 +2929,10 @@ async def run_clean_bot():
                         bot.train_cnn_lstm_on_all_live()
 
                     # === Fin entraînement IA auto ===
-
+                    bot.train_cnn_lstm_on_all_live()
+                    print(
+                            "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
+                        )
                     # Calcul de la durée du cycle et affichage
                     duration = (datetime.utcnow() - start).total_seconds()
                     print(f"✅ Cycle terminé en {duration:.1f}s")

@@ -54,8 +54,8 @@ class DeepLearningModel:
             
             # Améliorer la normalisation pour avoir des prédictions plus marquées
             raw_pred = prediction.item()
-            # Transformer sigmoid [0,1] vers [-1,1] avec amplification
-            normalized_pred = (raw_pred - 0.5) * 4  # Amplifier par 4
+            # Transformer sigmoid [0,1] vers [-1,1] avec amplification réduite
+            normalized_pred = (raw_pred - 0.5) * 2  # Amplification réduite de 4 à 2
             return np.clip(normalized_pred, -1, 1)
             
         except Exception as e:

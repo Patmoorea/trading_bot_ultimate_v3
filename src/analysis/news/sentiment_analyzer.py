@@ -306,13 +306,16 @@ class NewsSentimentAnalyzer:
             ][-200:]
 
             # 5. Sauvegarde avec les scores calculés
+            # Ajoute le score global dans la sauvegarde !
+            summary = self.get_sentiment_summary()
             await self._save_state(
                 {
                     "mean_sentiment": mean_sentiment,
                     "std_sentiment": std_sentiment,
-                    "analyzed_news": analyzed_news[
-                        :50
-                    ],  # Garde seulement un échantillon
+                    "analyzed_news": analyzed_news[:50],
+                    "sentiment_global": summary.get("sentiment_global", 0.0),
+                    "top_symbols": summary.get("top_symbols", []),
+                    "top_news": summary.get("top_news", []),
                 }
             )
 
@@ -333,31 +336,61 @@ class NewsSentimentAnalyzer:
             symbol_key = symbol.replace("/", "").upper()
             underlying = symbol_key.replace("USDT", "").replace("USD", "")
             print(f"[DEBUG INIT] symbol_key='{symbol_key}' underlying='{underlying}'")
+            
+            # Mapping étendu pour améliorer les correspondances
+            symbol_variants = {
+                "BTCUSDT": ["BTC", "BITCOIN", "bitcoin"],
+                "ETHUSDT": ["ETH", "ETHEREUM", "ethereum", "ether"],
+                "ADAUSDT": ["ADA", "CARDANO", "cardano"],
+                "SOLUSDT": ["SOL", "SOLANA", "solana"],
+                "BNBUSDT": ["BNB", "BINANCE", "binance"],
+                "XRPUSDT": ["XRP", "RIPPLE", "ripple"],
+                "DOGEUSDT": ["DOGE", "DOGECOIN", "dogecoin"],
+                "AVAXUSDT": ["AVAX", "AVALANCHE", "avalanche"],
+                "DOTUSDT": ["DOT", "POLKADOT", "polkadot"],
+                "MATICUSDT": ["MATIC", "POLYGON", "polygon"]
+            }
+            
+            # Obtenir toutes les variantes possibles pour ce symbole
+            search_terms = symbol_variants.get(symbol_key, [underlying])
+            search_terms.extend([symbol_key, underlying])
+            search_terms = list(set(search_terms))  # Supprimer les doublons
+            
+            print(f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}")
+            
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
             matched = False
 
             print(
-                f"[DEBUG SENTIMENT] Recherche des news pour {symbol_key} ou {underlying}... Buffer size: {len(self.news_buffer)}"
+                f"[DEBUG SENTIMENT] Recherche des news pour {search_terms}... Buffer size: {len(self.news_buffer)}"
             )
 
             for news in self.news_buffer:
                 news_symbols = news.get("symbols", [])
+                title = news.get("title", "").lower()
+                text = news.get("text", "").lower()
+                content = f"{title} {text}"
+                
                 # Debug: show what symbols are in this news item
                 if news_symbols:
                     print(
                         f"[DEBUG NEWS] Title: {news.get('title', '')[:60]} | Symbols: {news_symbols}"
                     )
 
-                match_symbol = any(
-                    s.upper().strip() == symbol_key for s in news_symbols
+                # Vérification par symboles extraits
+                match_extracted = any(
+                    s.upper().strip() in [term.upper() for term in search_terms]
+                    for s in news_symbols
                 )
-                match_underlying = any(
-                    s.upper().strip() == underlying for s in news_symbols
+                
+                # Vérification par contenu textuel (fallback)
+                match_content = any(
+                    term.lower() in content for term in search_terms
                 )
 
-                if match_symbol or match_underlying:
+                if match_extracted or match_content:
                     matched = True
                     hours_old = (
                         current_time - news.get("timestamp", current_time)
@@ -365,15 +398,17 @@ class NewsSentimentAnalyzer:
                     decay = 0.5 ** (hours_old / 24)
                     sentiment = news.get("sentiment", 0)
                     impact = news.get("impact_score", 1) or 1
+                    
+                    match_type = "extracted" if match_extracted else "content"
                     print(
-                        f"[DEBUG MATCH] Titre: {news.get('title', '')[:60]} | Symbols: {news_symbols} | sentiment={sentiment:.4f} | impact={impact:.2f} | decay={decay:.2f}"
+                        f"[DEBUG MATCH] ({match_type}) Titre: {news.get('title', '')[:60]} | Symbols: {news_symbols} | sentiment={sentiment:.4f} | impact={impact:.2f} | decay={decay:.2f}"
                     )
                     total += sentiment * impact * decay
                     total_weight += impact * decay
 
             if not matched:
                 print(
-                    f"[DEBUG SENTIMENT] Aucun match trouvé pour {symbol_key} ni {underlying}"
+                    f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}"
                 )
                 # Show a few examples of what symbols are available
                 available_symbols = set()
@@ -385,7 +420,7 @@ class NewsSentimentAnalyzer:
 
             score = total / max(total_weight, 1e-6) if total_weight > 0 else 0.0
             print(
-                f"[DEBUG SENTIMENT] symbol={symbol_key}/{underlying} | sentiment_score={score:.4f} | total={total:.4f} | total_weight={total_weight:.4f}"
+                f"[DEBUG SENTIMENT] symbol={symbol_key} | sentiment_score={score:.4f} | total={total:.4f} | total_weight={total_weight:.4f} | matched={matched}"
             )
             return score
 
