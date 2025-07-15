@@ -59797,3 +59797,983 @@
 2025-07-15T23:06:20.039032 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
 2025-07-15T23:06:20.039054 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
 2025-07-15T23:06:20.039075 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:02.266494 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:07:02.272702 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:07:02.272840 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:07:12.378216 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.381888 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.383836 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.383922 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.297 | AI: 0.036 | Sentiment: 0.000 | Total: 0.154 | Action: NEUTRAL | Confidence: 0.154
+2025-07-15T23:07:12.383983 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.390527 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.390651 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.391649 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.391700 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:07:12.391734 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.396113 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.396204 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.397243 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.397290 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.397328 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.401654 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.401725 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.402545 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.402744 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.402782 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.407009 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.407179 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.408449 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.408531 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.408570 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.412639 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.412749 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:07:12.413741 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.413790 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.413827 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.423306 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.423452 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.424424 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.424474 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.639 | AI: 0.036 | Sentiment: 0.000 | Total: 0.318 | Action: BUY | Confidence: 0.318
+2025-07-15T23:07:12.424508 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.429122 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.429238 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.430177 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.430223 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:07:12.430255 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.433815 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.433875 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.434535 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.434571 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.434600 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.437843 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.437905 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.439534 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.439673 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.439725 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.443849 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.443976 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.445030 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.445078 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.445111 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.448314 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:07:12.448380 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:07:12.449092 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.449128 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:07:12.449158 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:07:12.449800 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.15 | Tech: 0.30 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449833 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449861 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449888 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449915 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449941 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.449969 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.32 | Tech: 0.64 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.450008 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.450034 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.450060 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.450085 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:12.450109 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:07:55.477905 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:07:55.486637 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:07:55.486723 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:08:05.754794 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.758699 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.760666 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.760756 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.478 | AI: 0.036 | Sentiment: 0.000 | Total: 0.240 | Action: BUY | Confidence: 0.240
+2025-07-15T23:08:05.760816 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.767931 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.768071 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.769132 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.769189 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:08:05.769233 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.774116 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.774198 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.775049 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.775096 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.775134 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.779130 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.779201 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.780007 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.780049 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.780085 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.783717 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.783787 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.784549 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.784589 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.784626 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.787957 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.788024 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:05.788724 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.788767 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.788807 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.796178 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.796261 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.796943 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.796983 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.642 | AI: 0.036 | Sentiment: 0.000 | Total: 0.319 | Action: BUY | Confidence: 0.319
+2025-07-15T23:08:05.797017 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.800683 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.800752 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.801399 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.801437 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:08:05.801469 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.804761 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.804827 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.805492 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.805526 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.805557 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.808757 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.808823 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.809464 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.809499 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.809530 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.812276 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.812333 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.812920 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.812954 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.812983 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.815619 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:05.815671 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:05.816245 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.816277 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:05.816305 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:05.816454 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.24 | Tech: 0.48 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816486 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816510 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816534 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816557 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816579 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816602 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.32 | Tech: 0.64 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816625 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816647 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816669 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816691 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:05.816713 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:26.828816 | [NEWS] Score sentiment global: -0.22 | Impact: 0.50 | Événements: Legitimate Privacy Tool or Dirty Money ‘Laundromat’? Lawyers Debate Role of Tornado Cash on Day 1 of Roman Storm Trial; Gaming Studio Snail Explores Developing U.S. Dollar Stablecoin; Early Bitcoiner Adam Back Nears $3.5B BTC Deal With Brandon Lutnick-Led Cantor SPAC: FT
+2025-07-15T23:08:48.051840 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:08:48.058469 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:08:48.058619 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:08:57.888295 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.894739 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.899156 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.899590 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.041 | AI: 0.036 | Sentiment: 0.000 | Total: 0.030 | Action: NEUTRAL | Confidence: 0.030
+2025-07-15T23:08:57.899864 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.911412 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.911736 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.913932 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.914009 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:08:57.914068 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.923030 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.923256 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.926017 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.926115 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.926170 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.932028 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.932199 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.933688 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.933798 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.933911 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.941070 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.941186 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.942441 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.942498 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.942543 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.947225 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.947329 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:08:57.948344 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.948394 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.948435 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.957904 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.958029 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.958975 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.959019 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.637 | AI: 0.036 | Sentiment: 0.000 | Total: 0.317 | Action: BUY | Confidence: 0.317
+2025-07-15T23:08:57.959052 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.963583 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.963651 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.964405 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.964442 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:08:57.964472 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.967874 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.967955 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.968700 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.968736 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.968766 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.972167 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.972226 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.972867 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.972899 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.972928 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.975627 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.975678 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.976228 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.976258 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.976285 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.978984 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:08:57.979033 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:08:57.979611 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.979642 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:08:57.979669 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:08:57.979704 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.03 | Tech: 0.04 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979731 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979758 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979784 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979810 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979835 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979860 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.32 | Tech: 0.64 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979885 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979911 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979936 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979961 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:08:57.979986 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:39.770397 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:09:39.781668 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:09:39.781848 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:09:50.672072 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.676659 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.678797 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.678912 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.277 | AI: 0.036 | Sentiment: 0.000 | Total: 0.144 | Action: NEUTRAL | Confidence: 0.144
+2025-07-15T23:09:50.678992 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.688254 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.688430 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.689807 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.689874 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:09:50.689927 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.695769 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.695864 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.696914 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.696972 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.697021 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.702967 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.703059 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.703931 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.703977 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.704018 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.708060 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.708125 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.708892 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.708932 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.709147 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.712756 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.712823 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:09:50.713544 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.713582 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.713616 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.720913 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.721000 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.721687 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.721724 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.632 | AI: 0.036 | Sentiment: 0.000 | Total: 0.314 | Action: BUY | Confidence: 0.314
+2025-07-15T23:09:50.721756 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.725928 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.726005 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.726686 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.726722 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:09:50.726753 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.729645 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.729695 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.730234 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.730267 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.730295 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.733370 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.733426 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.734018 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.734050 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.734078 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.736594 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.736646 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.737209 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.737240 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.737268 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.739935 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:09:50.739986 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:09:50.740565 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.740597 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:09:50.740625 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:09:50.740662 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.14 | Tech: 0.28 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740691 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740718 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740748 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740771 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740794 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740816 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.31 | Tech: 0.63 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740838 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740860 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740881 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740902 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:09:50.740924 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:33.128583 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:10:33.139322 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:10:33.139492 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:10:45.794546 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.799354 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.803835 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.803963 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.164 | AI: 0.036 | Sentiment: 0.000 | Total: -0.068 | Action: NEUTRAL | Confidence: 0.068
+2025-07-15T23:10:45.804015 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.813663 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.813763 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.814708 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.814753 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:10:45.814787 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.819005 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.819064 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.819848 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.819882 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.819912 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.823620 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.823679 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.824353 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.824384 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.824412 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.827688 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.827746 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.828395 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.828427 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.828452 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.831383 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.831431 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:10:45.832061 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.832093 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.832120 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.838495 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.838563 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.839163 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.839197 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.682 | AI: 0.036 | Sentiment: 0.000 | Total: 0.338 | Action: BUY | Confidence: 0.338
+2025-07-15T23:10:45.839223 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.842440 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.842494 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.843043 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.843074 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:10:45.843100 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.845614 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.845665 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.846230 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.846265 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.846290 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.849037 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.849091 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.849690 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.849719 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.849745 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.852301 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.852354 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.852954 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.852985 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.853011 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.855376 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:10:45.855426 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:10:45.855998 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.856031 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:10:45.856057 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:10:45.856102 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.07 | Tech: -0.16 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856128 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856154 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856179 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856204 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856228 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856253 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.34 | Tech: 0.68 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856278 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856302 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856327 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856351 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:10:45.856375 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:28.465499 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:11:28.472962 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:11:28.473154 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:11:39.670681 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.679345 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.687065 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.687428 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.077 | AI: 0.036 | Sentiment: 0.000 | Total: -0.026 | Action: NEUTRAL | Confidence: 0.026
+2025-07-15T23:11:39.687601 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.695465 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.695641 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.696795 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.696854 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:11:39.696891 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.702689 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.702847 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.704057 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.704125 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.704166 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.708383 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.708508 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.710033 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.710091 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.710127 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.714298 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.714450 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.715507 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.715552 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.715583 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.719246 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.719336 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:11:39.720204 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.720242 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.720271 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.728919 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.729075 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.730029 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.730078 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.681 | AI: 0.036 | Sentiment: 0.000 | Total: 0.338 | Action: BUY | Confidence: 0.338
+2025-07-15T23:11:39.730112 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.734388 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.734519 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.735474 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.735519 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:11:39.735553 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.739360 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.739440 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.740369 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.740437 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.740476 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.744041 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.744143 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.744979 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.745026 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.745060 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.748263 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.748336 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.749067 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.749112 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.749145 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.752648 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:11:39.752734 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:11:39.753460 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.753498 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:11:39.753529 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:11:39.753782 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.03 | Tech: -0.08 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753817 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753848 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753878 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753907 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753935 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753964 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.34 | Tech: 0.68 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.753992 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.754024 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.754047 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.754069 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:11:39.754092 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:22.537105 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:12:22.545895 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:12:22.546084 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:12:33.428713 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.433516 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.437052 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.437152 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.182 | AI: 0.036 | Sentiment: 0.000 | Total: -0.077 | Action: NEUTRAL | Confidence: 0.077
+2025-07-15T23:12:33.437205 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.444507 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.444669 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.445826 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.445881 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:12:33.445920 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.451781 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.451873 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.452947 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.452995 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.453035 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.457606 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.457695 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.458691 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.458736 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.458777 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.463269 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.463339 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.464213 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.464251 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.464282 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.467881 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.467954 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:12:33.468734 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.468775 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.468806 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.477473 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.477568 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.478358 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.478438 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.661 | AI: 0.036 | Sentiment: 0.000 | Total: 0.328 | Action: BUY | Confidence: 0.328
+2025-07-15T23:12:33.478471 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.482344 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.482409 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.483061 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.483096 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:12:33.483126 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.486518 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.486571 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.487193 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.487225 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.487253 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.490145 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.490196 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.490777 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.490807 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.490835 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.493650 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.493700 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.494276 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.494305 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.494332 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.496782 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:12:33.496831 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:12:33.497378 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.497408 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:12:33.497434 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:12:33.497627 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.08 | Tech: -0.18 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497655 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497681 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497707 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497732 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497758 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497784 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.33 | Tech: 0.66 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497809 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497834 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497859 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497884 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:12:33.497907 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:17.529767 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0009
+2025-07-15T23:13:17.539422 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:13:17.539562 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:13:29.011907 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.017198 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.020877 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.020986 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.430 | AI: 0.036 | Sentiment: 0.000 | Total: -0.196 | Action: NEUTRAL | Confidence: 0.196
+2025-07-15T23:13:29.021058 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.030184 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.030306 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.031570 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.031649 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.557 | AI: 0.036 | Sentiment: 0.000 | Total: 0.278 | Action: BUY | Confidence: 0.278
+2025-07-15T23:13:29.031705 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.037571 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.037663 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.038652 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.038705 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.038748 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.043644 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.043729 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.044640 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.044691 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.044736 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.048868 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.048936 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.049709 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.049747 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.049780 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.053035 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.053094 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:13:29.053786 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.053821 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.053852 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.061606 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.061687 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.062376 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.062412 | [ANALYZE_SIGNALS] ETHUSDT | Tech: -0.036 | AI: 0.036 | Sentiment: 0.000 | Total: -0.007 | Action: NEUTRAL | Confidence: 0.007
+2025-07-15T23:13:29.062444 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.066135 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.066233 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.066842 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.066878 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:13:29.066910 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.070181 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.070239 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.070812 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.070849 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.070878 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.073504 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.073558 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.074131 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.074165 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.074199 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.076940 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.076991 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.077554 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.077588 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.077616 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.080023 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:13:29.080073 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:13:29.080621 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.080660 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:13:29.080688 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:13:29.080872 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.20 | Tech: -0.43 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.080902 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.28 | Tech: 0.56 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.080931 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.080958 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.080986 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081013 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081041 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: -0.04 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081070 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081097 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081124 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081151 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:29.081182 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:13:43.432627 | [NEWS] Score sentiment global: -0.22 | Impact: 0.49 | Événements: Legitimate Privacy Tool or Dirty Money ‘Laundromat’? Lawyers Debate Role of Tornado Cash on Day 1 of Roman Storm Trial; Gaming Studio Snail Explores Developing U.S. Dollar Stablecoin; Early Bitcoiner Adam Back Nears $3.5B BTC Deal With Brandon Lutnick-Led Cantor SPAC: FT
+2025-07-15T23:14:11.913935 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:14:11.919938 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:14:11.920034 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:14:24.858719 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.863355 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.867072 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.867177 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.299 | AI: 0.036 | Sentiment: 0.000 | Total: -0.132 | Action: NEUTRAL | Confidence: 0.132
+2025-07-15T23:14:24.867239 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.874844 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.874952 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.876155 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.876213 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:14:24.876256 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.881886 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.881958 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.882864 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.882908 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.882946 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.887438 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.887510 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.888325 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.888362 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.888392 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.892012 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.892071 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.892790 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.892823 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.892850 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.896294 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.896348 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:14:24.897066 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.897102 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.897139 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.904538 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.904617 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.905303 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.905338 | [ANALYZE_SIGNALS] ETHUSDT | Tech: -0.123 | AI: 0.036 | Sentiment: 0.000 | Total: -0.048 | Action: NEUTRAL | Confidence: 0.048
+2025-07-15T23:14:24.905364 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.909011 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.909070 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.909690 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.909723 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:14:24.909752 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.912656 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.912713 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.913249 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.913285 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.913316 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.915988 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.916044 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.916620 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.916650 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.916679 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.919149 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.919196 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.919785 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.919816 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.919842 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.922318 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:14:24.922366 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:14:24.922945 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.922976 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:14:24.923002 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:14:24.923060 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.13 | Tech: -0.30 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923088 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923115 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923146 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923172 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923199 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923225 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.05 | Tech: -0.12 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923251 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923277 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923309 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923336 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:14:24.923361 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:06.589272 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:15:06.601141 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:15:06.601243 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:15:17.584463 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.588391 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.590794 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.590910 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.253 | AI: 0.036 | Sentiment: 0.000 | Total: -0.111 | Action: NEUTRAL | Confidence: 0.111
+2025-07-15T23:15:17.590967 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.603353 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.603536 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.605080 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.605162 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:15:17.605212 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.610241 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.610316 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.611267 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.611312 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.611349 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.615430 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.615503 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.616331 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.616371 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.616408 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.619807 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.619869 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.620600 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.620639 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.620672 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.624173 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.624231 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:15:17.624929 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.624965 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.624996 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.632283 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.632362 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.633008 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.633044 | [ANALYZE_SIGNALS] ETHUSDT | Tech: -0.147 | AI: 0.036 | Sentiment: 0.000 | Total: -0.060 | Action: NEUTRAL | Confidence: 0.060
+2025-07-15T23:15:17.633073 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.636861 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.636919 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.637545 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.637578 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:15:17.637639 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.640620 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.640674 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.641252 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.641286 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.641316 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.644311 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.644373 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.644927 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.644960 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.644989 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.647537 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.647588 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.648115 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.648148 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.648177 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.650854 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:15:17.650909 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:15:17.651490 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.651524 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:15:17.651553 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:15:17.651590 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.11 | Tech: -0.25 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651621 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651652 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651682 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651710 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651739 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651769 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.06 | Tech: -0.15 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651797 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651824 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651851 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651881 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:17.651909 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:15:59.937318 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:15:59.949354 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:15:59.949526 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:16:11.026589 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.031724 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.035369 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.035515 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.362 | AI: 0.036 | Sentiment: 0.000 | Total: -0.163 | Action: NEUTRAL | Confidence: 0.163
+2025-07-15T23:16:11.035597 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.044813 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.044965 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.046358 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.046420 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.708 | AI: 0.036 | Sentiment: 0.000 | Total: 0.351 | Action: BUY | Confidence: 0.351
+2025-07-15T23:16:11.046474 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.052353 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.052444 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.053518 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.053569 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.053612 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.059072 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.059153 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.060040 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.060081 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.060117 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.064373 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.064437 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.065210 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.065249 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.065282 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.068831 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.068890 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:16:11.069599 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.069630 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.069657 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.077019 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.077105 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.077801 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.077833 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:16:11.077858 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.081779 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.081842 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.082491 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.082520 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:16:11.082544 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.085433 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.085476 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.086029 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.086055 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.086077 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.088984 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.089032 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.089604 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.089630 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.089652 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.092116 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.092160 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.092721 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.092747 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.092770 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.095284 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:16:11.095329 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:16:11.095909 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.095936 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:16:11.095959 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:16:11.095991 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.16 | Tech: -0.36 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096014 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.35 | Tech: 0.71 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096037 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096060 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096082 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096104 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096125 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096147 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096168 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096189 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096210 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:11.096231 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:16:53.417885 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:16:53.429990 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:16:53.430185 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:17:04.732341 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.738599 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.740390 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.740464 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.261 | AI: 0.036 | Sentiment: 0.000 | Total: -0.115 | Action: NEUTRAL | Confidence: 0.115
+2025-07-15T23:17:04.740896 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.746097 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.746198 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.747121 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.747163 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:17:04.747194 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.750741 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.750888 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.751767 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.751809 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.751838 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.755036 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.755115 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.756562 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.756612 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.756644 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.760553 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.760627 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.761407 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.761444 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.761471 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.764420 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.764485 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:04.765152 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.765188 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.765218 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.771868 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.772107 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.773035 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.773082 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.027 | AI: 0.036 | Sentiment: 0.000 | Total: 0.024 | Action: NEUTRAL | Confidence: 0.024
+2025-07-15T23:17:04.773111 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.777223 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.777305 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.778073 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.778108 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.067 | AI: 0.036 | Sentiment: 0.000 | Total: 0.043 | Action: NEUTRAL | Confidence: 0.043
+2025-07-15T23:17:04.778137 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.780969 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.781021 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.781622 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.781657 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.781684 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.784802 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.784876 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.785622 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.785660 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.785691 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.788877 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.788965 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.789664 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.789716 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.789743 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.792916 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:04.792991 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:04.793805 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.793844 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:04.793873 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:04.793911 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.11 | Tech: -0.26 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.793938 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.793965 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.793993 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794020 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794047 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794074 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.02 | Tech: 0.03 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794100 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: 0.07 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794127 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794155 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794183 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:04.794210 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:47.915853 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:17:47.921804 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:17:47.921926 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-15T23:17:58.784528 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.788368 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.793584 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.793733 | [ANALYZE_SIGNALS] BTCUSDT | Tech: -0.380 | AI: 0.036 | Sentiment: 0.000 | Total: -0.171 | Action: NEUTRAL | Confidence: 0.171
+2025-07-15T23:17:58.793799 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.804187 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.804415 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.806100 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.806171 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:17:58.806213 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.810976 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.811045 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.811865 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.811904 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.811938 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.815566 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.815626 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.816325 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.816361 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.816389 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.819678 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.819733 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.820374 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.820408 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.820435 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.823468 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.823522 | [AI] Prédiction IA sollicitée pour BTCUSDT
+2025-07-15T23:17:58.824136 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.824166 | [ANALYZE_SIGNALS] BTCUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.824191 | [DEBUG SENTIMENT] symbol=BTCUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.830807 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.830881 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.831513 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.831542 | [ANALYZE_SIGNALS] ETHUSDT | Tech: -0.107 | AI: 0.036 | Sentiment: 0.000 | Total: -0.040 | Action: NEUTRAL | Confidence: 0.040
+2025-07-15T23:17:58.831566 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.834872 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.834927 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.835521 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.835550 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.600 | AI: 0.036 | Sentiment: 0.000 | Total: 0.299 | Action: BUY | Confidence: 0.299
+2025-07-15T23:17:58.835573 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.838507 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.838558 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.839123 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.839157 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.839182 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.841881 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.841928 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.842489 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.842522 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.842548 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.845398 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.845477 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.846281 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.846323 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.846351 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.848845 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-15T23:17:58.848899 | [AI] Prédiction IA sollicitée pour ETHUSDT
+2025-07-15T23:17:58.849530 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.849566 | [ANALYZE_SIGNALS] ETHUSDT | Tech: 0.000 | AI: 0.036 | Sentiment: 0.000 | Total: 0.011 | Action: NEUTRAL | Confidence: 0.011
+2025-07-15T23:17:58.849590 | [DEBUG SENTIMENT] symbol=ETHUSDT | sentiment_score=0 | news_enabled=True
+2025-07-15T23:17:58.849893 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.17 | Tech: -0.38 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.849924 | [TRADE DECISION] BTC/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.849949 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.849972 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.849994 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850016 | [TRADE DECISION] BTC/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850039 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.04 | Tech: -0.11 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850061 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.60 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850084 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850105 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850127 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:17:58.850148 | [TRADE DECISION] ETH/USDT | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.00 | IA: 0.04 | Sentiment: 0.00
+2025-07-15T23:18:41.005417 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0883 | Tendance: -0.0008
+2025-07-15T23:18:41.013512 | 🎯 Stratégie active: Range/Scalping
+2025-07-15T23:18:41.013649 | [ARBITRAGE] Démarrage détection arbitrage…

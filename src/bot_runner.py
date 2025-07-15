@@ -1042,9 +1042,20 @@ class TradingBotM4:
             if not self.env:
                 raise ValueError("L'environnement de trading n'est pas initialisé")
 
+            # === PATCH: Chargement hyperparams AutoML s'ils existent ===
+            
+            hp_path = "config/best_hyperparams.json"
+            if os.path.exists(hp_path):
+                with open(hp_path, "r") as f:
+                    best_hp = json.load(f)
+                self.config["AI"].update(best_hp)
+                print(f"[AI] Hyperparams optimisés chargés depuis {hp_path}: {best_hp}")
+            else:
+                print("[AI] Pas d'hyperparams optimisés trouvés, utilisation des valeurs par défaut.")
+
             # Initialisation du modèle Deep Learning
             self.dl_model = DeepLearningModel()
-            self.dl_model.initialize()  # S'assurer que le modèle est initialisé
+            self.dl_model.initialize()  # S'assurer que le modèle est initialisé 
 
             # === PATCH : CHARGEMENT DES POIDS ENTRAÎNÉS ===
             weights_path = "src/models/cnn_lstm_model.pth"
