@@ -43,15 +43,22 @@ class DeepLearningModel:
             self.initialized = True
 
     def predict(self, features: Dict[str, np.ndarray]) -> float:
+        """
+        Prédit la sortie du modèle. 
+        ATTENTION: `features` doit toujours être un dictionnaire 
+        avec les clés 'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
+        """
         try:
+            if not isinstance(features, dict):
+                raise ValueError("Features must be a dict with keys: close, high, low, volume, rsi, macd, volatility")
             # S'assurer que le modèle est initialisé
             if not self.initialized:
                 self.initialize()
-                
+            
             x = self._prepare_features(features)
             with torch.no_grad():
                 prediction = self.model(x)
-            
+
             # Améliorer la normalisation pour avoir des prédictions plus marquées
             raw_pred = prediction.item()
             # Transformer sigmoid [0,1] vers [-1,1] avec amplification réduite

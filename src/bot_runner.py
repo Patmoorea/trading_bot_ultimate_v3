@@ -63,6 +63,7 @@ from src.ai.auto_strategy_generator import appliquer_config_strategy
 from src.ai.train_cnn_lstm import train_with_live_data
 from src.ai.deep_learning_model import features_to_array
 
+from collections import defaultdict
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -1231,7 +1232,6 @@ class TradingBotM4:
 
     def _update_performance_metrics(self, trade_result):
         """Met à jour les métriques de performance après un trade réel"""
-        # Chargement des données actuelles
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
@@ -1244,18 +1244,18 @@ class TradingBotM4:
             # Calcul du profit/perte
             filled_amount = float(trade_result["filled_amount"])
             avg_price = float(trade_result["avg_price"])
-            side = trade_result["side"]
+            side = trade_result["side"]  # <-- side est une string
 
-            if side() == "buy":
+            if side == "buy":
                 # Pour un achat, on ne sait pas encore si c'est gagnant
                 pass
-            elif side() == "sell":
+            elif side == "sell":
                 # Pour une vente, on peut calculer le profit par rapport au prix d'achat moyen
                 entry_price = trade_result.get("entry_price", 0)
                 if entry_price > 0:
                     profit_pct = (
                         (avg_price / entry_price - 1) * 100
-                        if side() == "sell"
+                        if side == "sell"
                         else (1 - avg_price / entry_price) * 100
                     )
                     profit_amount = filled_amount * avg_price * profit_pct / 100
@@ -1290,17 +1290,18 @@ class TradingBotM4:
             data["bot_status"]["performance"] = performance
             with open(self.data_file, "w") as f:
                 json.dump(data, f, indent=4)
-
         except Exception as e:
             self.logger.error(f"Error updating performance metrics: {e}")
 
     async def _prepare_features_for_ai(self, symbol):
-        """Prépare les features pour les modèles d'IA (adapté pour PPO et DL)"""
+        """
+        Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
+        ATTENTION: Retourne TOUJOURS un dict avec les clés
+        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility' (jamais un array !)
+        """
         try:
-            # === 1. Paramétrage du nombre de steps ===
-            N_STEPS = 63  # Mets ici la valeur voulue pour PPO : 504/8 = 63
+            N_STEPS = 63
 
-            # 2. Récupération des données OHLCV récentes
             ohlcv = self.market_data.get(symbol, {}).get("1h", {})
             if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
                 return None
@@ -1310,6 +1311,7 @@ class TradingBotM4:
             lows = np.array(ohlcv.get("low", []))
             volumes = np.array(ohlcv.get("volume", []))
 
+            # --- Vérification stricte sur la taille
             if (
                 len(closes) < N_STEPS
                 or len(highs) < N_STEPS
@@ -1318,7 +1320,12 @@ class TradingBotM4:
             ):
                 return None
 
-            # 3. Calcul des indicateurs techniques
+            closes = closes[-N_STEPS:]
+            highs = highs[-N_STEPS:]
+            lows = lows[-N_STEPS:]
+            volumes = volumes[-N_STEPS:]
+
+            # RSI (14)
             delta = np.diff(closes)
             gain = (delta > 0) * delta
             loss = (delta < 0) * -delta
@@ -1327,31 +1334,45 @@ class TradingBotM4:
             rs = avg_gain / avg_loss if avg_loss > 0 else 0
             rsi = 100 - (100 / (1 + rs))
 
+            # MACD: EMA12 - EMA26
             ema12 = np.mean(closes[-12:]) if len(closes) >= 12 else closes[-1]
             ema26 = np.mean(closes[-26:]) if len(closes) >= 26 else closes[-1]
             macd = ema12 - ema26
 
-            volatility = (
-                np.std(delta[-N_STEPS:]) / np.mean(closes[-N_STEPS:])
-                if len(delta) >= N_STEPS
-                else 0
-            )
-            avg_volume = (
-                np.mean(volumes[-N_STEPS:]) if len(volumes) >= N_STEPS else volumes[-1]
-            )
-            vol_ratio = volumes[-1] / avg_volume if avg_volume > 0 else 1
+            # Volatility: std des returns
+            if len(closes) >= N_STEPS:
+                returns = np.diff(np.log(closes))
+                volatility = float(np.std(returns[-14:])) if len(returns) >= 14 else 0
+            else:
+                volatility = 0
 
-            # 4. Construction du dict features (arrays shape (N_STEPS,) ou scalaires broadcast)
+            # Construction du dict features
             features = {
-                "close": closes[-N_STEPS:] / closes[-N_STEPS],
-                "high": highs[-N_STEPS:] / highs[-N_STEPS],
-                "low": lows[-N_STEPS:] / lows[-N_STEPS],
-                "volume": volumes[-N_STEPS:] / volumes[-N_STEPS],
-                "rsi": rsi / 100,
-                "macd": (macd + 100) / 200,
-                "volatility": min(1, volatility * 10),
-                "vol_ratio": min(1, vol_ratio / 3),
+                "close": closes / closes[0],    # Normalisation sur la première valeur de la séquence
+                "high": highs / highs[0] if highs[0] > 0 else highs,
+                "low": lows / lows[0] if lows[0] > 0 else lows,
+                "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
+                "rsi": float(rsi) / 100,
+                "macd": float(macd) / 100,      # Normalisation arbitraire, adapte si besoin
+                "volatility": float(volatility)
             }
+
+            # --- Sécurité : vérifie que toutes les clés sont là et de bon type ---
+            required_keys = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
+            for k in required_keys:
+                if k not in features:
+                    self.logger.error(f"[AI FEATURES] Clé manquante dans features : {k}")
+                    return None
+            # Vérifie les arrays
+            for k in ["close", "high", "low", "volume"]:
+                if not (isinstance(features[k], np.ndarray) and features[k].shape == (N_STEPS,)):
+                    self.logger.error(f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}")
+                    return None
+            # Vérifie les scalaires
+            for k in ["rsi", "macd", "volatility"]:
+                if not isinstance(features[k], (int, float, np.floating, np.integer)):
+                    self.logger.error(f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}")
+                    return None
 
             return features
 
@@ -1509,23 +1530,38 @@ class TradingBotM4:
     async def _update_sentiment_data(self, sentiment_scores):
         """
         Met à jour les données de marché avec le sentiment :
-        - Applique le score spécifique à chaque symbole sur toutes les paires concernées (BTC, ETH, etc.)
+        - Calcule la moyenne pondérée du sentiment par symbole sur toutes les news du cycle.
         - Applique le score global sinon.
         - Enregistre tout dans shared_data.json pour usage persistant.
         """
-        # 1. Applique le score spécifique à chaque symbole sur toutes les paires concernées
-        for item in sentiment_scores:
-            symbol = item.get("symbol", "").upper()
-            score = item.get("sentiment", 0)
-            if not symbol:
-                continue
-            for key in self.market_data:
-                if symbol in key.upper():
-                    self.market_data[key]["sentiment"] = score
-                    self.market_data[key]["sentiment_timestamp"] = time.time()
-                    print(f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}")
+        from collections import defaultdict
 
-        # 2. Récupère la valeur globale du sentiment depuis le fichier partagé
+        # 1. Agrégation pondérée des scores par symbole
+        symbol_sentiments = defaultdict(list)
+        for item in sentiment_scores:
+            symbols = item.get("symbols", [])
+            score = item.get("sentiment", 0)
+            impact = item.get("impact_score", 1)
+            if not symbols:
+                continue
+            for symbol in symbols:
+                symbol = symbol.upper()
+                symbol_sentiments[symbol].append((score, impact))
+
+        # 2. Applique la moyenne pondérée à chaque paire
+        for key in self.market_data:
+            # Extrait le ticker principal, ex: "BTCUSDT" -> "BTC", "ETHUSDT" -> "ETH"
+            ticker = key.replace("USDT", "").replace("USD", "")
+            values = symbol_sentiments.get(ticker, [])
+            if values:
+                total = sum(s * i for s, i in values)
+                total_weight = sum(i for _, i in values)
+                avg = total / total_weight if total_weight else 0
+                self.market_data[key]["sentiment"] = avg
+                self.market_data[key]["sentiment_timestamp"] = time.time()
+                print(f"[DEBUG AGG SENTIMENT] {key} <- {avg:.4f} via {len(values)} news (pondérée)")
+
+        # 3. Récupère la valeur globale du sentiment depuis le fichier partagé
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
@@ -1540,13 +1576,12 @@ class TradingBotM4:
 
         print(f"[DEBUG SENTIMENT GLOBAL FINAL] avg_sentiment={global_sentiment}")
 
-        # 3. Applique le score global aux paires sans score spécifique ou à 0
+        # 4. Applique le score global si aucune news spécifique
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
 
-            # NE PAS écraser un score ≠ 0
             if (
                 "sentiment" not in self.market_data[pair_key]
                 or self.market_data[pair_key]["sentiment"] == 0
@@ -1555,8 +1590,8 @@ class TradingBotM4:
                 self.market_data[pair_key]["sentiment_timestamp"] = time.time()
                 print(f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}")
 
-        # 4. Sauvegarde tous les sentiments dans shared_data.json
-        symbol_sentiments = {
+        # 5. Sauvegarde tous les sentiments dans shared_data.json
+        symbol_sentiments_out = {
             key: data.get("sentiment", 0) for key, data in self.market_data.items()
         }
         try:
@@ -1565,8 +1600,7 @@ class TradingBotM4:
         except Exception:
             shared_data = {}
         shared_data["last_sentiment_update"] = time.time()
-        shared_data["sentiment_by_symbol"] = symbol_sentiments
-        # On ne touche pas à shared_data["sentiment"]["overall_sentiment"] ici pour éviter d'écraser le calcul initial !
+        shared_data["sentiment_by_symbol"] = symbol_sentiments_out
         try:
             with open(self.data_file, "w") as f:
                 json.dump(shared_data, f, indent=2)
