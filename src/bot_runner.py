@@ -69,6 +69,32 @@ load_dotenv()
 
 LOG_FILE = "src/bot_logs.txt"
 
+def add_dl_features(df):
+    """
+    Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
+    Modifie le DataFrame en place et le retourne.
+    """
+    # RSI 14
+    if "rsi" not in df or df["rsi"].isnull().all():
+        try:
+            df["rsi"] = pta.rsi(df["close"], length=14)
+        except Exception:
+            df["rsi"] = np.nan
+    # MACD (on prend la colonne MACD)
+    if "macd" not in df or df["macd"].isnull().all():
+        try:
+            macd = pta.macd(df["close"])
+            df["macd"] = macd["MACD_12_26_9"] if "MACD_12_26_9" in macd else np.nan
+        except Exception:
+            df["macd"] = np.nan
+    # Volatility: rolling std des returns sur 14 périodes
+    if "volatility" not in df or df["volatility"].isnull().all():
+        try:
+            returns = np.log(df["close"]).diff()
+            df["volatility"] = returns.rolling(14).std()
+        except Exception:
+            df["volatility"] = np.nan
+    return df
 
 def log_dashboard(message):
     print(message)
@@ -2640,6 +2666,7 @@ class TradingBotM4:
         print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
         df_live = self.ws_collector.get_dataframe(pair_key, tf)
         if df_live is not None and not df_live.empty:
+            df_live = add_dl_features(df_live)  # <--- PATCH ICI
             print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
             train_with_live_data(df_live)
         else:
@@ -2662,6 +2689,7 @@ class TradingBotM4:
                 print(f"→ Entraînement IA sur {pair_key} / {tf}")
                 df_live = self.ws_collector.get_dataframe(pair_key, tf)
                 if df_live is not None and not df_live.empty:
+                    df_live = add_dl_features(df_live)  # <--- PATCH ICI
                     print(
                         f"  {len(df_live)} lignes live trouvées, entraînement en cours…"
                     )
@@ -3547,7 +3575,7 @@ if __name__ == "__main__":
     elif "train-cnn-lstm" in sys.argv:
         bot = TradingBotM4()
         # Modifie ici la paire/timeframe si besoin
-        bot.train_cnn_lstm_on_live(pair="BTCUSDT", tf="1h")
+        bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 
     else:

@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import numpy as np
@@ -10,15 +11,15 @@ THRESHOLD = 0.002
 
 
 def load_data_from_df(df):
-    for col in ["close", "high", "low", "volume", "rsi", "macd", "volatility"]:
-        if col in df:
-            df[col] = (df[col] - df[col].mean()) / (df[col].std() + 1e-8)
+    feature_cols = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
+    for col in feature_cols:
+        if col not in df:
+            print(f"Manque la colonne {col} dans le DataFrame, impossible d’entraîner !")
+            return None, None
+        df[col] = (df[col] - df[col].mean()) / (df[col].std() + 1e-8)
     X, y = [], []
     for i in range(len(df) - SEQ_LEN - FUTURE_SHIFT):
-        features = []
-        for col in ["close", "high", "low", "volume", "rsi", "macd", "volatility"]:
-            if col in df:
-                features.append(df[col].iloc[i : i + SEQ_LEN].values)
+        features = [df[col].iloc[i : i + SEQ_LEN].values for col in feature_cols]
         feat_arr = np.stack(features, axis=1)
         X.append(feat_arr)
         future_close = df["close"].iloc[i + SEQ_LEN + FUTURE_SHIFT - 1]
@@ -32,6 +33,19 @@ def load_data_from_df(df):
     y = np.array(y).reshape(-1, 1)
     return X, y
 
+def add_dl_features(df):
+    # RSI 14
+    if "rsi" not in df:
+        df["rsi"] = pta.rsi(df["close"], length=14)
+    # MACD (on prend la ligne MACD)
+    if "macd" not in df:
+        macd = pta.macd(df["close"])
+        df["macd"] = macd["MACD_12_26_9"] if "MACD_12_26_9" in macd else np.nan
+    # Volatility (écart-type des returns)
+    if "volatility" not in df:
+        returns = np.log(df["close"]).diff()
+        df["volatility"] = returns.rolling(14).std()
+    return df
 
 def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth"):
     X, y = load_data_from_df(df_live)
@@ -71,7 +85,6 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
         print(
             f"Epoch {epoch+1}/{n_epochs} - Train Loss: {np.mean(batch_losses):.4f}  Val Loss: {val_loss:.4f}  Val Acc: {acc:.3f}"
         )
-    import os
 
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     torch.save(model.state_dict(), model_save_path)
