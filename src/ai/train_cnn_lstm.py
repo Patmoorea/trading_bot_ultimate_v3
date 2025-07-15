@@ -9,7 +9,6 @@ SEQ_LEN = 20
 FUTURE_SHIFT = 10
 THRESHOLD = 0.002
 
-
 def load_data_from_df(df):
     feature_cols = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
     for col in feature_cols:
@@ -24,16 +23,18 @@ def load_data_from_df(df):
         X.append(feat_arr)
         future_close = df["close"].iloc[i + SEQ_LEN + FUTURE_SHIFT - 1]
         now_close = df["close"].iloc[i + SEQ_LEN - 1]
-        label = 1 if (future_close - now_close) / abs(now_close) > THRESHOLD else 0
+        label = 1.0 if (future_close - now_close) / abs(now_close) > THRESHOLD else 0.0  # force float!
         y.append(label)
     if not X or not y:
         print("Aucune donnée d'entraînement disponible")
         return None, None
     X = np.stack(X)
-    y = np.array(y).reshape(-1, 1)
+    y = np.array(y, dtype=np.float32).reshape(-1, 1)  # force float32!
+    print("DEBUG y min:", y.min(), "y max:", y.max(), "dtype:", y.dtype)
     return X, y
 
 def add_dl_features(df):
+    import pandas_ta as pta
     # RSI 14
     if "rsi" not in df:
         df["rsi"] = pta.rsi(df["close"], length=14)
