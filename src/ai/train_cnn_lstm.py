@@ -16,6 +16,9 @@ def load_data_from_df(df):
             print(f"Manque la colonne {col} dans le DataFrame, impossible d’entraîner !")
             return None, None
         df[col] = (df[col] - df[col].mean()) / (df[col].std() + 1e-8)
+        if df[col].isnull().any() or np.isinf(df[col]).any():
+            print(f"Colonne {col} contient nan ou inf après normalisation !")
+    df = df.dropna(subset=feature_cols)
     X, y = [], []
     for i in range(len(df) - SEQ_LEN - FUTURE_SHIFT):
         features = [df[col].iloc[i : i + SEQ_LEN].values for col in feature_cols]
@@ -23,13 +26,16 @@ def load_data_from_df(df):
         X.append(feat_arr)
         future_close = df["close"].iloc[i + SEQ_LEN + FUTURE_SHIFT - 1]
         now_close = df["close"].iloc[i + SEQ_LEN - 1]
-        label = 1.0 if (future_close - now_close) / abs(now_close) > THRESHOLD else 0.0  # force float!
+        label = 1.0 if (future_close - now_close) / abs(now_close) > THRESHOLD else 0.0
         y.append(label)
     if not X or not y:
         print("Aucune donnée d'entraînement disponible")
         return None, None
     X = np.stack(X)
-    y = np.array(y, dtype=np.float32).reshape(-1, 1)  # force float32!
+    X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
+    y = np.array(y, dtype=np.float32).reshape(-1, 1)
+    print("DEBUG X min:", np.nanmin(X), "X max:", np.nanmax(X))
+    print("DEBUG X has nan:", np.isnan(X).any(), "X has inf:", np.isinf(X).any())
     print("DEBUG y min:", y.min(), "y max:", y.max(), "dtype:", y.dtype)
     return X, y
 
@@ -72,6 +78,8 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             yb = torch.FloatTensor(y_train[i : i + batch_size])
             optimizer.zero_grad()
             out = model(xb)
+            print("DEBUG out min:", out.min().item(), "out max:", out.max().item())
+            print("DEBUG yb min:", yb.min().item(), "yb max:", yb.max().item())
             loss = loss_fn(out, yb)
             loss.backward()
             optimizer.step()

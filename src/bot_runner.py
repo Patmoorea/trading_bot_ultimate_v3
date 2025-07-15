@@ -1588,7 +1588,12 @@ class TradingBotM4:
                 continue
             for symbol in symbols:
                 symbol = symbol.upper()
-                symbol_sentiments[symbol].append((score, impact))
+                for key in self.market_data:
+                    if symbol in key.upper():
+                        self.market_data[key]["sentiment"] = score
+                        self.market_data[key]["sentiment_timestamp"] = time.time()
+                        print(f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}")
+
 
         # 2. Applique la moyenne pondérée à chaque paire
         for key in self.market_data:
