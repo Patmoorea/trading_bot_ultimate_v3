@@ -396,21 +396,19 @@ class TelegramNotifier:
         await self.send_message(message)
 
     async def send_trade_alert(self, trade_data):
-        """Envoie une alerte de trade sur Telegram"""
-        emoji = "🟢" if trade_data["side"] == "BUY" else "🔴"
+        """Envoie un message unique et lisible pour chaque trade exécuté"""
+        emoji = "🟢" if trade_data.get("side", "").upper() == "BUY" else "🔴" if trade_data.get("side", "").upper() == "SELL" else "⚪️"
         message = (
-            f"{emoji} <b>Trade {trade_data['side']}</b>\n\n"
-            f"📊 Paire: {trade_data['symbol']}\n"
-            f"💰 Quantité: {trade_data['amount']}\n"
-            f"💵 Prix: {trade_data.get('price', 'Market')}\n"
-            f"🕒 Heure: {get_current_time()}\n"
-            f"📝 Raison: {trade_data.get('reason', 'Signal de trading')}"
+            f"{emoji} <b>TRADE EXÉCUTÉ</b>\n\n"
+            f"📊 Paire : {trade_data.get('symbol','?')}\n"
+            f"Action : <b>{trade_data.get('side','?')}</b>\n"
+            f"Montant : {trade_data.get('amount','?')}\n"
+            f"Prix : {trade_data.get('price','?')}\n"
+            f"Total : {trade_data.get('total', 'N/A')}\n"
+            f"Confiance : {trade_data.get('confidence', 'N/A')}\n"
+            f"Signaux : Tech {trade_data.get('tech', 'N/A')} | IA {trade_data.get('ia', 'N/A')} | Sentiment {trade_data.get('sentiment', 'N/A')}\n"
+            f"Raison : {trade_data.get('reason', 'Signal de trading')}\n"
         )
-        if not self.ai_enabled:
-            print("⚠️ IA désactivée. Raison possible:")
-            print("- Modèle Deep Learning:", "OK" if self.dl_model else "❌")
-            print("- Stratégie PPO:", "OK" if self.ppo_strategy else "❌")
-            print("- Environnement:", "OK" if self.env else "❌")
         await self.send_message(message)
 
     async def send_arbitrage_alert(self, opportunity):
@@ -3292,44 +3290,48 @@ def calculate_position_size(bot, decision):
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):
-    """Envoie une notification pour un trade exécuté"""
+    """
+    Envoie une notification Telegram centralisée et lisible pour un trade exécuté.
+    Affiche tous les signaux clés et la confiance de la décision.
+    """
     try:
+        # Détermination de l'emoji selon l'action
+        action = decision.get('action', '').lower()
+        emoji = "🟢" if action == "buy" else "🔴" if action == "sell" else "⚪️"
+
+        # Construction du message
         message = (
-            f"🔄 <b>Trade exécuté</b>\n\n"
-            f"📊 Paire: {decision['pair']}\n"
-            f"📈 Action: {decision['action'].upper()}\n"
-            f"💰 Montant: {amount}\n"
-            f"🎯 Confiance: {decision['confidence']:.0%}\n"
-            f"💵 Prix: {trade_result.get('avg_price', 'N/A')}\n\n"
-            f"🧠 Signaux:\n"
-            f"  • Technique: {decision['signals']['technical']:.0%}\n"
-            f"  • IA: {decision['signals']['ai']:.2f}\n"
-            f"  • Sentiment: {decision['signals']['sentiment']:.2f}"
+            f"{emoji} <b>TRADE EXÉCUTÉ</b>\n\n"
+            f"📊 Paire : {decision.get('pair', '?')}\n"
+            f"Action : <b>{action.upper()}</b>\n"
+            f"Montant : {amount}\n"
+            f"Prix : {trade_result.get('avg_price', 'N/A')}\n"
+            f"Total : {float(amount) * float(trade_result.get('avg_price', 0)):.2f} USDT\n"
+            f"Confiance : {decision.get('confidence', 0):.0%}\n"
+            f"Signaux : Tech {decision.get('signals', {}).get('technical', 0):.0%} | "
+            f"IA {decision.get('signals', {}).get('ai', 0):.2f} | "
+            f"Sentiment {decision.get('signals', {}).get('sentiment', 0):.2f}\n"
         )
         await bot.telegram.send_message(message)
 
     except Exception as e:
         logging.error(f"Erreur envoi notification: {e}")
 
-
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
         # 1. Rapport des trades si nécessaire
         if trade_decisions:
-            trade_report = "💹 <b>Trades exécutés</b>\n\n"
+            trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
             for trade in trade_decisions:
-                status = trade.get("result", {}).get("status", "pending")
-                emoji = (
-                    "✅"
-                    if status == "completed"
-                    else "⚠️" if status == "simulated" else "❌"
-                )
-                pair_str = trade.get("pair", "INCONNU")
-                action_str = trade.get("action", "INCONNU")
-                conf_str = f"{trade.get('confidence', 0):.0%}"
+                emoji = "🟢" if trade['action'] == "buy" else "🔴" if trade['action'] == "sell" else "⚪️"
+                pair = trade.get("pair", "INCONNU")
+                conf = f"{trade.get('confidence', 0):.0%}"
+                tech = f"{trade.get('signals', {}).get('technical', 0):.0%}"
+                ia = f"{trade.get('signals', {}).get('ai', 0):.2f}"
+                sent = f"{trade.get('signals', {}).get('sentiment', 0):.2f}"
                 trade_report += (
-                    f"{emoji} {pair_str}: {action_str.upper()} ({conf_str})\n"
+                    f"{emoji} {pair}: {trade['action'].upper()} ({conf}) | Tech {tech} | IA {ia} | Sent {sent}\n"
                 )
             await bot.telegram.send_message(trade_report)
         else:

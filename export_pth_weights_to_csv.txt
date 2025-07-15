@@ -1,0 +1,33 @@
+import torch
+import os
+import pandas as pd
+import numpy as np
+
+pth_path = "src/models/cnn_lstm_model.pth"
+output_dir = "exported_weights"
+os.makedirs(output_dir, exist_ok=True)
+
+state = torch.load(pth_path, map_location="cpu")
+if not isinstance(state, dict):
+    raise ValueError("Le fichier ne contient pas un state_dict standard.")
+
+for key, tensor in state.items():
+    arr = tensor.cpu().numpy()
+    csv_filename = os.path.join(output_dir, f"{key.replace('.', '_')}.csv")
+    # Si le tenseur est 1D ou 2D, on peut l'enregistrer tel quel
+    if arr.ndim <= 2:
+        pd.DataFrame(arr).to_csv(csv_filename, index=False)
+    else:
+        # On aplatit et on stocke la shape originale dans le CSV
+        arr_flat = arr.flatten()
+        df = pd.DataFrame({
+            "flat_index": np.arange(arr_flat.size),
+            "value": arr_flat
+        })
+        # Ajoute la shape originale en commentaire dans le CSV (optionnel)
+        with open(csv_filename, "w") as f:
+            f.write(f"# original_shape: {arr.shape}\n")
+            df.to_csv(f, index=False)
+    print(f"[OK] {key} -> {csv_filename} (shape: {arr.shape})")
+
+print("✅ Export terminé. Tous les poids sont dans le dossier:", output_dir)
