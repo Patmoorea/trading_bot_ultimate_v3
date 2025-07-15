@@ -1059,7 +1059,7 @@ class TradingBotM4:
 
             # === PATCH : CHARGEMENT DES POIDS ENTRAÎNÉS ===
             weights_path = "src/models/cnn_lstm_model.pth"
-            import os
+
             if os.path.exists(weights_path):
                 self.dl_model.load_weights(weights_path)
                 print(f"[DL] Modèle chargé depuis {weights_path}")
