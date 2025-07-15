@@ -1016,6 +1016,15 @@ class TradingBotM4:
             self.dl_model = DeepLearningModel()
             self.dl_model.initialize()  # S'assurer que le modèle est initialisé
 
+            # === PATCH : CHARGEMENT DES POIDS ENTRAÎNÉS ===
+            weights_path = "src/models/cnn_lstm_model.pth"
+            import os
+            if os.path.exists(weights_path):
+                self.dl_model.load_weights(weights_path)
+                print(f"[DL] Modèle chargé depuis {weights_path}")
+            else:
+                print(f"[DL WARNING] Aucun modèle entraîné trouvé à {weights_path} ! Prédictions IA non fiables.")
+                
             # Configuration de l'environnement PPO
             env_config = {
                 "env": self.env,
@@ -1297,7 +1306,8 @@ class TradingBotM4:
         """
         Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
         ATTENTION: Retourne TOUJOURS un dict avec les clés
-        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility' (jamais un array !)
+        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
+        Si besoin pour PPO, ajoute aussi 'vol_ratio'.
         """
         try:
             N_STEPS = 63
@@ -1346,22 +1356,28 @@ class TradingBotM4:
             else:
                 volatility = 0
 
-            # Construction du dict features
+            # Pour PPO ou d'autres modèles, vol_ratio (optionnel, mais on le met si besoin)
+            avg_volume = np.mean(volumes) if np.mean(volumes) > 0 else 1
+            vol_ratio = float(volumes[-1]) / avg_volume if avg_volume > 0 else 1
+            vol_ratio = min(1, vol_ratio / 3)
+
+            # Construction du dict features (8 clés, 7 obligatoires pour DL)
             features = {
-                "close": closes / closes[0],    # Normalisation sur la première valeur de la séquence
+                "close": closes / closes[0],    # (N_STEPS,)
                 "high": highs / highs[0] if highs[0] > 0 else highs,
                 "low": lows / lows[0] if lows[0] > 0 else lows,
                 "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
                 "rsi": float(rsi) / 100,
-                "macd": float(macd) / 100,      # Normalisation arbitraire, adapte si besoin
-                "volatility": float(volatility)
+                "macd": float(macd) / 100,
+                "volatility": float(volatility),
+                "vol_ratio": float(vol_ratio)  # ← rendu dispo pour PPO, ignoré par DL
             }
 
-            # --- Sécurité : vérifie que toutes les clés sont là et de bon type ---
+            # --- Sécurité : vérifie que toutes les 7 clés principales sont là et au bon format ---
             required_keys = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
             for k in required_keys:
                 if k not in features:
-                    self.logger.error(f"[AI FEATURES] Clé manquante dans features : {k}")
+                    self.logger.error(f"[AI FEATURES] Clé manquante dans features : {k}")
                     return None
             # Vérifie les arrays
             for k in ["close", "high", "low", "volume"]:
@@ -1369,7 +1385,7 @@ class TradingBotM4:
                     self.logger.error(f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}")
                     return None
             # Vérifie les scalaires
-            for k in ["rsi", "macd", "volatility"]:
+            for k in ["rsi", "macd", "volatility", "vol_ratio"]:
                 if not isinstance(features[k], (int, float, np.floating, np.integer)):
                     self.logger.error(f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}")
                     return None

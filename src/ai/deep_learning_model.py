@@ -55,21 +55,25 @@ class DeepLearningModel:
             if not self.initialized:
                 self.initialize()
             
+            # DEBUG : affiche un aperçu des features
+            sample = {k: (v if isinstance(v, float) else v[:3]) for k, v in features.items()}
+            print(f"[DL] Features (sample): {sample}")
+
             x = self._prepare_features(features)
             with torch.no_grad():
                 prediction = self.model(x)
-
-            # Améliorer la normalisation pour avoir des prédictions plus marquées
+            
             raw_pred = prediction.item()
-            # Transformer sigmoid [0,1] vers [-1,1] avec amplification réduite
-            normalized_pred = (raw_pred - 0.5) * 2  # Amplification réduite de 4 à 2
+            print(f"[DL] raw_pred: {raw_pred}")
+            normalized_pred = (raw_pred - 0.5) * 2  # [-1, 1]
+            print(f"[DL] normalized_pred: {normalized_pred}")
+
             return np.clip(normalized_pred, -1, 1)
             
         except Exception as e:
             print(f"Error in DL prediction: {e}")
             # Retourner une prédiction aléatoire faible au lieu de 0
             return np.random.uniform(-0.1, 0.1)
-
     def _prepare_features(self, features: Dict[str, np.ndarray]) -> torch.Tensor:
         """
         Transforme le dict de features en un tensor shape (batch=1, 7, N)
@@ -80,6 +84,9 @@ class DeepLearningModel:
         arr = np.expand_dims(arr, axis=0)  # (1, 7, N)
         return torch.FloatTensor(arr)
 
+    def load_weights(self, path):
+        self.model.load_state_dict(torch.load(path, map_location='cpu'))
+        self.model.eval()
 
 class CNNLSTMModel(nn.Module):
     def __init__(self):
