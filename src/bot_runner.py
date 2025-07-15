@@ -531,7 +531,7 @@ class TradingBotM4:
         self.config = {
             "TRADING": {
                 "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-                "pairs": ["BTC/USDT", "ETH/USDT"],
+                "pairs": ["BTC/USDT", "ETH/USDT","LTC/USDT", "XRP/USDT", "DOGE/USDT","BNB/USDT","ADA/USDT","SOL/USDT","TRX/USDT","SUI/USDT"]
             },
             "AI": {
                 "learning_rate": 3e-4,
@@ -552,6 +552,12 @@ class TradingBotM4:
                     "ethereum": "ETH",
                     "cardano": "ADA",
                     "solana": "SOL",
+                    "litecoin":"LTC",
+                    "xrp":"XRP",
+                    "dogecoin": "DOGE",
+                    "binancecoin": "BNB",
+                    "tron": "TRX",
+                    "sui":"SUI",
                 },
             },
         }
