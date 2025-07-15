@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 from sklearn.model_selection import train_test_split
 from src.ai.deep_learning_model import CNNLSTMModel
+import json
 
 SEQ_LEN = 20
 FUTURE_SHIFT = 10
@@ -11,10 +12,24 @@ THRESHOLD = 0.002
 
 def load_best_params(path="config/best_hyperparams.json"):
     if os.path.exists(path):
-        import json
         with open(path) as f:
             return json.load(f)
     return {}
+
+def save_checkpoint(model, optimizer, epoch, path="src/models/checkpoint.pth"):
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epoch': epoch
+    }, path)
+
+def load_checkpoint(model, optimizer, path="src/models/checkpoint.pth"):
+    if os.path.exists(path):
+        checkpoint = torch.load(path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        return checkpoint['epoch']
+    return 0
 
 def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
     """
@@ -97,7 +112,14 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
     model = CNNLSTMModel()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.BCELoss()
-    for epoch in range(n_epochs):
+    checkpoint_path = "src/models/checkpoint.pth"
+    start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
+    if start_epoch > 0:
+        print(f"✅ Reprise de l'entraînement à l'epoch {start_epoch+1}")
+    else:
+        print("⏩ Entraînement à partir de zéro.")
+
+    for epoch in range(start_epoch, n_epochs):
         model.train()
         idxs = np.random.permutation(len(X_train))
         X_train, y_train = X_train[idxs], y_train[idxs]
@@ -112,6 +134,10 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             optimizer.step()
             batch_losses.append(loss.item())
         print(f"Epoch {epoch+1}/{n_epochs} - Train Loss: {np.mean(batch_losses):.6f}")
+
+        # Sauvegarde du checkpoint à chaque epoch
+        save_checkpoint(model, optimizer, epoch+1, checkpoint_path)
+        
         model.eval()
         with torch.no_grad():
             xb = torch.FloatTensor(X_val).transpose(1, 2)
@@ -119,6 +145,8 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             y_pred = model(xb)
             val_loss = loss_fn(y_pred, yb).item()
             acc = ((y_pred > 0.5).float() == yb).float().mean().item()
+
+    # Sauvegarde finale du modèle entraîné
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     torch.save(model.state_dict(), model_save_path)
     print(f"✅ Modèle entraîné et sauvegardé à {model_save_path}")
