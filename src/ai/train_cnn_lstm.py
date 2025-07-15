@@ -9,7 +9,15 @@ SEQ_LEN = 20
 FUTURE_SHIFT = 10
 THRESHOLD = 0.002
 
-def load_data_from_df(df):
+def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
+    """
+    Prépare les features et labels pour l'entraînement IA.
+    - Normalise chaque colonne.
+    - Gère les NaN/inf.
+    - Génère X (features) et y (labels binaires).
+    - Affiche la distribution des labels pour debug.
+    """
+
     feature_cols = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
     for col in feature_cols:
         if col not in df:
@@ -20,13 +28,19 @@ def load_data_from_df(df):
             print(f"Colonne {col} contient nan ou inf après normalisation !")
     df = df.dropna(subset=feature_cols)
     X, y = [], []
-    for i in range(len(df) - SEQ_LEN - FUTURE_SHIFT):
-        features = [df[col].iloc[i : i + SEQ_LEN].values for col in feature_cols]
+    for i in range(len(df) - seq_len - future_shift):
+        features = [df[col].iloc[i : i + seq_len].values for col in feature_cols]
+        if any(np.isnan(f).any() or np.isinf(f).any() for f in features):
+            continue  # Skip si NaN/inf dans la fenêtre
         feat_arr = np.stack(features, axis=1)
         X.append(feat_arr)
-        future_close = df["close"].iloc[i + SEQ_LEN + FUTURE_SHIFT - 1]
-        now_close = df["close"].iloc[i + SEQ_LEN - 1]
-        label = 1.0 if (future_close - now_close) / abs(now_close) > THRESHOLD else 0.0
+        future_close = df["close"].iloc[i + seq_len + future_shift - 1]
+        now_close = df["close"].iloc[i + seq_len - 1]
+        # Calcul du label binaire
+        try:
+            label = 1.0 if (future_close - now_close) / abs(now_close) > threshold else 0.0
+        except Exception:
+            label = 0.0
         y.append(label)
     if not X or not y:
         print("Aucune donnée d'entraînement disponible")
@@ -34,6 +48,10 @@ def load_data_from_df(df):
     X = np.stack(X)
     X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
     y = np.array(y, dtype=np.float32).reshape(-1, 1)
+    # Debug: distribution des labels
+    print(f"[DEBUG] Nombre de labels 1 : {np.sum(y == 1)}")
+    print(f"[DEBUG] Nombre de labels 0 : {np.sum(y == 0)}")
+    print(f"[DEBUG] Proportion de labels 1 : {np.mean(y):.4f}")
     print("DEBUG X min:", np.nanmin(X), "X max:", np.nanmax(X))
     print("DEBUG X has nan:", np.isnan(X).any(), "X has inf:", np.isinf(X).any())
     print("DEBUG y min:", y.min(), "y max:", y.max(), "dtype:", y.dtype)
