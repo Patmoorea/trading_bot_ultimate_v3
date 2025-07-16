@@ -11,7 +11,6 @@ import numpy as np
 import time
 from datetime import datetime, timezone, timedelta
 import argparse
-import numpy as np
 import pandas as pd
 import pandas_ta as pta
 import pyarrow as pa
@@ -75,12 +74,13 @@ LOG_FILE = "src/bot_logs.txt"
 def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
-    Modifie le DataFrame en place et le retourne.
-    Corrige intelligemment les NaN/inf au lieu de tout drop.
+    Corrige intelligemment les NaN/inf au lieu de tout drop ou reset.
     """
+
     # Tri par timestamp pour éviter des NaN liés au mauvais ordre
     if "timestamp" in df.columns:
         df = df.sort_values("timestamp")
+
     # RSI 14
     if "rsi" not in df or df["rsi"].isnull().all():
         try:
@@ -90,7 +90,7 @@ def add_dl_features(df):
                 df["rsi"] = np.nan
         except Exception:
             df["rsi"] = np.nan
-    # MACD (on prend la colonne MACD)
+    # MACD
     if "macd" not in df or df["macd"].isnull().all():
         try:
             if len(df) >= 27:
@@ -100,7 +100,7 @@ def add_dl_features(df):
                 df["macd"] = np.nan
         except Exception:
             df["macd"] = np.nan
-    # Volatility: rolling std des returns sur 14 périodes
+    # Volatility
     if "volatility" not in df or df["volatility"].isnull().all():
         try:
             if len(df) >= 15:
@@ -111,16 +111,11 @@ def add_dl_features(df):
         except Exception:
             df["volatility"] = np.nan
 
-    # Nettoyage intelligent des NaN/inf : remplacer par la dernière valeur connue, sinon moyenne, sinon 0
-    cols = ["rsi", "macd", "volatility"]
-    for col in cols:
+    # Nettoyage intelligent NaN/inf (ffill puis bfill puis 0)
+    for col in ["rsi", "macd", "volatility"]:
         if col in df.columns:
-            # Remplace les inf par nan pour traitement uniforme
             df[col] = df[col].replace([np.inf, -np.inf], np.nan)
-            # Si le NaN est en début de série (normal), on forward-fill, puis back-fill (pour le tout début)
-            df[col] = df[col].fillna(method="ffill").fillna(method="bfill")
-            # Si encore des NaN (tous les cas extrêmes), on met 0
-            df[col] = df[col].fillna(0)
+            df[col] = df[col].fillna(method="ffill").fillna(method="bfill").fillna(0)
     return df
     
 def log_dashboard(message):
@@ -1438,35 +1433,42 @@ class TradingBotM4:
             else:
                 volatility = 0
 
-            # Pour PPO ou d'autres modèles, vol_ratio (optionnel, mais on le met si besoin)
             avg_volume = np.mean(volumes) if np.mean(volumes) > 0 else 1
             vol_ratio = float(volumes[-1]) / avg_volume if avg_volume > 0 else 1
             vol_ratio = min(1, vol_ratio / 3)
 
-            # Construction du dict features (8 clés, 7 obligatoires pour DL)
             features = {
-                "close": closes / closes[0],    # (N_STEPS,)
+                "close": closes / closes[0],
                 "high": highs / highs[0] if highs[0] > 0 else highs,
                 "low": lows / lows[0] if lows[0] > 0 else lows,
                 "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
                 "rsi": float(rsi) / 100,
                 "macd": float(macd) / 100,
                 "volatility": float(volatility),
-                "vol_ratio": float(vol_ratio)  # ← rendu dispo pour PPO, ignoré par DL
+                "vol_ratio": float(vol_ratio)
             }
 
-            # --- Sécurité : vérifie que toutes les 7 clés principales sont là et au bon format ---
+            # Correction NaN/inf
+            for k in features:
+                arr = features[k]
+                if isinstance(arr, np.ndarray):
+                    if np.isnan(arr).any() or np.isinf(arr).any():
+                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                        features[k] = np.nan_to_num(arr)
+                else:
+                    if np.isnan(features[k]) or np.isinf(features[k]):
+                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                        features[k] = float(np.nan_to_num(features[k]))
+
             required_keys = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
             for k in required_keys:
                 if k not in features:
                     self.logger.error(f"[AI FEATURES] Clé manquante dans features : {k}")
                     return None
-            # Vérifie les arrays
             for k in ["close", "high", "low", "volume"]:
                 if not (isinstance(features[k], np.ndarray) and features[k].shape == (N_STEPS,)):
                     self.logger.error(f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}")
                     return None
-            # Vérifie les scalaires
             for k in ["rsi", "macd", "volatility", "vol_ratio"]:
                 if not isinstance(features[k], (int, float, np.floating, np.integer)):
                     self.logger.error(f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}")
@@ -1903,13 +1905,12 @@ class TradingBotM4:
             if len(closes) < 2 or any(c <= 0 for c in closes):
                 return 0.0  # protège contre log(0) ou log négatif
             returns = np.diff(np.log(closes))
-            if np.isnan(returns).any():
+            if np.isnan(returns).any() or np.isinf(returns).any():
                 return 0.0
             return float(np.std(returns) * np.sqrt(252))
         except Exception as e:
             print("DEBUG calculate_volatility error:", e)
             return 0.0
-
     def calculate_volume_profile(self, data):
         try:
             if isinstance(data, dict) and "volume" in data:
@@ -2113,9 +2114,9 @@ class TradingBotM4:
         N_FEATURES = 8  # ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
         num_pairs = len(self.pairs_valid)
 
-        # On prépare un vecteur pour CHAQUE paire et on les concatène
         ppo_features_list = []
         dl_predictions = {}
+
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
             features = await self._prepare_features_for_ai(pair_key)
@@ -2125,7 +2126,19 @@ class TradingBotM4:
                     dl_prediction = self.dl_model.predict(features)
                     dl_predictions[pair_key] = dl_prediction
 
-                    # Construction du vecteur feature (même logique qu'avant)
+                    # Correction NaN/inf
+                    for k in features:
+                        arr = features[k]
+                        if isinstance(arr, np.ndarray):
+                            if np.isnan(arr).any() or np.isinf(arr).any():
+                                print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                                features[k] = np.nan_to_num(arr)
+                        else:
+                            if np.isnan(features[k]) or np.isinf(features[k]):
+                                print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                                features[k] = float(np.nan_to_num(features[k]))
+
+                    # Construction du vecteur feature
                     vec = np.concatenate([
                         features[k] if isinstance(features[k], np.ndarray) else np.full(N_STEPS, features[k])
                         for k in ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
@@ -2137,52 +2150,26 @@ class TradingBotM4:
                 except Exception as e:
                     self.logger.error(f"Error preparing AI features for {pair}: {e}")
 
-        # On concatène tous les vecteurs de toutes les paires
         if not ppo_features_list:
             print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
             return
 
         ppo_features = np.concatenate(ppo_features_list)
-        expected_shape = (N_FEATURES * N_STEPS * num_pairs, )
+        expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
         if ppo_features.shape != expected_shape:
             print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
             return
 
-        print("PPO features shape:", ppo_features.shape)  # exemple: (504,) ou (2520,)
+        print("PPO features shape:", ppo_features.shape)
 
         try:
-            # Appel PPO sur le vecteur complet
             ppo_action = self.ppo_strategy.get_action(ppo_features)
-
-            # On distribue le résultat à chaque paire
             for i, pair in enumerate(self.pairs_valid):
                 pair_key = pair.replace("/", "").upper()
                 dl_pred = dl_predictions.get(pair_key, 0)
                 await self._merge_signals(pair_key, dl_pred, ppo_action)
         except Exception as e:
             self.logger.error(f"Error getting PPO action: {e}")
-
-    async def fetch_news(self):
-        """Récupère les news de différentes sources"""
-        try:
-            news = []
-            # Essayer plusieurs sources
-            try:
-                coindesk_news = await self.fetch_coindesk_news()
-                news.extend(coindesk_news)
-            except Exception as e:
-                self.logger.warning(f"Erreur CoinDesk: {e}")
-
-            try:
-                cointelegraph_news = await self.fetch_cointelegraph_news()
-                news.extend(cointelegraph_news)
-            except Exception as e:
-                self.logger.warning(f"Erreur Cointelegraph: {e}")
-
-            return news
-        except Exception as e:
-            self.logger.error(f"Erreur générale news: {e}")
-            return []
 
     async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
         """Étudie le marché sur une période définie et établit un plan de trading"""
@@ -2552,7 +2539,7 @@ class TradingBotM4:
         (Version enrichie avec indicateurs avancés)
         """
         try:
-            # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
+            # Gestion entrée : DataFrame, liste de dicts, liste de listes
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
@@ -2564,9 +2551,7 @@ class TradingBotM4:
                     df = pd.DataFrame(df, columns=columns)
                     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                 else:
-                    self.logger.error(
-                        "add_indicators: Format de liste non pris en charge"
-                    )
+                    self.logger.error("add_indicators: Format de liste non pris en charge")
                     return None
             if not isinstance(df, pd.DataFrame):
                 self.logger.error("add_indicators: df n'est pas un DataFrame")
@@ -2579,32 +2564,31 @@ class TradingBotM4:
                 )
                 return None
 
-            # 2. Check taille minimale du DataFrame pour éviter erreurs ta-lib/pandas-ta
-            MIN_LEN = 30  # ou 50 pour plus de sécurité
+            MIN_LEN = 30
             if df is None or len(df) < MIN_LEN:
                 self.logger.warning(
                     f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
                 )
                 return None
 
-            # 3. Sécurité : trier par timestamp pour tous les indicateurs
+            # Sécurité : trier par timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
+                if not df["timestamp"].is_monotonic_increasing:
+                    print("[!] VWAP/indics: tri du DataFrame par timestamp")
                 df = df.sort_values("timestamp")
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
             if df.empty:
-                self.logger.warning(
-                    "DataFrame vide, impossible de calculer les indicateurs"
-                )
+                self.logger.warning("DataFrame vide, impossible de calculer les indicateurs")
                 print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
                 return None
 
             try:
                 df_ta = df.copy()
 
-                # --- Calcul des indicateurs classiques ---
+                # Calcul des indicateurs classiques (cf. ton exemple)
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty:
                     if isinstance(sma_20, pd.Series):
@@ -2668,33 +2652,28 @@ class TradingBotM4:
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
                 ) / df_ta["close"].rolling(20).std()
 
-                # --- Indicateurs avancés supplémentaires ---
-                # VWMA
+                # Indicateurs avancés supplémentaires
                 try:
                     vwma = df_ta.ta.vwma(length=20)
                     df_ta["vwma_20"] = vwma
                 except Exception:
                     df_ta["vwma_20"] = np.nan
-                # OBV
                 try:
                     obv = df_ta.ta.obv()
                     df_ta["obv"] = obv
                 except Exception:
                     df_ta["obv"] = np.nan
-                # VWAP
                 try:
                     vwap = df_ta.ta.vwap()
                     df_ta["vwap"] = vwap
                 except Exception:
                     df_ta["vwap"] = np.nan
-                # StochRSI
                 try:
                     stochrsi = df_ta.ta.stochrsi()
                     if stochrsi is not None and not stochrsi.empty:
                         df_ta["stochrsi"] = stochrsi.iloc[:, 0]
                 except Exception:
                     df_ta["stochrsi"] = np.nan
-                # Keltner Channels
                 try:
                     kc = df_ta.ta.kc()
                     if kc is not None and not kc.empty:
@@ -2703,37 +2682,18 @@ class TradingBotM4:
                 except Exception:
                     df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
 
-                # Liste complète des indicateurs à retourner
                 all_indics = [
-                    "sma_20",
-                    "sma_50",
-                    "ema_20",
-                    "rsi_14",
-                    "macd",
-                    "macd_signal",
-                    "macd_hist",
-                    "bb_lower",
-                    "bb_upper",
-                    "donchian_high",
-                    "donchian_low",
-                    "psar",
-                    "momentum_10",
-                    "zscore_20",
-                    "vwma_20",
-                    "obv",
-                    "vwap",
-                    "stochrsi",
-                    "kc_upper",
-                    "kc_lower",
+                    "sma_20", "sma_50", "ema_20", "rsi_14", "macd", "macd_signal",
+                    "macd_hist", "bb_lower", "bb_upper", "donchian_high", "donchian_low",
+                    "psar", "momentum_10", "zscore_20", "vwma_20", "obv", "vwap",
+                    "stochrsi", "kc_upper", "kc_lower"
                 ]
 
                 indicators = {}
                 for col in all_indics:
                     if col in df_ta.columns:
                         last_valid = df_ta[col].dropna()
-                        indicators[col] = (
-                            last_valid.iloc[-1] if not last_valid.empty else None
-                        )
+                        indicators[col] = last_valid.iloc[-1] if not last_valid.empty else None
                     else:
                         indicators[col] = None
 

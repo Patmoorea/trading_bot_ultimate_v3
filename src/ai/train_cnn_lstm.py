@@ -6,10 +6,12 @@ from sklearn.model_selection import train_test_split
 from src.ai.deep_learning_model import CNNLSTMModel
 import json
 import shutil
+import time
 
 SEQ_LEN = 20
 FUTURE_SHIFT = 10
 THRESHOLD = 0.002
+MAX_TOTAL_EPOCHS = 500  # <-- Change ici si tu veux moins/plus d'epochs cumulés
 
 def load_best_params(path="config/best_hyperparams.json"):
     if os.path.exists(path):
@@ -92,7 +94,7 @@ def train_with_live_data(
 ):
     """
     Entraîne le modèle CNN-LSTM sur des données live.
-    Si reset_on_n_epochs=True, l'entraînement repart à zéro à chaque run de n_epochs (défini dans les hyperparams).
+    Limite automatique : reset après MAX_TOTAL_EPOCHS cumulés pour éviter le surapprentissage.
     """
 
     # 1. Chargement des hyperparams Optuna/AutoML
@@ -117,23 +119,27 @@ def train_with_live_data(
     loss_fn = nn.BCELoss()
     checkpoint_path = "src/models/checkpoint.pth"
 
-    # 4. Décision de reset ou non
-    if reset_on_n_epochs:
-        # On supprime le checkpoint à chaque nouveau run pour forcer le reset
+    # 4. Chargement du checkpoint si présent
+    start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
+    if start_epoch > 0:
+        print(f"✅ Reprise de l'entraînement à l'epoch {start_epoch+1}")
+    else:
+        print("⏩ Entraînement à partir de zéro (pas de reset forcé, checkpoint conservé si existant).")
+
+    # 4.1. Reset si trop d'epochs cumulés
+    if start_epoch >= MAX_TOTAL_EPOCHS:
+        print(f"⏹️ Reset automatique : {start_epoch} epochs cumulés atteints. Nouveau training sur données récentes.")
+        # Supprimer l'ancien checkpoint
         if os.path.exists(checkpoint_path):
             os.remove(checkpoint_path)
-            print("🗑️ Checkpoint supprimé, entraînement repart à zéro.")
+        # Réinitialiser modèle et optimizer
+        model = CNNLSTMModel()
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         start_epoch = 0
-        print("⏩ Entraînement à partir de zéro (reset forced).")
-    else:
-        start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
-        if start_epoch > 0:
-            print(f"✅ Reprise de l'entraînement à l'epoch {start_epoch+1}")
-        else:
-            print("⏩ Entraînement à partir de zéro.")
 
-    # 5. Boucle d'entraînement (n_epochs à chaque run, jamais plus)
+    # 5. Boucle d'entraînement (n_epochs à chaque run)
     for epoch in range(start_epoch, start_epoch + n_epochs):
+        t0 = time.time()
         model.train()
         idxs = np.random.permutation(len(X_train))
         X_train, y_train = X_train[idxs], y_train[idxs]
@@ -147,8 +153,13 @@ def train_with_live_data(
             loss.backward()
             optimizer.step()
             batch_losses.append(loss.item())
+            #print(f"  Epoch {epoch+1} - Batch {i//batch_size+1}/{(len(X_train)-1)//batch_size+1} - Batch loss: {loss.item():.6f}")
 
-        # On peut sauvegarder le checkpoint, mais il sera effacé au run suivant si reset_on_n_epochs est True
+        epoch_duration = time.time() - t0
+        print(f"Epoch {epoch+1}/{start_epoch+n_epochs} - Mean batch loss: {np.mean(batch_losses):.6f} - Durée: {epoch_duration:.2f}s")
+        print("-" * 60)
+
+        # Sauvegarde du checkpoint à chaque epoch
         save_checkpoint(model, optimizer, epoch+1, checkpoint_path)
         
         # Évaluation
@@ -159,9 +170,7 @@ def train_with_live_data(
             y_pred = model(xb)
             val_loss = loss_fn(y_pred, yb).item()
             acc = ((y_pred > 0.5).float() == yb).float().mean().item()
-            #print(
-                #f"Epoch {epoch+1} - Train Loss: {np.mean(batch_losses):.6f}  Val Loss: {val_loss:.6f}  Val Acc: {acc:.3f}"
-            #)
+            print(f"    Validation loss: {val_loss:.6f}  |  Val acc: {acc:.3f}")
 
     # 6. Sauvegarde finale du modèle entraîné
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
