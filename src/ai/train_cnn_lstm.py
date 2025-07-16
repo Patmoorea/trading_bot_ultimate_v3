@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from src.ai.deep_learning_model import CNNLSTMModel
 import json
+import shutil
 
 SEQ_LEN = 20
 FUTURE_SHIFT = 10
@@ -94,7 +95,16 @@ def add_dl_features(df):
         df["volatility"] = returns.rolling(14).std()
     return df
 
-def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth"):
+def promote_trained_model():
+    src = "src/models/cnn_lstm_model_training.pth"
+    dst = "src/models/cnn_lstm_model.pth"
+    if os.path.exists(src):
+        shutil.copy(src, dst)
+        print(f"🚀 Nouveau modèle promu en production ({dst})")
+    else:
+        print("Aucun modèle entraîné à promouvoir.")
+
+def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model_training.pth"):
     # Charge les meilleurs hyperparams issus d'Optuna/AutoML
     best_params = load_best_params()
     lr = best_params.get("lr", 0.001)
@@ -119,7 +129,8 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
     else:
         print("⏩ Entraînement à partir de zéro.")
 
-    for epoch in range(start_epoch, n_epochs):
+    # Correction : continue n_epochs supplémentaires à chaque lancement
+    for epoch in range(start_epoch, start_epoch + n_epochs):
         model.train()
         idxs = np.random.permutation(len(X_train))
         X_train, y_train = X_train[idxs], y_train[idxs]
@@ -133,7 +144,7 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             loss.backward()
             optimizer.step()
             batch_losses.append(loss.item())
-        print(f"Epoch {epoch+1}/{n_epochs} - Train Loss: {np.mean(batch_losses):.6f}")
+        print(f"Epoch {epoch+1} - Train Loss: {np.mean(batch_losses):.6f}")
 
         # Sauvegarde du checkpoint à chaque epoch
         save_checkpoint(model, optimizer, epoch+1, checkpoint_path)
@@ -146,7 +157,10 @@ def train_with_live_data(df_live, model_save_path="src/models/cnn_lstm_model.pth
             val_loss = loss_fn(y_pred, yb).item()
             acc = ((y_pred > 0.5).float() == yb).float().mean().item()
 
-    # Sauvegarde finale du modèle entraîné
+    # Sauvegarde finale du modèle entraîné (temporaire d'abord)
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     torch.save(model.state_dict(), model_save_path)
     print(f"✅ Modèle entraîné et sauvegardé à {model_save_path}")
+
+    # Promotion du modèle en production
+    promote_trained_model()

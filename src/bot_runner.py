@@ -576,7 +576,8 @@ class TradingBotM4:
         self.indicators = {}
         self.news_analyzer = NewsSentimentAnalyzer(self.config)
         self.news_enabled = True
-
+        self.dl_model_last_mtime = None
+        
         self.news_weight = 0.15
         self.ai_weight = 0.5
         self.ensure_float = lambda x: (
@@ -650,7 +651,16 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
-
+            
+    def check_reload_dl_model(self):
+        path = "src/models/cnn_lstm_model.pth"
+        if os.path.exists(path):
+            mtime = os.path.getmtime(path)
+            if self.dl_model_last_mtime is None or mtime > self.dl_model_last_mtime:
+                self.dl_model.load_weights(path)
+                self.dl_model_last_mtime = mtime
+                print(f"♻️ Nouveau modèle IA chargé automatiquement ({path})")
+                
     async def _news_analysis_loop(self):
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
@@ -1065,7 +1075,10 @@ class TradingBotM4:
                 print(f"[DL] Modèle chargé depuis {weights_path}")
             else:
                 print(f"[DL WARNING] Aucun modèle entraîné trouvé à {weights_path} ! Prédictions IA non fiables.")
-                
+            if os.path.exists(weights_path):
+                self.dl_model_last_mtime = os.path.getmtime(weights_path)
+            else:
+                self.dl_model_last_mtime = None    
             # Configuration de l'environnement PPO
             env_config = {
                 "env": self.env,
@@ -1147,6 +1160,7 @@ class TradingBotM4:
         try:
             self.news_analyzer = NewsSentimentAnalyzer(self.config)
             self.news_enabled = True
+            self.dl_model_last_mtime = None
             self.news_weight = 0.2  # Influence des news dans la décision (20%)
             self.news_update_interval = 300  # 5 minutes
             self.logger.info("News sentiment analyzer initialized successfully")
@@ -2971,7 +2985,8 @@ async def run_clean_bot():
                 start = datetime.utcnow()
                 try:
                     print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
-
+                    # Hot reload IA
+                    bot.check_reload_dl_model()
                     # Exécution du cycle de trading
                     trade_decisions, regime = await execute_trading_cycle(
                         bot, valid_pairs
