@@ -1075,7 +1075,6 @@ class TradingBotM4:
                 raise ValueError("L'environnement de trading n'est pas initialisé")
 
             # === PATCH: Chargement hyperparams AutoML s'ils existent ===
-            
             hp_path = "config/best_hyperparams.json"
             if os.path.exists(hp_path):
                 with open(hp_path, "r") as f:
@@ -1101,10 +1100,14 @@ class TradingBotM4:
                 self.dl_model_last_mtime = os.path.getmtime(weights_path)
             else:
                 self.dl_model_last_mtime = None    
-            # Configuration de l'environnement PPO
+
+            # Configuration de l'environnement PPO - PATCH dynamique input_dim
+            N_FEATURES = 8
+            N_STEPS = 63
+            num_pairs = len(self.pairs_valid)
             env_config = {
                 "env": self.env,
-                "input_dim": 504,
+                "input_dim": N_FEATURES * N_STEPS * num_pairs,
                 "learning_rate": self.config["AI"]["learning_rate"],
                 "batch_size": self.config["AI"]["batch_size"],
                 "n_epochs": self.config["AI"]["n_epochs"],
@@ -1156,9 +1159,13 @@ class TradingBotM4:
 
         try:
             print("Configuration de la stratégie PPO...")
+            # PATCH dynamique input_dim ici aussi, pour la double initialisation
+            N_FEATURES = 8
+            N_STEPS = 63
+            num_pairs = len(self.pairs_valid)
             env_config = {
                 "env": self.env,
-                "input_dim": 504,
+                "input_dim": N_FEATURES * N_STEPS * num_pairs,
                 "learning_rate": 3e-4,
                 "batch_size": 64,
                 "n_epochs": 10,
