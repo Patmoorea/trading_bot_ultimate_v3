@@ -673,7 +673,17 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
-            
+    
+    async def test_news_sentiment(self):
+        """
+        Test manuel du batch d'analyse de sentiment des news.
+        Exécute l'analyse Bert/FinBERT sur toutes les news du buffer et affiche le résumé global.
+        """
+        news = await self.news_analyzer.fetch_all_news()
+        results = self.news_analyzer.analyze_sentiment_batch(news)
+        summary = self.news_analyzer.get_sentiment_summary()
+        print("Sentiment summary:", summary)
+               
     def check_reload_dl_model(self):
         path = "src/models/cnn_lstm_model.pth"
         if os.path.exists(path):
@@ -864,7 +874,7 @@ class TradingBotM4:
                     pair_key in self.market_data
                     and "sentiment" in self.market_data[pair_key]
                 ):
-                    sentiment_score = self.market_data[pair_key]["sentiment"]
+                    sentiment_score = self.news_analyzer.get_sentiment_summary().get("sentiment_global", 0.0)
         log_dashboard(
             f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
         )
@@ -1203,6 +1213,16 @@ class TradingBotM4:
         log_dashboard(f"✅ IA activée: {self.ai_enabled}")
         log_dashboard(f"✅ Analyse de news activée: {self.news_enabled}")
 
+    async def test_news_sentiment(self):
+        """
+        Test manuel du batch d'analyse de sentiment des news.
+        Exécute l'analyse Bert/FinBERT sur toutes les news du buffer et affiche le résumé global.
+        """
+        news = await self.news_analyzer.fetch_all_news()
+        results = self.news_analyzer.analyze_sentiment_batch(news)
+        summary = self.news_analyzer.get_sentiment_summary()
+        print("Sentiment summary:", summary)
+        
     def check_stop_loss(self, symbol, side):
         """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
         try:
