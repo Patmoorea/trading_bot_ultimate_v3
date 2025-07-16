@@ -14,3 +14,10 @@
 2025-07-16T20:01:50.692159 | ✅ Trading en direct: True
 2025-07-16T20:01:50.692191 | ✅ IA activée: True
 2025-07-16T20:01:50.692221 | ✅ Analyse de news activée: True
+2025-07-16T20:02:36.698168 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-16T20:02:56.814930 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0385 | Tendance: 0.0040
+2025-07-16T20:02:56.815183 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-16T20:03:04.126938 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0385 | Tendance: 0.0040
+2025-07-16T20:03:04.127224 | 🎯 Stratégie active: Range/Scalping
+2025-07-16T20:03:04.127465 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-16T20:03:04.689742 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Hack ‘Victims’ Say Tornado Cash Offered No Help in the Wake of Exploits: Day 2 of Roman Storm Trial ; The Node: The Plot to Fire Powell; Trump-Linked WLFI Token Clears Vote to Become Tradable
