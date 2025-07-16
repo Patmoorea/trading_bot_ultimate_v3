@@ -14,6 +14,9 @@ import argparse
 import numpy as np
 import pandas as pd
 import pandas_ta as pta
+import pyarrow as pa
+import pyarrow.parquet as pq
+
 from decimal import Decimal
 from dotenv import load_dotenv
 from binance.client import Client
@@ -73,29 +76,53 @@ def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
     Modifie le DataFrame en place et le retourne.
+    Corrige intelligemment les NaN/inf au lieu de tout drop.
     """
+    # Tri par timestamp pour éviter des NaN liés au mauvais ordre
+    if "timestamp" in df.columns:
+        df = df.sort_values("timestamp")
     # RSI 14
     if "rsi" not in df or df["rsi"].isnull().all():
         try:
-            df["rsi"] = pta.rsi(df["close"], length=14)
+            if len(df) >= 15:
+                df["rsi"] = pta.rsi(df["close"], length=14)
+            else:
+                df["rsi"] = np.nan
         except Exception:
             df["rsi"] = np.nan
     # MACD (on prend la colonne MACD)
     if "macd" not in df or df["macd"].isnull().all():
         try:
-            macd = pta.macd(df["close"])
-            df["macd"] = macd["MACD_12_26_9"] if "MACD_12_26_9" in macd else np.nan
+            if len(df) >= 27:
+                macd = pta.macd(df["close"])
+                df["macd"] = macd["MACD_12_26_9"] if "MACD_12_26_9" in macd else np.nan
+            else:
+                df["macd"] = np.nan
         except Exception:
             df["macd"] = np.nan
     # Volatility: rolling std des returns sur 14 périodes
     if "volatility" not in df or df["volatility"].isnull().all():
         try:
-            returns = np.log(df["close"]).diff()
-            df["volatility"] = returns.rolling(14).std()
+            if len(df) >= 15:
+                returns = np.log(df["close"]).diff()
+                df["volatility"] = returns.rolling(14).std()
+            else:
+                df["volatility"] = np.nan
         except Exception:
             df["volatility"] = np.nan
-    return df
 
+    # Nettoyage intelligent des NaN/inf : remplacer par la dernière valeur connue, sinon moyenne, sinon 0
+    cols = ["rsi", "macd", "volatility"]
+    for col in cols:
+        if col in df.columns:
+            # Remplace les inf par nan pour traitement uniforme
+            df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+            # Si le NaN est en début de série (normal), on forward-fill, puis back-fill (pour le tout début)
+            df[col] = df[col].fillna(method="ffill").fillna(method="bfill")
+            # Si encore des NaN (tous les cas extrêmes), on met 0
+            df[col] = df[col].fillna(0)
+    return df
+    
 def log_dashboard(message):
     print(message)
     try:
@@ -1291,7 +1318,7 @@ class TradingBotM4:
         except Exception as e:
             print(f"[ORDER] Execution error: {e}")
             self.logger.error(f"Execution error: {e}")
-            await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
+            #await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
             return {"status": "error", "reason": str(e)}
 
     def _update_performance_metrics(self, trade_result):
@@ -2073,69 +2100,67 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Error fetching market data: {e}")
 
-    # ... dans la méthode async def _add_ai_predictions(self): ...
 
     async def _add_ai_predictions(self):
         """
         Ajoute les prédictions des modèles d'IA aux données de marché.
-        Corrige tout problème de shape sur ppo_features avant l'appel à PPO.
+        Corrige dynamiquement le shape de ppo_features selon le nombre de paires.
         """
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
 
-        N_STEPS = 63  # Doit matcher N_STEPS utilisé dans _prepare_features_for_ai et le shape attendu par PPO (8*63=504)
+        N_STEPS = 63  # Doit matcher la config du modèle
+        N_FEATURES = 8  # ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
+        num_pairs = len(self.pairs_valid)
 
+        # On prépare un vecteur pour CHAQUE paire et on les concatène
+        ppo_features_list = []
+        dl_predictions = {}
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
-
-            # Préparation des features pour l'IA
             features = await self._prepare_features_for_ai(pair_key)
-
             if features is not None:
                 try:
-                    # Prédiction du modèle CNN-LSTM
+                    # Prédiction du CNN-LSTM
                     dl_prediction = self.dl_model.predict(features)
+                    dl_predictions[pair_key] = dl_prediction
 
-                    # Construction du vecteur pour PPO : array plat de shape (504,)
-                    ppo_features = np.concatenate(
-                        [
-                            (
-                                features[k]
-                                if isinstance(features[k], np.ndarray)
-                                else np.full(N_STEPS, features[k])
-                            )
-                            for k in [
-                                "close",
-                                "high",
-                                "low",
-                                "volume",
-                                "rsi",
-                                "macd",
-                                "volatility",
-                                "vol_ratio",
-                            ]
-                        ]
-                    )
-                    # === PATCH SÉCURITÉ SHAPE ===
-                    if ppo_features.shape == (1, 42):
-                        ppo_features = ppo_features.reshape(-1)
-                    if len(ppo_features.shape) == 2 and ppo_features.shape[0] == 1:
-                        ppo_features = ppo_features.flatten()
-                    if ppo_features.shape != (504,):
-                        print(
-                            f"[SKIP PPO] {pair_key}, shape {ppo_features.shape}, pas assez de data"
-                        )
+                    # Construction du vecteur feature (même logique qu'avant)
+                    vec = np.concatenate([
+                        features[k] if isinstance(features[k], np.ndarray) else np.full(N_STEPS, features[k])
+                        for k in ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
+                    ])
+                    if vec.shape != (N_FEATURES * N_STEPS,):
+                        print(f"[SKIP PPO] {pair_key}, shape {vec.shape}, pas assez de data")
                         continue
-
-                    print("PPO features shape:", ppo_features.shape)  # doit être (504,)
-
-                    ppo_action = self.ppo_strategy.get_action(ppo_features)
-
-                    # Fusion des signaux IA avec les signaux techniques
-                    await self._merge_signals(pair_key, dl_prediction, ppo_action)
-
+                    ppo_features_list.append(vec)
                 except Exception as e:
-                    self.logger.error(f"Error getting AI predictions for {pair}: {e}")
+                    self.logger.error(f"Error preparing AI features for {pair}: {e}")
+
+        # On concatène tous les vecteurs de toutes les paires
+        if not ppo_features_list:
+            print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
+            return
+
+        ppo_features = np.concatenate(ppo_features_list)
+        expected_shape = (N_FEATURES * N_STEPS * num_pairs, )
+        if ppo_features.shape != expected_shape:
+            print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
+            return
+
+        print("PPO features shape:", ppo_features.shape)  # exemple: (504,) ou (2520,)
+
+        try:
+            # Appel PPO sur le vecteur complet
+            ppo_action = self.ppo_strategy.get_action(ppo_features)
+
+            # On distribue le résultat à chaque paire
+            for i, pair in enumerate(self.pairs_valid):
+                pair_key = pair.replace("/", "").upper()
+                dl_pred = dl_predictions.get(pair_key, 0)
+                await self._merge_signals(pair_key, dl_pred, ppo_action)
+        except Exception as e:
+            self.logger.error(f"Error getting PPO action: {e}")
 
     async def fetch_news(self):
         """Récupère les news de différentes sources"""
@@ -2524,6 +2549,7 @@ class TradingBotM4:
         """
         Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
+        (Version enrichie avec indicateurs avancés)
         """
         try:
             # 1. Gestion entrée : DataFrame, liste de dicts, liste de listes
@@ -2578,7 +2604,7 @@ class TradingBotM4:
             try:
                 df_ta = df.copy()
 
-                # --- Calcul des indicateurs ---
+                # --- Calcul des indicateurs classiques ---
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty:
                     if isinstance(sma_20, pd.Series):
@@ -2642,6 +2668,42 @@ class TradingBotM4:
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
                 ) / df_ta["close"].rolling(20).std()
 
+                # --- Indicateurs avancés supplémentaires ---
+                # VWMA
+                try:
+                    vwma = df_ta.ta.vwma(length=20)
+                    df_ta["vwma_20"] = vwma
+                except Exception:
+                    df_ta["vwma_20"] = np.nan
+                # OBV
+                try:
+                    obv = df_ta.ta.obv()
+                    df_ta["obv"] = obv
+                except Exception:
+                    df_ta["obv"] = np.nan
+                # VWAP
+                try:
+                    vwap = df_ta.ta.vwap()
+                    df_ta["vwap"] = vwap
+                except Exception:
+                    df_ta["vwap"] = np.nan
+                # StochRSI
+                try:
+                    stochrsi = df_ta.ta.stochrsi()
+                    if stochrsi is not None and not stochrsi.empty:
+                        df_ta["stochrsi"] = stochrsi.iloc[:, 0]
+                except Exception:
+                    df_ta["stochrsi"] = np.nan
+                # Keltner Channels
+                try:
+                    kc = df_ta.ta.kc()
+                    if kc is not None and not kc.empty:
+                        df_ta["kc_upper"] = kc["KCUpper_20_2_10"]
+                        df_ta["kc_lower"] = kc["KCLower_20_2_10"]
+                except Exception:
+                    df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
+
+                # Liste complète des indicateurs à retourner
                 all_indics = [
                     "sma_20",
                     "sma_50",
@@ -2657,6 +2719,12 @@ class TradingBotM4:
                     "psar",
                     "momentum_10",
                     "zscore_20",
+                    "vwma_20",
+                    "obv",
+                    "vwap",
+                    "stochrsi",
+                    "kc_upper",
+                    "kc_lower",
                 ]
 
                 indicators = {}
@@ -2690,6 +2758,7 @@ class TradingBotM4:
         """
         Entraîne le modèle CNN-LSTM sur les données live de ws_collector pour la paire/timeframe donnée,
         et sauvegarde les poids dans src/models/cnn_lstm_model.pth
+        (NE RESET PLUS à cause de NaN/inf)
         """
         try:
             from src.ai.train_cnn_lstm import train_with_live_data
@@ -2700,7 +2769,12 @@ class TradingBotM4:
         print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
         df_live = self.ws_collector.get_dataframe(pair_key, tf)
         if df_live is not None and not df_live.empty:
-            df_live = add_dl_features(df_live)  # <--- PATCH ICI
+            df_live = add_dl_features(df_live)
+            # Ici : plus jamais de reset si NaN/inf, on log juste le nombre de NaN restant
+            for col in ["rsi", "macd", "volatility"]:
+                n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
+                if n_nan > 0:
+                    print(f"⚠️ Attention : {n_nan} NaN dans {col} même après correction")
             print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
             train_with_live_data(df_live)
         else:
@@ -2710,6 +2784,7 @@ class TradingBotM4:
         """
         Entraîne le modèle CNN-LSTM sur toutes les paires et timeframes de la config,
         en utilisant les données live du ws_collector.
+        (NE RESET PLUS à cause de NaN/inf)
         """
         try:
             from src.ai.train_cnn_lstm import train_with_live_data
@@ -2723,7 +2798,11 @@ class TradingBotM4:
                 print(f"→ Entraînement IA sur {pair_key} / {tf}")
                 df_live = self.ws_collector.get_dataframe(pair_key, tf)
                 if df_live is not None and not df_live.empty:
-                    df_live = add_dl_features(df_live)  # <--- PATCH ICI
+                    df_live = add_dl_features(df_live)
+                    for col in ["rsi", "macd", "volatility"]:
+                        n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
+                        if n_nan > 0:
+                            print(f"⚠️ Attention : {n_nan} NaN dans {col} même après correction")
                     print(
                         f"  {len(df_live)} lignes live trouvées, entraînement en cours…"
                     )
