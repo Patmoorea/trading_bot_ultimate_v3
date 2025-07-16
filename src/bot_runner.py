@@ -2607,8 +2607,7 @@ class TradingBotM4:
 
             # Sécurité : trier par timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
-                if not df["timestamp"].is_monotonic_increasing:
-                    print("[!] VWAP/indics: tri du DataFrame par timestamp")
+                # Tri et conversion si besoin
                 df = df.sort_values("timestamp")
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):

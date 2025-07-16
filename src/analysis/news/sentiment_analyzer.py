@@ -12,7 +12,6 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
 
-
 class SymbolExtractor:
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
         self.symbol_mapping = symbol_mapping or {
@@ -22,7 +21,6 @@ class SymbolExtractor:
             "litecoin": "LTC", "ltc": "LTC", "shiba": "SHIB", "shib": "SHIB", "tron": "TRX", "trx": "TRX",
             "avalanche": "AVAX", "avax": "AVAX", "chainlink": "LINK", "link": "LINK", "uniswap": "UNI", "uni": "UNI",
             "stellar": "XLM", "xlm": "XLM",
-            # ... complète selon tes besoins ...
         }
         self.known_tickers = set(self.symbol_mapping.values())
         self.regex_patterns = [
@@ -52,7 +50,6 @@ class NewsSentimentAnalyzer:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
         self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
-        # Device: GPU Apple Silicon (MPS) ou CPU selon dispo
         self.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
         self._model = None
         self._tokenizer = None
@@ -137,15 +134,25 @@ class NewsSentimentAnalyzer:
             "source_weight": source["weight"],
         }
 
-    def analyze_sentiment_batch(self, news_items: List[Dict]) -> List[Dict]:
+    def analyze_sentiment_batch(self, news_items: List[Dict], low_watermark_ratio: float = 0.2) -> List[Dict]:
+        # Patch: force le watermark ratio à une valeur valide
+        low_watermark_ratio = min(0.5, max(0.05, low_watermark_ratio))  # Entre 0.05 et 0.5
+
         print("[DEBUG] analyze_sentiment_batch entrée")
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
             return []
+
         try:
             print("[DEBUG] Après try, news_items size:", len(news_items))
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
             print("[DEBUG] Nombre de textes à analyser:", len(texts))
+
+            # Si tu passes le watermark à une fonction, fais-le ici
+            # Par exemple, si tu avais : results = some_sentiment_function(texts, low_watermark_ratio=low_watermark_ratio)
+            # results = some_sentiment_function(texts, low_watermark_ratio=low_watermark_ratio)
+            # Mais pour FinBERT standard, tu n'en as pas besoin
+
             inputs = self.tokenizer(
                 texts,
                 return_tensors="pt",
@@ -153,7 +160,6 @@ class NewsSentimentAnalyzer:
                 truncation=True,
                 max_length=512,
             )
-            # PATCH MPS : envoie le batch sur le device
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
             print("[DEBUG] Inputs batch prêt (device:", self.device, ")")
             with torch.no_grad():
@@ -163,7 +169,7 @@ class NewsSentimentAnalyzer:
 
             results = []
             for i, item in enumerate(news_items):
-                sentiment = float(scores[i][1] - scores[i][0])
+                sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
                 results.append(
                     {
                         **item,
@@ -193,21 +199,15 @@ class NewsSentimentAnalyzer:
             return []
 
     async def update_analysis(self):
-        """Version corrigée avec gestion robuste des erreurs"""
         try:
-            # 1. Récupération des news
             raw_news = await self.fetch_all_news()
             self.logger.debug(f"Fetched {len(raw_news)} raw news items")
-
-            # 2. Analyse de sentiment (avec vérification de type stricte)
             analyzed_news = self.analyze_sentiment_batch(raw_news)
             if not isinstance(analyzed_news, list):
                 self.logger.error(
                     f"Invalid sentiment results type: {type(analyzed_news)}"
                 )
                 analyzed_news = []
-
-            # 3. Calcul des statistiques (maintenant dans la même portée)
             sentiment_scores = [
                 n.get("sentiment", 0) for n in analyzed_news if isinstance(n, dict)
             ]
@@ -220,15 +220,10 @@ class NewsSentimentAnalyzer:
                 f"News analysis: {len(analyzed_news)} items | "
                 f"Mean sentiment: {mean_sentiment:.4f} ± {std_sentiment:.4f}"
             )
-
-            # 4. Mise à jour du buffer
             self.news_buffer = [
                 *self.news_buffer[-100:],
                 *analyzed_news,
             ][-200:]
-
-            # 5. Sauvegarde avec les scores calculés
-            # Ajoute le score global dans la sauvegarde !
             summary = self.get_sentiment_summary()
             await self._save_state(
                 {
@@ -240,14 +235,12 @@ class NewsSentimentAnalyzer:
                     "top_news": summary.get("top_news", []),
                 }
             )
-
             return {
                 "mean": mean_sentiment,
                 "std": std_sentiment,
                 "scores": sentiment_scores,
                 "items": analyzed_news,
             }
-
         except Exception as e:
             self.logger.error(f"News update failed: {str(e)}", exc_info=True)
             return {"mean": 0.0, "std": 0.0, "scores": [], "items": []}
@@ -258,8 +251,6 @@ class NewsSentimentAnalyzer:
             symbol_key = symbol.replace("/", "").upper()
             underlying = symbol_key.replace("USDT", "").replace("USD", "")
             print(f"[DEBUG INIT] symbol_key='{symbol_key}' underlying='{underlying}'")
-            
-            # Mapping étendu pour améliorer les correspondances
             symbol_variants = {
                 "BTCUSDT": ["BTC", "BITCOIN", "bitcoin"],
                 "ETHUSDT": ["ETH", "ETHEREUM", "ethereum", "ether"],
@@ -272,46 +263,33 @@ class NewsSentimentAnalyzer:
                 "DOTUSDT": ["DOT", "POLKADOT", "polkadot"],
                 "MATICUSDT": ["MATIC", "POLYGON", "polygon"]
             }
-            
-            # Obtenir toutes les variantes possibles pour ce symbole
             search_terms = symbol_variants.get(symbol_key, [underlying])
             search_terms.extend([symbol_key, underlying])
-            search_terms = list(set(search_terms))  # Supprimer les doublons
-            
+            search_terms = list(set(search_terms))
             print(f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}")
-            
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
             matched = False
-
             print(
                 f"[DEBUG SENTIMENT] Recherche des news pour {search_terms}... Buffer size: {len(self.news_buffer)}"
             )
-
             for news in self.news_buffer:
                 news_symbols = news.get("symbols", [])
                 title = news.get("title", "").lower()
                 text = news.get("text", "").lower()
                 content = f"{title} {text}"
-                
-                # Debug: show what symbols are in this news item
                 if news_symbols:
                     print(
                         f"[DEBUG NEWS] Title: {news.get('title', '')[:60]} | Symbols: {news_symbols}"
                     )
-
-                # Vérification par symboles extraits
                 match_extracted = any(
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
                 )
-                
-                # Vérification par contenu textuel (fallback)
                 match_content = any(
                     term.lower() in content for term in search_terms
                 )
-
                 if match_extracted or match_content:
                     matched = True
                     hours_old = (
@@ -320,32 +298,27 @@ class NewsSentimentAnalyzer:
                     decay = 0.5 ** (hours_old / 24)
                     sentiment = news.get("sentiment", 0)
                     impact = news.get("impact_score", 1) or 1
-                    
                     match_type = "extracted" if match_extracted else "content"
                     print(
                         f"[DEBUG MATCH] ({match_type}) Titre: {news.get('title', '')[:60]} | Symbols: {news_symbols} | sentiment={sentiment:.4f} | impact={impact:.2f} | decay={decay:.2f}"
                     )
                     total += sentiment * impact * decay
                     total_weight += impact * decay
-
             if not matched:
                 print(
                     f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}"
                 )
-                # Show a few examples of what symbols are available
                 available_symbols = set()
-                for news in self.news_buffer[:5]:  # Just first 5 for debugging
+                for news in self.news_buffer[:5]:
                     available_symbols.update(news.get("symbols", []))
                 print(
                     f"[DEBUG SENTIMENT] Symboles disponibles (échantillon): {list(available_symbols)[:10]}"
                 )
-
             score = total / max(total_weight, 1e-6) if total_weight > 0 else 0.0
             print(
                 f"[DEBUG SENTIMENT] symbol={symbol_key} | sentiment_score={score:.4f} | total={total:.4f} | total_weight={total_weight:.4f} | matched={matched}"
             )
             return score
-
         except Exception as e:
             self.logger.error(f"Error getting sentiment for {symbol}: {str(e)}")
             return 0.0
@@ -380,12 +353,10 @@ class NewsSentimentAnalyzer:
                 news_items = data.get("Data", []) or data.get("data", []) or []
             else:
                 return []
-
             formatted = []
             for item in news_items:
                 title = item.get("title", "")
                 text = item.get("body", "") or item.get("text", "")
-                # Extraction avancée des symboles (titre + texte)
                 symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
                 formatted.append(
                     {
@@ -412,42 +383,29 @@ class NewsSentimentAnalyzer:
                     return int(item["published_on"])
                 if "pubDate" in item:
                     from email.utils import parsedate_to_datetime
-
                     return int(parsedate_to_datetime(item["pubDate"]).timestamp())
             else:
                 pub_date = item.find("pubDate")
                 if pub_date:
                     from email.utils import parsedate_to_datetime
-
                     return int(parsedate_to_datetime(pub_date.text).timestamp())
             return int(datetime.now().timestamp())
         except Exception:
             return int(datetime.now().timestamp())
 
     def _calculate_impact(self, news: Dict, sentiment: float) -> float:
-        """
-        Calcule un score d'impact pour la pondération du sentiment.
-        Peut être ajusté selon la source, la fraîcheur, la longueur, etc.
-        """
         impact = news.get("source_weight", 1.0)
-        # Bonus ou malus selon le score de sentiment
         impact *= 1.0 + min(1.0, abs(sentiment))
-        # Bonus fraîcheur (moins de 24h = 1.0, sinon decay)
         hours_old = (
             datetime.now().timestamp()
             - news.get("timestamp", datetime.now().timestamp())
         ) / 3600
         impact *= max(0.1, 1.0 - (hours_old / 48))
-        # Bonus nombre de symboles
         n_symbols = len(news.get("symbols", []))
         impact *= min(2.0, 1.0 + n_symbols * 0.1)
         return max(0.1, min(5.0, impact))
 
     def get_sentiment_summary(self) -> Dict[str, Any]:
-        """
-        Get comprehensive sentiment summary from news analysis.
-        Returns global sentiment, symbol-specific sentiments, and top impactful news.
-        """
         try:
             if not self.news_buffer:
                 return {
@@ -456,24 +414,17 @@ class NewsSentimentAnalyzer:
                     "top_symbols": [],
                     "top_news": [],
                 }
-
-            # Calculate global weighted sentiment
             total = 0.0
             total_weight = 0.0
             symbol_stats = {}
-
             for item in self.news_buffer:
                 sentiment = item.get("sentiment")
                 impact_score = item.get("impact_score", 1.0)
-
                 if sentiment is None or impact_score is None:
                     continue
-
                 weight = impact_score
                 total += sentiment * weight
                 total_weight += weight
-
-                # Stats per symbol
                 for sym in item.get("symbols", []):
                     sym = sym.upper()
                     if sym not in symbol_stats:
@@ -481,10 +432,7 @@ class NewsSentimentAnalyzer:
                     symbol_stats[sym]["total"] += sentiment * weight
                     symbol_stats[sym]["weight"] += weight
                     symbol_stats[sym]["count"] += 1
-
             sentiment_global = total / total_weight if total_weight > 0 else 0.0
-
-            # Top 5 most frequent symbols
             top_symbols = []
             if symbol_stats:
                 sorted_syms = sorted(
@@ -501,8 +449,6 @@ class NewsSentimentAnalyzer:
                             "n_news": stats["count"],
                         }
                     )
-
-            # Top 3 most impactful news
             valid_news = [
                 item
                 for item in self.news_buffer
@@ -514,7 +460,6 @@ class NewsSentimentAnalyzer:
                 key=lambda x: abs(x.get("sentiment", 0)) * x.get("impact_score", 1),
                 reverse=True,
             )[:3]
-
             top_news_list = [
                 {
                     "title": n.get("title", ""),
@@ -527,14 +472,12 @@ class NewsSentimentAnalyzer:
                 }
                 for n in top_news
             ]
-
             return {
                 "sentiment_global": sentiment_global,
                 "n_news": len(self.news_buffer),
                 "top_symbols": top_symbols,
                 "top_news": top_news_list,
             }
-
         except Exception as e:
             self.logger.error(f"Error in get_sentiment_summary: {e}")
             return {
@@ -543,7 +486,6 @@ class NewsSentimentAnalyzer:
                 "top_symbols": [],
                 "top_news": [],
             }
-
 
 def extract_symbols(title: str) -> List[str]:
     """Legacy function for backward compatibility."""
