@@ -11,53 +11,20 @@ from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
-
+from src.analysis.news.symbol_extractor import SymbolExtractor
 
 class SymbolExtractor:
-    """
-    Extraction robuste des symboles crypto via mapping et contextuel (paires standard).
-    """
-
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
         self.symbol_mapping = symbol_mapping or {
-            "bitcoin": "BTC",
-            "btc": "BTC",
-            "ethereum": "ETH",
-            "eth": "ETH",
-            "cardano": "ADA",
-            "ada": "ADA",
-            "solana": "SOL",
-            "sol": "SOL",
-            "ripple": "XRP",
-            "xrp": "XRP",
-            "dogecoin": "DOGE",
-            "doge": "DOGE",
-            "polkadot": "DOT",
-            "dot": "DOT",
-            "binance": "BNB",
-            "bnb": "BNB",
-            "matic": "MATIC",
-            "polygon": "MATIC",
-            "litecoin": "LTC",
-            "ltc": "LTC",
-            "shiba": "SHIB",
-            "shib": "SHIB",
-            "tron": "TRX",
-            "trx": "TRX",
-            "avalanche": "AVAX",
-            "avax": "AVAX",
-            "chainlink": "LINK",
-            "link": "LINK",
-            "uniswap": "UNI",
-            "uni": "UNI",
-            "stellar": "XLM",
-            "xlm": "XLM",
+            "bitcoin": "BTC", "btc": "BTC", "ethereum": "ETH", "eth": "ETH", "cardano": "ADA", "ada": "ADA",
+            "solana": "SOL", "sol": "SOL", "ripple": "XRP", "xrp": "XRP", "dogecoin": "DOGE", "doge": "DOGE",
+            "polkadot": "DOT", "dot": "DOT", "binance": "BNB", "bnb": "BNB", "matic": "MATIC", "polygon": "MATIC",
+            "litecoin": "LTC", "ltc": "LTC", "shiba": "SHIB", "shib": "SHIB", "tron": "TRX", "trx": "TRX",
+            "avalanche": "AVAX", "avax": "AVAX", "chainlink": "LINK", "link": "LINK", "uniswap": "UNI", "uni": "UNI",
+            "stellar": "XLM", "xlm": "XLM",
             # ... complète selon tes besoins ...
         }
-        # Set of all tickers for fast lookup (BTC, ETH…)
         self.known_tickers = set(self.symbol_mapping.values())
-
-        # Compile regex for all mapping names
         self.regex_patterns = [
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
             for name, ticker in self.symbol_mapping.items()
@@ -67,63 +34,33 @@ class SymbolExtractor:
         found: Set[str] = set()
         if not text:
             return []
-
-        # 1. Mapping regex strict (mots connus)
         for pattern, ticker in self.regex_patterns:
             if pattern.search(text):
                 found.add(ticker)
-
-        # 2. Paires crypto (BTCUSDT, ETHUSD, DOGE/BTC, etc) : On ne garde que si le ticker est connu
-        # BTCUSDT, ETHUSD, DOGE/BTC, etc
-        for pair in re.findall(
-            r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
-        ):
+        # Paires crypto et tickers
+        for pair in re.findall(r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()):
             ticker = pair[0]
             if ticker in self.known_tickers:
                 found.add(ticker)
-        # $BTC, $ETH
         for match in re.findall(r"\$([A-Z]{3,5})\b", text.upper()):
             if match in self.known_tickers:
                 found.add(match)
         return list(found)
 
-
 class NewsSentimentAnalyzer:
-    """
-    Analyseur avancé des news crypto avec extraction robuste des symboles et analyse de sentiment.
-    """
-
     def __init__(self, config: dict):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
-
         self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
-
-        # Modèle FinBERT (lazy)
+        # Device: GPU Apple Silicon (MPS) ou CPU selon dispo
+        self.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
         self._model = None
         self._tokenizer = None
-
         self.sources = [
-            {
-                "name": "CoinDesk",
-                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
-                "type": "rss",
-                "weight": 0.9,
-            },
-            {
-                "name": "CryptoCompare",
-                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
-                "type": "json",
-                "weight": 0.7,
-            },
-            {
-                "name": "Cointelegraph",
-                "url": "https://cointelegraph.com/rss",
-                "type": "rss",
-                "weight": 0.8,
-            },
+            {"name": "CoinDesk", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/", "type": "rss", "weight": 0.9},
+            {"name": "CryptoCompare", "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN", "type": "json", "weight": 0.7},
+            {"name": "Cointelegraph", "url": "https://cointelegraph.com/rss", "type": "rss", "weight": 0.8},
         ]
-
         self.news_buffer: List[Dict] = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
@@ -131,9 +68,8 @@ class NewsSentimentAnalyzer:
     @property
     def model(self):
         if self._model is None:
-            self._model = AutoModelForSequenceClassification.from_pretrained(
-                "ProsusAI/finbert"
-            )
+            self._model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+            self._model.to(self.device)
         return self._model
 
     @property
@@ -146,35 +82,23 @@ class NewsSentimentAnalyzer:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-
-        async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers
-        ) as session:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers) as session:
             tasks = [self._fetch_source(session, source) for source in self.sources]
             results = await asyncio.gather(*tasks, return_exceptions=True)
-
             valid_news = []
             for result in results:
                 if isinstance(result, list):
                     valid_news.extend(result)
-
             print(f"\n[NEWS DEBUG] {len(valid_news)} news récupérées ce cycle")
             if valid_news:
                 for idx, n in enumerate(valid_news[:5]):
-                    print(
-                        f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}"
-                    )
+                    print(f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}")
             else:
                 print("  (Aucune news récupérée)")
             return valid_news
 
-    async def _fetch_source(
-        self, session: aiohttp.ClientSession, source: Dict
-    ) -> List[Dict]:
+    async def _fetch_source(self, session: aiohttp.ClientSession, source: Dict) -> List[Dict]:
         try:
             async with session.get(source["url"], timeout=30) as response:
                 if response.status != 200:
@@ -202,7 +126,6 @@ class NewsSentimentAnalyzer:
         title = item.find("title").text if item.find("title") else ""
         description = item.find("description").text if item.find("description") else ""
         url = item.find("link").text if item.find("link") else ""
-        # Extraction avancée des symboles (titre + description)
         symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
         return {
             "title": title,
@@ -219,7 +142,6 @@ class NewsSentimentAnalyzer:
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
             return []
-
         try:
             print("[DEBUG] Après try, news_items size:", len(news_items))
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
@@ -231,8 +153,9 @@ class NewsSentimentAnalyzer:
                 truncation=True,
                 max_length=512,
             )
-            print("[DEBUG] Inputs batch prêt")
-
+            # PATCH MPS : envoie le batch sur le device
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
+            print("[DEBUG] Inputs batch prêt (device:", self.device, ")")
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 scores = torch.nn.functional.softmax(outputs.logits, dim=-1)
@@ -263,7 +186,6 @@ class NewsSentimentAnalyzer:
                 )
             print("[DEBUG] analyze_sentiment_batch RETURN TYPE:", type(results))
             return results
-
         except Exception as e:
             print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
             self.logger.error(f"Error in sentiment analysis: {str(e)}")
@@ -522,8 +444,9 @@ class NewsSentimentAnalyzer:
         return max(0.1, min(5.0, impact))
 
     # Pour compatibilité legacy :
-    def _extract_symbols(self, text: str) -> List[str]:
-        return self.symbol_extractor.extract_symbols(text)
+    def extract_symbols(title: str) -> List[str]:
+        extractor = SymbolExtractor()
+        return extractor.extract_symbols(title)
 
     def get_sentiment_summary(self) -> Dict[str, Any]:
         """
