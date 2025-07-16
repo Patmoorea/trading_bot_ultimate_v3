@@ -3039,7 +3039,9 @@ async def run_clean_bot():
             if bot is None:
                 print("Erreur critique à l'initialisation du bot. Arrêt.")
                 return
-
+            
+            await bot.test_news_sentiment()
+            
             # Analyse initiale du marché
             regime, _, _ = await bot.study_market("7d")
             log_dashboard(f"🔈 Régime de marché détecté: {regime}")

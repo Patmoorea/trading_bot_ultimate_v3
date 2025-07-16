@@ -1,0 +1,16 @@
+2025-07-16T20:00:00.343143 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-16T20:00:00.343892 | Initialisation des modèles d'IA...
+2025-07-16T20:00:00.760690 | ✅ Modèles d'IA initialisés avec succès
+2025-07-16T20:00:03.022413 | ✅ PPO Strategy initialized successfully
+2025-07-16T20:00:03.022741 | ✅ Bot initialisé avec Telegram: True
+2025-07-16T20:00:03.022787 | ✅ Trading en direct: True
+2025-07-16T20:00:03.022837 | ✅ IA activée: True
+2025-07-16T20:00:03.022939 | ✅ Analyse de news activée: True
+2025-07-16T20:01:48.797316 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-16T20:01:48.797778 | Initialisation des modèles d'IA...
+2025-07-16T20:01:49.163837 | ✅ Modèles d'IA initialisés avec succès
+2025-07-16T20:01:50.691932 | ✅ PPO Strategy initialized successfully
+2025-07-16T20:01:50.692122 | ✅ Bot initialisé avec Telegram: True
+2025-07-16T20:01:50.692159 | ✅ Trading en direct: True
+2025-07-16T20:01:50.692191 | ✅ IA activée: True
+2025-07-16T20:01:50.692221 | ✅ Analyse de news activée: True
