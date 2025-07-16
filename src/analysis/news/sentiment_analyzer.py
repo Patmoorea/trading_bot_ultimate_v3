@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
-from src.analysis.news.symbol_extractor import SymbolExtractor
+
 
 class SymbolExtractor:
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
@@ -442,11 +442,6 @@ class NewsSentimentAnalyzer:
         n_symbols = len(news.get("symbols", []))
         impact *= min(2.0, 1.0 + n_symbols * 0.1)
         return max(0.1, min(5.0, impact))
-
-    # Pour compatibilité legacy :
-    def extract_symbols(title: str) -> List[str]:
-        extractor = SymbolExtractor()
-        return extractor.extract_symbols(title)
 
     def get_sentiment_summary(self) -> Dict[str, Any]:
         """
