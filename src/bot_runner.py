@@ -674,6 +674,13 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
     
+    def update_pairs(self, new_pairs):
+        """
+        Met à jour dynamiquement la liste des paires et réinitialise PPO avec le bon input_dim.
+        """
+        self.pairs_valid = new_pairs
+        self._initialize_ai()  # Recrée PPO et l'input_dim pour les nouvelles paires
+        
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.
@@ -683,7 +690,7 @@ class TradingBotM4:
         results = self.news_analyzer.analyze_sentiment_batch(news)
         summary = self.news_analyzer.get_sentiment_summary()
         print("Sentiment summary:", summary)
-               
+             
     def check_reload_dl_model(self):
         path = "src/models/cnn_lstm_model.pth"
         if os.path.exists(path):
