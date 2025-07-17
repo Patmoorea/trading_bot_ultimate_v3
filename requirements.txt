@@ -73,6 +73,7 @@ huggingface-hub==0.33.4
 ibm-cloud-sdk-core==3.24.2
 ibm-platform-services==0.66.2
 idna==3.10
+iniconfig==2.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 jmespath==1.0.1
@@ -117,6 +118,7 @@ pennylane-lightning==0.41.1
 pillow==11.2.1
 platformdirs==4.3.8
 plotly==6.1.2
+pluggy==1.6.0
 prometheus-client==0.22.1
 propcache==0.3.2
 protobuf==4.25.8
@@ -135,6 +137,8 @@ pymdown-extensions==10.15
 pyopenssl==25.1.0
 pyparsing==3.2.3
 pyspnego==0.11.2
+pytest==8.4.1
+pytest-asyncio==1.1.0
 python-binance==1.0.29
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
@@ -202,11 +206,12 @@ threadpoolctl==3.6.0
 tokenizers==0.21.0
 toml==0.10.2
 tomlkit==0.13.3
-torch==2.2.2
+-e git+https://github.com/pytorch/pytorch.git@8eaa9f2701277f328d9d6aea1bfe7cba20792f7c#egg=torch
 torchaudio==2.7.1
-torchvision==0.17.2
+-e git+https://github.com/pytorch/vision.git@f52c4f1afd7dec25cbe7b98bcf1cbc840298e8da#egg=torchvision
 tornado==6.5.1
 tqdm==4.67.1
+trading_bot_ultimate==1.0.0
 transformers==4.52.4
 typing-extensions==4.14.0
 typing-inspection==0.4.1
