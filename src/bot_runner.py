@@ -1117,7 +1117,7 @@ class TradingBotM4:
                 self.dl_model_last_mtime = os.path.getmtime(weights_path)
             else:
                 self.dl_model_last_mtime = None    
-
+            print(f"[DEBUG] paires_valid utilisées IA: {self.pairs_valid} (count={len(self.pairs_valid)})")
             # Configuration de l'environnement PPO - PATCH dynamique input_dim
             N_FEATURES = 8
             N_STEPS = 63
@@ -2143,7 +2143,7 @@ class TradingBotM4:
         """
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
-
+        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {(N_FEATURES * N_STEPS * num_pairs,)}")
         N_STEPS = 63  # Doit matcher la config du modèle
         N_FEATURES = 8  # ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
         num_pairs = len(self.pairs_valid)
@@ -3423,6 +3423,25 @@ async def send_trade_notification(bot, decision, trade_result, amount):
     except Exception as e:
         logging.error(f"Erreur envoi notification: {e}")
 
+def build_telegram_summary(bot, trade_decisions, news_sentiment):
+    summary = "🟢 <b>Résumé du cycle</b>\n"
+    # Régime
+    summary += f"📊 Régime de marché : {bot.regime}\n"
+    # Paires principales (top 5)
+    top_pairs = ", ".join([d["pair"] for d in trade_decisions[:5]]) if trade_decisions else "N/A"
+    summary += f"📈 Paires principales : {top_pairs}\n"
+    # Décisions de trade principales (top 5)
+    for d in trade_decisions[:5]:
+        emoji = "🟢" if d["action"] == "buy" else "🔴" if d["action"] == "sell" else "⚪️"
+        conf = int(d["confidence"]*100)
+        summary += f"{emoji} {d['pair']} : {d['action'].upper()} ({conf}%)\n"
+    # News principales (top 3)
+    if news_sentiment and "latest_news" in news_sentiment:
+        summary += "\n📰 News principales :\n"
+        for title in news_sentiment["latest_news"][:3]:
+            summary += f"• {title}\n"
+    return summary
+
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
@@ -3499,7 +3518,9 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         )
 
         # Envoi sur Telegram
-        await bot.telegram.send_message(rapport)
+        await bot.telegram.send_message(
+            build_telegram_summary(bot, trade_decisions, news_sentiment)
+        )
 
     except Exception as e:
         logging.error(f"Erreur envoi rapports: {e}")

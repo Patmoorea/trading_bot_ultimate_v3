@@ -40,7 +40,7 @@ class PPOStrategy(BaseStrategy):
             "verbose": config.get("verbose", 1),
             "policy_kwargs": {"net_arch": [64, 64], "activation_fn": torch.nn.ReLU},
         }
-
+        print(f"[DEBUG PPO] input_dim attendu: {self.input_dim}, nombre de paires : {len(self.env.trading_pairs)}")
         try:
             self.model = PPO(env=self.env, **self.ppo_config)
             self.logger.info("✅ Modèle PPO initialisé")
