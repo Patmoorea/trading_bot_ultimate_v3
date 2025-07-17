@@ -148,11 +148,6 @@ class NewsSentimentAnalyzer:
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
             print("[DEBUG] Nombre de textes à analyser:", len(texts))
 
-            # Si tu passes le watermark à une fonction, fais-le ici
-            # Par exemple, si tu avais : results = some_sentiment_function(texts, low_watermark_ratio=low_watermark_ratio)
-            # results = some_sentiment_function(texts, low_watermark_ratio=low_watermark_ratio)
-            # Mais pour FinBERT standard, tu n'en as pas besoin
-
             inputs = self.tokenizer(
                 texts,
                 return_tensors="pt",
@@ -169,7 +164,9 @@ class NewsSentimentAnalyzer:
 
             results = []
             for i, item in enumerate(news_items):
-                sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
+                # PATCH: Calcul correct du sentiment (bullish - bearish)
+                # FinBERT classes: [negative, neutral, positive]
+                sentiment = float(scores[i][2] - scores[i][0])  # positif - négatif
                 results.append(
                     {
                         **item,
