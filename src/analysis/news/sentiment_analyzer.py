@@ -149,8 +149,12 @@ class NewsSentimentAnalyzer:
             print(f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2")
             low_watermark_ratio = 0.2
         import inspect
-        caller = inspect.stack()[1]
-        print(f"[DEBUG] Called from {caller.filename}:{caller.lineno} with low_watermark_ratio={low_watermark_ratio}")
+        stack = inspect.stack()
+        if len(stack) > 1:
+            caller = stack[1]
+            print(f"[DEBUG] Called from {caller.filename}:{caller.lineno} with low_watermark_ratio={low_watermark_ratio}")
+        else:
+            print("[DEBUG] Called from REPL or top-level")
 
         print("[DEBUG] analyze_sentiment_batch entrée")
         if not news_items:
