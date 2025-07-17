@@ -135,8 +135,19 @@ class NewsSentimentAnalyzer:
         }
 
     def analyze_sentiment_batch(self, news_items: List[Dict], low_watermark_ratio: float = 0.2) -> List[Dict]:
-        # Patch: force le watermark ratio à une valeur valide
-        low_watermark_ratio = min(0.5, max(0.05, low_watermark_ratio))  # Entre 0.05 et 0.5
+        """
+        Analyse un batch de news avec FinBERT et retourne la liste des news enrichies avec sentiment et impact_score.
+        Watermark ratio est forcé à une valeur valide (0.05 à 0.5) pour éviter toute exception.
+        Le sentiment est calculé comme score bullish - bearish (positive - negative).
+        """
+        # Patch ultime : force le watermark ratio à une valeur valide
+        try:
+            low_watermark_ratio = float(low_watermark_ratio)
+        except Exception:
+            low_watermark_ratio = 0.2
+        if low_watermark_ratio > 0.5 or low_watermark_ratio < 0.05:
+            print(f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2")
+            low_watermark_ratio = 0.2
 
         print("[DEBUG] analyze_sentiment_batch entrée")
         if not news_items:
@@ -144,8 +155,11 @@ class NewsSentimentAnalyzer:
             return []
 
         try:
-            print("[DEBUG] Après try, news_items size:", len(news_items))
+            print("[DEBUG] Début try analyze_sentiment_batch")
+            print("[DEBUG] low_watermark_ratio:", low_watermark_ratio)
+            print("[DEBUG] news_items:", news_items[:2])
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
+            print("[DEBUG] texts:", texts[:2])
             print("[DEBUG] Nombre de textes à analyser:", len(texts))
 
             inputs = self.tokenizer(
@@ -164,9 +178,8 @@ class NewsSentimentAnalyzer:
 
             results = []
             for i, item in enumerate(news_items):
-                # PATCH: Calcul correct du sentiment (bullish - bearish)
                 # FinBERT classes: [negative, neutral, positive]
-                sentiment = float(scores[i][2] - scores[i][0])  # positif - négatif
+                sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
                 results.append(
                     {
                         **item,
@@ -191,6 +204,7 @@ class NewsSentimentAnalyzer:
             return results
         except Exception as e:
             print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
+            print("[DEBUG] Exception details:", repr(e))
             self.logger.error(f"Error in sentiment analysis: {str(e)}")
             print("[DEBUG] analyze_sentiment_batch RETURN TYPE:", type([]))
             return []
