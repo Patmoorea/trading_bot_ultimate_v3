@@ -4673,3 +4673,11 @@
 2025-07-17T18:14:37.039017 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.30 | Tech: 0.63 | IA: 0.00 | Sentiment: 0.00
 2025-07-17T18:14:37.039047 | [TRADE DECISION] ETH/USDT | Action: BUY | Confiance: 0.32 | Tech: 0.67 | IA: 0.00 | Sentiment: 0.00
 2025-07-17T18:16:22.780852 | [NEWS] Score sentiment global: 0.03 | Impact: 0.54 | Événements: XRP Price Surges Beyond $3.3, Leaves Over $40 Million in Liquidations; Ethereum and XRP Price Movements and Pump.fun Airdrop Highlight Myriad Markets This Week; Ripple Founder Makes Controversial Coin Transfer as XRP Price Nears All-Time High
+2025-07-17T18:19:26.483046 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-17T18:19:26.484554 | Initialisation des modèles d'IA...
+2025-07-17T18:19:26.511632 | ✅ Modèles d'IA initialisés avec succès
+2025-07-17T18:19:28.156167 | ✅ PPO Strategy initialized successfully
+2025-07-17T18:19:28.156999 | ✅ Bot initialisé avec Telegram: True
+2025-07-17T18:19:28.157057 | ✅ Trading en direct: True
+2025-07-17T18:19:28.157109 | ✅ IA activée: True
+2025-07-17T18:19:28.157160 | ✅ Analyse de news activée: True

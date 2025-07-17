@@ -21,14 +21,11 @@ class PPOStrategy(BaseStrategy):
         # PATCH: input_dim doit matcher le nombre de paires dynamiquement
         self.input_dim = config.get("input_dim")
         if self.input_dim is None:
-            # Si input_dim absent, on le déduit du nombre de paires de l'env
-            # On suppose que chaque observation = N_FEATURES * N_STEPS
-            # et que tu passes toutes les paires à la suite
             N_FEATURES = 8
             N_STEPS = 63
             num_pairs = len(getattr(self.env, "trading_pairs", []))
             self.input_dim = N_FEATURES * N_STEPS * num_pairs
-                self.action_dim = len(self.env.trading_pairs)
+        self.action_dim = len(self.env.trading_pairs)
 
         # Configuration PPO
         self.ppo_config = {
