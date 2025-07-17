@@ -495,27 +495,41 @@ class TelegramNotifier:
         if ai_summary:
             message += f"🤖 <b>Résumé IA:</b>\n{ai_summary}\n\n"
 
-        for news in filtered_news[:5]:
-            # Source
+        def simple_translate_title(title):
+            # Patch rapide, pour une vraie traduction utiliser deep-translator ou API.
+            dico = {
+                "Bitcoin": "Bitcoin",
+                "Ethereum": "Ethereum",
+                "price": "prix",
+                "update": "mise à jour",
+                "reaches": "atteint",
+                "falls": "chute",
+                "surges": "explose",
+                "network": "réseau",
+                "record": "record",
+                "launch": "lancement",
+                "approval": "approbation",
+                "hack": "piratage",
+                # Ajoute d'autres mots ici
+            }
+            for en, fr in dico.items():
+                title = title.replace(en, fr)
+            return title
+
+        # Remplacer [:5] par rien pour prendre tous les titres
+        for news in filtered_news:
             src = news.get("source", "default")
             emoji = source_emoji.get(src, source_emoji["default"])
-            # Lien cliquable sur le titre
             title = news.get("title", "NO_TITLE")
             url = news.get("url", "")
+            # Traduction simplifiée
+            fr_title = simple_translate_title(title)
             if url:
-                title_line = f'{emoji} <a href="{url}">{title}</a>'
+                title_line = f'{emoji} <a href="{url}">{fr_title}</a>'
             else:
-                title_line = f"{emoji} {title}"
-
-            # Source affichée en fin de ligne
+                title_line = f"{emoji} {fr_title}"
             title_line += f" <i>({src})</i>\n"
-
-            # Résumé court
-            summary_text = news.get("summary") or news.get("text") or ""
-            if summary_text:
-                message += f"{title_line}└ {summary_text[:180]}...\n\n"
-            else:
-                message += f"{title_line}\n"
+            message += title_line
 
         await self.send_message(message)
 
@@ -2187,7 +2201,6 @@ class TradingBotM4:
         if not ppo_features_list:
             print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
             return
-
         ppo_features = np.concatenate(ppo_features_list)
         expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
         if ppo_features.shape != expected_shape:
