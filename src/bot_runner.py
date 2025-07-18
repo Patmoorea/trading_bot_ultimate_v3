@@ -385,6 +385,10 @@ class TelegramNotifier:
         )
         full_message = header + message
 
+        MAX_TELEGRAM_LENGTH = 4000
+        if len(full_message) > MAX_TELEGRAM_LENGTH:
+            full_message = full_message[:MAX_TELEGRAM_LENGTH-20] + "\n... (troncature automatique)"
+            
         url = f"{self.base_url}/sendMessage"
         data = {"chat_id": self.chat_id, "text": full_message, "parse_mode": "HTML"}
         try:
