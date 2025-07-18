@@ -1117,6 +1117,10 @@ class TradingBotM4:
             if not self.env:
                 raise ValueError("L'environnement de trading n'est pas initialisé")
 
+            # 1. Ajout des constantes pour le calcul d'input_dim
+            self.N_FEATURES = 8
+            self.N_STEPS = 63
+
             # === PATCH: Chargement hyperparams AutoML s'ils existent ===
             hp_path = "config/best_hyperparams.json"
             if os.path.exists(hp_path):
@@ -1180,10 +1184,7 @@ class TradingBotM4:
 
         if self.api_key and self.api_secret:
             self.binance_client = Client(self.api_key, self.api_secret)
-            # Modifier cette ligne
-            self.binance_connector = (
-                BinanceConnector()
-            )  # Retirer les paramètres api_key et api_secret
+            self.binance_connector = BinanceConnector()
             self.executor = SmartOrderExecutor()
             self.is_live_trading = True
             self.logger.info("Binance API initialized for live trading")
@@ -1201,9 +1202,8 @@ class TradingBotM4:
 
         try:
             print("Configuration de la stratégie PPO...")
-            # PATCH dynamique input_dim ici aussi, pour la double initialisation
-            N_FEATURES = 8
-            N_STEPS = 63
+            N_FEATURES = self.N_FEATURES
+            N_STEPS = self.N_STEPS
             num_pairs = len(self.pairs_valid)
             env_config = {
                 "env": self.env,
@@ -1244,6 +1244,10 @@ class TradingBotM4:
         log_dashboard(f"✅ Trading en direct: {self.is_live_trading}")
         log_dashboard(f"✅ IA activée: {self.ai_enabled}")
         log_dashboard(f"✅ Analyse de news activée: {self.news_enabled}")
+
+    # Ajoute la méthode get_input_dim à ta classe TradingBotM4 si ce n'est pas déjà fait :
+    def get_input_dim(self):
+        return self.N_FEATURES * self.N_STEPS * len(self.pairs_valid)
 
     async def test_news_sentiment(self):
         """
