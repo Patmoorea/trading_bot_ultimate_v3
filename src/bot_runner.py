@@ -606,10 +606,12 @@ class TradingBotM4:
                 },
             },
         }
+        # --- SYNCHRONISATION AUTO DES PAIRS ---
+        self.pairs_valid = self.config["TRADING"]["pairs"]
+
+        # --- WS COLLECTOR --- (toujours synchro avec la config)
         self.ws_collector = BufferedWSCollector(
-            symbols=[
-                s.replace("/", "").upper() for s in self.config["TRADING"]["pairs"]
-            ],
+            symbols=[s.replace("/", "").upper() for s in self.pairs_valid],
             timeframes=self.config["TRADING"]["timeframes"],
             maxlen=2000,
         )
@@ -646,8 +648,10 @@ class TradingBotM4:
 
         # Initialisation de l'environnement (une seule fois)
         print("Configuration de l'environnement...")
+        
+        # --- ENVIRONNEMENT TRADING ---
         self.env = TradingEnv(
-            trading_pairs=self.config["TRADING"]["pairs"],
+            trading_pairs=self.pairs_valid,
             timeframes=self.config["TRADING"]["timeframes"],
         )
         print("✅ Environnement initialisé avec succès")
@@ -703,7 +707,14 @@ class TradingBotM4:
         """
         self.pairs_valid = new_pairs
         self._initialize_ai()  # Recrée PPO et l'input_dim pour les nouvelles paires
-        
+    
+    def update_pairs_from_config(self):
+        """
+        Synchro auto avec la config actuelle. À appeler dès que tu modifies la config TRADING/pairs.
+        """
+        self.pairs_valid = self.config["TRADING"]["pairs"]
+        self._initialize_ai()  # Recrée tout avec le bon shape
+           
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.
