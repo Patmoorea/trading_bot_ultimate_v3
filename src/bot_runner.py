@@ -1778,6 +1778,8 @@ class TradingBotM4:
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
+        Correction : le score global est calculé sur les scores déjà assignés à chaque paire,
+        et sinon fallback sur sentiment_scores si jamais.
         """
         headlines = []
         if news_data is None:
@@ -1787,21 +1789,40 @@ class TradingBotM4:
                 if isinstance(item, dict) and "title" in item:
                     headlines.append(str(item["title"]))  # Toujours str pour éviter erreur
 
-        # Calcule le score global (moyenne des sentiments, sauf si analyseur fournit une meilleure méthode)
+        # --- PATCH: LOG pour debug ---
+        print(f"[DEBUG _save_sentiment_data] sentiment_scores={sentiment_scores}")
+
+        # Correction : on prend les scores assignés dans market_data
+        valid_scores = [
+            data.get("sentiment")
+            for key, data in self.market_data.items()
+            if data.get("sentiment") is not None
+        ]
+        print(f"[DEBUG _save_sentiment_data] valid_scores from market_data={valid_scores}")
+
+        # Fallback sur sentiment_scores si jamais
+        if not valid_scores:
+            valid_scores = [
+                item.get("sentiment") for item in sentiment_scores
+                if isinstance(item, dict) and item.get("sentiment") is not None
+            ]
+            print(f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}")
+
         try:
             # Si ton analyseur a une méthode robuste, utilise-la !
             summary = self.news_analyzer.get_sentiment_summary()
             if isinstance(summary, dict) and "sentiment_global" in summary:
                 sentiment_global = float(summary.get("sentiment_global", 0))
+                print(f"[DEBUG _save_sentiment_data] sentiment_global from summary={sentiment_global}")
             else:
-                # Fallback : moyenne des scores individuels
-                valid_scores = [item.get("sentiment", 0) for item in sentiment_scores if isinstance(item, dict)]
+                # PATCH : moyenne sur tous les scores assignés
                 sentiment_global = float(np.mean(valid_scores)) if valid_scores else 0.0
+                print(f"[DEBUG _save_sentiment_data] sentiment_global from valid_scores={sentiment_global}")
         except Exception as e:
             print(f"[SENTIMENT] Exception during global calculation: {e}")
             sentiment_global = 0.0
 
-        # Impact : moyenne des absolus
+        # Impact : moyenne des absolus (toujours sur sentiment_scores)
         impact_score = (
             float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores if isinstance(item, dict)]))
             if sentiment_scores else 0.0
