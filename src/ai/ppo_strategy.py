@@ -76,30 +76,28 @@ class PPOStrategy(BaseStrategy):
             return {"action": "HOLD", "confidence": 0.0}
 
     def _preprocess_state(self, state: np.ndarray) -> np.ndarray:
-        """Prétraitement de l'état"""
+        """Prétraitement de l'état pour PPO SB3 (Box) : retourne un vecteur 1D de la bonne dimension"""
         try:
             # Conversion en numpy si nécessaire
             if isinstance(state, (list, tuple)):
                 state = np.array(state, dtype=np.float32)
 
-            # Reshape si nécessaire
-            if state.ndim == 1:
-                state = state.reshape(1, -1)
+            # Aplatir pour obtenir 1D
+            state = state.flatten()
 
-            # Padding/Truncating pour avoir la bonne dimension
-            target_shape = (1, self.input_dim)
-            if state.shape != target_shape:
-                if state.shape[1] > self.input_dim:
-                    state = state[:, : self.input_dim]
-                else:
-                    pad_width = ((0, 0), (0, self.input_dim - state.shape[1]))
-                    state = np.pad(state, pad_width, mode="constant")
-
+            # Vérifie la dimension (input_dim)
+            if state.shape[0] > self.input_dim:
+                state = state[:self.input_dim]
+            elif state.shape[0] < self.input_dim:
+                pad_width = (0, self.input_dim - state.shape[0])
+                state = np.pad(state, pad_width, mode="constant")
+            
+            # Retourne un vecteur 1D de taille input_dim
             return state
 
         except Exception as e:
             self.logger.error(f"Erreur prétraitement: {str(e)}")
-            return np.zeros((1, self.input_dim))
+            return np.zeros(self.input_dim)
 
     def _calculate_confidence(self, state: np.ndarray) -> float:
         """Calcul du score de confiance compatible avec Categorical/Normal SB3"""

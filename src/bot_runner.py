@@ -1769,51 +1769,57 @@ class TradingBotM4:
             print(f"[SENTIMENT SAVE ERROR] {e}")
 
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
+        """
+        Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
+        """
         headlines = []
         if news_data is None:
             news_data = sentiment_scores
         if isinstance(news_data, list):
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
-                    headlines.append(item["title"])
+                    headlines.append(str(item["title"]))  # Toujours str pour éviter erreur
 
-        # --- PATCH: UTILISE LE SCORE GLOBAL CALCULE PAR L'ANALYSEUR ---
-        sentiment_global = 0
+        # Calcule le score global (moyenne des sentiments, sauf si analyseur fournit une meilleure méthode)
         try:
-            # Utilise la méthode de l'analyseur si dispo
+            # Si ton analyseur a une méthode robuste, utilise-la !
             summary = self.news_analyzer.get_sentiment_summary()
-            if isinstance(summary, dict):
-                sentiment_global = summary.get("sentiment_global", 0)
-        except Exception:
-            sentiment_global = 0
+            if isinstance(summary, dict) and "sentiment_global" in summary:
+                sentiment_global = float(summary.get("sentiment_global", 0))
+            else:
+                # Fallback : moyenne des scores individuels
+                valid_scores = [item.get("sentiment", 0) for item in sentiment_scores if isinstance(item, dict)]
+                sentiment_global = float(np.mean(valid_scores)) if valid_scores else 0.0
+        except Exception as e:
+            print(f"[SENTIMENT] Exception during global calculation: {e}")
+            sentiment_global = 0.0
 
+        # Impact : moyenne des absolus
         impact_score = (
-            float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores]))
-            if sentiment_scores
-            else 0
+            float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores if isinstance(item, dict)]))
+            if sentiment_scores else 0.0
         )
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
+
         print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
-        print(
-            f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
-        )
+        print(f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}")
+
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
             "latest_news": headlines,
-            "overall_sentiment": sentiment_global,   # PATCH: c'est ici qu'on change !
+            "overall_sentiment": sentiment_global,
             "impact_score": impact_score,
             "major_events": major_events,
         }
+
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
             shared_data["sentiment"] = sentiment_data
             with open(self.data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
-            self.logger.info(
-                f"[SENTIMENT] Data written successfully to {self.data_file}"
-            )
+            self.logger.info(f"[SENTIMENT] Data written successfully to {self.data_file}")
         except Exception as e:
             self.logger.error(f"Error saving sentiment data: {e}")
 
