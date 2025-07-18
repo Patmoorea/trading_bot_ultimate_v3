@@ -8312,3 +8312,18 @@
 2025-07-18T14:57:33.647534 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0661 | Tendance: -0.0024
 2025-07-18T14:57:33.649324 | 🎯 Stratégie active: Range/Scalping
 2025-07-18T14:57:33.649417 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-18T17:09:52.669287 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T17:09:52.670905 | Initialisation des modèles d'IA...
+2025-07-18T17:09:52.695212 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T17:09:54.280295 | ✅ PPO Strategy initialized successfully
+2025-07-18T17:09:54.280932 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T17:09:54.281036 | ✅ Trading en direct: True
+2025-07-18T17:09:54.281071 | ✅ IA activée: True
+2025-07-18T17:09:54.281106 | ✅ Analyse de news activée: True
+2025-07-18T17:10:43.111003 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T17:11:28.120906 | [NEWS] Score sentiment global: 0.17 | Impact: 0.59 | Événements: Aucun
+2025-07-18T17:12:04.805658 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0581 | Tendance: -0.0062
+2025-07-18T17:12:04.806664 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-18T17:12:41.225108 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0581 | Tendance: -0.0062
+2025-07-18T17:12:41.227272 | 🎯 Stratégie active: Range/Scalping
+2025-07-18T17:12:41.227395 | [ARBITRAGE] Démarrage détection arbitrage…
