@@ -1450,7 +1450,7 @@ class TradingBotM4:
         Si besoin pour PPO, ajoute aussi 'vol_ratio'.
         """
         try:
-            N_STEPS = 63
+            N_STEPS = self.N_STEPS
 
             ohlcv = self.market_data.get(symbol, {}).get("1h", {})
             if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
