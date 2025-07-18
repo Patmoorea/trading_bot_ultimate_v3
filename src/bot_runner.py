@@ -74,7 +74,7 @@ from src.strategies.arbitrage.core.risk_management.risk_manager import RiskManag
 from src.analysis.performance.metrics import SharpeRatio, MaxDrawdown
 from src.analysis.performance.visualization import LiveDashboard
 from src.connectors.advanced_order import SmartOrderRouter
-       
+from src.ai.hybrid_model import HybridAI     
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 

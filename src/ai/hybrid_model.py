@@ -3,7 +3,6 @@ print("=== FICHIER src/ai/hybrid_model.py CHARGE ===")
 import tensorflow as tf
 import numpy as np
 
-
 class HybridAI:
     def __init__(self):
         print("=== HybridAI __init__ appelée ===")
@@ -29,9 +28,13 @@ class HybridAI:
         print("=== validate() de HybridAI APPELEE avec LR:", self.learning_rate)
         X = np.random.randn(8, 20, 5)
         y = np.random.randint(0, 2, size=(8, 1))
-        # Nouvelle façon de setter le learning rate :
         self.cnn_lstm.optimizer.learning_rate.assign(self.learning_rate)
         history = self.cnn_lstm.fit(X, y, epochs=1, batch_size=4, verbose=0)
         acc = float(history.history["accuracy"][-1])
         print("=== ACCURACY =", acc)
         return acc
+
+# Code de test seulement si exécuté directement
+if __name__ == "__main__":
+    model = HybridAI()
+    model.validate()
