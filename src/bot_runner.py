@@ -371,7 +371,12 @@ class TelegramNotifier:
         if not bot_token or not chat_id:
             print("⚠️ Configuration Telegram incomplète")
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
-
+        self.N_FEATURES = 8
+        self.N_STEPS = 63
+    
+    def get_input_dim(self):
+        return self.N_FEATURES * self.N_STEPS * len(self.pairs_valid)
+   
     async def send_message(self, message):
         """Envoie un message sur Telegram"""
         if not self.bot_token or not self.chat_id:
@@ -1137,12 +1142,11 @@ class TradingBotM4:
                 self.dl_model_last_mtime = None    
             print(f"[DEBUG] paires_valid utilisées IA: {self.pairs_valid} (count={len(self.pairs_valid)})")
             # Configuration de l'environnement PPO - PATCH dynamique input_dim
-            N_FEATURES = 8
-            N_STEPS = 63
+            input_dim = self.get_input_dim()
             num_pairs = len(self.pairs_valid)
             env_config = {
                 "env": self.env,
-                "input_dim": N_FEATURES * N_STEPS * num_pairs,
+                "input_dim": input_dim,
                 "learning_rate": self.config["AI"]["learning_rate"],
                 "batch_size": self.config["AI"]["batch_size"],
                 "n_epochs": self.config["AI"]["n_epochs"],
@@ -2171,8 +2175,7 @@ class TradingBotM4:
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
         
-        N_STEPS = 63  # Doit matcher la config du modèle
-        N_FEATURES = 8  # ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
+        expected_shape = (self.get_input_dim(),)
         num_pairs = len(self.pairs_valid)
 
         ppo_features_list = []
