@@ -66,6 +66,9 @@ from src.ai.train_cnn_lstm import train_with_live_data
 from src.ai.deep_learning_model import features_to_array
 
 from collections import defaultdict
+
+from deep_translator import GoogleTranslator
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -504,8 +507,14 @@ class TelegramNotifier:
         if ai_summary:
             message += f"🤖 <b>Résumé IA:</b>\n{ai_summary}\n\n"
 
-        def simple_translate_title(title):
-            # Patch rapide, pour une vraie traduction utiliser deep-translator ou API.
+        def real_translate_title(title):
+            try:
+                return GoogleTranslator(source='auto', target='fr').translate(title)
+            except Exception:
+                return title
+    
+        def translate_title(title):
+            original = title
             dico = {
                 "Bitcoin": "Bitcoin",
                 "Ethereum": "Ethereum",
@@ -519,11 +528,33 @@ class TelegramNotifier:
                 "launch": "lancement",
                 "approval": "approbation",
                 "hack": "piratage",
-                # Ajoute d'autres mots ici
+                "coin": "jeton",
+                "exchange": "plateforme",
+                "regulation": "réglementation",
+                "ETF": "ETF",
+                "market": "marché",
+                "crash": "effondrement",
+                "rise": "hausse",
+                "buy": "achat",
+                "sell": "vente",
+                "token": "jeton",
+                "trading": "trading",
+                "volume": "volume",
+                "support": "support",
+                "resistance": "résistance",
             }
             for en, fr in dico.items():
                 title = title.replace(en, fr)
+
+            if title == original:
+                try:
+                    from deep_translator import GoogleTranslator
+                    return GoogleTranslator(source='auto', target='fr').translate(title)
+                except Exception:
+                    return title
+
             return title
+
 
         # Remplacer [:5] par rien pour prendre tous les titres
         for news in filtered_news:
@@ -532,7 +563,7 @@ class TelegramNotifier:
             title = news.get("title", "NO_TITLE")
             url = news.get("url", "")
             # Traduction simplifiée
-            fr_title = simple_translate_title(title)
+            fr_title = real_translate_title(title)
             if url:
                 title_line = f'{emoji} <a href="{url}">{fr_title}</a>'
             else:
