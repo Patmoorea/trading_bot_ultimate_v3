@@ -69,6 +69,12 @@ from collections import defaultdict
 
 from deep_translator import GoogleTranslator
 
+from src.strategies.arbitrage.core.risk_management.risk_manager import EnhancedRiskManager
+
+from src.analysis.performance.metrics import SharpeRatio, MaxDrawdown
+from src.analysis.performance.visualization import LiveDashboard
+from src.connectors.advanced_order import SmartOrderRouter
+       
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -646,6 +652,11 @@ class TradingBotM4:
             timeframes=self.config["TRADING"]["timeframes"],
             maxlen=2000,
         )
+        self.risk_engine = EnhancedRiskManager(
+            max_drawdown=0.05,  # 5%
+            volatility_window=30,
+            blacklist=config.get('risk_blacklist', [])
+        )
         # Initialize basic attributes...
         self.data_file = SHARED_DATA_PATH
         self.current_cycle = 0
@@ -761,7 +772,18 @@ class TradingBotM4:
             timeframes=self.config["TRADING"]["timeframes"],
         )
         self._initialize_ai()
-           
+    
+    async def monitor_performance(self):   
+        self.dashboard = LiveDashboard()
+        while not self.shutdown_flag:
+            metrics = {
+                'sharpe': SharpeRatio.calculate(self.portfolio_history),
+                'drawdown': MaxDrawdown.calculate(self.equity_curve),
+                'win_rate': self.trade_analyzer.win_rate
+            }
+            self.dashboard.update(metrics)
+            await asyncio.sleep(60)
+              
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.
@@ -2952,6 +2974,13 @@ async def run_clean_bot():
     orderflow_indicators = AdvancedIndicators()
     logger = logging.getLogger(__name__)
 
+    risk_assessment = self.risk_engine.evaluate_position(
+        current_positions=self.portfolio,
+        market_data=market_data
+    )
+    if risk_assessment['should_reduce']:
+        await self.execute_hedge()
+    
     async def initialize_bot():
         """Initialisation du bot et de ses composants"""
         print(">>> INITIALIZE_BOT <<<")
