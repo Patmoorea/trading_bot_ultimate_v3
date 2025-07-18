@@ -8305,3 +8305,10 @@
 2025-07-18T14:54:51.186130 | ✅ Trading en direct: True
 2025-07-18T14:54:51.186185 | ✅ IA activée: True
 2025-07-18T14:54:51.186239 | ✅ Analyse de news activée: True
+2025-07-18T14:55:37.910889 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T14:56:20.992382 | [NEWS] Score sentiment global: 0.05 | Impact: 0.58 | Événements: Aucun
+2025-07-18T14:56:57.753985 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0666 | Tendance: -0.0025
+2025-07-18T14:56:57.754557 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-18T14:57:33.647534 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0661 | Tendance: -0.0024
+2025-07-18T14:57:33.649324 | 🎯 Stratégie active: Range/Scalping
+2025-07-18T14:57:33.649417 | [ARBITRAGE] Démarrage détection arbitrage…
