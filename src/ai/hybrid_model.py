@@ -6,35 +6,30 @@ import numpy as np
 class HybridAI:
     def __init__(self):
         print("=== HybridAI __init__ appelée ===")
-        self.learning_rate = 1e-3
-        self.cnn_lstm = self.build_cnn_lstm()
+        self.learning_rate = 1e-3  # Correct: dans __init__
+        self.cnn_lstm = self.build_cnn_lstm()  # Correct
 
-    def build_cnn_lstm(self):
-        model = tf.keras.Sequential(
-            [
-                tf.keras.layers.Input(shape=(20, 5)),
-                tf.keras.layers.LSTM(8),
-                tf.keras.layers.Dense(1, activation="sigmoid"),
-            ]
-        )
+    def build_cnn_lstm(self):  # Correct: self inclus
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(20, 5)),
+            tf.keras.layers.LSTM(8),
+            tf.keras.layers.Dense(1, activation="sigmoid")
+        ])
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
             loss="binary_crossentropy",
-            metrics=["accuracy"],
+            metrics=["accuracy"]
         )
         return model
 
-    def validate(self):
-        print("=== validate() de HybridAI APPELEE avec LR:", self.learning_rate)
+    def validate(self):  # Correct: self inclus
+        print("=== validate() APPELEE ===")
         X = np.random.randn(8, 20, 5)
-        y = np.random.randint(0, 2, size=(8, 1))
-        self.cnn_lstm.optimizer.learning_rate.assign(self.learning_rate)
-        history = self.cnn_lstm.fit(X, y, epochs=1, batch_size=4, verbose=0)
-        acc = float(history.history["accuracy"][-1])
-        print("=== ACCURACY =", acc)
-        return acc
+        y = np.random.randint(0, 2, 8)
+        history = self.cnn_lstm.fit(X, y, epochs=1, verbose=0)
+        return float(history.history["accuracy"][0])
 
-# Code de test seulement si exécuté directement
+# Test séparé
 if __name__ == "__main__":
     model = HybridAI()
-    model.validate()
+    print("Accuracy:", model.validate())
