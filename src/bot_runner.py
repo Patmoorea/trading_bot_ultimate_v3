@@ -1693,8 +1693,11 @@ class TradingBotM4:
         for item in sentiment_scores:
             symbols = item.get("symbols", [])
             score = item.get("sentiment", 0)
-            impact = item.get("impact_score", 1)
             if not symbols:
+                # PATCH: Appliquer le score global à toutes les paires
+                for key in self.market_data:
+                    self.market_data[key]["sentiment"] = score
+                    self.market_data[key]["sentiment_timestamp"] = time.time()
                 continue
             for symbol in symbols:
                 symbol = symbol.upper()
@@ -2161,7 +2164,7 @@ class TradingBotM4:
         """
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
-        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {(N_FEATURES * N_STEPS * num_pairs,)}")
+        
         N_STEPS = 63  # Doit matcher la config du modèle
         N_FEATURES = 8  # ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
         num_pairs = len(self.pairs_valid)
@@ -2201,12 +2204,13 @@ class TradingBotM4:
                     ppo_features_list.append(vec)
                 except Exception as e:
                     self.logger.error(f"Error preparing AI features for {pair}: {e}")
-
+        
         if not ppo_features_list:
             print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
             return
         ppo_features = np.concatenate(ppo_features_list)
         expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
+        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {(N_FEATURES * N_STEPS * num_pairs,)}")
         if ppo_features.shape != expected_shape:
             print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
             return
@@ -2704,6 +2708,12 @@ class TradingBotM4:
 
                 # Indicateurs avancés supplémentaires
                 try:
+                    # DEBUG: Vérifie l'ordre du timestamp avant le calcul VWAP
+                    print("== VWAP DEBUG HEAD ==")
+                    print(df_ta[["timestamp"]].head(10))
+                    print("== VWAP DEBUG TAIL ==")
+                    print(df_ta[["timestamp"]].tail(10))
+                    print("Monotonic increasing:", df_ta["timestamp"].is_monotonic_increasing)
                     vwma = df_ta.ta.vwma(length=20)
                     df_ta["vwma_20"] = vwma
                 except Exception:
