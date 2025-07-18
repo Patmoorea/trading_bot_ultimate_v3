@@ -709,11 +709,18 @@ class TradingBotM4:
         self._initialize_ai()  # Recrée PPO et l'input_dim pour les nouvelles paires
     
     def update_pairs_from_config(self):
-        """
-        Synchro auto avec la config actuelle. À appeler dès que tu modifies la config TRADING/pairs.
-        """
         self.pairs_valid = self.config["TRADING"]["pairs"]
-        self._initialize_ai()  # Recrée tout avec le bon shape
+
+        self.ws_collector = BufferedWSCollector(
+            symbols=[s.replace("/", "").upper() for s in self.pairs_valid],
+            timeframes=self.config["TRADING"]["timeframes"],
+            maxlen=2000,
+        )
+        self.env = TradingEnv(
+            trading_pairs=self.pairs_valid,
+            timeframes=self.config["TRADING"]["timeframes"],
+        )
+        self._initialize_ai()
            
     async def test_news_sentiment(self):
         """
