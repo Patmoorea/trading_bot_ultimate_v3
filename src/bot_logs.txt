@@ -7526,3 +7526,31 @@
 2025-07-18T00:34:38.392473 | [ORDER] Tentative d'exécution: BUY 0.006035398210049005 SOLUSDT (iceberg: False)
 2025-07-18T00:34:38.947173 | [ORDER] Tentative d'exécution: BUY 0.006365502906635384 SOLUSDT (iceberg: False)
 2025-07-18T00:34:39.496299 | [ORDER] Tentative d'exécution: BUY 0.006083404204165935 SOLUSDT (iceberg: False)
+2025-07-18T01:20:57.604941 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T01:20:57.609473 | Initialisation des modèles d'IA...
+2025-07-18T01:20:57.633311 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T01:20:59.152287 | ✅ PPO Strategy initialized successfully
+2025-07-18T01:20:59.153607 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T01:20:59.153692 | ✅ Trading en direct: True
+2025-07-18T01:20:59.153760 | ✅ IA activée: True
+2025-07-18T01:20:59.153830 | ✅ Analyse de news activée: True
+2025-07-18T01:21:42.584211 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T01:22:27.269986 | [NEWS] Score sentiment global: 0.09 | Impact: 0.58 | Événements: Aucun
+2025-07-18T01:23:06.114859 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0612 | Tendance: 0.0046
+2025-07-18T01:23:06.116090 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-18T01:23:43.394651 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0608 | Tendance: 0.0046
+2025-07-18T01:23:43.395871 | 🎯 Stratégie active: Range/Scalping
+2025-07-18T01:23:43.396186 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-18T01:24:25.694385 | [ARBITRAGE] OPPORTUNITÉ: DOGE/USDT: 0.2295 (Binance) <> 0.22988 (bingx) | Diff: 0.17%
+2025-07-18T04:08:41.072959 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T04:08:41.076743 | Initialisation des modèles d'IA...
+2025-07-18T04:08:41.104561 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T04:08:42.619735 | ✅ PPO Strategy initialized successfully
+2025-07-18T04:08:42.620937 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T04:08:42.620989 | ✅ Trading en direct: True
+2025-07-18T04:08:42.621021 | ✅ IA activée: True
+2025-07-18T04:08:42.621051 | ✅ Analyse de news activée: True
+2025-07-18T04:09:30.277084 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T04:10:16.026470 | [NEWS] Score sentiment global: 0.07 | Impact: 0.57 | Événements: Aucun
+2025-07-18T04:10:51.371893 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0624 | Tendance: 0.0048
+2025-07-18T04:10:51.372821 | 🔈 Régime de marché détecté: Range/Scalping

@@ -76,25 +76,18 @@ class PPOStrategy(BaseStrategy):
             return {"action": "HOLD", "confidence": 0.0}
 
     def _preprocess_state(self, state: np.ndarray) -> np.ndarray:
-        """Prétraitement de l'état pour PPO SB3 (Box) : retourne un vecteur 1D de la bonne dimension"""
         try:
-            # Conversion en numpy si nécessaire
             if isinstance(state, (list, tuple)):
                 state = np.array(state, dtype=np.float32)
-
-            # Aplatir pour obtenir 1D
             state = state.flatten()
-
-            # Vérifie la dimension (input_dim)
-            if state.shape[0] > self.input_dim:
-                state = state[:self.input_dim]
-            elif state.shape[0] < self.input_dim:
-                pad_width = (0, self.input_dim - state.shape[0])
-                state = np.pad(state, pad_width, mode="constant")
-            
-            # Retourne un vecteur 1D de taille input_dim
+            if state.shape[0] != self.input_dim:
+                # pad ou truncate si besoin
+                if state.shape[0] > self.input_dim:
+                    state = state[:self.input_dim]
+                else:
+                    pad_width = (0, self.input_dim - state.shape[0])
+                    state = np.pad(state, pad_width, mode="constant")
             return state
-
         except Exception as e:
             self.logger.error(f"Erreur prétraitement: {str(e)}")
             return np.zeros(self.input_dim)
