@@ -2200,9 +2200,13 @@ class TradingBotM4:
         Ajoute les prédictions des modèles d'IA aux données de marché.
         Corrige dynamiquement le shape de ppo_features selon le nombre de paires.
         """
+        # PATCH: Définit les constantes locales nécessaires !
+        N_STEPS = self.N_STEPS
+        N_FEATURES = self.N_FEATURES
+
         if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
             return
-        
+
         expected_shape = (self.get_input_dim(),)
         num_pairs = len(self.pairs_valid)
 
@@ -2247,7 +2251,7 @@ class TradingBotM4:
             return
         ppo_features = np.concatenate(ppo_features_list)
         expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
-        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {(N_FEATURES * N_STEPS * num_pairs,)}")
+        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {expected_shape}")
         if ppo_features.shape != expected_shape:
             print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
             return

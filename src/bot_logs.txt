@@ -8272,3 +8272,36 @@
 2025-07-18T14:39:25.396633 | [ORDER] Tentative d'exécution: BUY 0.005857349849960856 LTCUSDT (iceberg: False)
 2025-07-18T14:39:25.953410 | [ORDER] Tentative d'exécution: BUY 0.005837087253914578 SOLUSDT (iceberg: False)
 2025-07-18T14:39:26.513662 | [ORDER] Tentative d'exécution: BUY 0.00576941808823425 SUIUSDT (iceberg: False)
+2025-07-18T14:46:52.481990 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T14:46:52.483476 | Initialisation des modèles d'IA...
+2025-07-18T14:46:52.506667 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T14:46:54.112731 | ✅ PPO Strategy initialized successfully
+2025-07-18T14:46:54.113304 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T14:46:54.113339 | ✅ Trading en direct: True
+2025-07-18T14:46:54.113366 | ✅ IA activée: True
+2025-07-18T14:46:54.113393 | ✅ Analyse de news activée: True
+2025-07-18T14:47:43.807784 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T14:48:28.207408 | [NEWS] Score sentiment global: 0.03 | Impact: 0.58 | Événements: Aucun
+2025-07-18T14:49:04.623148 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0688 | Tendance: -0.0026
+2025-07-18T14:49:04.623682 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-18T14:49:41.907199 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0689 | Tendance: -0.0026
+2025-07-18T14:49:41.909166 | 🎯 Stratégie active: Range/Scalping
+2025-07-18T14:49:41.909234 | [ARBITRAGE] Démarrage détection arbitrage…
+2025-07-18T14:50:54.150145 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T14:50:54.151156 | Initialisation des modèles d'IA...
+2025-07-18T14:50:54.165041 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T14:50:55.784404 | ✅ PPO Strategy initialized successfully
+2025-07-18T14:50:55.785135 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T14:50:55.785321 | ✅ Trading en direct: True
+2025-07-18T14:50:55.785364 | ✅ IA activée: True
+2025-07-18T14:50:55.785397 | ✅ Analyse de news activée: True
+2025-07-18T14:51:45.472496 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-18T14:52:30.218804 | [NEWS] Score sentiment global: 0.07 | Impact: 0.58 | Événements: Aucun
+2025-07-18T14:54:49.511173 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-18T14:54:49.512362 | Initialisation des modèles d'IA...
+2025-07-18T14:54:49.525530 | ✅ Modèles d'IA initialisés avec succès
+2025-07-18T14:54:51.185015 | ✅ PPO Strategy initialized successfully
+2025-07-18T14:54:51.186059 | ✅ Bot initialisé avec Telegram: True
+2025-07-18T14:54:51.186130 | ✅ Trading en direct: True
+2025-07-18T14:54:51.186185 | ✅ IA activée: True
+2025-07-18T14:54:51.186239 | ✅ Analyse de news activée: True
