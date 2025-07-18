@@ -680,20 +680,29 @@ class TradingBotM4:
             "enabled_exchanges": ["binance", "kucoin", "huobi"],
         }
         # Sécurité avancée: gestion de clé cold wallet
+        # Ajoute cette option (True = utilisation automatique, False = ignorée)
+        self.use_cold_wallet_key = False  # ou False selon besoin
+
         self.key_manager = KeyManager()
-        if not self.key_manager.has_key():
-            print(
-                "Aucune clé cold wallet détectée, génération d'une nouvelle clé sécurisée…"
-            )
-            pk = self.key_manager.generate_private_key()
-            self.key_manager.save_private_key()
-            print("Clé cold wallet générée et sauvegardée de manière chiffrée.")
+        if self.use_cold_wallet_key:
+            if not self.key_manager.has_key():
+                print(
+                    "Aucune clé cold wallet détectée, génération d'une nouvelle clé sécurisée…"
+                )
+                pk = self.key_manager.generate_private_key()
+                self.key_manager.save_private_key()
+                print("Clé cold wallet générée et sauvegardée de manière chiffrée.")
+            else:
+                try:
+                    # Si tu veux demander le mot de passe à chaque fois (optionnel):
+                    # password = self.ask_wallet_password()
+                    # self.key_manager.load_private_key(password=password)
+                    self.key_manager.load_private_key()
+                    print("Clé cold wallet chargée avec succès.")
+                except Exception as e:
+                    print(f"Erreur de chargement de la clé cold wallet: {e}")
         else:
-            try:
-                self.key_manager.load_private_key()
-                print("Clé cold wallet chargée avec succès.")
-            except Exception as e:
-                print(f"Erreur de chargement de la clé cold wallet: {e}")
+            print("⚠️ Utilisation de la clé cold wallet désactivée.")
 
         self.auto_strategy_config = None
         if os.path.exists("config/auto_strategy.json"):
@@ -919,13 +928,16 @@ class TradingBotM4:
 
         sentiment_score = 0
         pair_key = symbol.replace("/", "").upper()
-        if getattr(self, "news_enabled", False):
-            if hasattr(self, "market_data"):
-                if (
-                    pair_key in self.market_data
-                    and "sentiment" in self.market_data[pair_key]
-                ):
+        if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
+            # Utilise le score par symbole si disponible
+            try:
+                sentiment_score = await self.news_analyzer.get_symbol_sentiment(pair_key)
+                # Fallback sur le global si rien de spécifique
+                if sentiment_score == 0:
                     sentiment_score = self.news_analyzer.get_sentiment_summary().get("sentiment_global", 0.0)
+            except Exception as e:
+                self.logger.error(f"Erreur récupération sentiment pour {pair_key}: {e}")
+                sentiment_score = self.news_analyzer.get_sentiment_summary().get("sentiment_global", 0.0)
         log_dashboard(
             f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
         )

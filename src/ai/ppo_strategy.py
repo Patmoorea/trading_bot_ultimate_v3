@@ -99,7 +99,7 @@ class PPOStrategy(BaseStrategy):
                 return 0.0
 
             with torch.no_grad():
-                state_tensor = torch.FloatTensor(state)
+                state_tensor = torch.FloatTensor(state).unsqueeze(0)
                 dist = self.model.policy.get_distribution(state_tensor)
                 # Pour Categorical (actions discrètes)
                 if hasattr(dist.distribution, "probs"):

@@ -10,22 +10,28 @@ class TradingEnv(gym.Env):
         self.trading_pairs = trading_pairs
         self.timeframes = timeframes
         self.logger = logging.getLogger(__name__)
-        
-        # Définition des espaces
+
+        # PATCH: Définition dynamique de la dimension d'input attendue par PPO
+        N_FEATURES = 8    # Nombre de features par pas
+        N_STEPS = 63      # Nombre de steps (historique)
+        self.N_FEATURES = N_FEATURES
+        self.N_STEPS = N_STEPS
+
         self.observation_space = spaces.Box(
             low=-np.inf, 
             high=np.inf,
-            shape=(len(trading_pairs) * len(timeframes) * 42,),
+            shape=(N_FEATURES * N_STEPS * len(trading_pairs),),
             dtype=np.float32
         )
-        
+        print(f"[DEBUG TradingEnv] observation_space.shape = {self.observation_space.shape}")
+
         self.action_space = spaces.Box(
             low=0,
             high=1,
             shape=(len(trading_pairs),),
             dtype=np.float32
         )
-        
+
         # Paramètres d'apprentissage
         self.max_steps = 1000
         self.current_step = 0
@@ -34,7 +40,7 @@ class TradingEnv(gym.Env):
         self.reward_scale = 1.0
         self.position_history = []
         self.done_penalty = -1.0
-        
+
         # Métriques
         self.metrics = {
             "episode_rewards": [],
@@ -54,27 +60,27 @@ class TradingEnv(gym.Env):
     def step(self, action):
         try:
             self.current_step += 1
-            
+
             # Validation de l'action
             if not self.action_space.contains(action):
                 self.logger.warning(f"Action invalide: {action}")
                 action = np.clip(action, self.action_space.low, self.action_space.high)
-            
+
             # Calcul de la récompense
             reward = self._calculate_reward(action)
-            
+
             # Mise à jour de l'état
             self._update_state()
-            
+
             # Vérification des conditions de fin
             done = self._check_done()
             truncated = False
-            
+
             # Mise à jour des métriques
             self._update_metrics(action, reward)
-            
+
             return self._get_observation(), reward, done, truncated, self._get_info()
-            
+
         except Exception as e:
             self.logger.error(f"Erreur dans step: {e}")
             return self._get_observation(), 0, True, False, {}
@@ -84,15 +90,15 @@ class TradingEnv(gym.Env):
         try:
             # Calcul du PnL simulé
             pnl = sum([pos * act for pos, act in zip(self.positions.values(), action)])
-            
+
             # Pénalité pour le risque (exemple simple)
             risk_penalty = np.std(action) * 0.1
-            
+
             # Reward final
             reward = (pnl - risk_penalty) * self.reward_scale
-            
+
             return float(reward)
-            
+
         except Exception as e:
             self.logger.error(f"Erreur calcul reward: {e}")
             return 0.0
@@ -110,11 +116,11 @@ class TradingEnv(gym.Env):
         # Fin si max steps atteint
         if self.current_step >= self.max_steps:
             return True
-            
+
         # Fin si portfolio vide
         if self.portfolio_value <= 0:
             return True
-            
+
         return False
 
     def _update_metrics(self, action, reward):
@@ -126,6 +132,7 @@ class TradingEnv(gym.Env):
 
     def _get_observation(self):
         """Retourne l'état actuel"""
+        # PATCH: retourne un vecteur de la bonne dimension
         return np.zeros(self.observation_space.shape)
 
     def _get_info(self):
