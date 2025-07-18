@@ -1,35 +1,49 @@
-print("=== FICHIER src/ai/hybrid_model.py CHARGE ===")
-
 import tensorflow as tf
 import numpy as np
+import time
 
-class HybridAI:
+class HybridModel:
     def __init__(self):
-        print("=== HybridAI __init__ appelée ===")
-        self.learning_rate = 1e-3  # Correct: dans __init__
-        self.cnn_lstm = self.build_cnn_lstm()  # Correct
-
-    def build_cnn_lstm(self):  # Correct: self inclus
+        self.model = self._build_debug_model()
+        
+    def _build_debug_model(self):
+        """Modèle de debug avec suivi manuel des métriques"""
         model = tf.keras.Sequential([
-            tf.keras.layers.Input(shape=(20, 5)),
-            tf.keras.layers.LSTM(8),
-            tf.keras.layers.Dense(1, activation="sigmoid")
+            tf.keras.layers.Dense(1, input_shape=(30, 5), activation='sigmoid')
         ])
+        
+        # Custom metrics tracking
+        self.train_acc_metric = tf.keras.metrics.BinaryAccuracy()
+        self.val_acc_metric = tf.keras.metrics.BinaryAccuracy()
+        
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
-            loss="binary_crossentropy",
-            metrics=["accuracy"]
+            optimizer=tf.keras.optimizers.Adam(),
+            loss='binary_crossentropy'
         )
         return model
 
-    def validate(self):  # Correct: self inclus
-        print("=== validate() APPELEE ===")
-        X = np.random.randn(8, 20, 5)
-        y = np.random.randint(0, 2, 8)
-        history = self.cnn_lstm.fit(X, y, epochs=1, verbose=0)
-        return float(history.history["accuracy"][0])
+    def train_and_validate(self, X_train, y_train, X_val, y_val, epochs=1):
+        """Processus d'entraînement manuel"""
+        # Reset metrics
+        self.train_acc_metric.reset_states()
+        self.val_acc_metric.reset_states()
+        
+        # Entraînement
+        self.model.fit(X_train, y_train, epochs=epochs, verbose=0)
+        
+        # Calcul manuel des métriques
+        train_preds = self.model.predict(X_train)
+        self.train_acc_metric.update_state(y_train, train_preds)
+        
+        val_preds = self.model.predict(X_val)
+        self.val_acc_metric.update_state(y_val, val_preds)
+        
+        return {
+            'train_acc': float(self.train_acc_metric.result()),
+            'val_acc': float(self.val_acc_metric.result())
+        }
 
-# Test séparé
-if __name__ == "__main__":
-    model = HybridAI()
-    print("Accuracy:", model.validate())
+class HybridAI(HybridModel):
+    def __init__(self):
+        super().__init__()
+        print("🐛 Mode Debug Activé | Métriques Manuelles")
