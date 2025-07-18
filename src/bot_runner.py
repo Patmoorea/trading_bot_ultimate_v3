@@ -717,6 +717,9 @@ class TradingBotM4:
     def check_reload_dl_model(self):
         path = "src/models/cnn_lstm_model.pth"
         if os.path.exists(path):
+            if self.dl_model is None:
+                print("[ERROR] Modèle IA non initialisé, impossible de charger les poids.")
+                return
             mtime = os.path.getmtime(path)
             if self.dl_model_last_mtime is None or mtime > self.dl_model_last_mtime:
                 self.dl_model.load_weights(path)
