@@ -69,7 +69,7 @@ from collections import defaultdict
 
 from deep_translator import GoogleTranslator
 
-from src.strategies.arbitrage.core.risk_management.risk_manager import EnhancedRiskManager
+from src.strategies.arbitrage.core.risk_management.risk_manager import RiskManager
 
 from src.analysis.performance.metrics import SharpeRatio, MaxDrawdown
 from src.analysis.performance.visualization import LiveDashboard
