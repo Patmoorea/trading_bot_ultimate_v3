@@ -26055,3 +26055,19 @@
 2025-07-19T23:13:28.946922 | [ORDER] Tentative d'exécution: BUY 41.03 SOLUSDC (iceberg: False)
 2025-07-19T23:13:29.511743 | [ORDER] Tentative d'exécution: BUY 34.67 SUIUSDC (iceberg: False)
 2025-07-19T23:13:30.045329 | [ORDER] Tentative d'exécution: BUY 40.54 SUIUSDC (iceberg: False)
+2025-07-19T23:27:17.959665 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-19T23:27:17.962548 | Initialisation des modèles d'IA...
+2025-07-19T23:27:19.590357 | ✅ PPO Strategy initialized successfully
+2025-07-19T23:27:19.591971 | ✅ Bot initialisé avec Telegram: True
+2025-07-19T23:27:19.592024 | ✅ Trading en direct: True
+2025-07-19T23:27:19.592062 | ✅ IA activée: False
+2025-07-19T23:27:19.592097 | ✅ Analyse de news activée: True
+2025-07-19T23:28:02.724397 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-19T23:28:35.288195 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-19T23:28:35.289574 | Initialisation des modèles d'IA...
+2025-07-19T23:28:35.308688 | ✅ Modèles d'IA initialisés avec succès
+2025-07-19T23:28:36.957994 | ✅ PPO Strategy initialized successfully
+2025-07-19T23:28:36.959300 | ✅ Bot initialisé avec Telegram: True
+2025-07-19T23:28:36.959418 | ✅ Trading en direct: True
+2025-07-19T23:28:36.959459 | ✅ IA activée: True
+2025-07-19T23:28:36.959497 | ✅ Analyse de news activée: True

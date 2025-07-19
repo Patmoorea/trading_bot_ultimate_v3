@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from typing import Dict
+import os
 
 
 def features_to_array(features: Dict[str, np.ndarray]) -> np.ndarray:
@@ -44,37 +45,41 @@ class DeepLearningModel:
 
     def predict(self, features: Dict[str, np.ndarray]) -> float:
         """
-        Prédit la sortie du modèle. 
-        ATTENTION: `features` doit toujours être un dictionnaire 
+        Prédit la sortie du modèle.
+        ATTENTION: `features` doit toujours être un dictionnaire
         avec les clés 'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
         """
         try:
             if not isinstance(features, dict):
-                raise ValueError("Features must be a dict with keys: close, high, low, volume, rsi, macd, volatility")
+                raise ValueError(
+                    "Features must be a dict with keys: close, high, low, volume, rsi, macd, volatility"
+                )
             # S'assurer que le modèle est initialisé
             if not self.initialized:
                 self.initialize()
-            
+
             # DEBUG : affiche un aperçu des features
-            sample = {k: (v if isinstance(v, float) else v[:3]) for k, v in features.items()}
+            sample = {
+                k: (v if isinstance(v, float) else v[:3]) for k, v in features.items()
+            }
             print(f"[DL] Features (sample): {sample}")
 
             x = self._prepare_features(features)
             with torch.no_grad():
                 prediction = self.model(x)
-            
+
             raw_pred = prediction.item()
             print(f"[DL] raw_pred: {raw_pred}")
             # Pas de normalisation : déjà entre 0 et 1 grâce au sigmoid
             print(f"[DL] normalized_pred: {raw_pred}")
 
             return float(raw_pred)
-            
+
         except Exception as e:
             print(f"Error in DL prediction: {e}")
             # Retourner une prédiction aléatoire faible au lieu de 0
             return np.random.uniform(0.0, 0.1)
-        
+
     def _prepare_features(self, features: Dict[str, np.ndarray]) -> torch.Tensor:
         """
         Transforme le dict de features en un tensor shape (batch=1, 7, N)
@@ -87,11 +92,12 @@ class DeepLearningModel:
 
     def load_weights(self, path):
         if os.path.exists(path):
-        self.model.load_state_dict(torch.load(path, map_location='cpu'))
-        self.model.eval()
-        print(f"[DL] Modèle chargé depuis {path}")
-    else:
-        print(f"[WARN] Fichier modèle {path} absent, chargement ignoré.")
+            self.model.load_state_dict(torch.load(path, map_location="cpu"))
+            self.model.eval()
+            print(f"[DL] Modèle chargé depuis {path}")
+        else:
+            print(f"[WARN] Fichier modèle {path} absent, chargement ignoré.")
+
 
 class CNNLSTMModel(nn.Module):
     def __init__(self):
