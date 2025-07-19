@@ -27,7 +27,7 @@ class SymbolExtractor:
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
             for name, ticker in self.symbol_mapping.items()
         ]
-        self.low_watermark_ratio = config.get("news", {}).get("low_watermark_ratio", 0.2)
+
     def extract_symbols(self, text: str) -> List[str]:
         found: Set[str] = set()
         if not text:
@@ -49,6 +49,7 @@ class NewsSentimentAnalyzer:
     def __init__(self, config: dict):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
+        self.low_watermark_ratio = config.get("news", {}).get("low_watermark_ratio", 0.2)
         self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
         self.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
         self._model = None
@@ -134,14 +135,14 @@ class NewsSentimentAnalyzer:
             "source_weight": source["weight"],
         }
 
-    def analyze_sentiment_batch(self, news_items: List[Dict], low_watermark_ratio: float = 0.2) -> List[Dict]:
+    def analyze_sentiment_batch(self, news_items: List[Dict], low_watermark_ratio: float = None) -> List[Dict]:
         """
         Analyse un batch de news avec FinBERT et retourne la liste des news enrichies avec sentiment et impact_score.
         Watermark ratio est forcé à une valeur valide (0.05 à 0.5) pour éviter toute exception.
         Le sentiment est calculé comme score bullish - bearish (positive - negative).
         """
         if low_watermark_ratio is None:
-            low_watermark_ratio = self.low_watermark_ratio # Patch ultime : force le watermark ratio à une valeur valide
+            low_watermark_ratio = self.low_watermark_ratio
         try:
             low_watermark_ratio = float(low_watermark_ratio)
         except Exception:
@@ -149,6 +150,7 @@ class NewsSentimentAnalyzer:
         if low_watermark_ratio > 0.5 or low_watermark_ratio < 0.05:
             print(f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2")
             low_watermark_ratio = 0.2
+
         import inspect
         stack = inspect.stack()
         if len(stack) > 1:

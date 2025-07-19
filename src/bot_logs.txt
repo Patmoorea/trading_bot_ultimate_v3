@@ -15466,3 +15466,11 @@
 2025-07-19T02:13:12.592496 | [TRADE DECISION] SUI/USDT | Action: SELL | Confiance: 0.25 | Tech: -0.61 | IA: 0.13 | Sentiment: 0.00
 2025-07-19T02:13:12.592516 | [TRADE DECISION] SUI/USDT | Action: SELL | Confiance: 0.31 | Tech: -0.73 | IA: 0.13 | Sentiment: 0.00
 2025-07-19T02:13:12.592537 | [TRADE DECISION] SUI/USDT | Action: BUY | Confiance: 0.42 | Tech: 0.79 | IA: 0.13 | Sentiment: 0.00
+2025-07-19T02:25:17.919582 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-19T02:25:17.925846 | Initialisation des modèles d'IA...
+2025-07-19T02:25:17.964562 | ✅ Modèles d'IA initialisés avec succès
+2025-07-19T02:25:19.485768 | ✅ PPO Strategy initialized successfully
+2025-07-19T02:25:19.486659 | ✅ Bot initialisé avec Telegram: True
+2025-07-19T02:25:19.486698 | ✅ Trading en direct: True
+2025-07-19T02:25:19.486727 | ✅ IA activée: True
+2025-07-19T02:25:19.486754 | ✅ Analyse de news activée: True
