@@ -1406,7 +1406,11 @@ class TradingBotM4:
     async def execute_trade(
         self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
     ):
-        """Exécute un ordre de trading avec logs détaillés"""
+        """
+        Exécute un ordre de trading avec logs détaillés
+        - Pour un achat sur une paire USDC, utilise quoteOrderQty (montant USDC)
+        - Pour une vente ou achat par quantité, utilise amount (quantité de coin)
+        """
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -1421,7 +1425,6 @@ class TradingBotM4:
                 "amount": amount,
                 "iceberg": iceberg,
             }
-
         try:
             log_dashboard(
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
@@ -1442,13 +1445,12 @@ class TradingBotM4:
                 "regime": self.regime,
             }
 
-            # -------- PATCH pour achat en USDC --------
-            # Détecte si la paire est en USDC et si l'action est un achat
+            # PATCH pour achat en USDC
             if side.upper() == "BUY" and symbol.endswith("USDC"):
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    quoteOrderQty=amount,  # amount = montant USDC à investir
+                    quoteOrderQty=amount,  # Montant USDC à investir
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
@@ -1458,7 +1460,7 @@ class TradingBotM4:
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    amount=amount,
+                    amount=amount,  # Quantité de coin à trader
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
@@ -2862,9 +2864,8 @@ class TradingBotM4:
                 )
                 return None
 
-            # Sécurité : trier par timestamp pour tous les indicateurs
+            # Tri et conversion du timestamp pour tous les indicateurs ET VWAP
             if "timestamp" in df.columns:
-                # Tri et conversion si besoin
                 df = df.sort_values("timestamp")
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
@@ -2880,7 +2881,7 @@ class TradingBotM4:
             try:
                 df_ta = df.copy()
 
-                # Calcul des indicateurs classiques (cf. ton exemple)
+                # Calcul des indicateurs classiques
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty:
                     if isinstance(sma_20, pd.Series):
@@ -2946,7 +2947,6 @@ class TradingBotM4:
 
                 # Indicateurs avancés supplémentaires
                 try:
-                    # DEBUG: Vérifie l'ordre du timestamp avant le calcul VWAP
                     print("== VWAP DEBUG HEAD ==")
                     print(df_ta[["timestamp"]].head(10))
                     print("== VWAP DEBUG TAIL ==")
