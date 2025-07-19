@@ -75,6 +75,7 @@ load_dotenv()
 
 LOG_FILE = "src/bot_logs.txt"
 
+
 def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
@@ -121,7 +122,8 @@ def add_dl_features(df):
             df[col] = df[col].replace([np.inf, -np.inf], np.nan)
             df[col] = df[col].fillna(method="ffill").fillna(method="bfill").fillna(0)
     return df
-    
+
+
 def log_dashboard(message):
     print(message)
     try:
@@ -377,10 +379,10 @@ class TelegramNotifier:
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
         self.N_FEATURES = 8
         self.N_STEPS = 63
-    
+
     def get_input_dim(self):
         return self.N_FEATURES * self.N_STEPS * len(self.pairs_valid)
-   
+
     async def send_message(self, message):
         """Envoie un message sur Telegram"""
         if not self.bot_token or not self.chat_id:
@@ -396,8 +398,11 @@ class TelegramNotifier:
 
         MAX_TELEGRAM_LENGTH = 4000
         if len(full_message) > MAX_TELEGRAM_LENGTH:
-            full_message = full_message[:MAX_TELEGRAM_LENGTH-20] + "\n... (troncature automatique)"
-            
+            full_message = (
+                full_message[: MAX_TELEGRAM_LENGTH - 20]
+                + "\n... (troncature automatique)"
+            )
+
         url = f"{self.base_url}/sendMessage"
         data = {"chat_id": self.chat_id, "text": full_message, "parse_mode": "HTML"}
         try:
@@ -432,7 +437,11 @@ class TelegramNotifier:
 
     async def send_trade_alert(self, trade_data):
         """Envoie un message unique et lisible pour chaque trade exécuté"""
-        emoji = "🟢" if trade_data.get("side", "").upper() == "BUY" else "🔴" if trade_data.get("side", "").upper() == "SELL" else "⚪️"
+        emoji = (
+            "🟢"
+            if trade_data.get("side", "").upper() == "BUY"
+            else "🔴" if trade_data.get("side", "").upper() == "SELL" else "⚪️"
+        )
         message = (
             f"{emoji} <b>TRADE EXÉCUTÉ</b>\n\n"
             f"📊 Paire : {trade_data.get('symbol','?')}\n"
@@ -510,10 +519,10 @@ class TelegramNotifier:
 
         def real_translate_title(title):
             try:
-                return GoogleTranslator(source='auto', target='fr').translate(title)
+                return GoogleTranslator(source="auto", target="fr").translate(title)
             except Exception:
                 return title
-    
+
         def translate_title(title):
             original = title
             dico = {
@@ -550,12 +559,12 @@ class TelegramNotifier:
             if title == original:
                 try:
                     from deep_translator import GoogleTranslator
-                    return GoogleTranslator(source='auto', target='fr').translate(title)
+
+                    return GoogleTranslator(source="auto", target="fr").translate(title)
                 except Exception:
                     return title
 
             return title
-
 
         # Remplacer [:5] par rien pour prendre tous les titres
         for news in filtered_news:
@@ -608,7 +617,18 @@ class TradingBotM4:
         self.config = {
             "TRADING": {
                 "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
-                "pairs": ["BTC/USDT", "ETH/USDT","LTC/USDT", "XRP/USDT", "DOGE/USDT","BNB/USDT","ADA/USDT","SOL/USDT","TRX/USDT","SUI/USDT"]
+                "pairs": [
+                    "BTC/USDC",
+                    "ETH/USDC",
+                    "LTC/USDC",
+                    "XRP/USDC",
+                    "DOGE/USDC",
+                    "BNB/USDC",
+                    "ADA/USDC",
+                    "SOL/USDC",
+                    "TRX/USDC",
+                    "SUI/USDC",
+                ],
             },
             "AI": {
                 "learning_rate": 3e-4,
@@ -623,18 +643,19 @@ class TradingBotM4:
             "news": {
                 "sentiment_weight": 0.15,
                 "update_interval": 300,
-                "storage_path": "data/news_analysis.json","low_watermark_ratio": 0.2,
+                "storage_path": "data/news_analysis.json",
+                "low_watermark_ratio": 0.2,
                 "symbol_mapping": {
                     "bitcoin": "BTC",
                     "ethereum": "ETH",
                     "cardano": "ADA",
                     "solana": "SOL",
-                    "litecoin":"LTC",
-                    "xrp":"XRP",
+                    "litecoin": "LTC",
+                    "xrp": "XRP",
                     "dogecoin": "DOGE",
                     "binancecoin": "BNB",
                     "tron": "TRX",
-                    "sui":"SUI",
+                    "sui": "SUI",
                 },
             },
         }
@@ -656,7 +677,7 @@ class TradingBotM4:
         self.news_analyzer = NewsSentimentAnalyzer(self.config)
         self.news_enabled = True
         self.dl_model_last_mtime = None
-        
+
         self.news_weight = 0.15
         self.ai_weight = 0.5
         self.ensure_float = lambda x: (
@@ -680,7 +701,7 @@ class TradingBotM4:
 
         # Initialisation de l'environnement (une seule fois)
         print("Configuration de l'environnement...")
-        
+
         # --- ENVIRONNEMENT TRADING ---
         self.env = TradingEnv(
             trading_pairs=self.pairs_valid,
@@ -741,14 +762,14 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
-    
+
     def update_pairs(self, new_pairs):
         """
         Met à jour dynamiquement la liste des paires et réinitialise PPO avec le bon input_dim.
         """
         self.pairs_valid = new_pairs
         self._initialize_ai()  # Recrée PPO et l'input_dim pour les nouvelles paires
-    
+
     def update_pairs_from_config(self):
         self.pairs_valid = self.config["TRADING"]["pairs"]
 
@@ -762,7 +783,7 @@ class TradingBotM4:
             timeframes=self.config["TRADING"]["timeframes"],
         )
         self._initialize_ai()
-           
+
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.
@@ -772,19 +793,21 @@ class TradingBotM4:
         results = self.news_analyzer.analyze_sentiment_batch(news)
         summary = self.news_analyzer.get_sentiment_summary()
         print("Sentiment summary:", summary)
-             
+
     def check_reload_dl_model(self):
         path = "src/models/cnn_lstm_model.pth"
         if os.path.exists(path):
             if self.dl_model is None:
-                print("[ERROR] Modèle IA non initialisé, impossible de charger les poids.")
+                print(
+                    "[ERROR] Modèle IA non initialisé, impossible de charger les poids."
+                )
                 return
             mtime = os.path.getmtime(path)
             if self.dl_model_last_mtime is None or mtime > self.dl_model_last_mtime:
                 self.dl_model.load_weights(path)
                 self.dl_model_last_mtime = mtime
                 print(f"♻️ Nouveau modèle IA chargé automatiquement ({path})")
-                
+
     async def _news_analysis_loop(self):
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
@@ -879,23 +902,23 @@ class TradingBotM4:
 
         tech_score = 0
         tech_factors = 0
-        
+
         # Calcul des scores techniques avec amplification
         if close and sma_20:
             tech_factors += 1
             pct_diff = (close - sma_20) / sma_20 * 100  # Pourcentage de différence
             tech_score += np.clip(pct_diff * 2, -1, 1)  # Amplifier et limiter
-            
+
         if close and sma_50:
             tech_factors += 1
             pct_diff = (close - sma_50) / sma_50 * 100
             tech_score += np.clip(pct_diff * 1.5, -1, 1)
-            
+
         if close and ema_20:
             tech_factors += 1
             pct_diff = (close - ema_20) / ema_20 * 100
             tech_score += np.clip(pct_diff * 2.5, -1, 1)
-            
+
         if rsi_14:
             tech_factors += 1
             # RSI plus réactif : suracheté/survendu plus marqué
@@ -905,16 +928,16 @@ class TradingBotM4:
                 tech_score += 0.8  # Signal d'achat fort
             else:
                 tech_score += (rsi_14 - 50) / 25  # Signal graduel
-                
+
         if macd and macd_signal:
             tech_factors += 1
             macd_diff = macd - macd_signal
             tech_score += np.clip(macd_diff * 10, -1, 1)  # Amplifier MACD
-            
+
         if macd_hist:
             tech_factors += 1
             tech_score += np.clip(macd_hist * 15, -1, 1)  # Amplifier histogramme
-            
+
         if bb_upper and bb_lower and close:
             tech_factors += 1
             bb_position = (close - bb_lower) / (bb_upper - bb_lower)
@@ -922,23 +945,23 @@ class TradingBotM4:
                 tech_score += 0.6  # Proche de la bande inférieure = achat
             elif bb_position > 0.8:
                 tech_score -= 0.6  # Proche de la bande supérieure = vente
-                
+
         if psar and prev_close and close:
             tech_factors += 1
             if prev_close < psar and close > psar:
                 tech_score += 0.8  # Signal d'achat fort
             elif prev_close > psar and close < psar:
                 tech_score -= 0.8  # Signal de vente fort
-                
+
         if momentum_10 and close:
             tech_factors += 1
             momentum_pct = momentum_10 / close * 100
             tech_score += np.clip(momentum_pct * 5, -1, 1)
-            
+
         if zscore_20:
             tech_factors += 1
             tech_score += np.clip(zscore_20 * 0.5, -1, 1)
-            
+
         # Moyenne pondérée au lieu de simple division
         if tech_factors > 0:
             tech_score = tech_score / tech_factors
@@ -963,24 +986,30 @@ class TradingBotM4:
         if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
             # Utilise le score par symbole si disponible
             try:
-                sentiment_score = await self.news_analyzer.get_symbol_sentiment(pair_key)
+                sentiment_score = await self.news_analyzer.get_symbol_sentiment(
+                    pair_key
+                )
                 # Fallback sur le global si rien de spécifique
                 if sentiment_score == 0:
-                    sentiment_score = self.news_analyzer.get_sentiment_summary().get("sentiment_global", 0.0)
+                    sentiment_score = self.news_analyzer.get_sentiment_summary().get(
+                        "sentiment_global", 0.0
+                    )
             except Exception as e:
                 self.logger.error(f"Erreur récupération sentiment pour {pair_key}: {e}")
-                sentiment_score = self.news_analyzer.get_sentiment_summary().get("sentiment_global", 0.0)
+                sentiment_score = self.news_analyzer.get_sentiment_summary().get(
+                    "sentiment_global", 0.0
+                )
         log_dashboard(
             f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
         )
 
         arbitrage_score = 0
 
-         # Amplifier les scores pour avoir des décisions plus marquées
+        # Amplifier les scores pour avoir des décisions plus marquées
         total_score = (
-            0.4 * tech_score * 1.2      # Amplification réduite
-            + 0.3 * ai_score * 1.0      # Pas d'amplification
-            + 0.3 * sentiment_score * 1.5   # Amplification réduite + poids augmenté
+            0.4 * tech_score * 1.2  # Amplification réduite
+            + 0.3 * ai_score * 1.0  # Pas d'amplification
+            + 0.3 * sentiment_score * 1.5  # Amplification réduite + poids augmenté
             + 0.05 * arbitrage_score
         )
 
@@ -993,9 +1022,9 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             },
         }
-        if total_score > 0.2:          # Seuil abaissé
+        if total_score > 0.2:  # Seuil abaissé
             decision["action"] = "buy"
-        elif total_score < -0.2:       # Seuil abaissé
+        elif total_score < -0.2:  # Seuil abaissé
             decision["action"] = "sell"
 
         # Log détaillé pour debug
@@ -1022,11 +1051,14 @@ class TradingBotM4:
         return None
 
     async def detect_arbitrage_opportunities(self, pair=None):
-        """Détecte les opportunités d'arbitrage avec vérification des volumes et logs détaillés"""
+        """
+        Détecte les opportunités d'arbitrage cross-quote USDC/USDT :
+        Compare BTC/USDC sur Binance à BTC/USDT sur les autres brokers.
+        """
         if not self.is_live_trading:
             log_dashboard("[ARBITRAGE] Pas en mode live trading, détection annulée.")
             return []
-        log_dashboard("[ARBITRAGE] Démarrage détection arbitrage…")
+        log_dashboard("[ARBITRAGE] Démarrage détection arbitrage USDC/USDT…")
         opportunities = []
         pairs_to_check = [pair] if pair else self.pairs_valid
         MIN_PROFIT_THRESHOLD = 0.15
@@ -1036,9 +1068,19 @@ class TradingBotM4:
         try:
             for current_pair in pairs_to_check:
                 try:
-                    pair_key = current_pair.replace("/", "")
+                    # On suppose current_pair est de type 'BTC/USDC'
+                    coin = current_pair.split("/")[0]
+                    binance_symbol = f"{coin}USDC"
+                    other_symbol = f"{coin}USDT"
 
-                    # Liste des échanges réels à comparer
+                    # Prix Binance (USDC)
+                    binance_ticker = self.binance_client.get_ticker(
+                        symbol=binance_symbol
+                    )
+                    binance_price = float(binance_ticker.get("lastPrice") or 0)
+                    binance_volume = float(binance_ticker.get("volume", 0))
+
+                    # Liste des échanges réels à comparer (USDT)
                     exchanges_to_check = [
                         {"name": "okx", "client": self.brokers.get("okx")},
                         {"name": "gateio", "client": self.brokers.get("gateio")},
@@ -1046,60 +1088,44 @@ class TradingBotM4:
                         {"name": "bingx", "client": self.brokers.get("bingx")},
                     ]
 
-                    # Prix Binance comme référence (doit être await si async)
-                    if hasattr(
-                        self.binance_client, "fetch_ticker"
-                    ) and asyncio.iscoroutinefunction(self.binance_client.fetch_ticker):
-                        binance_ticker = await self.binance_client.fetch_ticker(
-                            pair_key
-                        )
-                    else:
-                        binance_ticker = self.binance_client.get_ticker(symbol=pair_key)
-                    binance_price = float(
-                        binance_ticker.get("lastPrice")
-                        or binance_ticker.get("last")
-                        or 0
-                    )
-                    binance_volume = float(binance_ticker.get("volume", 0))
-
-                    # Comparaison avec les autres échanges
                     for exchange in exchanges_to_check:
                         if not exchange["client"]:
                             continue
 
                         try:
-                            # Récupération du prix sur l'autre échange (toujours await!)
-                            ticker = await exchange["client"].fetch_ticker(current_pair)
-                            exchange_price = ticker["last"]
+                            # Récupération du prix sur l'autre broker (USDT)
+                            ticker = await exchange["client"].fetch_ticker(other_symbol)
+                            exchange_price = float(ticker["last"])
                             if not exchange_price or not binance_price:
                                 continue
 
-                            # Calcul de la différence de prix
-                            price_diff = abs(exchange_price - binance_price)
+                            # Calcul du spread
+                            price_diff = exchange_price - binance_price
                             profit_pct = (
                                 (price_diff / binance_price) * 100
                                 if binance_price > 0
                                 else 0
                             )
 
+                            # Opportunité cross-quote
                             if profit_pct > MIN_PROFIT_THRESHOLD:
                                 opportunity = {
-                                    "pair": current_pair,
-                                    "exchange1": "Binance",
-                                    "exchange2": exchange["name"],
+                                    "pair": coin,
+                                    "exchange1": "Binance (USDC)",
+                                    "exchange2": f"{exchange['name']} (USDT)",
                                     "price1": binance_price,
                                     "price2": exchange_price,
                                     "diff_percent": profit_pct,
                                     "volume_24h": binance_volume * binance_price,
                                     "estimated_profit": profit_pct - 0.2,  # Après frais
+                                    "route": f"Buy {coin}/USDC (Binance) -> Transfer {coin} -> Sell {coin}/USDT ({exchange['name']})",
                                 }
                                 log_dashboard(
-                                    f"[ARBITRAGE] OPPORTUNITÉ: {current_pair}: {binance_price} (Binance) <> {exchange_price} ({exchange['name']}) | Diff: {profit_pct:.2f}%"
+                                    f"[ARBITRAGE] OPPORTUNITÉ: {coin}: {binance_price} (Binance USDC) <> {exchange_price} ({exchange['name']} USDT) | Diff: {profit_pct:.2f}%"
                                 )
                                 opportunities.append(opportunity)
-                                # Log aussi dans logger/info si tu veux garder historique fichier
                                 self.logger.info(
-                                    f"Opportunité d'arbitrage détectée pour {current_pair}: {opportunity}"
+                                    f"Opportunité d'arbitrage cross-quote détectée pour {coin}: {opportunity}"
                                 )
 
                         except Exception as e:
@@ -1191,11 +1217,13 @@ class TradingBotM4:
                 self.config["AI"].update(best_hp)
                 print(f"[AI] Hyperparams optimisés chargés depuis {hp_path}: {best_hp}")
             else:
-                print("[AI] Pas d'hyperparams optimisés trouvés, utilisation des valeurs par défaut.")
+                print(
+                    "[AI] Pas d'hyperparams optimisés trouvés, utilisation des valeurs par défaut."
+                )
 
             # Initialisation du modèle Deep Learning
             self.dl_model = DeepLearningModel()
-            self.dl_model.initialize()  # S'assurer que le modèle est initialisé 
+            self.dl_model.initialize()  # S'assurer que le modèle est initialisé
 
             # === PATCH : CHARGEMENT DES POIDS ENTRAÎNÉS ===
             weights_path = "src/models/cnn_lstm_model.pth"
@@ -1204,12 +1232,16 @@ class TradingBotM4:
                 self.dl_model.load_weights(weights_path)
                 print(f"[DL] Modèle chargé depuis {weights_path}")
             else:
-                print(f"[DL WARNING] Aucun modèle entraîné trouvé à {weights_path} ! Prédictions IA non fiables.")
+                print(
+                    f"[DL WARNING] Aucun modèle entraîné trouvé à {weights_path} ! Prédictions IA non fiables."
+                )
             if os.path.exists(weights_path):
                 self.dl_model_last_mtime = os.path.getmtime(weights_path)
             else:
-                self.dl_model_last_mtime = None    
-            print(f"[DEBUG] paires_valid utilisées IA: {self.pairs_valid} (count={len(self.pairs_valid)})")
+                self.dl_model_last_mtime = None
+            print(
+                f"[DEBUG] paires_valid utilisées IA: {self.pairs_valid} (count={len(self.pairs_valid)})"
+            )
             # Configuration de l'environnement PPO - PATCH dynamique input_dim
             input_dim = self.get_input_dim()
             num_pairs = len(self.pairs_valid)
@@ -1320,7 +1352,7 @@ class TradingBotM4:
         results = self.news_analyzer.analyze_sentiment_batch(news)
         summary = self.news_analyzer.get_sentiment_summary()
         print("Sentiment summary:", summary)
-        
+
     def check_stop_loss(self, symbol, side):
         """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
         try:
@@ -1438,7 +1470,7 @@ class TradingBotM4:
         except Exception as e:
             print(f"[ORDER] Execution error: {e}")
             self.logger.error(f"Execution error: {e}")
-            #await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
+            # await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
             return {"status": "error", "reason": str(e)}
 
     def _update_performance_metrics(self, trade_result):
@@ -1570,7 +1602,7 @@ class TradingBotM4:
                 "rsi": float(rsi) / 100,
                 "macd": float(macd) / 100,
                 "volatility": float(volatility),
-                "vol_ratio": float(vol_ratio)
+                "vol_ratio": float(vol_ratio),
             }
 
             # Correction NaN/inf
@@ -1585,18 +1617,35 @@ class TradingBotM4:
                         print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
                         features[k] = float(np.nan_to_num(features[k]))
 
-            required_keys = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
+            required_keys = [
+                "close",
+                "high",
+                "low",
+                "volume",
+                "rsi",
+                "macd",
+                "volatility",
+            ]
             for k in required_keys:
                 if k not in features:
-                    self.logger.error(f"[AI FEATURES] Clé manquante dans features : {k}")
+                    self.logger.error(
+                        f"[AI FEATURES] Clé manquante dans features : {k}"
+                    )
                     return None
             for k in ["close", "high", "low", "volume"]:
-                if not (isinstance(features[k], np.ndarray) and features[k].shape == (N_STEPS,)):
-                    self.logger.error(f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}")
+                if not (
+                    isinstance(features[k], np.ndarray)
+                    and features[k].shape == (N_STEPS,)
+                ):
+                    self.logger.error(
+                        f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}"
+                    )
                     return None
             for k in ["rsi", "macd", "volatility", "vol_ratio"]:
                 if not isinstance(features[k], (int, float, np.floating, np.integer)):
-                    self.logger.error(f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}")
+                    self.logger.error(
+                        f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}"
+                    )
                     return None
 
             return features
@@ -1751,7 +1800,6 @@ class TradingBotM4:
 
             await asyncio.sleep(self.news_update_interval)
 
-
     async def _update_sentiment_data(self, sentiment_scores):
         """
         Met à jour les données de marché avec le sentiment :
@@ -1778,8 +1826,9 @@ class TradingBotM4:
                     if symbol in key.upper():
                         self.market_data[key]["sentiment"] = score
                         self.market_data[key]["sentiment_timestamp"] = time.time()
-                        print(f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}")
-
+                        print(
+                            f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}"
+                        )
 
         # 2. Applique la moyenne pondérée à chaque paire
         for key in self.market_data:
@@ -1792,7 +1841,9 @@ class TradingBotM4:
                 avg = total / total_weight if total_weight else 0
                 self.market_data[key]["sentiment"] = avg
                 self.market_data[key]["sentiment_timestamp"] = time.time()
-                print(f"[DEBUG AGG SENTIMENT] {key} <- {avg:.4f} via {len(values)} news (pondérée)")
+                print(
+                    f"[DEBUG AGG SENTIMENT] {key} <- {avg:.4f} via {len(values)} news (pondérée)"
+                )
 
         # 3. Récupère la valeur globale du sentiment depuis le fichier partagé
         try:
@@ -1821,7 +1872,9 @@ class TradingBotM4:
             ):
                 self.market_data[pair_key]["sentiment"] = global_sentiment
                 self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                print(f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}")
+                print(
+                    f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}"
+                )
 
         # 5. Sauvegarde tous les sentiments dans shared_data.json
         symbol_sentiments_out = {
@@ -1853,7 +1906,9 @@ class TradingBotM4:
         if isinstance(news_data, list):
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
-                    headlines.append(str(item["title"]))  # Toujours str pour éviter erreur
+                    headlines.append(
+                        str(item["title"])
+                    )  # Toujours str pour éviter erreur
 
         # --- PATCH: LOG pour debug ---
         print(f"[DEBUG _save_sentiment_data] sentiment_scores={sentiment_scores}")
@@ -1864,39 +1919,59 @@ class TradingBotM4:
             for key, data in self.market_data.items()
             if data.get("sentiment") is not None
         ]
-        print(f"[DEBUG _save_sentiment_data] valid_scores from market_data={valid_scores}")
+        print(
+            f"[DEBUG _save_sentiment_data] valid_scores from market_data={valid_scores}"
+        )
 
         # Fallback sur sentiment_scores si jamais
         if not valid_scores:
             valid_scores = [
-                item.get("sentiment") for item in sentiment_scores
+                item.get("sentiment")
+                for item in sentiment_scores
                 if isinstance(item, dict) and item.get("sentiment") is not None
             ]
-            print(f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}")
+            print(
+                f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}"
+            )
 
         try:
             # Si ton analyseur a une méthode robuste, utilise-la !
             summary = self.news_analyzer.get_sentiment_summary()
             if isinstance(summary, dict) and "sentiment_global" in summary:
                 sentiment_global = float(summary.get("sentiment_global", 0))
-                print(f"[DEBUG _save_sentiment_data] sentiment_global from summary={sentiment_global}")
+                print(
+                    f"[DEBUG _save_sentiment_data] sentiment_global from summary={sentiment_global}"
+                )
             else:
                 # PATCH : moyenne sur tous les scores assignés
                 sentiment_global = float(np.mean(valid_scores)) if valid_scores else 0.0
-                print(f"[DEBUG _save_sentiment_data] sentiment_global from valid_scores={sentiment_global}")
+                print(
+                    f"[DEBUG _save_sentiment_data] sentiment_global from valid_scores={sentiment_global}"
+                )
         except Exception as e:
             print(f"[SENTIMENT] Exception during global calculation: {e}")
             sentiment_global = 0.0
 
         # Impact : moyenne des absolus (toujours sur sentiment_scores)
         impact_score = (
-            float(np.mean([abs(item.get("sentiment", 0)) for item in sentiment_scores if isinstance(item, dict)]))
-            if sentiment_scores else 0.0
+            float(
+                np.mean(
+                    [
+                        abs(item.get("sentiment", 0))
+                        for item in sentiment_scores
+                        if isinstance(item, dict)
+                    ]
+                )
+            )
+            if sentiment_scores
+            else 0.0
         )
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
 
         print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
-        print(f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}")
+        print(
+            f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
+        )
 
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
@@ -1913,7 +1988,9 @@ class TradingBotM4:
             shared_data["sentiment"] = sentiment_data
             with open(self.data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
-            self.logger.info(f"[SENTIMENT] Data written successfully to {self.data_file}")
+            self.logger.info(
+                f"[SENTIMENT] Data written successfully to {self.data_file}"
+            )
         except Exception as e:
             self.logger.error(f"Error saving sentiment data: {e}")
 
@@ -2066,6 +2143,7 @@ class TradingBotM4:
         except Exception as e:
             print("DEBUG calculate_volatility error:", e)
             return 0.0
+
     def calculate_volume_profile(self, data):
         try:
             if isinstance(data, dict) and "volume" in data:
@@ -2256,7 +2334,6 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Error fetching market data: {e}")
 
-
     async def _add_ai_predictions(self):
         """
         Ajoute les prédictions des modèles d'IA aux données de marché.
@@ -2289,31 +2366,54 @@ class TradingBotM4:
                         arr = features[k]
                         if isinstance(arr, np.ndarray):
                             if np.isnan(arr).any() or np.isinf(arr).any():
-                                print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                                print(
+                                    f"[WARN] NaN/inf détecté dans {k}, correction appliquée"
+                                )
                                 features[k] = np.nan_to_num(arr)
                         else:
                             if np.isnan(features[k]) or np.isinf(features[k]):
-                                print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                                print(
+                                    f"[WARN] NaN/inf détecté dans {k}, correction appliquée"
+                                )
                                 features[k] = float(np.nan_to_num(features[k]))
 
                     # Construction du vecteur feature
-                    vec = np.concatenate([
-                        features[k] if isinstance(features[k], np.ndarray) else np.full(N_STEPS, features[k])
-                        for k in ["close", "high", "low", "volume", "rsi", "macd", "volatility", "vol_ratio"]
-                    ])
+                    vec = np.concatenate(
+                        [
+                            (
+                                features[k]
+                                if isinstance(features[k], np.ndarray)
+                                else np.full(N_STEPS, features[k])
+                            )
+                            for k in [
+                                "close",
+                                "high",
+                                "low",
+                                "volume",
+                                "rsi",
+                                "macd",
+                                "volatility",
+                                "vol_ratio",
+                            ]
+                        ]
+                    )
                     if vec.shape != (N_FEATURES * N_STEPS,):
-                        print(f"[SKIP PPO] {pair_key}, shape {vec.shape}, pas assez de data")
+                        print(
+                            f"[SKIP PPO] {pair_key}, shape {vec.shape}, pas assez de data"
+                        )
                         continue
                     ppo_features_list.append(vec)
                 except Exception as e:
                     self.logger.error(f"Error preparing AI features for {pair}: {e}")
-        
+
         if not ppo_features_list:
             print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
             return
         ppo_features = np.concatenate(ppo_features_list)
         expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
-        print(f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {expected_shape}")
+        print(
+            f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {expected_shape}"
+        )
         if ppo_features.shape != expected_shape:
             print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
             return
@@ -2709,7 +2809,9 @@ class TradingBotM4:
                     df = pd.DataFrame(df, columns=columns)
                     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                 else:
-                    self.logger.error("add_indicators: Format de liste non pris en charge")
+                    self.logger.error(
+                        "add_indicators: Format de liste non pris en charge"
+                    )
                     return None
             if not isinstance(df, pd.DataFrame):
                 self.logger.error("add_indicators: df n'est pas un DataFrame")
@@ -2738,7 +2840,9 @@ class TradingBotM4:
                     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
             if df.empty:
-                self.logger.warning("DataFrame vide, impossible de calculer les indicateurs")
+                self.logger.warning(
+                    "DataFrame vide, impossible de calculer les indicateurs"
+                )
                 print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
                 return None
 
@@ -2816,7 +2920,10 @@ class TradingBotM4:
                     print(df_ta[["timestamp"]].head(10))
                     print("== VWAP DEBUG TAIL ==")
                     print(df_ta[["timestamp"]].tail(10))
-                    print("Monotonic increasing:", df_ta["timestamp"].is_monotonic_increasing)
+                    print(
+                        "Monotonic increasing:",
+                        df_ta["timestamp"].is_monotonic_increasing,
+                    )
                     vwma = df_ta.ta.vwma(length=20)
                     df_ta["vwma_20"] = vwma
                 except Exception:
@@ -2846,17 +2953,35 @@ class TradingBotM4:
                     df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
 
                 all_indics = [
-                    "sma_20", "sma_50", "ema_20", "rsi_14", "macd", "macd_signal",
-                    "macd_hist", "bb_lower", "bb_upper", "donchian_high", "donchian_low",
-                    "psar", "momentum_10", "zscore_20", "vwma_20", "obv", "vwap",
-                    "stochrsi", "kc_upper", "kc_lower"
+                    "sma_20",
+                    "sma_50",
+                    "ema_20",
+                    "rsi_14",
+                    "macd",
+                    "macd_signal",
+                    "macd_hist",
+                    "bb_lower",
+                    "bb_upper",
+                    "donchian_high",
+                    "donchian_low",
+                    "psar",
+                    "momentum_10",
+                    "zscore_20",
+                    "vwma_20",
+                    "obv",
+                    "vwap",
+                    "stochrsi",
+                    "kc_upper",
+                    "kc_lower",
                 ]
 
                 indicators = {}
                 for col in all_indics:
                     if col in df_ta.columns:
                         last_valid = df_ta[col].dropna()
-                        indicators[col] = last_valid.iloc[-1] if not last_valid.empty else None
+                        indicators[col] = (
+                            last_valid.iloc[-1] if not last_valid.empty else None
+                        )
                     else:
                         indicators[col] = None
 
@@ -2923,9 +3048,13 @@ class TradingBotM4:
                 if df_live is not None and not df_live.empty:
                     df_live = add_dl_features(df_live)
                     for col in ["rsi", "macd", "volatility"]:
-                        n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
+                        n_nan = (
+                            df_live[col].isna().sum() if col in df_live.columns else 0
+                        )
                         if n_nan > 0:
-                            print(f"⚠️ Attention : {n_nan} NaN dans {col} même après correction")
+                            print(
+                                f"⚠️ Attention : {n_nan} NaN dans {col} même après correction"
+                            )
                     print(
                         f"  {len(df_live)} lignes live trouvées, entraînement en cours…"
                     )
@@ -3175,9 +3304,9 @@ async def run_clean_bot():
             if bot is None:
                 print("Erreur critique à l'initialisation du bot. Arrêt.")
                 return
-            
+
             await bot.test_news_sentiment()
-            
+
             # Analyse initiale du marché
             regime, _, _ = await bot.study_market("7d")
             log_dashboard(f"🔈 Régime de marché détecté: {regime}")
@@ -3248,8 +3377,8 @@ async def run_clean_bot():
                     # === Fin entraînement IA auto ===
                     bot.train_cnn_lstm_on_all_live()
                     print(
-                            "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
-                        )
+                        "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
+                    )
                     # Calcul de la durée du cycle et affichage
                     duration = (datetime.utcnow() - start).total_seconds()
                     print(f"✅ Cycle terminé en {duration:.1f}s")
@@ -3476,9 +3605,11 @@ async def execute_trade_decisions(bot, trade_decisions):
 
 def save_best_params(best_params, path="config/best_hyperparams.json"):
     import json
+
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(best_params, f, indent=2)
+
 
 async def run_automl_tuning(bot, mode="cnn_lstm"):
     """Lance une optimisation AutoML/Optuna complète (manuelle ou auto)"""
@@ -3488,11 +3619,13 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
     start = time.time()
     if mode == "cnn_lstm":
         from src.optimization.optuna_wrapper import tune_hyperparameters
+
         best_params = tune_hyperparameters()
         print("✅ Optuna tuning terminé. Meilleurs hyperparams:", best_params)
         save_best_params(best_params)  # <-- Sauvegarde automatique
     elif mode == "full":
         from src.optimization.optuna_wrapper import optimize_hyperparameters_full
+
         best_trials = optimize_hyperparameters_full()
         print("✅ Optuna full tuning terminé. Résumé:", best_trials)
         # Si besoin, tu peux aussi sauvegarder best_trials ici
@@ -3532,7 +3665,7 @@ async def send_trade_notification(bot, decision, trade_result, amount):
     """
     try:
         # Détermination de l'emoji selon l'action
-        action = decision.get('action', '').lower()
+        action = decision.get("action", "").lower()
         emoji = "🟢" if action == "buy" else "🔴" if action == "sell" else "⚪️"
 
         # Construction du message
@@ -3553,17 +3686,24 @@ async def send_trade_notification(bot, decision, trade_result, amount):
     except Exception as e:
         logging.error(f"Erreur envoi notification: {e}")
 
+
 def build_telegram_summary(bot, trade_decisions, news_sentiment):
     summary = "🟢 <b>Résumé du cycle</b>\n"
     # Régime
     summary += f"📊 Régime de marché : {bot.regime}\n"
     # Paires principales (top 5)
-    top_pairs = ", ".join([d["pair"] for d in trade_decisions[:5]]) if trade_decisions else "N/A"
+    top_pairs = (
+        ", ".join([d["pair"] for d in trade_decisions[:5]])
+        if trade_decisions
+        else "N/A"
+    )
     summary += f"📈 Paires principales : {top_pairs}\n"
     # Décisions de trade principales (top 5)
     for d in trade_decisions[:5]:
-        emoji = "🟢" if d["action"] == "buy" else "🔴" if d["action"] == "sell" else "⚪️"
-        conf = int(d["confidence"]*100)
+        emoji = (
+            "🟢" if d["action"] == "buy" else "🔴" if d["action"] == "sell" else "⚪️"
+        )
+        conf = int(d["confidence"] * 100)
         summary += f"{emoji} {d['pair']} : {d['action'].upper()} ({conf}%)\n"
     # News principales (top 3)
     if news_sentiment and "latest_news" in news_sentiment:
@@ -3572,6 +3712,7 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
             summary += f"• {title}\n"
     return summary
 
+
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle"""
     try:
@@ -3579,15 +3720,17 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         if trade_decisions:
             trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
             for trade in trade_decisions:
-                emoji = "🟢" if trade['action'] == "buy" else "🔴" if trade['action'] == "sell" else "⚪️"
+                emoji = (
+                    "🟢"
+                    if trade["action"] == "buy"
+                    else "🔴" if trade["action"] == "sell" else "⚪️"
+                )
                 pair = trade.get("pair", "INCONNU")
                 conf = f"{trade.get('confidence', 0):.0%}"
                 tech = f"{trade.get('signals', {}).get('technical', 0):.0%}"
                 ia = f"{trade.get('signals', {}).get('ai', 0):.2f}"
                 sent = f"{trade.get('signals', {}).get('sentiment', 0):.2f}"
-                trade_report += (
-                    f"{emoji} {pair}: {trade['action'].upper()} ({conf}) | Tech {tech} | IA {ia} | Sent {sent}\n"
-                )
+                trade_report += f"{emoji} {pair}: {trade['action'].upper()} ({conf}) | Tech {tech} | IA {ia} | Sent {sent}\n"
             await bot.telegram.send_message(trade_report)
         else:
             await bot.telegram.send_cycle_update(cycle, regime, duration)
@@ -3666,21 +3809,23 @@ async def handle_shutdown(bot, message):
     except Exception as e:
         logging.error(f"Erreur arrêt bot: {e}")
 
+
 def objective(trial):
     try:
         # Hyperparamètres
-        lr = trial.suggest_float('lr', 1e-5, 1e-2, log=True)
-        batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
-        
+        lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
+        batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
+
         # Initialisation et entraînement
         model = HybridAI()
         acc = model.train_and_validate(lr, batch_size)
-        
+
         return acc
-        
+
     except Exception as e:
         print(f"Erreur critique: {str(e)}")
         return 0.0
+
 
 if __name__ == "__main__":
 

@@ -1,15 +1,15 @@
 {
   "valid_pairs": [
-    "BTC/USDT",
-    "ETH/USDT",
-    "LTC/USDT",
-    "XRP/USDT",
-    "DOGE/USDT",
-    "BNB/USDT",
-    "ADA/USDT",
-    "SOL/USDT",
-    "TRX/USDT",
-    "SUI/USDT"
+    "BTC/USDC",
+    "ETH/USDC",
+    "LTC/USDC",
+    "XRP/USDC",
+    "DOGE/USDC",
+    "BNB/USDC",
+    "ADA/USDC",
+    "SOL/USDC",
+    "TRX/USDC",
+    "SUI/USDC"
   ],
   "invalid_pairs_to_skip": [
     "AXAUSDT",
