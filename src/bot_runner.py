@@ -1448,36 +1448,22 @@ class TradingBotM4:
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    quoteOrderQty=amount,  # amount = montant USDC à investir  # <<< amount = montant USDC à investir
+                    quoteOrderQty=amount,  # amount = montant USDC à investir
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
             else:
-                # Achat/vende classique (par quantité de coin)
-                if side.upper() == "BUY" and symbol.endswith("USDC"):
-                    # ACHAT PAR MONTANT USDC : utiliser quoteOrderQty !
-                    result = await self.executor.execute_order(
-                        symbol=symbol,
-                        side=side,
-                        quoteOrderQty=amount,  # amount maintenant = montant USDC à investir
-                        orderbook=orderbook,
-                        market_data=market_data,
-                        iceberg=iceberg,
-                        iceberg_visible_size=iceberg_visible_size,
-                    )
-                else:
-                    # Vente ou achat par quantité
-                    result = await self.executor.execute_order(
-                        symbol=symbol,
-                        side=side,
-                        amount=amount,
-                        orderbook=orderbook,
-                        market_data=market_data,
-                        iceberg=iceberg,
-                        iceberg_visible_size=iceberg_visible_size,
-                    )
+                result = await self.executor.execute_order(
+                    symbol=symbol,
+                    side=side,
+                    amount=amount,
+                    orderbook=orderbook,
+                    market_data=market_data,
+                    iceberg=iceberg,
+                    iceberg_visible_size=iceberg_visible_size,
+                )
 
             # Enregistrement du résultat
             if result["status"] == "completed":

@@ -24133,3 +24133,11 @@
 2025-07-19T22:53:14.437457 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
 2025-07-19T22:53:14.440374 | 🎯 Stratégie active: Range/Scalping
 2025-07-19T22:53:14.440537 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-19T22:57:07.954387 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-19T22:57:07.957058 | Initialisation des modèles d'IA...
+2025-07-19T22:57:07.976821 | ✅ Modèles d'IA initialisés avec succès
+2025-07-19T22:57:09.554610 | ✅ PPO Strategy initialized successfully
+2025-07-19T22:57:09.555537 | ✅ Bot initialisé avec Telegram: True
+2025-07-19T22:57:09.555667 | ✅ Trading en direct: True
+2025-07-19T22:57:09.555704 | ✅ IA activée: True
+2025-07-19T22:57:09.555737 | ✅ Analyse de news activée: True
