@@ -37,20 +37,36 @@ class BinanceConnector:
             raise Exception(f"Binance error: {str(e)}")
 
     async def create_order(
-        self, symbol: str, side: str, amount: Decimal, price: Decimal = None
+        self,
+        symbol: str,
+        side: str,
+        usdc_amount: Decimal = None,
+        price: Decimal = None,
+        use_usdc: bool = True,
     ):
-        """Crée un ordre sur Binance"""
+        """
+        Crée un ordre sur Binance
+        Si use_usdc=True, achète pour un montant en USDC (quoteOrderQty).
+        Sinon, achète pour une quantité en BTC (amount).
+        """
         try:
             params = {
                 "type": "market" if not price else "limit",
-                "amount": float(amount),
-                "price": float(price) if price else None,
             }
+            if use_usdc and usdc_amount is not None:
+                params["quoteOrderQty"] = float(usdc_amount)
+                amount = None  # On ne renseigne pas amount
+            else:
+                params["amount"] = float(usdc_amount)
+                amount = float(usdc_amount)
+            if price:
+                params["price"] = float(price)
+
             return await self.exchange.create_order(
                 symbol,
                 "market" if not price else "limit",
                 side,
-                float(amount),
+                amount,
                 float(price) if price else None,
                 params,
             )

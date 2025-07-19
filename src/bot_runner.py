@@ -85,6 +85,7 @@ def add_dl_features(df):
     # Tri par timestamp pour éviter des NaN liés au mauvais ordre
     if "timestamp" in df.columns:
         df = df.sort_values("timestamp")
+        df = df.drop_duplicates(subset="timestamp", keep="last")
 
     # RSI 14
     if "rsi" not in df or df["rsi"].isnull().all():
@@ -1441,16 +1442,42 @@ class TradingBotM4:
                 "regime": self.regime,
             }
 
-            # Exécution de l'ordre avec notre exécuteur intelligent (ajout iceberg)
-            result = await self.executor.execute_order(
-                symbol=symbol,
-                side=side,
-                amount=amount,
-                orderbook=orderbook,
-                market_data=market_data,
-                iceberg=iceberg,
-                iceberg_visible_size=iceberg_visible_size,
-            )
+            # -------- PATCH pour achat en USDC --------
+            # Détecte si la paire est en USDC et si l'action est un achat
+            if side.upper() == "BUY" and symbol.endswith("USDC"):
+                result = await self.executor.execute_order(
+                    symbol=symbol,
+                    side=side,
+                    quoteOrderQty=amount,  # amount = montant USDC à investir  # <<< amount = montant USDC à investir
+                    orderbook=orderbook,
+                    market_data=market_data,
+                    iceberg=iceberg,
+                    iceberg_visible_size=iceberg_visible_size,
+                )
+            else:
+                # Achat/vende classique (par quantité de coin)
+                if side.upper() == "BUY" and symbol.endswith("USDC"):
+                    # ACHAT PAR MONTANT USDC : utiliser quoteOrderQty !
+                    result = await self.executor.execute_order(
+                        symbol=symbol,
+                        side=side,
+                        quoteOrderQty=amount,  # amount maintenant = montant USDC à investir
+                        orderbook=orderbook,
+                        market_data=market_data,
+                        iceberg=iceberg,
+                        iceberg_visible_size=iceberg_visible_size,
+                    )
+                else:
+                    # Vente ou achat par quantité
+                    result = await self.executor.execute_order(
+                        symbol=symbol,
+                        side=side,
+                        amount=amount,
+                        orderbook=orderbook,
+                        market_data=market_data,
+                        iceberg=iceberg,
+                        iceberg_visible_size=iceberg_visible_size,
+                    )
 
             # Enregistrement du résultat
             if result["status"] == "completed":
@@ -3658,22 +3685,28 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
 
 def calculate_position_size(bot, decision):
-    """Calcule la taille de position optimale"""
+    """Calcule le montant en USDC à investir (et non la quantité de BTC)"""
     try:
-        base_amount = 0.01
+        # Par exemple, on investit de 10 à 100 USDC selon la confiance et la volatilité
+        base_usdc = 10  # minimum à investir (doit être > minNotional Binance, ici 5)
+        max_usdc = 100  # maximum à investir
+
         volatility_factor = decision.get("signals", {}).get("volatility", 0.5)
+        confidence = decision.get("confidence", 0.5)
 
-        # Ajustement par la volatilité
-        risk_adjusted = base_amount * (1 - volatility_factor * 0.5)
+        # Plus la volatilité est faible et la confiance élevée, plus on investit
+        invest_usdc = base_usdc + (max_usdc - base_usdc) * confidence * (
+            1 - volatility_factor
+        )
 
-        # Ajustement par la confiance
-        signal_adjusted = risk_adjusted * (0.5 + decision["confidence"] * 0.5)
+        # Securité : arrondi à 2 décimales et respect du minimum
+        invest_usdc = max(base_usdc, round(invest_usdc, 2))
 
-        return signal_adjusted
+        return invest_usdc  # <<< Montant USDC à investir
 
     except Exception as e:
-        logging.error(f"Erreur calcul taille position: {e}")
-        return 0.01
+        logging.error(f"Erreur calcul montant USDC: {e}")
+        return 10  # fallback
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):

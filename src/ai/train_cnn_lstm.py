@@ -13,32 +13,43 @@ FUTURE_SHIFT = 10
 THRESHOLD = 0.002
 MAX_TOTAL_EPOCHS = 500  # <-- Change ici si tu veux moins/plus d'epochs cumulés
 
+
 def load_best_params(path="config/best_hyperparams.json"):
     if os.path.exists(path):
         with open(path) as f:
             return json.load(f)
     return {}
 
+
 def save_checkpoint(model, optimizer, epoch, path="src/models/checkpoint.pth"):
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'epoch': epoch
-    }, path)
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "epoch": epoch,
+        },
+        path,
+    )
+
 
 def load_checkpoint(model, optimizer, path="src/models/checkpoint.pth"):
     if os.path.exists(path):
         checkpoint = torch.load(path)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        return checkpoint['epoch']
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        return checkpoint["epoch"]
+    else:
+        print(f"[WARN] Checkpoint {path} absent, pas de reprise d'entraînement.")
     return 0
+
 
 def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
     feature_cols = ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
     for col in feature_cols:
         if col not in df:
-            print(f"Manque la colonne {col} dans le DataFrame, impossible d’entraîner !")
+            print(
+                f"Manque la colonne {col} dans le DataFrame, impossible d’entraîner !"
+            )
             return None, None
         df[col] = (df[col] - df[col].mean()) / (df[col].std() + 1e-8)
         if df[col].isnull().any() or np.isinf(df[col]).any():
@@ -54,7 +65,9 @@ def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
         future_close = df["close"].iloc[i + seq_len + future_shift - 1]
         now_close = df["close"].iloc[i + seq_len - 1]
         try:
-            label = 1.0 if (future_close - now_close) / abs(now_close) > threshold else 0.0
+            label = (
+                1.0 if (future_close - now_close) / abs(now_close) > threshold else 0.0
+            )
         except Exception:
             label = 0.0
         y.append(label)
@@ -66,8 +79,10 @@ def load_data_from_df(df, seq_len=20, future_shift=10, threshold=0.002):
     y = np.array(y, dtype=np.float32).reshape(-1, 1)
     return X, y
 
+
 def add_dl_features(df):
     import pandas_ta as pta
+
     if "rsi" not in df:
         df["rsi"] = pta.rsi(df["close"], length=14)
     if "macd" not in df:
@@ -78,6 +93,7 @@ def add_dl_features(df):
         df["volatility"] = returns.rolling(14).std()
     return df
 
+
 def promote_trained_model():
     src = "src/models/cnn_lstm_model_training.pth"
     dst = "src/models/cnn_lstm_model.pth"
@@ -87,10 +103,11 @@ def promote_trained_model():
     else:
         print("Aucun modèle entraîné à promouvoir.")
 
+
 def train_with_live_data(
     df_live,
     model_save_path="src/models/cnn_lstm_model_training.pth",
-    reset_on_n_epochs=True
+    reset_on_n_epochs=True,
 ):
     """
     Entraîne le modèle CNN-LSTM sur des données live.
@@ -124,11 +141,15 @@ def train_with_live_data(
     if start_epoch > 0:
         print(f"✅ Reprise de l'entraînement à l'epoch {start_epoch+1}")
     else:
-        print("⏩ Entraînement à partir de zéro (pas de reset forcé, checkpoint conservé si existant).")
+        print(
+            "⏩ Entraînement à partir de zéro (pas de reset forcé, checkpoint conservé si existant)."
+        )
 
     # 4.1. Reset si trop d'epochs cumulés
     if start_epoch >= MAX_TOTAL_EPOCHS:
-        print(f"⏹️ Reset automatique : {start_epoch} epochs cumulés atteints. Nouveau training sur données récentes.")
+        print(
+            f"⏹️ Reset automatique : {start_epoch} epochs cumulés atteints. Nouveau training sur données récentes."
+        )
         # Supprimer l'ancien checkpoint
         if os.path.exists(checkpoint_path):
             os.remove(checkpoint_path)
@@ -153,15 +174,17 @@ def train_with_live_data(
             loss.backward()
             optimizer.step()
             batch_losses.append(loss.item())
-            #print(f"  Epoch {epoch+1} - Batch {i//batch_size+1}/{(len(X_train)-1)//batch_size+1} - Batch loss: {loss.item():.6f}")
+            # print(f"  Epoch {epoch+1} - Batch {i//batch_size+1}/{(len(X_train)-1)//batch_size+1} - Batch loss: {loss.item():.6f}")
 
         epoch_duration = time.time() - t0
-        print(f"Epoch {epoch+1}/{start_epoch+n_epochs} - Mean batch loss: {np.mean(batch_losses):.6f} - Durée: {epoch_duration:.2f}s")
+        print(
+            f"Epoch {epoch+1}/{start_epoch+n_epochs} - Mean batch loss: {np.mean(batch_losses):.6f} - Durée: {epoch_duration:.2f}s"
+        )
         print("-" * 60)
 
         # Sauvegarde du checkpoint à chaque epoch
-        save_checkpoint(model, optimizer, epoch+1, checkpoint_path)
-        
+        save_checkpoint(model, optimizer, epoch + 1, checkpoint_path)
+
         # Évaluation
         model.eval()
         with torch.no_grad():
