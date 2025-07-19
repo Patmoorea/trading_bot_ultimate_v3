@@ -623,7 +623,7 @@ class TradingBotM4:
             "news": {
                 "sentiment_weight": 0.15,
                 "update_interval": 300,
-                "storage_path": "data/news_analysis.json",
+                "storage_path": "data/news_analysis.json","low_watermark_ratio": 0.2,
                 "symbol_mapping": {
                     "bitcoin": "BTC",
                     "ethereum": "ETH",
@@ -3667,36 +3667,20 @@ async def handle_shutdown(bot, message):
         logging.error(f"Erreur arrêt bot: {e}")
 
 def objective(trial):
-    """Fonction objective avec validation manuelle et contournement Optuna"""
     try:
-        # 1. Paramètre factice (car le problème n'est pas là)
-        lr = trial.suggest_float('lr', 0.001, 0.1)
+        # Hyperparamètres
+        lr = trial.suggest_float('lr', 1e-5, 1e-2, log=True)
+        batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
         
-        # 2. Données triviales 100% séparables
-        X = np.random.choice([0, 1], size=(100, 30, 5))
-        y = np.array([i % 2 for i in range(100)], dtype=np.float32)
+        # Initialisation et entraînement
+        model = HybridAI()
+        acc = model.train_and_validate(lr, batch_size)
         
-        # 3. Modèle minimal
-        model = tf.keras.Sequential([
-            tf.keras.layers.Flatten(input_shape=(30, 5)),
-            tf.keras.layers.Dense(1, activation='sigmoid')
-        ])
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        return acc
         
-        # 4. Entraînement avec validation manuelle
-        model.fit(X, y, epochs=2, verbose=0)
-        preds = model.predict(X)
-        acc = float(np.mean((preds > 0.5).astype(int) == y))
-        
-        # 5. Contournement Optuna - validation visuelle CRITIQUE
-        print(f"⏩ RESULTAT REEL: accuracy={acc:.4f} (doit être 1.0)")
-        
-        # 6. Retour forcé si Optuna ignore la valeur
-        return acc if acc > 0 else 1.0  # Garantie de retour positif
-    
     except Exception as e:
-        print(f"💥 ERREUR: {str(e)}")
-        return 1.0  # Valeur de repli garantie
+        print(f"Erreur critique: {str(e)}")
+        return 0.0
 
 if __name__ == "__main__":
 

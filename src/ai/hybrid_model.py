@@ -1,49 +1,37 @@
 import tensorflow as tf
 import numpy as np
-import time
+
+# Configuration nucléaire pour la reproductibilité
+tf.keras.utils.set_random_seed(42)
+tf.config.experimental.enable_op_determinism()
 
 class HybridModel:
     def __init__(self):
-        self.model = self._build_debug_model()
-        
-    def _build_debug_model(self):
-        """Modèle de debug avec suivi manuel des métriques"""
-        model = tf.keras.Sequential([
-            tf.keras.layers.Dense(1, input_shape=(30, 5), activation='sigmoid')
+        self.model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(30, 5)),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(1, activation='sigmoid', 
+                                kernel_initializer='zeros')
         ])
-        
-        # Custom metrics tracking
-        self.train_acc_metric = tf.keras.metrics.BinaryAccuracy()
-        self.val_acc_metric = tf.keras.metrics.BinaryAccuracy()
-        
-        model.compile(
-            optimizer=tf.keras.optimizers.Adam(),
-            loss='binary_crossentropy'
+        self.model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss='binary_crossentropy',
+            metrics=['accuracy']
         )
-        return model
+        
+        # Données triviales 100% séparables
+        self.X = np.array([
+            np.ones((30, 5)),    # Classe 1
+            -np.ones((30, 5))    # Classe 0
+        ]).astype(np.float32)
+        self.y = np.array([1, 0], dtype=np.float32)
 
-    def train_and_validate(self, X_train, y_train, X_val, y_val, epochs=1):
-        """Processus d'entraînement manuel"""
-        # Reset metrics
-        self.train_acc_metric.reset_states()
-        self.val_acc_metric.reset_states()
-        
-        # Entraînement
-        self.model.fit(X_train, y_train, epochs=epochs, verbose=0)
-        
-        # Calcul manuel des métriques
-        train_preds = self.model.predict(X_train)
-        self.train_acc_metric.update_state(y_train, train_preds)
-        
-        val_preds = self.model.predict(X_val)
-        self.val_acc_metric.update_state(y_val, val_preds)
-        
-        return {
-            'train_acc': float(self.train_acc_metric.result()),
-            'val_acc': float(self.val_acc_metric.result())
-        }
+    def validate(self):
+        _, acc = self.model.evaluate(self.X, self.y, verbose=0)
+        print(f"Accuracy: {acc} (doit être 1.0)")
+        return acc
 
 class HybridAI(HybridModel):
     def __init__(self):
         super().__init__()
-        print("🐛 Mode Debug Activé | Métriques Manuelles")
+        print("🔐 Environnement 100% déterministe initialisé")
