@@ -1053,8 +1053,23 @@ class TradingBotM4:
     async def detect_arbitrage_opportunities(self, pair=None):
         """
         Détecte les opportunités d'arbitrage cross-quote USDC/USDT :
-        Compare BTC/USDC sur Binance à BTC/USDT sur les autres brokers.
+        Compare par exemple BTC/USDC sur Binance à BTC/USDT sur les autres brokers,
+        avec adaptation du format des symboles selon chaque broker.
         """
+
+        def get_broker_symbol(coin, quote, broker):
+            # Adapter au format attendu par chaque broker
+            if broker == "binance":
+                return f"{coin}{quote}"
+            elif broker in ["okx", "bingx"]:
+                return f"{coin}-{quote}"
+            elif broker == "gateio":
+                return f"{coin}_{quote}"
+            elif broker == "blofin":
+                return f"{coin}{quote}"  # Si différent, adapter ici !
+            else:
+                return f"{coin}/{quote}"  # Fallback
+
         if not self.is_live_trading:
             log_dashboard("[ARBITRAGE] Pas en mode live trading, détection annulée.")
             return []
@@ -1068,10 +1083,9 @@ class TradingBotM4:
         try:
             for current_pair in pairs_to_check:
                 try:
-                    # On suppose current_pair est de type 'BTC/USDC'
                     coin = current_pair.split("/")[0]
-                    binance_symbol = f"{coin}USDC"
-                    other_symbol = f"{coin}USDT"
+                    # Symboles pour chaque broker
+                    binance_symbol = get_broker_symbol(coin, "USDC", "binance")
 
                     # Prix Binance (USDC)
                     binance_ticker = self.binance_client.get_ticker(
@@ -1080,7 +1094,7 @@ class TradingBotM4:
                     binance_price = float(binance_ticker.get("lastPrice") or 0)
                     binance_volume = float(binance_ticker.get("volume", 0))
 
-                    # Liste des échanges réels à comparer (USDT)
+                    # Liste des brokers à comparer (USDT)
                     exchanges_to_check = [
                         {"name": "okx", "client": self.brokers.get("okx")},
                         {"name": "gateio", "client": self.brokers.get("gateio")},
@@ -1089,10 +1103,14 @@ class TradingBotM4:
                     ]
 
                     for exchange in exchanges_to_check:
+                        broker = exchange["name"]
+                        binance_symbol = get_broker_symbol(coin, "USDC", "binance")
+                        other_symbol = get_broker_symbol(coin, "USDT", broker)
                         if not exchange["client"]:
                             continue
 
                         try:
+                            other_symbol = get_broker_symbol(coin, "USDT", broker)
                             # Récupération du prix sur l'autre broker (USDT)
                             ticker = await exchange["client"].fetch_ticker(other_symbol)
                             exchange_price = float(ticker["last"])
@@ -1112,16 +1130,16 @@ class TradingBotM4:
                                 opportunity = {
                                     "pair": coin,
                                     "exchange1": "Binance (USDC)",
-                                    "exchange2": f"{exchange['name']} (USDT)",
+                                    "exchange2": f"{broker} (USDT)",
                                     "price1": binance_price,
                                     "price2": exchange_price,
                                     "diff_percent": profit_pct,
                                     "volume_24h": binance_volume * binance_price,
                                     "estimated_profit": profit_pct - 0.2,  # Après frais
-                                    "route": f"Buy {coin}/USDC (Binance) -> Transfer {coin} -> Sell {coin}/USDT ({exchange['name']})",
+                                    "route": f"Buy {coin}/USDC (Binance) -> Transfer {coin} -> Sell {coin}/USDT ({broker})",
                                 }
                                 log_dashboard(
-                                    f"[ARBITRAGE] OPPORTUNITÉ: {coin}: {binance_price} (Binance USDC) <> {exchange_price} ({exchange['name']} USDT) | Diff: {profit_pct:.2f}%"
+                                    f"[ARBITRAGE] OPPORTUNITÉ: {coin}: {binance_price} (Binance USDC) <> {exchange_price} ({broker} USDT) | Diff: {profit_pct:.2f}%"
                                 )
                                 opportunities.append(opportunity)
                                 self.logger.info(
@@ -1129,8 +1147,8 @@ class TradingBotM4:
                                 )
 
                         except Exception as e:
-                            print(f"[ARBITRAGE] Erreur sur {exchange['name']}: {e}")
-                            self.logger.error(f"Erreur sur {exchange['name']}: {e}")
+                            print(f"[ARBITRAGE] Erreur sur {broker}: {e}")
+                            self.logger.error(f"Erreur sur {broker}: {e}")
                             continue
 
                 except Exception as e:
