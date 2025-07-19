@@ -703,6 +703,10 @@ class TradingBotM4:
                     if os.path.exists(model_path):
                         model.load_state_dict(torch.load(model_path))
                         self.logger.info(f"Modèle {model_name} chargé avec succès")
+                    else:
+                        self.logger.warning(
+                            f"[WARN] Fichier modèle {model_path} absent, chargement ignoré."
+                        )
 
             self.logger.info("✅ Modèles initialisés avec succès")
             return True

@@ -86,8 +86,12 @@ class DeepLearningModel:
         return torch.FloatTensor(arr)
 
     def load_weights(self, path):
+        if os.path.exists(path):
         self.model.load_state_dict(torch.load(path, map_location='cpu'))
         self.model.eval()
+        print(f"[DL] Modèle chargé depuis {path}")
+    else:
+        print(f"[WARN] Fichier modèle {path} absent, chargement ignoré.")
 
 class CNNLSTMModel(nn.Module):
     def __init__(self):
