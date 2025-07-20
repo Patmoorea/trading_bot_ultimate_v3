@@ -1439,10 +1439,9 @@ class TradingBotM4:
             # Préparation des données de marché pour l'exécuteur
             market_data = {
                 "recent_trades": recent_trades,
-                "volatility": self.calculate_volatility(
-                    self.market_data.get(symbol, {}).get("1h", {})
-                ),
+                "volatility": self.calculate_volatility(self.market_data.get(symbol, {}).get("1h", {})),
                 "regime": self.regime,
+                "binance_client": self.binance_client,  # <-- AJOUT OBLIGATOIRE
             }
 
             # PATCH pour achat en USDC
