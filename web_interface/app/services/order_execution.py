@@ -41,7 +41,7 @@ class SmartOrderExecutor:
                     "timestamp": datetime.now(timezone.utc),
                 }
 
-            # PATCH : Utiliser quoteOrderQty pour les achats USDC (Binance API)
+            # Utiliser quoteOrderQty pour les achats USDC (Binance API)
             exec_amount = quoteOrderQty if quoteOrderQty is not None else amount
             if exec_amount is None or exec_amount <= 0:
                 return {
@@ -100,11 +100,7 @@ class SmartOrderExecutor:
         iceberg=False,
         iceberg_visible_size=0.1,
     ):
-        # ... Implémentation de la protection anti-snipe et exécution ...
-        # Ici, tu dois utiliser quoteOrderQty pour l'appel Binance API
-        # Exemple :
         try:
-            # PATCH : call Binance API
             binance_client = market_data.get("binance_client")
             if not binance_client:
                 return {
@@ -117,7 +113,7 @@ class SmartOrderExecutor:
                 "symbol": symbol,
                 "side": side,
                 "type": "MARKET",
-                "quoteOrderQty": execution_plan["plan"]["amount"],  # <-- PATCH ici !
+                "quoteOrderQty": execution_plan["plan"]["amount"],  # PATCH ici !
             }
             if iceberg:
                 api_args["icebergQty"] = iceberg_visible_size
@@ -205,75 +201,3 @@ class SmartOrderExecutor:
         except Exception as e:
             self.logger.error(f"Stats calculation error: {e}")
             return {}
-
-    async def execute_order(
-        self,
-        symbol,
-        side,
-        amount,
-        orderbook,
-        market_data,
-        iceberg=False,
-        iceberg_visible_size=0.1,
-    ):
-        """
-        Exécute un ordre normal ou iceberg sur le carnet.
-        Args:
-            symbol: la paire à trader
-            side: BUY/SELL
-            amount: montant total à trader
-            orderbook: snapshot carnet (bids/asks)
-            market_data: infos de contexte
-            iceberg: bool, active le mode iceberg natif
-            iceberg_visible_size: montant "visible" de chaque sous-ordre (en base, ex: 0.1 BTC)
-        Retourne : dict résultat ("status", "filled_amount", "avg_price", etc.)
-        """
-        if not iceberg:
-            # Exécution classique (existant)
-            # ... code précédent ...
-            return {
-                "status": "completed",
-                "filled_amount": amount,
-                "avg_price": (
-                    orderbook["asks"][0][0]
-                    if side == "BUY"
-                    else orderbook["bids"][0][0]
-                ),
-                "side": side,
-            }
-
-        # Mode ICEBERG natif : fractionnement intelligent
-        remaining = amount
-        fills = []
-        avg_price = 0
-        n_suborders = 0
-        while remaining > 0:
-            sub_amount = min(iceberg_visible_size, remaining)
-            # Option : randomiser un peu le sub_amount pour masquer encore plus
-            sub_amount = round(sub_amount * random.uniform(0.95, 1.05), 8)
-            if sub_amount > remaining:
-                sub_amount = remaining
-
-            # Simule exécution (ici synchrone, remplacer par appel exchange async réel)
-            price = (
-                orderbook["asks"][0][0] if side == "BUY" else orderbook["bids"][0][0]
-            )
-            fills.append((sub_amount, price))
-            avg_price += sub_amount * price
-            remaining -= sub_amount
-            n_suborders += 1
-
-            # Attente pour éviter détection (optionnel)
-            time.sleep(random.uniform(0.8, 3.1))
-
-        avg_price = avg_price / amount if amount > 0 else 0
-        filled_amount = sum([x[0] for x in fills])
-        return {
-            "status": "completed",
-            "filled_amount": filled_amount,
-            "avg_price": avg_price,
-            "side": side,
-            "iceberg": True,
-            "n_suborders": n_suborders,
-            "suborders": fills,
-        }
