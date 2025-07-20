@@ -36549,3 +36549,11 @@
 2025-07-20T17:52:11.546608 | [ORDER] Tentative d'exécution: BUY 40.89 BNBUSDC (iceberg: False)
 2025-07-20T17:52:12.139985 | [ORDER] Tentative d'exécution: BUY 37.29 BNBUSDC (iceberg: False)
 2025-07-20T17:52:12.721569 | [ORDER] Tentative d'exécution: BUY 37.93 BNBUSDC (iceberg: False)
+2025-07-20T18:00:09.454196 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-20T18:00:09.456375 | Initialisation des modèles d'IA...
+2025-07-20T18:00:09.485715 | ✅ Modèles d'IA initialisés avec succès
+2025-07-20T18:00:11.424187 | ✅ PPO Strategy initialized successfully
+2025-07-20T18:00:11.426153 | ✅ Bot initialisé avec Telegram: True
+2025-07-20T18:00:11.426218 | ✅ Trading en direct: True
+2025-07-20T18:00:11.426264 | ✅ IA activée: True
+2025-07-20T18:00:11.426305 | ✅ Analyse de news activée: True
