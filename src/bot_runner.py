@@ -2286,10 +2286,10 @@ class TradingBotM4:
 
             # Analyse du régime global
             volatility = self.calculate_volatility(
-                self.market_data.get("BTCUSDT", {}).get("1h", {})
+                self.market_data.get("BTCUSDC", {}).get("1h", {})
             )
             trend = self.calculate_trend(
-                self.market_data.get("BTCUSDT", {}).get("1h", {})
+                self.market_data.get("BTCUSDC", {}).get("1h", {})
             )
 
             if volatility > 0.8:
