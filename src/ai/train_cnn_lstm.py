@@ -33,6 +33,7 @@ def save_checkpoint(model, optimizer, epoch, path="src/models/checkpoint.pth"):
 
 
 def load_checkpoint(model, optimizer, path="src/models/checkpoint.pth"):
+    print(f"[DEBUG] torch.load: path={path}")  # Ajout log debug
     if os.path.exists(path):
         checkpoint = torch.load(path)
         model.load_state_dict(checkpoint["model_state_dict"])

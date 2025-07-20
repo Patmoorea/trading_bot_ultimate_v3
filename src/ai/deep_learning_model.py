@@ -32,15 +32,18 @@ class DeepLearningModel:
 
     def initialize(self):
         if not self.initialized:
-            try:
-                self.model.load_state_dict(
-                    torch.load(
-                        "models/cnn_lstm_model.pth", map_location=torch.device("cpu")
-                    )
-                )
-                self.model.eval()
-            except Exception as e:
-                print("No pre-trained model found, using new model. Details:", e)
+            path = "models/cnn_lstm_model.pth"
+            if os.path.exists(path):
+                try:
+                    print(f"[DEBUG] torch.load: path={path}")
+                    state_dict = torch.load(path, map_location=torch.device("cpu"))
+                    self.model.load_state_dict(state_dict)
+                    self.model.eval()
+                    print(f"[DL] Modèle chargé depuis {path}")
+                except Exception as e:
+                    print(f"[WARN] Erreur chargement modèle: {e}")
+            else:
+                print(f"[WARN] Aucun modèle entraîné trouvé à {path}")
             self.initialized = True
 
     def predict(self, features: Dict[str, np.ndarray]) -> float:
@@ -92,9 +95,13 @@ class DeepLearningModel:
 
     def load_weights(self, path):
         if os.path.exists(path):
-            self.model.load_state_dict(torch.load(path, map_location="cpu"))
-            self.model.eval()
-            print(f"[DL] Modèle chargé depuis {path}")
+            try:
+                self.model.load_state_dict(torch.load(path, map_location="cpu"))
+                print(f"[DEBUG] torch.load: path={path}")
+                self.model.eval()
+                print(f"[DL] Modèle chargé depuis {path}")
+            except Exception as e:
+                print(f"[WARN] Erreur chargement modèle: {e}")
         else:
             print(f"[WARN] Fichier modèle {path} absent, chargement ignoré.")
 

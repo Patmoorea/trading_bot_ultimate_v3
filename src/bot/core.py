@@ -701,8 +701,19 @@ class TradingBotM4:
                 for model_name, model in self.models.items():
                     model_path = os.path.join(models_path, f"{model_name}.pt")
                     if os.path.exists(model_path):
-                        model.load_state_dict(torch.load(model_path))
-                        self.logger.info(f"Modèle {model_name} chargé avec succès")
+                        try:
+                            if os.path.exists(model_path):
+                                model.load_state_dict(torch.load(model_path))
+                                print(f"[DEBUG] torch.load: path={model_path}")
+                            else:
+                                self.logger.warning(
+                                    f"[WARN] Fichier modèle {model_path} absent, chargement ignoré."
+                                )
+                            self.logger.info(f"Modèle {model_name} chargé avec succès")
+                        except Exception as load_e:
+                            self.logger.warning(
+                                f"[WARN] Erreur chargement modèle {model_name} depuis {model_path} : {load_e}"
+                            )
                     else:
                         self.logger.warning(
                             f"[WARN] Fichier modèle {model_path} absent, chargement ignoré."
