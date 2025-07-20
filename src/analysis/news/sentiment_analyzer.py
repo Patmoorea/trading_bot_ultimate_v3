@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
+import websockets
 
 class SymbolExtractor:
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
@@ -76,6 +77,18 @@ class NewsSentimentAnalyzer:
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
         return self._tokenizer
 
+    async def connect_ws(url):
+        while True:
+            try:
+                async with websockets.connect(url) as ws:
+                    # ... handle messages ...
+            except (asyncio.TimeoutError, websockets.exceptions.InvalidHandshake) as e:
+                print(f"[WS] Erreur {e}, reconnexion dans 5s")
+                await asyncio.sleep(5)
+            except Exception as e:
+                print(f"[WS] Exception: {e}, reconnexion dans 5s")
+                await asyncio.sleep(5)
+            
     async def fetch_all_news(self) -> List[Dict]:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
@@ -96,10 +109,11 @@ class NewsSentimentAnalyzer:
                 print("  (Aucune news récupérée)")
             return valid_news
 
-    async def _fetch_source(self, session: aiohttp.ClientSession, source: Dict) -> List[Dict]:
+     async def _fetch_source(self, session: aiohttp.ClientSession, source: Dict) -> List[Dict]:
         try:
             async with session.get(source["url"], timeout=30) as response:
                 if response.status != 200:
+                    self.logger.error(f"[{source['name']}] HTTP status {response.status} ({source['url']})")
                     return []
                 if source["type"] == "rss":
                     content = await response.text()
@@ -107,8 +121,11 @@ class NewsSentimentAnalyzer:
                 else:
                     data = await response.json()
                     return self._parse_json(data, source)
+        except asyncio.TimeoutError:
+            self.logger.error(f"[{source['name']}] Timeout when fetching ({source['url']})")
+            return []
         except Exception as e:
-            self.logger.error(f"Error fetching {source['name']}: {str(e)}")
+            self.logger.error(f"[{source['name']}] Error fetching: {str(e)} ({source['url']})")
             return []
 
     def _parse_rss(self, content: str, source: Dict) -> List[Dict]:
