@@ -16,6 +16,7 @@ import torch
 import numpy as np
 import websockets
 import random
+import socket
 
 
 class SymbolExtractor:
@@ -96,6 +97,12 @@ class NewsSentimentAnalyzer:
         self._model = None
         self._tokenizer = None
 
+        # Adaptation à ton .env
+        self.news_api_key = os.getenv("NEWS_API_KEY")
+        self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
+        self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
+        self.news_sources = os.getenv("NEWS_SOURCES", "bloomberg,reuters,coindesk")
+
         self.sources = [
             # CryptoCompare (pas besoin d'API key)
             {
@@ -107,7 +114,7 @@ class NewsSentimentAnalyzer:
             # CryptoPanic (clé API requise)
             {
                 "name": "CryptoPanic",
-                "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={os.getenv('b4c623fdf31d3deb1aa76e1214bda4963049678a')}&public=true",
+                "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={self.crypto_panic_api_key}&public=true",
                 "type": "json",
                 "weight": 0.8,
             },
@@ -117,9 +124,9 @@ class NewsSentimentAnalyzer:
                 "url": (
                     "https://newsapi.org/v2/everything?"
                     "q=crypto OR bitcoin OR blockchain&"
-                    "language=fr,en&"
-                    "sources=coindesk,reuters,bloomberg&"
-                    f"apiKey={os.getenv('a62f81c969a346a6a640263d99946539')}"
+                    f"language={self.news_api_languages}&"
+                    f"sources={self.news_sources}&"
+                    f"apiKey={self.news_api_key}"
                 ),
                 "type": "json",
                 "weight": 0.7,
@@ -149,7 +156,7 @@ class NewsSentimentAnalyzer:
         while True:
             try:
                 async with websockets.connect(url) as ws:
-                    pass  # Ajoute ton code de gestion ici plus tard
+                    pass
             except (asyncio.TimeoutError, websockets.exceptions.InvalidHandshake) as e:
                 print(f"[WS] Erreur {e}, reconnexion dans 5s")
                 await asyncio.sleep(5)
@@ -169,7 +176,10 @@ class NewsSentimentAnalyzer:
             )
         }
         async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers
+            connector=aiohttp.TCPConnector(
+                ssl=ssl_context, family=socket.AF_INET
+            ),  # Force IPv4 !
+            headers=headers,
         ) as session:
             tasks = [
                 self._fetch_source_with_retry(session, source)
@@ -196,7 +206,6 @@ class NewsSentimentAnalyzer:
         for attempt in range(max_retries):
             try:
                 news = await self._fetch_source(session, source)
-                # Si HTTP 429 ou aucune news, attend puis retry
                 if news is not None and len(news) == 0 and attempt < max_retries - 1:
                     await asyncio.sleep(2 + random.random() * 3)
                     continue
@@ -291,11 +300,6 @@ class NewsSentimentAnalyzer:
     def analyze_sentiment_batch(
         self, news_items: List[Dict], low_watermark_ratio: float = None
     ) -> List[Dict]:
-        """
-        Analyse un batch de news avec FinBERT et retourne la liste des news enrichies avec sentiment et impact_score.
-        Watermark ratio est forcé à une valeur valide (0.05 à 0.5) pour éviter toute exception.
-        Le sentiment est calculé comme score bullish - bearish (positive - negative).
-        """
         if low_watermark_ratio is None:
             low_watermark_ratio = self.low_watermark_ratio
         try:
@@ -327,9 +331,7 @@ class NewsSentimentAnalyzer:
         try:
             print("[DEBUG] Début try analyze_sentiment_batch")
             print("[DEBUG] low_watermark_ratio:", low_watermark_ratio)
-            # print("[DEBUG] news_items:", news_items[:2])
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
-            # print("[DEBUG] texts:", texts[:2])
             print("[DEBUG] Nombre de textes à analyser:", len(texts))
 
             inputs = self.tokenizer(
@@ -348,7 +350,6 @@ class NewsSentimentAnalyzer:
 
             results = []
             for i, item in enumerate(news_items):
-                # FinBERT classes: [negative, neutral, positive]
                 sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
                 results.append(
                     {
@@ -464,9 +465,6 @@ class NewsSentimentAnalyzer:
                 content = f"{title} {text}"
                 if news_symbols:
                     pass
-                    # print(
-                    # f"[DEBUG NEWS] Title: {news.get('title', '')[:60]} | Symbols: {news_symbols}"
-                    # )
                 match_extracted = any(
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
@@ -671,6 +669,5 @@ class NewsSentimentAnalyzer:
 
 
 def extract_symbols(title: str) -> List[str]:
-    """Legacy function for backward compatibility."""
     extractor = SymbolExtractor()
     return extractor.extract_symbols(title)

@@ -1305,7 +1305,7 @@ class TradingBotM4:
             self.binance_client = Client(self.api_key, self.api_secret)
             self.binance_connector = BinanceConnector()
             self.executor = SmartOrderExecutor()
-            self.is_live_trading = False
+            self.is_live_trading = True
             self.logger.info("Binance API initialized for live trading")
         else:
             self.is_live_trading = False
