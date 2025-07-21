@@ -1218,17 +1218,17 @@ class TradingBotM4:
             return signature
 
     def _initialize_ai(self):
-        """Initialise les composants d'IA"""
+        """Initialise les composants d'IA et du trading live Binance"""
         try:
             log_dashboard("Initialisation des modèles d'IA...")
             if not self.env:
                 raise ValueError("L'environnement de trading n'est pas initialisé")
 
-            # 1. Ajout des constantes pour le calcul d'input_dim
+            # 1. Constantes IA
             self.N_FEATURES = 8
             self.N_STEPS = 63
 
-            # === PATCH: Chargement hyperparams AutoML s'ils existent ===
+            # 2. Hyperparams AutoML si dispo
             hp_path = "config/best_hyperparams.json"
             if os.path.exists(hp_path):
                 with open(hp_path, "r") as f:
@@ -1240,13 +1240,10 @@ class TradingBotM4:
                     "[AI] Pas d'hyperparams optimisés trouvés, utilisation des valeurs par défaut."
                 )
 
-            # Initialisation du modèle Deep Learning
+            # 3. Deep Learning Model
             self.dl_model = DeepLearningModel()
-            self.dl_model.initialize()  # S'assurer que le modèle est initialisé
-
-            # === PATCH : CHARGEMENT DES POIDS ENTRAÎNÉS ===
+            self.dl_model.initialize()
             weights_path = "src/models/cnn_lstm_model.pth"
-
             if os.path.exists(weights_path):
                 self.dl_model.load_weights(weights_path)
                 print(f"[DL] Modèle chargé depuis {weights_path}")
@@ -1261,7 +1258,8 @@ class TradingBotM4:
             print(
                 f"[DEBUG] paires_valid utilisées IA: {self.pairs_valid} (count={len(self.pairs_valid)})"
             )
-            # Configuration de l'environnement PPO - PATCH dynamique input_dim
+
+            # 4. PPO
             input_dim = self.get_input_dim()
             num_pairs = len(self.pairs_valid)
             env_config = {
@@ -1272,12 +1270,9 @@ class TradingBotM4:
                 "n_epochs": self.config["AI"]["n_epochs"],
                 "verbose": 1,
             }
-
             self.ppo_strategy = PPOStrategy(env_config)
-
             if self.ppo_strategy.model is None:
                 raise ValueError("Échec de l'initialisation du modèle PPO")
-
             self.ai_enabled = True
             log_dashboard("✅ Modèles d'IA initialisés avec succès")
         except Exception as e:
@@ -1286,15 +1281,14 @@ class TradingBotM4:
             self.dl_model = None
             self.ppo_strategy = None
 
-        # Initialize other components
+        # 5. Telegram & Logger
         self.telegram = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
         self.last_telegram_update = datetime.utcnow()
         self.logger = logger
 
-        # Initialisation de l'API Binance
+        # 6. Initialisation de l'API Binance (live/simu)
         self.api_key = os.getenv("BINANCE_API_KEY")
         self.api_secret = os.getenv("BINANCE_API_SECRET")
-
         if self.api_key and self.api_secret:
             self.binance_client = Client(self.api_key, self.api_secret)
             self.binance_connector = BinanceConnector()
@@ -1312,7 +1306,9 @@ class TradingBotM4:
         print("Vérification des clés API:")
         print(f"API Key présente: {'Oui' if self.api_key else 'Non'}")
         print(f"API Secret présente: {'Oui' if self.api_secret else 'Non'}")
+        print(f"[DEBUG] is_live_trading après init: {self.is_live_trading}")
 
+        # 7. PPO (recheck, for redundancy)
         try:
             print("Configuration de la stratégie PPO...")
             N_FEATURES = self.N_FEATURES
@@ -1326,27 +1322,23 @@ class TradingBotM4:
                 "n_epochs": 10,
                 "verbose": 1,
             }
-
-            # Add error checking for environment
             if not hasattr(self.env, "reset") or not hasattr(self.env, "step"):
                 raise ValueError("Trading environment missing required methods")
-
             self.ppo_strategy = PPOStrategy(env_config)
             if self.ppo_strategy.model is None:
                 raise ValueError("PPO model failed to initialize")
-
             log_dashboard("✅ PPO Strategy initialized successfully")
         except Exception as e:
             print(f"❌ Erreur initialisation PPO: {str(e)}")
             self.ppo_strategy = None
 
-        # Initialisation de l'analyseur de sentiment
+        # 8. Sentiment Analyzer
         try:
             self.news_analyzer = NewsSentimentAnalyzer(self.config)
             self.news_enabled = True
             self.dl_model_last_mtime = None
-            self.news_weight = 0.2  # Influence des news dans la décision (20%)
-            self.news_update_interval = 300  # 5 minutes
+            self.news_weight = 0.2
+            self.news_update_interval = 300
             self.logger.info("News sentiment analyzer initialized successfully")
         except Exception as e:
             self.logger.error(f"Failed to initialize news analyzer: {e}")
@@ -1448,6 +1440,7 @@ class TradingBotM4:
 
             # PATCH pour achat en USDC
             if side.upper() == "BUY" and symbol.endswith("USDC"):
+                # Utilise quoteOrderQty pour un achat en USDC
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
@@ -1458,10 +1451,11 @@ class TradingBotM4:
                     iceberg_visible_size=iceberg_visible_size,
                 )
             else:
+                # Utilise quantity pour une vente ou achat par quantité de coin
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    amount=amount,  # Quantité de coin à trader
+                    amount=amount,
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
@@ -2953,7 +2947,10 @@ class TradingBotM4:
                     print(df_ta[["timestamp"]].head(10))
                     print("== VWAP DEBUG TAIL ==")
                     print(df_ta[["timestamp"]].tail(10))
-                    print("Monotonic increasing:", df_ta["timestamp"].is_monotonic_increasing)
+                    print(
+                        "Monotonic increasing:",
+                        df_ta["timestamp"].is_monotonic_increasing,
+                    )
                     # PATCH : on re-trie et remet l'index à zéro juste avant VWAP
                     df_ta = df_ta.sort_values("timestamp")
                     df_ta = df_ta.reset_index(drop=True)
@@ -3597,6 +3594,7 @@ async def execute_trade_decisions(bot, trade_decisions):
     """Exécute les décisions de trading"""
     try:
         for decision in trade_decisions:
+            print(f"[DEBUG] is_live_trading au moment du trade: {bot.is_live_trading}")
             if not bot.is_live_trading or abs(decision["confidence"]) <= 0.5:
                 print(
                     f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Trading Live: False"
