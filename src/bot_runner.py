@@ -1939,7 +1939,7 @@ class TradingBotM4:
                     )  # Toujours str pour éviter erreur
 
         # --- PATCH: LOG pour debug ---
-        print(f"[DEBUG _save_sentiment_data] sentiment_scores={sentiment_scores}")
+        # print(f"[DEBUG _save_sentiment_data] sentiment_scores={sentiment_scores}")
 
         # Correction : on prend les scores assignés dans market_data
         valid_scores = [
@@ -1996,7 +1996,7 @@ class TradingBotM4:
         )
         major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
 
-        print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
+        # print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
         )
@@ -3597,7 +3597,7 @@ async def execute_trade_decisions(bot, trade_decisions):
             print(f"[DEBUG] is_live_trading au moment du trade: {bot.is_live_trading}")
             if not bot.is_live_trading or abs(decision["confidence"]) <= 0.5:
                 print(
-                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Trading Live: False"
+                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Trading Live: {bot.is_live_trading}"
                 )
                 continue
             if abs(decision["confidence"]) <= 0.5:
@@ -3677,8 +3677,8 @@ def calculate_position_size(bot, decision):
     """Calcule le montant en USDC à investir (et non la quantité de BTC)"""
     try:
         # Par exemple, on investit de 10 à 100 USDC selon la confiance et la volatilité
-        base_usdc = 10  # minimum à investir (doit être > minNotional Binance, ici 5)
-        max_usdc = 100  # maximum à investir
+        base_usdc = 5  # minimum à investir (doit être > minNotional Binance, ici 5)
+        max_usdc = 90  # maximum à investir
 
         volatility_factor = decision.get("signals", {}).get("volatility", 0.5)
         confidence = decision.get("confidence", 0.5)

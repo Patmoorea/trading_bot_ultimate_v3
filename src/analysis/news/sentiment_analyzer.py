@@ -100,7 +100,7 @@ class NewsSentimentAnalyzer:
             },
             {
                 "name": "CryptoCompare",
-                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
+                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
                 "type": "json",
                 "weight": 0.7,
             },
@@ -258,9 +258,9 @@ class NewsSentimentAnalyzer:
         try:
             print("[DEBUG] Début try analyze_sentiment_batch")
             print("[DEBUG] low_watermark_ratio:", low_watermark_ratio)
-            print("[DEBUG] news_items:", news_items[:2])
+            # print("[DEBUG] news_items:", news_items[:2])
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
-            print("[DEBUG] texts:", texts[:2])
+            # print("[DEBUG] texts:", texts[:2])
             print("[DEBUG] Nombre de textes à analyser:", len(texts))
 
             inputs = self.tokenizer(
@@ -394,9 +394,10 @@ class NewsSentimentAnalyzer:
                 text = news.get("text", "").lower()
                 content = f"{title} {text}"
                 if news_symbols:
-                    print(
-                        f"[DEBUG NEWS] Title: {news.get('title', '')[:60]} | Symbols: {news_symbols}"
-                    )
+                    pass
+                    # print(
+                    # f"[DEBUG NEWS] Title: {news.get('title', '')[:60]} | Symbols: {news_symbols}"
+                    # )
                 match_extracted = any(
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
