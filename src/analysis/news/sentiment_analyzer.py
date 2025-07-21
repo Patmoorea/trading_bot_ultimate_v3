@@ -107,7 +107,7 @@ class NewsSentimentAnalyzer:
             # CryptoPanic (clé API requise)
             {
                 "name": "CryptoPanic",
-                "url": f"https://cryptopanic.com/api/v1/posts/?auth_token={os.getenv('CRYPTO_PANIC_API_KEY')}&public=true",
+                "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={os.getenv('b4c623fdf31d3deb1aa76e1214bda4963049678a')}&public=true",
                 "type": "json",
                 "weight": 0.8,
             },
@@ -119,53 +119,10 @@ class NewsSentimentAnalyzer:
                     "q=crypto OR bitcoin OR blockchain&"
                     "language=fr,en&"
                     "sources=coindesk,reuters,bloomberg&"
-                    f"apiKey={os.getenv('NEWS_API_KEY')}"
+                    f"apiKey={os.getenv('a62f81c969a346a6a640263d99946539')}"
                 ),
                 "type": "json",
                 "weight": 0.7,
-            },
-            # CoinDesk RSS (fiabilité variable)
-            {
-                "name": "CoinDesk",
-                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "Cointelegraph",
-                "url": "https://cointelegraph.com/rss",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "Decrypt",
-                "url": "https://decrypt.co/feed",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "RedditCrypto",
-                "url": "https://www.reddit.com/r/CryptoCurrency/.rss",
-                "type": "rss",
-                "weight": 0.6,
-            },
-            {
-                "name": "CryptoSlate",
-                "url": "https://cryptoslate.com/feed/",
-                "type": "rss",
-                "weight": 0.6,
-            },
-            {
-                "name": "BitcoinMagazine",
-                "url": "https://bitcoinmagazine.com/.rss/full/",
-                "type": "rss",
-                "weight": 0.6,
-            },
-            {
-                "name": "NewsBTC",
-                "url": "https://www.newsbtc.com/feed/",
-                "type": "rss",
-                "weight": 0.6,
             },
         ]
 

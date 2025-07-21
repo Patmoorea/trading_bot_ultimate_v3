@@ -1441,7 +1441,7 @@ class TradingBotM4:
             # PATCH pour achat en USDC
             if side.upper() == "BUY" and symbol.endswith("USDC"):
                 # Utilise quoteOrderQty pour un achat en USDC
-                result = self.executor.execute_order(
+                result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
                     quoteOrderQty=amount,  # Montant USDC à investir
@@ -1452,7 +1452,7 @@ class TradingBotM4:
                 )
             else:
                 # Utilise quantity pour une vente ou achat par quantité de coin
-                result = self.executor.execute_order(
+                result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
                     amount=amount,
