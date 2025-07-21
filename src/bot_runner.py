@@ -883,6 +883,139 @@ class TradingBotM4:
             )
         return None, None
 
+    async def execute_arbitrage_cross_exchange(self, opportunity, amount):
+        """
+        Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs et notifications Telegram.
+        Args:
+            opportunity (dict): dict contenant buy_exchange, sell_exchange, symbol, buy_price, sell_price, etc.
+            amount (float): montant à investir (en devise quote, ex USDC)
+        """
+        try:
+            buy_exchange = self.brokers[opportunity["buy_exchange"]]
+            sell_exchange = self.brokers[opportunity["sell_exchange"]]
+            symbol = opportunity["symbol"]
+            base_currency = symbol.split("/")[0]
+            quote_currency = symbol.split("/")[1]
+
+            # 1. Vérification du solde disponible
+            balance = await buy_exchange.fetch_balance()
+            available = balance[quote_currency]["free"]
+            if available < amount:
+                msg = f"❌ Solde insuffisant sur {opportunity['buy_exchange']} ({available} {quote_currency} < {amount})"
+                log_dashboard(msg)
+                await self.telegram.send_message(msg)
+                return {"status": "error", "step": "balance", "message": msg}
+
+            # 2. Achat sur buy_exchange
+            buy_qty = round(amount / opportunity["buy_price"], 6)
+            log_dashboard(
+                f"🔄 Achat {buy_qty} {base_currency} sur {opportunity['buy_exchange']} @ {opportunity['buy_price']}"
+            )
+            await self.telegram.send_message(
+                f"🔄 Achat {buy_qty} {base_currency} sur {opportunity['buy_exchange']} @ {opportunity['buy_price']}"
+            )
+            buy_order = await buy_exchange.create_order(
+                symbol=symbol, type="market", side="buy", amount=buy_qty
+            )
+            log_dashboard(f"✅ Ordre d'achat passé: {buy_order}")
+            await self.telegram.send_message(
+                f"✅ Ordre d'achat passé sur {opportunity['buy_exchange']}: {buy_order.get('id','?')}"
+            )
+
+            # 3. Retrait vers sell_exchange
+            deposit_address = await sell_exchange.fetch_deposit_address(base_currency)
+            withdrawal_fee = self.config["withdrawal_fees"][
+                opportunity["buy_exchange"]
+            ][base_currency]
+            transfer_amount = buy_qty - withdrawal_fee
+            if transfer_amount <= 0:
+                msg = f"❌ Montant à transférer insuffisant (après frais: {transfer_amount} {base_currency})"
+                log_dashboard(msg)
+                await self.telegram.send_message(msg)
+                return {"status": "error", "step": "withdraw", "message": msg}
+
+            log_dashboard(
+                f"🔄 Retrait {transfer_amount} {base_currency} vers {deposit_address['address']} ({opportunity['sell_exchange']})"
+            )
+            await self.telegram.send_message(
+                f"🔄 Retrait {transfer_amount} {base_currency} vers {deposit_address['address']} ({opportunity['sell_exchange']})"
+            )
+            withdraw_result = await buy_exchange.withdraw(
+                code=base_currency,
+                amount=transfer_amount,
+                address=deposit_address["address"],
+            )
+            log_dashboard(f"✅ Retrait initié: {withdraw_result}")
+            await self.telegram.send_message(
+                f"✅ Retrait initié: {withdraw_result.get('id','?')}"
+            )
+
+            # 4. Attente confirmation dépôt sur sell_exchange
+            poll_interval = 30
+            max_wait = 1800
+            waited = 0
+            while waited < max_wait:
+                deposits = await sell_exchange.fetch_deposits(code=base_currency)
+                if any(
+                    d.get("amount", 0) >= transfer_amount and d.get("status") == "ok"
+                    for d in deposits
+                ):
+                    log_dashboard(
+                        f"✅ Dépôt confirmé sur {opportunity['sell_exchange']}"
+                    )
+                    await self.telegram.send_message(
+                        f"✅ Dépôt confirmé sur {opportunity['sell_exchange']}"
+                    )
+                    break
+                await asyncio.sleep(poll_interval)
+                waited += poll_interval
+            else:
+                msg = (
+                    f"❌ Timeout confirmation dépôt sur {opportunity['sell_exchange']}"
+                )
+                log_dashboard(msg)
+                await self.telegram.send_message(msg)
+                return {"status": "error", "step": "deposit", "message": msg}
+
+            # 5. Vente sur sell_exchange
+            log_dashboard(
+                f"🔄 Vente {transfer_amount} {base_currency} sur {opportunity['sell_exchange']} @ {opportunity['sell_price']}"
+            )
+            await self.telegram.send_message(
+                f"🔄 Vente {transfer_amount} {base_currency} sur {opportunity['sell_exchange']} @ {opportunity['sell_price']}"
+            )
+            sell_order = await sell_exchange.create_order(
+                symbol=symbol, type="market", side="sell", amount=transfer_amount
+            )
+            log_dashboard(f"✅ Ordre de vente passé: {sell_order}")
+            await self.telegram.send_message(
+                f"✅ Ordre de vente passé sur {opportunity['sell_exchange']}: {sell_order.get('id','?')}"
+            )
+
+            # 6. Calcul du profit réel
+            initial_value = amount
+            final_value = sell_order.get(
+                "cost", transfer_amount * opportunity["sell_price"]
+            )
+            profit = final_value - initial_value
+            msg = f"💰 Arbitrage terminé sur {symbol}: Profit net {profit:.2f} {quote_currency}"
+            log_dashboard(msg)
+            await self.telegram.send_message(msg)
+
+            return {
+                "status": "success",
+                "profit": profit,
+                "buy_order": buy_order,
+                "sell_order": sell_order,
+                "transfer_amount": transfer_amount,
+            }
+
+        except Exception as e:
+            msg = f"❌ Erreur arbitrage cross-exchange: {str(e)}"
+            log_dashboard(msg)
+            await self.telegram.send_message(msg)
+            return {"status": "error", "step": "exception", "message": str(e)}
+
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.

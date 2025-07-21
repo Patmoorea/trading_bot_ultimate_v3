@@ -180,8 +180,8 @@ class GateIOExchange:
         symbol: str,
         order_type: str,
         side: str,
-        amount: str,
-        price: Optional[str] = None,
+        amount: float,
+        price: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
         Create a new order
@@ -321,19 +321,15 @@ class GateIOExchange:
                 symbol=symbol,
                 order_type="limit",
                 side="buy",
-                amount=str(amount),
-                price=str(
-                    opportunity["ask_price"] * 1.001
-                ),  # Légèrement au-dessus du ask
+                amount=amount,
+                price=opportunity["ask_price"] * 1.001,
             )
             sell_order = await self.create_order(
                 symbol=symbol,
                 order_type="limit",
                 side="sell",
-                amount=str(amount),
-                price=str(
-                    opportunity["bid_price"] * 0.999
-                ),  # Légèrement en-dessous du bid
+                amount=amount,
+                price=opportunity["bid_price"] * 0.999,
             )
             return {
                 "status": "success",
@@ -398,4 +394,63 @@ class GateIOExchange:
             return result
         except Exception as e:
             logger.error(f"Erreur get_historical_data: {e}")
+            raise
+
+    # -------------------- AJOUT : Méthodes pour arbitrage cross-exchange --------------------
+    async def withdraw(
+        self,
+        code: str,
+        amount: float,
+        address: str,
+        tag: Optional[str] = None,
+        params: Optional[dict] = None,
+    ) -> Dict[str, Any]:
+        """
+        Effectue un retrait d'actif via l'API Gate.io.
+        code: Asset code (ex: 'USDT')
+        amount: Montant à retirer
+        address: Adresse de destination
+        tag: Tag/Memo (optionnel)
+        params: Paramètres additionnels (optionnel)
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            params = params or {}
+            result = await self._exchange.withdraw(code, amount, address, tag, params)
+            return result
+        except Exception as e:
+            logger.error(f"Error withdrawing {amount} {code} to {address}: {e}")
+            raise
+
+    async def get_deposit_address(
+        self, asset: str, params: Optional[dict] = None
+    ) -> Dict[str, Any]:
+        """
+        Récupère l'adresse de dépôt pour un actif (ex: 'USDT').
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            params = params or {}
+            result = await self._exchange.fetch_deposit_address(asset, params)
+            return result
+        except Exception as e:
+            logger.error(f"Error fetching deposit address for {asset}: {e}")
+            raise
+
+    async def get_deposit_history(
+        self, asset: Optional[str] = None, params: Optional[dict] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Suivi des dépôts pour un actif (optionnel: asset).
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            params = params or {}
+            result = await self._exchange.fetch_deposits(code=asset, params=params)
+            return result
+        except Exception as e:
+            logger.error(f"Error fetching deposit history for {asset}: {e}")
             raise

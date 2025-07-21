@@ -149,9 +149,12 @@ class BinanceExchange:
         symbol: str,
         order_type: str,
         side: str,
-        amount: str,
-        price: Optional[str] = None,
+        amount: float,
+        price: Optional[float] = None,
     ) -> Dict[str, Any]:
+        """
+        Crée un ordre spot réel sur Binance.
+        """
         if not self._initialized:
             raise RuntimeError("Exchange not initialized")
         try:
@@ -312,3 +315,67 @@ class BinanceExchange:
                             ]
                         )
             return result
+
+    # -------------- AJOUT : Méthodes pour arbitrage cross-exchange --------------
+    async def withdraw(
+        self,
+        code: str,
+        amount: float,
+        address: str,
+        tag: Optional[str] = None,
+        params: Optional[dict] = None,
+    ) -> Dict[str, Any]:
+        """
+        Effectue un retrait d'actif via l'API Binance.
+        code: Asset code (ex: 'BTC')
+        amount: Montant à retirer
+        address: Adresse de destination
+        tag: Tag/Memo (optionnel)
+        params: Paramètres additionnels (optionnel)
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            # CCXT: withdraw
+            params = params or {}
+            result = await self._exchange.withdraw(code, amount, address, tag, params)
+            return result
+        except Exception as e:
+            logger.error(f"Error withdrawing {amount} {code} to {address}: {e}")
+            raise
+
+    async def get_deposit_address(
+        self, asset: str, params: Optional[dict] = None
+    ) -> Dict[str, Any]:
+        """
+        Récupère l'adresse de dépôt pour un actif (ex: 'BTC').
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            params = params or {}
+            result = await self._exchange.fetch_deposit_address(asset, params)
+            return result
+        except Exception as e:
+            logger.error(f"Error fetching deposit address for {asset}: {e}")
+            raise
+
+    async def get_deposit_history(
+        self, asset: Optional[str] = None, params: Optional[dict] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Suivi des dépôts pour un actif (optionnel: asset).
+        """
+        if not self._initialized:
+            raise RuntimeError("Exchange not initialized")
+        try:
+            params = params or {}
+            # CCXT: fetch_deposits
+            result = await self._exchange.fetch_deposits(code=asset, params=params)
+            return result
+        except Exception as e:
+            logger.error(f"Error fetching deposit history for {asset}: {e}")
+            raise
+
+    # create_order déjà présent plus haut et compatible spot réel
+    # (utilise order_type "market"/"limit", side "buy"/"sell", amount, price)
