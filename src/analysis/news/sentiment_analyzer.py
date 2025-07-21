@@ -131,6 +131,42 @@ class NewsSentimentAnalyzer:
                 "type": "json",
                 "weight": 0.7,
             },
+            {
+                "name": "Cointelegraph",
+                "url": "https://cointelegraph.com/rss",
+                "type": "rss",
+                "weight": 0.8,
+            },
+            {
+                "name": "Decrypt",
+                "url": "https://decrypt.co/feed",
+                "type": "rss",
+                "weight": 0.8,
+            },
+            {
+                "name": "BitcoinMagazine",
+                "url": "https://bitcoinmagazine.com/.rss/full/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "CryptoSlate",
+                "url": "https://cryptoslate.com/feed/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "NewsBTC",
+                "url": "https://www.newsbtc.com/feed/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "TheBlock",
+                "url": "https://www.theblock.co/rss.xml",
+                "type": "rss",
+                "weight": 0.7,
+            },
         ]
 
         self.news_buffer: List[Dict] = []

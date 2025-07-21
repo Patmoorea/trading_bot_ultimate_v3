@@ -2867,11 +2867,10 @@ class TradingBotM4:
 
             # Tri et conversion du timestamp pour tous les indicateurs ET VWAP
             if "timestamp" in df.columns:
-                df = df.sort_values("timestamp")
+                df["timestamp"] = pd.to_datetime(df["timestamp"])
                 df = df.drop_duplicates(subset="timestamp", keep="last")
-                df = df.reset_index(drop=True)  # <-- AJOUT : remet l'index à zéro
-                if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
-                    df["timestamp"] = pd.to_datetime(df["timestamp"])
+                df = df.sort_values("timestamp")
+                df = df.reset_index(drop=True)
 
             if df.empty:
                 self.logger.warning(
@@ -2949,17 +2948,12 @@ class TradingBotM4:
 
                 # Indicateurs avancés supplémentaires
                 try:
-                    print("== VWAP DEBUG HEAD ==")
-                    print(df_ta[["timestamp"]].head(10))
-                    print("== VWAP DEBUG TAIL ==")
-                    print(df_ta[["timestamp"]].tail(10))
-                    print(
-                        "Monotonic increasing:",
-                        df_ta["timestamp"].is_monotonic_increasing,
-                    )
-                    # PATCH : on re-trie et remet l'index à zéro juste avant VWAP
-                    df_ta = df_ta.sort_values("timestamp")
-                    df_ta = df_ta.reset_index(drop=True)
+                    # PATCH : on reforce ici le tri strict et datetime juste avant VWMA/VWAP
+                    if "timestamp" in df_ta.columns:
+                        df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
+                        df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
+                        df_ta = df_ta.sort_values("timestamp")
+                        df_ta = df_ta.reset_index(drop=True)
                     vwma = df_ta.ta.vwma(length=20)
                     df_ta["vwma_20"] = vwma
                 except Exception:
@@ -2970,9 +2964,12 @@ class TradingBotM4:
                 except Exception:
                     df_ta["obv"] = np.nan
                 try:
-                    # PATCH : re-tri aussi avant VWAP !
-                    df_ta = df_ta.sort_values("timestamp")
-                    df_ta = df_ta.reset_index(drop=True)
+                    # PATCH : reforce tri juste avant VWAP !
+                    if "timestamp" in df_ta.columns:
+                        df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
+                        df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
+                        df_ta = df_ta.sort_values("timestamp")
+                        df_ta = df_ta.reset_index(drop=True)
                     vwap = df_ta.ta.vwap()
                     df_ta["vwap"] = vwap
                 except Exception:
