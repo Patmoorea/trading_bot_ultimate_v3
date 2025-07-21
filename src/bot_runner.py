@@ -797,6 +797,35 @@ class TradingBotM4:
         )
         self._initialize_ai()
 
+    def get_ws_orderbook(self, symbol):
+        """
+        Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket).
+        - symbol : exemple 'BTCUSDC'
+        Retourne : tuple (bid, ask) ou (None, None) si non dispo.
+        """
+        try:
+            # Récupère le dernier orderbook du ws_collector (ou adapte selon ton implémentation)
+            # Tu peux aussi stocker le dernier prix dans market_data
+            if hasattr(self, "ws_collector") and self.ws_collector is not None:
+                ob = self.ws_collector.get_orderbook(symbol)
+                if ob:  # ob = {'bids': [[prix, qty]], 'asks': [[prix, qty]]}
+                    bid = (
+                        float(ob["bids"][0][0])
+                        if ob["bids"] and len(ob["bids"][0]) > 0
+                        else None
+                    )
+                    ask = (
+                        float(ob["asks"][0][0])
+                        if ob["asks"] and len(ob["asks"][0]) > 0
+                        else None
+                    )
+                    return bid, ask
+        except Exception as e:
+            self.logger.warning(
+                f"[WS] Erreur récupération orderbook WS pour {symbol}: {e}"
+            )
+        return None, None
+
     async def test_news_sentiment(self):
         """
         Test manuel du batch d'analyse de sentiment des news.
@@ -1437,9 +1466,16 @@ class TradingBotM4:
 
             if side.upper() == "BUY" and symbol.endswith("USDC"):
                 # -- ACHAT sur Binance --
-                bid, ask = await self.binance_connector.get_order_book(symbol)
-                orderbook = {"bids": [[float(bid), 1.0]], "asks": [[float(ask), 1.0]]}
-                recent_trades = self.binance_client.get_recent_trades(symbol=symbol)
+                bid, ask = self.get_ws_orderbook(symbol)
+                if bid is None or ask is None:
+                    log_dashboard(
+                        f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
+                    )
+                    return {"status": "error", "reason": "Orderbook WS not available"}
+                orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+                recent_trades = (
+                    []
+                )  # Optionnel : tu peux aussi les récupérer du ws_collector si besoin, sinon laisse []
                 market_data = {
                     "recent_trades": recent_trades,
                     "volatility": self.calculate_volatility(
@@ -3593,51 +3629,113 @@ async def handle_arbitrage_opportunities(bot):
         logging.error(f"Erreur gestion arbitrage: {e}")
 
 
-async def execute_trade_decisions(bot, trade_decisions):
-    """Exécute les décisions de trading"""
+async def execute_trade(
+    self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
+):
+    """
+    Exécute un ordre de trading avec logs détaillés.
+    - BUY sur Binance spot (quoteOrderQty)
+    - SELL = short sur BingX (futures)
+    """
+    if not self.is_live_trading:
+        log_dashboard(
+            f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
+        )
+        self.logger.info(
+            f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
+        )
+        return {
+            "status": "simulated",
+            "symbol": symbol,
+            "side": side,
+            "amount": amount,
+            "iceberg": iceberg,
+        }
+
     try:
-        for decision in trade_decisions:
-            print(f"[DEBUG] is_live_trading au moment du trade: {bot.is_live_trading}")
-            if not bot.is_live_trading or abs(decision["confidence"]) <= 0.5:
-                print(
-                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Trading Live: {bot.is_live_trading}"
+        log_dashboard(
+            f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
+        )
+
+        if side.upper() == "BUY" and symbol.endswith("USDC"):
+            # -- ACHAT sur Binance --
+            bid, ask = self.get_ws_orderbook(symbol)
+            if bid is None or ask is None:
+                log_dashboard(
+                    f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
                 )
-                continue
-            if abs(decision["confidence"]) <= 0.5:
-                print(
-                    f"[NO TRADE] {decision['pair']} {decision.get('tf')} | Confiance trop faible: {decision['confidence']:.2f}"
-                )
-                continue
-            pair = decision["pair"]
-            pair_key = pair.replace("/", "").upper()
-            side = "BUY" if decision["action"] == "buy" else "SELL"
+                return {"status": "error", "reason": "Orderbook WS not available"}
+            orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+            recent_trades = []  # Optionnel: récup via WS si tu veux
+            market_data = {
+                "recent_trades": recent_trades,
+                "volatility": self.calculate_volatility(
+                    self.market_data.get(symbol, {}).get("1h", {})
+                ),
+                "regime": self.regime,
+                "binance_client": self.binance_client,
+            }
+            result = await self.executor.execute_order(
+                symbol=symbol,
+                side=side,
+                quoteOrderQty=amount,
+                orderbook=orderbook,
+                market_data=market_data,
+                iceberg=iceberg,
+                iceberg_visible_size=iceberg_visible_size,
+            )
 
-            # Calcul du montant
-            amount = calculate_position_size(bot, decision)
+        elif side.upper() == "SELL":
+            # -- SHORT sur BingX --
+            symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+            ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
+            price_bingx = float(ticker["last"])
+            qty = amount / price_bingx  # amount est en USDT, qty en coin
+            result = await self.bingx_executor.short_order(
+                symbol_bingx, qty, leverage=3
+            )
 
-            # Vérification des stop-loss
-            if bot.check_stop_loss(pair_key, side):
-                print(f"⚠️ Stop-loss actif pour {pair}, ordre annulé")
-                continue
+        else:
+            return {"status": "rejected", "reason": "unsupported side"}
 
-            # Exécution de l'ordre
-            trade_result = await bot.execute_trade(pair_key, side, amount)
-            if trade_result["status"] == "completed":
-                print(
-                    f"[ORDER] Trade exécuté: {pair} {decision.get('tf')} {side} {amount}"
-                )
-            else:
-                print(
-                    f"[ORDER] Trade NON exécuté: {pair} {decision.get('tf')} {side} {amount}"
-                )
+        # Ajoute un délai de sécurité pour ne pas spammer l’API
+        if self.is_live_trading:
+            await asyncio.sleep(1.5)
 
-            # Notification du résultat
-            if trade_result["status"] == "completed":
-                await send_trade_notification(bot, decision, trade_result, amount)
+        # Enregistrement du résultat
+        if result["status"] == "completed":
+            log_dashboard(
+                f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
+            )
+            self.logger.info(
+                f"Order executed: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
+            )
+            self._update_performance_metrics(result)
+            iceberg_info = (
+                f"\n🧊 <b>Ordre Iceberg</b> ({result.get('n_suborders', '')} sous-ordres)"
+                if result.get("iceberg")
+                else ""
+            )
+            await self.telegram.send_message(
+                f"💰 <b>Ordre exécuté</b>\n"
+                f"📊 {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}\n"
+                f"💵 Total: ${float(result.get('filled_amount', amount)) * float(result.get('avg_price', price) or 0):.2f}"
+                f"{iceberg_info}"
+            )
+        else:
+            print(f"[ORDER] Echec d'exécution: {side} {amount} {symbol}")
 
+        return result
+
+    except BinanceAPIException as e:
+        print(f"[ORDER] Binance API error: {e}")
+        self.logger.error(f"Binance API error: {e}")
+        await self.telegram.send_message(f"⚠️ Erreur API Binance: {e}")
+        return {"status": "error", "reason": str(e)}
     except Exception as e:
-        print(f"[ERROR] {str(e)}")
-        logging.error(f"Erreur exécution trades: {e}")
+        print(f"[ORDER] Execution error: {e}")
+        self.logger.error(f"Execution error: {e}")
+        return {"status": "error", "reason": str(e)}
 
 
 def save_best_params(best_params, path="config/best_hyperparams.json"):
