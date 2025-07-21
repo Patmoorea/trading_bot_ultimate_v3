@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+
+load_dotenv()
 import os
 import json
 import asyncio
@@ -94,57 +97,73 @@ class NewsSentimentAnalyzer:
         self._tokenizer = None
 
         self.sources = [
-            {
-                "name": "CoinDesk",
-                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
-                "type": "rss",
-                "weight": 0.9,
-            },
+            # CryptoCompare (pas besoin d'API key)
             {
                 "name": "CryptoCompare",
                 "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
                 "type": "json",
                 "weight": 0.7,
             },
+            # CryptoPanic (clé API requise)
+            {
+                "name": "CryptoPanic",
+                "url": f"https://cryptopanic.com/api/v1/posts/?auth_token={os.getenv('CRYPTO_PANIC_API_KEY')}&public=true",
+                "type": "json",
+                "weight": 0.8,
+            },
+            # NewsAPI (clé API requise)
+            {
+                "name": "NewsAPI",
+                "url": (
+                    "https://newsapi.org/v2/everything?"
+                    "q=crypto OR bitcoin OR blockchain&"
+                    "language=fr,en&"
+                    "sources=coindesk,reuters,bloomberg&"
+                    f"apiKey={os.getenv('NEWS_API_KEY')}"
+                ),
+                "type": "json",
+                "weight": 0.7,
+            },
+            # CoinDesk RSS (fiabilité variable)
+            {
+                "name": "CoinDesk",
+                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+                "type": "rss",
+                "weight": 0.7,
+            },
             {
                 "name": "Cointelegraph",
                 "url": "https://cointelegraph.com/rss",
                 "type": "rss",
-                "weight": 0.8,
+                "weight": 0.7,
             },
             {
                 "name": "Decrypt",
                 "url": "https://decrypt.co/feed",
                 "type": "rss",
-                "weight": 0.8,
+                "weight": 0.7,
             },
             {
-                "name": "BitcoinMagazine",
-                "url": "https://bitcoinmagazine.com/.rss/full/",
+                "name": "RedditCrypto",
+                "url": "https://www.reddit.com/r/CryptoCurrency/.rss",
                 "type": "rss",
-                "weight": 0.7,
+                "weight": 0.6,
             },
             {
                 "name": "CryptoSlate",
                 "url": "https://cryptoslate.com/feed/",
                 "type": "rss",
-                "weight": 0.7,
+                "weight": 0.6,
+            },
+            {
+                "name": "BitcoinMagazine",
+                "url": "https://bitcoinmagazine.com/.rss/full/",
+                "type": "rss",
+                "weight": 0.6,
             },
             {
                 "name": "NewsBTC",
                 "url": "https://www.newsbtc.com/feed/",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "TheBlock",
-                "url": "https://www.theblock.co/rss.xml",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "BinanceBlog",
-                "url": "https://www.binance.com/en/blog/rss",
                 "type": "rss",
                 "weight": 0.6,
             },
