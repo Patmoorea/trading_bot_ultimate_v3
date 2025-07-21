@@ -113,8 +113,13 @@ class SmartOrderExecutor:
                 "symbol": symbol,
                 "side": side,
                 "type": "MARKET",
-                "quoteOrderQty": execution_plan["plan"]["amount"],  # PATCH ici !
             }
+            # PATCH: Un seul des deux!
+            if side.upper() == "BUY" and symbol.endswith("USDC"):
+                api_args["quoteOrderQty"] = execution_plan["plan"]["amount"]
+            else:
+                api_args["quantity"] = execution_plan["plan"]["amount"]
+
             if iceberg:
                 api_args["icebergQty"] = iceberg_visible_size
 
