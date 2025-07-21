@@ -70,6 +70,9 @@ from collections import defaultdict
 from deep_translator import GoogleTranslator
 from src.ai.hybrid_model import HybridAI
 
+from bingx_order_executor import BingXOrderExecutor
+
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -660,6 +663,15 @@ class TradingBotM4:
                 },
             },
         }
+
+        bingx_api_key = os.getenv("BINGX_API_KEY")
+        bingx_api_secret = os.getenv("BINGX_API_SECRET")
+
+        self.bingx_client = BingXExchange(
+            bingx_api_key, bingx_api_secret
+        )  # adapte selon ton code
+        self.bingx_executor = BingXOrderExecutor(self.bingx_client)
+
         # --- SYNCHRONISATION AUTO DES PAIRS ---
         self.pairs_valid = self.config["TRADING"]["pairs"]
 
@@ -1293,7 +1305,7 @@ class TradingBotM4:
             self.binance_client = Client(self.api_key, self.api_secret)
             self.binance_connector = BinanceConnector()
             self.executor = SmartOrderExecutor()
-            self.is_live_trading = True
+            self.is_live_trading = False
             self.logger.info("Binance API initialized for live trading")
         else:
             self.is_live_trading = False
@@ -1399,9 +1411,9 @@ class TradingBotM4:
         self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
     ):
         """
-        Exécute un ordre de trading avec logs détaillés
-        - Pour un achat sur une paire USDC, utilise quoteOrderQty (montant USDC)
-        - Pour une vente ou achat par quantité, utilise amount (quantité de coin)
+        Exécute un ordre de trading avec logs détaillés.
+        - BUY sur Binance spot (quoteOrderQty)
+        - SELL = short sur BingX (futures)
         """
         if not self.is_live_trading:
             log_dashboard(
@@ -1417,72 +1429,67 @@ class TradingBotM4:
                 "amount": amount,
                 "iceberg": iceberg,
             }
+
         try:
             log_dashboard(
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
             )
-            # Récupération du carnet d'ordres
-            bid, ask = await self.binance_connector.get_order_book(symbol)
-            orderbook = {"bids": [[float(bid), 1.0]], "asks": [[float(ask), 1.0]]}
 
-            # Récupération des trades récents pour la détection de mouvements
-            recent_trades = self.binance_client.get_recent_trades(symbol=symbol)
-
-            # Préparation des données de marché pour l'exécuteur
-            market_data = {
-                "recent_trades": recent_trades,
-                "volatility": self.calculate_volatility(
-                    self.market_data.get(symbol, {}).get("1h", {})
-                ),
-                "regime": self.regime,
-                "binance_client": self.binance_client,  # <-- PATCH : AJOUTÉ
-            }
-
-            # PATCH pour achat en USDC
             if side.upper() == "BUY" and symbol.endswith("USDC"):
-                # Utilise quoteOrderQty pour un achat en USDC
+                # -- ACHAT sur Binance --
+                bid, ask = await self.binance_connector.get_order_book(symbol)
+                orderbook = {"bids": [[float(bid), 1.0]], "asks": [[float(ask), 1.0]]}
+                recent_trades = self.binance_client.get_recent_trades(symbol=symbol)
+                market_data = {
+                    "recent_trades": recent_trades,
+                    "volatility": self.calculate_volatility(
+                        self.market_data.get(symbol, {}).get("1h", {})
+                    ),
+                    "regime": self.regime,
+                    "binance_client": self.binance_client,
+                }
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    quoteOrderQty=amount,  # Montant USDC à investir
+                    quoteOrderQty=amount,
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
+
+            elif side.upper() == "SELL":
+                # -- SHORT sur BingX --
+                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                # Récupère le prix BingX pour calculer la quantité (si amount est en USDT)
+                ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
+                price_bingx = float(ticker["last"])
+                qty = amount / price_bingx  # amount est en USDT, qty en coin
+                result = await self.bingx_executor.short_order(
+                    symbol_bingx, qty, leverage=3
+                )
+
             else:
-                # Utilise quantity pour une vente ou achat par quantité de coin
-                result = await self.executor.execute_order(
-                    symbol=symbol,
-                    side=side,
-                    amount=amount,
-                    orderbook=orderbook,
-                    market_data=market_data,
-                    iceberg=iceberg,
-                    iceberg_visible_size=iceberg_visible_size,
-                )
+                return {"status": "rejected", "reason": "unsupported side"}
 
             # Enregistrement du résultat
             if result["status"] == "completed":
                 log_dashboard(
-                    f"[ORDER] Exécuté avec succès: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
+                    f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
                 )
                 self.logger.info(
-                    f"Order executed: {side} {result['filled_amount']} {symbol} @ {result['avg_price']}"
+                    f"Order executed: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
                 )
-                # Mettre à jour les statistiques
                 self._update_performance_metrics(result)
-
-                # Notification Telegram
                 iceberg_info = (
-                    f"\n🧊 <b>Ordre Iceberg</b> ({result['n_suborders']} sous-ordres)"
+                    f"\n🧊 <b>Ordre Iceberg</b> ({result.get('n_suborders', '')} sous-ordres)"
                     if result.get("iceberg")
                     else ""
                 )
                 await self.telegram.send_message(
                     f"💰 <b>Ordre exécuté</b>\n"
-                    f"📊 {side} {result['filled_amount']} {symbol} @ {result['avg_price']}\n"
-                    f"💵 Total: ${float(result['filled_amount']) * float(result['avg_price']):.2f}"
+                    f"📊 {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}\n"
+                    f"💵 Total: ${float(result.get('filled_amount', amount)) * float(result.get('avg_price', price) or 0):.2f}"
                     f"{iceberg_info}"
                 )
             else:
@@ -1498,7 +1505,6 @@ class TradingBotM4:
         except Exception as e:
             print(f"[ORDER] Execution error: {e}")
             self.logger.error(f"Execution error: {e}")
-            # await self.telegram.send_message(f"⚠️ Erreur d'exécution: {e}")
             return {"status": "error", "reason": str(e)}
 
     def _update_performance_metrics(self, trade_result):
