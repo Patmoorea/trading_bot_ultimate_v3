@@ -42340,3 +42340,11 @@
 2025-07-21T02:13:46.464895 | [ORDER] Tentative d'exécution: BUY 6.44 SUIUSDC (iceberg: False)
 2025-07-21T02:13:48.149703 | [ORDER] Tentative d'exécution: BUY 7.02 SUIUSDC (iceberg: False)
 2025-07-21T02:13:49.801379 | [ORDER] Tentative d'exécution: BUY 7.29 SUIUSDC (iceberg: False)
+2025-07-21T02:18:38.084510 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-21T02:18:38.090421 | Initialisation des modèles d'IA...
+2025-07-21T02:18:38.119997 | ✅ Modèles d'IA initialisés avec succès
+2025-07-21T02:18:39.698263 | ✅ PPO Strategy initialized successfully
+2025-07-21T02:18:39.700225 | ✅ Bot initialisé avec Telegram: True
+2025-07-21T02:18:39.700278 | ✅ Trading en direct: True
+2025-07-21T02:18:39.700335 | ✅ IA activée: True
+2025-07-21T02:18:39.700377 | ✅ Analyse de news activée: True
