@@ -243,7 +243,11 @@ class NewsSentimentAnalyzer:
     ) -> List[Dict]:
         try:
             async with session.get(source["url"], timeout=30) as response:
+                body = await response.text()
                 if response.status == 429:
+                    self.logger.error(
+                        f"[{source['name']}] HTTP 429 Too Many Requests ({source['url']}) | Body: {body}"
+                    )
                     raise aiohttp.ClientResponseError(
                         request_info=response.request_info,
                         history=response.history,
@@ -253,14 +257,21 @@ class NewsSentimentAnalyzer:
                     )
                 if response.status != 200:
                     self.logger.error(
-                        f"[{source['name']}] HTTP status {response.status} ({source['url']})"
+                        f"[{source['name']}] HTTP status {response.status} ({source['url']}) | Body: {body}"
                     )
                     return []
                 if source["type"] == "rss":
-                    content = await response.text()
-                    return self._parse_rss(content, source)
+                    return self._parse_rss(body, source)
                 else:
-                    data = await response.json()
+                    import json
+
+                    try:
+                        data = json.loads(body)
+                    except Exception as e:
+                        self.logger.error(
+                            f"[{source['name']}] Failed to parse JSON: {str(e)} | Body: {body}"
+                        )
+                        return []
                     return self._parse_json(data, source)
         except asyncio.TimeoutError:
             self.logger.error(
