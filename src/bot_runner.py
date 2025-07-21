@@ -71,7 +71,7 @@ from deep_translator import GoogleTranslator
 from src.ai.hybrid_model import HybridAI
 
 from bingx_order_executor import BingXOrderExecutor
-
+from src.exchanges.bingx_exchange import BingXExchange
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
