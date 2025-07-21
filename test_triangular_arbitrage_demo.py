@@ -1,4 +1,5 @@
 import pytest
+from src.strategies.arbitrage.triangular_arbitrage import TriangularArbitrage
 
 
 class DummyMoteur:

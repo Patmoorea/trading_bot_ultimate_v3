@@ -1,7 +1,14 @@
+import sys
+import os
+
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+)
+from src.utils.logger import get_logger
 import asyncio
 import time
 from decimal import Decimal
-from utils.logger import get_logger
+
 from .service import ArbitrageEngine
 from .config import SETTINGS
 

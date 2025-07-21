@@ -6,9 +6,9 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from dotenv import load_dotenv
 from ccxt.async_support import gateio, bingx, okx
-from connectors.binance import BinanceConnector
-from connectors.blofin import BlofinConnector
-from utils.logger import get_logger
+from src.connectors.binance import BinanceConnector
+from src.connectors.blofin import BlofinConnector
+from src.utils.logger import get_logger
 from .config import PAIRS, SETTINGS, FEES
 
 load_dotenv()
