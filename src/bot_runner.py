@@ -3482,6 +3482,15 @@ async def run_clean_bot():
                     print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
                     # Hot reload IA
                     bot.check_reload_dl_model()
+
+                    # === PATCH : Déclenchement automatique du stop-loss ===
+                    for symbol, pos in list(bot.positions.items()):
+                        if bot.is_long(symbol) and bot.check_stop_loss(symbol):
+                            print(
+                                f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
+                            )
+                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+
                     # Exécution du cycle de trading
                     trade_decisions, regime = await execute_trading_cycle(
                         bot, valid_pairs
