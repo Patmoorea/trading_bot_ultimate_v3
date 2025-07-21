@@ -5,6 +5,7 @@ Created: 2025-05-23 00:36:44
 @author: Patmoorea
 """
 
+from datetime import datetime, timezone
 import asyncio
 import logging
 import time
@@ -245,32 +246,55 @@ class InterExchangeArbitrage:
         Returns:
             Résultats de l'exécution
         """
-        if not opportunity or "buy_exchange" not in opportunity:
-            return {"success": False, "error": "Invalid opportunity format"}
-        buy_exchange_name = opportunity["buy_exchange"]
-        sell_exchange_name = opportunity["sell_exchange"]
-        symbol = opportunity["symbol"]
-        base_currency = symbol.split("/")[0]
-        quote_currency = symbol.split("/")[1]
-
-        if (
-            buy_exchange_name not in self.exchanges
-            or sell_exchange_name not in self.exchanges
-        ):
-            return {"success": False, "error": "Exchange not configured"}
-
-        buy_exchange = self.exchanges[buy_exchange_name]
-        sell_exchange = self.exchanges[sell_exchange_name]
         execution = {
             "success": False,
             "buy_order": None,
             "sell_order": None,
             "transfer": None,
-            "profit_expected": opportunity["profit"],
+            "profit_expected": opportunity.get("profit", 0),
             "profit_actual": 0,
             "amount": amount,
             "errors": [],
         }
+
+        # 0. Vérifications d'entrée
+        if (
+            not opportunity
+            or "buy_exchange" not in opportunity
+            or "sell_exchange" not in opportunity
+            or "symbol" not in opportunity
+        ):
+            error_msg = "Invalid opportunity format (clé manquante)"
+            self.logger.error(f"[ARBITRAGE] {error_msg}")
+            execution["errors"].append(error_msg)
+            return execution
+
+        buy_exchange_name = opportunity["buy_exchange"]
+        sell_exchange_name = opportunity["sell_exchange"]
+        symbol = opportunity["symbol"]
+
+        # Sanity check on symbol
+        if "/" not in symbol:
+            error_msg = f"Symbol format invalid: {symbol}"
+            self.logger.error(f"[ARBITRAGE] {error_msg}")
+            execution["errors"].append(error_msg)
+            return execution
+
+        base_currency = symbol.split("/")[0]
+        quote_currency = symbol.split("/")[1]
+
+        # Vérification de la configuration des exchanges
+        if (
+            buy_exchange_name not in self.exchanges
+            or sell_exchange_name not in self.exchanges
+        ):
+            error_msg = "Exchange not configured"
+            self.logger.error(f"[ARBITRAGE] {error_msg}")
+            execution["errors"].append(error_msg)
+            return execution
+
+        buy_exchange = self.exchanges[buy_exchange_name]
+        sell_exchange = self.exchanges[sell_exchange_name]
 
         try:
             # 1. Achat sur le premier exchange
@@ -282,23 +306,45 @@ class InterExchangeArbitrage:
                 symbol=symbol, type="market", side="buy", amount=buy_amount
             )
             execution["buy_order"] = {
-                "id": buy_order["id"],
+                "id": buy_order.get("id"),
                 "exchange": buy_exchange_name,
                 "amount": buy_amount,
                 "price": buy_price,
                 "cost": buy_amount * buy_price,
-                "status": buy_order["status"],
+                "status": buy_order.get("status"),
             }
 
             # 2. Récupérer l'adresse de dépôt sur le second exchange
             self.logger.info(
                 f"[ARBITRAGE] Récupération de l'adresse de dépôt pour {base_currency} sur {sell_exchange_name}"
             )
-            deposit_address = await sell_exchange.fetch_deposit_address(base_currency)
-            if not deposit_address or not deposit_address.get("address"):
-                raise Exception(
-                    f"Adresse dépôt introuvable pour {base_currency} sur {sell_exchange_name}"
+            deposit_address = None
+            deposit_error = None
+
+            try:
+                deposit_address = await sell_exchange.fetch_deposit_address(
+                    base_currency
                 )
+                # Contrôle du format de l'adresse
+                if (
+                    not deposit_address
+                    or not isinstance(deposit_address, dict)
+                    or not deposit_address.get("address")
+                    or not isinstance(deposit_address.get("address"), str)
+                    or len(deposit_address.get("address").strip()) == 0
+                ):
+                    deposit_error = f"Adresse dépôt introuvable ou mal formée pour {base_currency} sur {sell_exchange_name}: {deposit_address}"
+                    self.logger.error(f"[ARBITRAGE] {deposit_error}")
+                    raise Exception(deposit_error)
+                self.logger.info(
+                    f"[ARBITRAGE] Adresse de dépôt obtenue: {deposit_address['address']}"
+                )
+            except Exception as e:
+                deposit_error = f"Erreur récupération adresse dépôt {base_currency} sur {sell_exchange_name}: {str(e)}"
+                self.logger.error(f"[ARBITRAGE] {deposit_error}")
+                execution["errors"].append(deposit_error)
+                execution["success"] = False
+                return execution  # Stop ici si adresse non récupérée
 
             # 3. Retrait de l'actif sur le premier exchange vers le second
             self.logger.info(
@@ -310,6 +356,12 @@ class InterExchangeArbitrage:
                 .get(base_currency, 0)
             )
             transfer_amount = buy_amount - withdrawal_fee
+            if transfer_amount <= 0:
+                error_msg = f"Montant transférable négatif ou nul après retrait des frais ({withdrawal_fee})"
+                self.logger.error(f"[ARBITRAGE] {error_msg}")
+                execution["errors"].append(error_msg)
+                execution["success"] = False
+                return execution
             withdraw_result = await buy_exchange.withdraw(
                 code=base_currency,
                 amount=transfer_amount,
@@ -324,6 +376,9 @@ class InterExchangeArbitrage:
                 "txid": withdraw_result.get("id", ""),
                 "status": withdraw_result.get("status", "pending"),
             }
+            self.logger.info(
+                f"[ARBITRAGE] Retrait effectué, txid: {withdraw_result.get('id', '')}, status: {withdraw_result.get('status', '')}"
+            )
 
             # 4. Attendre la confirmation du dépôt sur le second exchange
             self.logger.info(
@@ -333,19 +388,27 @@ class InterExchangeArbitrage:
             poll_interval = 20
             waited = 0
             while waited < max_wait:
-                deposits = await sell_exchange.fetch_deposits(code=base_currency)
-                if any(
-                    d.get("amount", 0) >= transfer_amount and d.get("status") == "ok"
-                    for d in deposits
-                ):
-                    self.logger.info(
-                        f"[ARBITRAGE] Dépôt confirmé sur {sell_exchange_name}"
-                    )
-                    break
+                try:
+                    deposits = await sell_exchange.fetch_deposits(code=base_currency)
+                    if any(
+                        d.get("amount", 0) >= transfer_amount
+                        and d.get("status") == "ok"
+                        for d in deposits
+                    ):
+                        self.logger.info(
+                            f"[ARBITRAGE] Dépôt confirmé sur {sell_exchange_name}"
+                        )
+                        break
+                except Exception as e:
+                    self.logger.warning(f"[ARBITRAGE] Erreur polling dépôts: {e}")
                 await asyncio.sleep(poll_interval)
                 waited += poll_interval
             else:
-                raise Exception("Timeout confirmation dépôt")
+                error_msg = "Timeout confirmation dépôt"
+                self.logger.error(f"[ARBITRAGE] {error_msg}")
+                execution["errors"].append(error_msg)
+                execution["success"] = False
+                return execution
 
             # 5. Vente sur le second exchange
             self.logger.info(
@@ -359,12 +422,12 @@ class InterExchangeArbitrage:
                 symbol=symbol, type="market", side="sell", amount=sell_amount
             )
             execution["sell_order"] = {
-                "id": sell_order["id"],
+                "id": sell_order.get("id"),
                 "exchange": sell_exchange_name,
                 "amount": sell_amount,
                 "price": sell_price,
                 "cost": sell_amount * sell_price,
-                "status": sell_order["status"],
+                "status": sell_order.get("status"),
             }
 
             # 6. Calcul du profit réel
@@ -377,10 +440,10 @@ class InterExchangeArbitrage:
             )
 
         except Exception as e:
-            self.logger.error(
-                f"[ARBITRAGE] Erreur lors de l'exécution de l'arbitrage: {str(e)}"
-            )
-            execution["errors"].append(str(e))
+            error_msg = f"Erreur lors de l'exécution de l'arbitrage: {str(e)}"
+            self.logger.error(f"[ARBITRAGE] {error_msg}")
+            execution["errors"].append(error_msg)
+            execution["success"] = False
 
         return execution
 
