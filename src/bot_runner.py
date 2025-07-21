@@ -3678,7 +3678,7 @@ def calculate_position_size(bot, decision):
     try:
         # Par exemple, on investit de 10 à 100 USDC selon la confiance et la volatilité
         base_usdc = 5  # minimum à investir (doit être > minNotional Binance, ici 5)
-        max_usdc = 90  # maximum à investir
+        max_usdc = 10  # maximum à investir
 
         volatility_factor = decision.get("signals", {}).get("volatility", 0.5)
         confidence = decision.get("confidence", 0.5)

@@ -12,6 +12,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
 import websockets
+import random
 
 
 class SymbolExtractor:
@@ -91,6 +92,7 @@ class NewsSentimentAnalyzer:
         )
         self._model = None
         self._tokenizer = None
+
         self.sources = [
             {
                 "name": "CoinDesk",
@@ -110,7 +112,44 @@ class NewsSentimentAnalyzer:
                 "type": "rss",
                 "weight": 0.8,
             },
+            {
+                "name": "Decrypt",
+                "url": "https://decrypt.co/feed",
+                "type": "rss",
+                "weight": 0.8,
+            },
+            {
+                "name": "BitcoinMagazine",
+                "url": "https://bitcoinmagazine.com/.rss/full/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "CryptoSlate",
+                "url": "https://cryptoslate.com/feed/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "NewsBTC",
+                "url": "https://www.newsbtc.com/feed/",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "TheBlock",
+                "url": "https://www.theblock.co/rss.xml",
+                "type": "rss",
+                "weight": 0.7,
+            },
+            {
+                "name": "BinanceBlog",
+                "url": "https://www.binance.com/en/blog/rss",
+                "type": "rss",
+                "weight": 0.6,
+            },
         ]
+
         self.news_buffer: List[Dict] = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
@@ -147,12 +186,19 @@ class NewsSentimentAnalyzer:
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            )
         }
         async with aiohttp.ClientSession(
             connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers
         ) as session:
-            tasks = [self._fetch_source(session, source) for source in self.sources]
+            tasks = [
+                self._fetch_source_with_retry(session, source)
+                for source in self.sources
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             valid_news = []
             for result in results:
@@ -168,11 +214,58 @@ class NewsSentimentAnalyzer:
                 print("  (Aucune news récupérée)")
             return valid_news
 
+    async def _fetch_source_with_retry(
+        self, session: aiohttp.ClientSession, source: Dict, max_retries=3
+    ) -> List[Dict]:
+        for attempt in range(max_retries):
+            try:
+                news = await self._fetch_source(session, source)
+                # Si HTTP 429 ou aucune news, attend puis retry
+                if news is not None and len(news) == 0 and attempt < max_retries - 1:
+                    await asyncio.sleep(2 + random.random() * 3)
+                    continue
+                return news
+            except aiohttp.ClientResponseError as cre:
+                if cre.status == 429 and attempt < max_retries - 1:
+                    print(f"[{source['name']}] HTTP 429, attente 60s avant retry")
+                    await asyncio.sleep(60)
+                    continue
+                else:
+                    self.logger.error(
+                        f"[{source['name']}] ClientResponseError {cre.status} on {source['url']}"
+                    )
+                    return []
+            except asyncio.TimeoutError:
+                self.logger.error(
+                    f"[{source['name']}] Timeout when fetching ({source['url']})"
+                )
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(5)
+                    continue
+                return []
+            except Exception as e:
+                self.logger.error(
+                    f"[{source['name']}] Error fetching: {str(e)} ({source['url']})"
+                )
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(5)
+                    continue
+                return []
+        return []
+
     async def _fetch_source(
         self, session: aiohttp.ClientSession, source: Dict
     ) -> List[Dict]:
         try:
             async with session.get(source["url"], timeout=30) as response:
+                if response.status == 429:
+                    raise aiohttp.ClientResponseError(
+                        request_info=response.request_info,
+                        history=response.history,
+                        status=response.status,
+                        message="Too Many Requests",
+                        headers=response.headers,
+                    )
                 if response.status != 200:
                     self.logger.error(
                         f"[{source['name']}] HTTP status {response.status} ({source['url']})"
