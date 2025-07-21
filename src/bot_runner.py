@@ -1470,7 +1470,9 @@ class TradingBotM4:
         """
         Exécute un ordre de trading avec logs détaillés.
         - BUY sur Binance spot (quoteOrderQty)
-        - SELL = short sur BingX (futures)
+        - SELL sur Binance spot (revente, si déjà long)
+        - SHORT sur BingX (futures)
+        - Gère le suivi de position SPOT et le stop-loss automatique
         """
         if not self.is_live_trading:
             log_dashboard(
@@ -1479,6 +1481,25 @@ class TradingBotM4:
             self.logger.info(
                 f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
             )
+            # Gestion état simulée
+            if side.upper() == "BUY":
+                if self.is_long(symbol):
+                    log_dashboard(
+                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)"
+                    )
+                    return {"status": "skipped", "reason": "already long"}
+                self.positions[symbol] = {
+                    "side": "long",
+                    "entry_price": price or 0,
+                    "amount": amount,
+                }
+            elif side.upper() == "SELL":
+                if not self.is_long(symbol):
+                    log_dashboard(
+                        f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
+                    )
+                    return {"status": "skipped", "reason": "not in position"}
+                self.positions.pop(symbol, None)
             return {
                 "status": "simulated",
                 "symbol": symbol,
@@ -1492,8 +1513,11 @@ class TradingBotM4:
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
             )
 
+            # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
-                # -- ACHAT sur Binance --
+                if self.is_long(symbol):
+                    log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
+                    return {"status": "skipped", "reason": "already long"}
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
@@ -1501,9 +1525,7 @@ class TradingBotM4:
                     )
                     return {"status": "error", "reason": "Orderbook WS not available"}
                 orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
-                recent_trades = (
-                    []
-                )  # Optionnel : tu peux aussi les récupérer du ws_collector si besoin, sinon laisse []
+                recent_trades = []
                 market_data = {
                     "recent_trades": recent_trades,
                     "volatility": self.calculate_volatility(
@@ -1521,14 +1543,54 @@ class TradingBotM4:
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
+                if result.get("status") == "completed":
+                    self.positions[symbol] = {
+                        "side": "long",
+                        "entry_price": result.get("avg_price", price),
+                        "amount": result.get("filled_amount", amount),
+                    }
 
-            elif side.upper() == "SELL":
-                # -- SHORT sur BingX --
+            # ----- VENTE SPOT -----
+            elif side.upper() == "SELL" and symbol.endswith("USDC"):
+                if not self.is_long(symbol):
+                    log_dashboard(
+                        f"[ORDER] Pas en position long sur {symbol}, vente ignorée."
+                    )
+                    return {"status": "skipped", "reason": "not in position"}
+                bid, ask = self.get_ws_orderbook(symbol)
+                if bid is None or ask is None:
+                    log_dashboard(
+                        f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
+                    )
+                    return {"status": "error", "reason": "Orderbook WS not available"}
+                orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+                pos = self.positions[symbol]
+                market_data = {
+                    "recent_trades": [],
+                    "volatility": self.calculate_volatility(
+                        self.market_data.get(symbol, {}).get("1h", {})
+                    ),
+                    "regime": self.regime,
+                    "binance_client": self.binance_client,
+                }
+                result = await self.executor.execute_order(
+                    symbol=symbol,
+                    side=side,
+                    quoteOrderQty=pos["amount"],
+                    orderbook=orderbook,
+                    market_data=market_data,
+                    iceberg=iceberg,
+                    iceberg_visible_size=iceberg_visible_size,
+                )
+                if result.get("status") == "completed":
+                    self.positions.pop(symbol, None)
+
+            # ----- SHORT BINGX -----
+            elif side.upper() == "SHORT":
                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
-                # Récupère le prix BingX pour calculer la quantité (si amount est en USDT)
                 ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
                 price_bingx = float(ticker["last"])
-                qty = amount / price_bingx  # amount est en USDT, qty en coin
+                qty = amount / price_bingx
                 result = await self.bingx_executor.short_order(
                     symbol_bingx, qty, leverage=3
                 )
@@ -1536,7 +1598,7 @@ class TradingBotM4:
             else:
                 return {"status": "rejected", "reason": "unsupported side"}
 
-            # Enregistrement du résultat
+            # ----- LOGS & NOTIF -----
             if result["status"] == "completed":
                 log_dashboard(
                     f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
