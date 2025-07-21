@@ -2235,6 +2235,46 @@ class TradingBotM4:
         except Exception as e:
             print(f"[SENTIMENT SAVE ERROR] {e}")
 
+    def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
+        # Filtre les news avec score
+        valid = [
+            item
+            for item in sentiment_scores
+            if "sentiment" in item and item["sentiment"] is not None
+        ]
+        if not valid:
+            return {
+                "sentiment_global": 0.0,
+                "n_news": 0,
+                "top_symbols": [],
+                "top_news": [],
+            }
+        # Calcul de la moyenne pondérée
+        sentiments = [item["sentiment"] for item in valid]
+        sentiment_global = float(np.mean(sentiments))
+        # Top news (par score absolu)
+        top_news = sorted(valid, key=lambda x: abs(x["sentiment"]), reverse=True)[
+            :top_n
+        ]
+        top_news_titles = [news["title"] for news in top_news if "title" in news]
+        # Top symbols (fréquence + score fort)
+        symbol_scores = {}
+        for item in valid:
+            for s in item.get("symbols", []):
+                symbol_scores.setdefault(s, []).append(item["sentiment"])
+        top_symbols = sorted(
+            symbol_scores.items(), key=lambda kv: abs(np.mean(kv[1])), reverse=True
+        )
+        top_symbols = [s for s, scores in top_symbols[:top_n]]
+        return {
+            "sentiment_global": sentiment_global,
+            "n_news": len(valid),
+            "top_symbols": top_symbols,
+            "top_news": top_news_titles,
+        }
+
+    # Puis modifie ta méthode _save_sentiment_data pour utiliser ce résumé :
+
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
@@ -2250,9 +2290,6 @@ class TradingBotM4:
                     headlines.append(
                         str(item["title"])
                     )  # Toujours str pour éviter erreur
-
-        # --- PATCH: LOG pour debug ---
-        # print(f"[DEBUG _save_sentiment_data] sentiment_scores={sentiment_scores}")
 
         # Correction : on prend les scores assignés dans market_data
         valid_scores = [
@@ -2275,41 +2312,24 @@ class TradingBotM4:
                 f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}"
             )
 
-        try:
-            # Si ton analyseur a une méthode robuste, utilise-la !
-            summary = self.news_analyzer.get_sentiment_summary()
-            if isinstance(summary, dict) and "sentiment_global" in summary:
-                sentiment_global = float(summary.get("sentiment_global", 0))
-                print(
-                    f"[DEBUG _save_sentiment_data] sentiment_global from summary={sentiment_global}"
-                )
-            else:
-                # PATCH : moyenne sur tous les scores assignés
-                sentiment_global = float(np.mean(valid_scores)) if valid_scores else 0.0
-                print(
-                    f"[DEBUG _save_sentiment_data] sentiment_global from valid_scores={sentiment_global}"
-                )
-        except Exception as e:
-            print(f"[SENTIMENT] Exception during global calculation: {e}")
-            sentiment_global = 0.0
-
-        # Impact : moyenne des absolus (toujours sur sentiment_scores)
-        impact_score = (
-            float(
-                np.mean(
-                    [
-                        abs(item.get("sentiment", 0))
-                        for item in sentiment_scores
-                        if isinstance(item, dict)
-                    ]
-                )
+        # === PATCH : Utilise le nouveau résumé pour remplir le sentiment_data ===
+        summary = get_sentiment_summary_from_batch(sentiment_scores)
+        sentiment_global = summary["sentiment_global"]
+        impact_score = float(
+            np.mean(
+                [
+                    abs(item.get("sentiment", 0))
+                    for item in sentiment_scores
+                    if isinstance(item, dict)
+                ]
             )
             if sentiment_scores
             else 0.0
         )
-        major_events = "; ".join(headlines[:3]) if headlines else "Aucun"
+        major_events = (
+            "; ".join(summary["top_news"][:3]) if summary["top_news"] else "Aucun"
+        )
 
-        # print(f"[DEBUG SENTIMENT SCORES] sentiment_scores={sentiment_scores[:3]} ...")
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
         )
@@ -2317,10 +2337,12 @@ class TradingBotM4:
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
-            "latest_news": headlines,
+            "latest_news": summary["top_news"],
             "overall_sentiment": sentiment_global,
             "impact_score": impact_score,
             "major_events": major_events,
+            "top_symbols": summary["top_symbols"],
+            "n_news": summary["n_news"],
         }
 
         try:
