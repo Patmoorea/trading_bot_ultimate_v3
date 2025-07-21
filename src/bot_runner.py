@@ -3556,6 +3556,12 @@ async def run_clean_bot():
                                 print(
                                     f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
                                 )
+                                await bot.telegram.send_message(
+                                    f"🔴 <b>STOP SHORT déclenché</b>\n"
+                                    f"Pair: {symbol}\n"
+                                    f"Prix actuel: {price}\n"
+                                    f"Position couverte automatiquement (stop/trailing stop)"
+                                )
                                 await bot.execute_trade(symbol, "BUY", pos["amount"])
 
                     # Exécution du cycle de trading

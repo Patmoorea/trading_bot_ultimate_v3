@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+
 class BingXOrderExecutor:
     def __init__(self, bingx_exchange):
         self.bingx = bingx_exchange
@@ -18,6 +19,37 @@ class BingXOrderExecutor:
                 symbol=symbol,
                 order_type="market",
                 side="sell",
+                amount=str(amount),
+                params={"positionSide": "SHORT"},
+            )
+            return {
+                "status": "completed",
+                "order_id": order.get("id"),
+                "filled_amount": order.get("amount"),
+                "avg_price": order.get("average"),
+                "timestamp": datetime.now(timezone.utc),
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "reason": str(e),
+                "timestamp": datetime.now(timezone.utc),
+            }
+
+    async def close_short_order(self, symbol: str, amount: float):
+        """
+        Ferme une position short (rachète la position vendeuse) sur BingX Futures
+        symbol: ex 'BTC/USDT:USDT'
+        amount: taille du contrat à racheter (en coin)
+        """
+        try:
+            if not self.bingx._initialized:
+                await self.bingx.initialize()
+            # On rachète la position short par un ordre d'achat market (side="buy", positionSide="SHORT")
+            order = await self.bingx.create_order(
+                symbol=symbol,
+                order_type="market",
+                side="buy",
                 amount=str(amount),
                 params={"positionSide": "SHORT"},
             )
