@@ -13,15 +13,42 @@ import torch
 import numpy as np
 import websockets
 
+
 class SymbolExtractor:
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
         self.symbol_mapping = symbol_mapping or {
-            "bitcoin": "BTC", "btc": "BTC", "ethereum": "ETH", "eth": "ETH", "cardano": "ADA", "ada": "ADA",
-            "solana": "SOL", "sol": "SOL", "ripple": "XRP", "xrp": "XRP", "dogecoin": "DOGE", "doge": "DOGE",
-            "polkadot": "DOT", "dot": "DOT", "binance": "BNB", "bnb": "BNB", "matic": "MATIC", "polygon": "MATIC",
-            "litecoin": "LTC", "ltc": "LTC", "shiba": "SHIB", "shib": "SHIB", "tron": "TRX", "trx": "TRX",
-            "avalanche": "AVAX", "avax": "AVAX", "chainlink": "LINK", "link": "LINK", "uniswap": "UNI", "uni": "UNI",
-            "stellar": "XLM", "xlm": "XLM",
+            "bitcoin": "BTC",
+            "btc": "BTC",
+            "ethereum": "ETH",
+            "eth": "ETH",
+            "cardano": "ADA",
+            "ada": "ADA",
+            "solana": "SOL",
+            "sol": "SOL",
+            "ripple": "XRP",
+            "xrp": "XRP",
+            "dogecoin": "DOGE",
+            "doge": "DOGE",
+            "polkadot": "DOT",
+            "dot": "DOT",
+            "binance": "BNB",
+            "bnb": "BNB",
+            "matic": "MATIC",
+            "polygon": "MATIC",
+            "litecoin": "LTC",
+            "ltc": "LTC",
+            "shiba": "SHIB",
+            "shib": "SHIB",
+            "tron": "TRX",
+            "trx": "TRX",
+            "avalanche": "AVAX",
+            "avax": "AVAX",
+            "chainlink": "LINK",
+            "link": "LINK",
+            "uniswap": "UNI",
+            "uni": "UNI",
+            "stellar": "XLM",
+            "xlm": "XLM",
         }
         self.known_tickers = set(self.symbol_mapping.values())
         self.regex_patterns = [
@@ -37,7 +64,9 @@ class SymbolExtractor:
             if pattern.search(text):
                 found.add(ticker)
         # Paires crypto et tickers
-        for pair in re.findall(r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()):
+        for pair in re.findall(
+            r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
+        ):
             ticker = pair[0]
             if ticker in self.known_tickers:
                 found.add(ticker)
@@ -46,19 +75,41 @@ class SymbolExtractor:
                 found.add(match)
         return list(found)
 
+
 class NewsSentimentAnalyzer:
     def __init__(self, config: dict):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
-        self.low_watermark_ratio = config.get("news", {}).get("low_watermark_ratio", 0.2)
+        self.low_watermark_ratio = config.get("news", {}).get(
+            "low_watermark_ratio", 0.2
+        )
         self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
-        self.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+        self.device = (
+            torch.device("mps")
+            if torch.backends.mps.is_available()
+            else torch.device("cpu")
+        )
         self._model = None
         self._tokenizer = None
         self.sources = [
-            {"name": "CoinDesk", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/", "type": "rss", "weight": 0.9},
-            {"name": "CryptoCompare", "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN", "type": "json", "weight": 0.7},
-            {"name": "Cointelegraph", "url": "https://cointelegraph.com/rss", "type": "rss", "weight": 0.8},
+            {
+                "name": "CoinDesk",
+                "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+                "type": "rss",
+                "weight": 0.9,
+            },
+            {
+                "name": "CryptoCompare",
+                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=EN",
+                "type": "json",
+                "weight": 0.7,
+            },
+            {
+                "name": "Cointelegraph",
+                "url": "https://cointelegraph.com/rss",
+                "type": "rss",
+                "weight": 0.8,
+            },
         ]
         self.news_buffer: List[Dict] = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
@@ -67,7 +118,9 @@ class NewsSentimentAnalyzer:
     @property
     def model(self):
         if self._model is None:
-            self._model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+            self._model = AutoModelForSequenceClassification.from_pretrained(
+                "ProsusAI/finbert"
+            )
             self._model.to(self.device)
         return self._model
 
@@ -81,20 +134,24 @@ class NewsSentimentAnalyzer:
         while True:
             try:
                 async with websockets.connect(url) as ws:
-                    # ... handle messages ...
+                    pass  # Ajoute ton code de gestion ici plus tard
             except (asyncio.TimeoutError, websockets.exceptions.InvalidHandshake) as e:
                 print(f"[WS] Erreur {e}, reconnexion dans 5s")
                 await asyncio.sleep(5)
             except Exception as e:
                 print(f"[WS] Exception: {e}, reconnexion dans 5s")
                 await asyncio.sleep(5)
-            
+
     async def fetch_all_news(self) -> List[Dict]:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers) as session:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=ssl_context), headers=headers
+        ) as session:
             tasks = [self._fetch_source(session, source) for source in self.sources]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             valid_news = []
@@ -104,16 +161,22 @@ class NewsSentimentAnalyzer:
             print(f"\n[NEWS DEBUG] {len(valid_news)} news récupérées ce cycle")
             if valid_news:
                 for idx, n in enumerate(valid_news[:5]):
-                    print(f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}")
+                    print(
+                        f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}"
+                    )
             else:
                 print("  (Aucune news récupérée)")
             return valid_news
 
-     async def _fetch_source(self, session: aiohttp.ClientSession, source: Dict) -> List[Dict]:
+    async def _fetch_source(
+        self, session: aiohttp.ClientSession, source: Dict
+    ) -> List[Dict]:
         try:
             async with session.get(source["url"], timeout=30) as response:
                 if response.status != 200:
-                    self.logger.error(f"[{source['name']}] HTTP status {response.status} ({source['url']})")
+                    self.logger.error(
+                        f"[{source['name']}] HTTP status {response.status} ({source['url']})"
+                    )
                     return []
                 if source["type"] == "rss":
                     content = await response.text()
@@ -122,10 +185,14 @@ class NewsSentimentAnalyzer:
                     data = await response.json()
                     return self._parse_json(data, source)
         except asyncio.TimeoutError:
-            self.logger.error(f"[{source['name']}] Timeout when fetching ({source['url']})")
+            self.logger.error(
+                f"[{source['name']}] Timeout when fetching ({source['url']})"
+            )
             return []
         except Exception as e:
-            self.logger.error(f"[{source['name']}] Error fetching: {str(e)} ({source['url']})")
+            self.logger.error(
+                f"[{source['name']}] Error fetching: {str(e)} ({source['url']})"
+            )
             return []
 
     def _parse_rss(self, content: str, source: Dict) -> List[Dict]:
@@ -152,7 +219,9 @@ class NewsSentimentAnalyzer:
             "source_weight": source["weight"],
         }
 
-    def analyze_sentiment_batch(self, news_items: List[Dict], low_watermark_ratio: float = None) -> List[Dict]:
+    def analyze_sentiment_batch(
+        self, news_items: List[Dict], low_watermark_ratio: float = None
+    ) -> List[Dict]:
         """
         Analyse un batch de news avec FinBERT et retourne la liste des news enrichies avec sentiment et impact_score.
         Watermark ratio est forcé à une valeur valide (0.05 à 0.5) pour éviter toute exception.
@@ -165,14 +234,19 @@ class NewsSentimentAnalyzer:
         except Exception:
             low_watermark_ratio = 0.2
         if low_watermark_ratio > 0.5 or low_watermark_ratio < 0.05:
-            print(f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2")
+            print(
+                f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2"
+            )
             low_watermark_ratio = 0.2
 
         import inspect
+
         stack = inspect.stack()
         if len(stack) > 1:
             caller = stack[1]
-            print(f"[DEBUG] Called from {caller.filename}:{caller.lineno} with low_watermark_ratio={low_watermark_ratio}")
+            print(
+                f"[DEBUG] Called from {caller.filename}:{caller.lineno} with low_watermark_ratio={low_watermark_ratio}"
+            )
         else:
             print("[DEBUG] Called from REPL or top-level")
 
@@ -299,12 +373,14 @@ class NewsSentimentAnalyzer:
                 "DOGEUSDT": ["DOGE", "DOGECOIN", "dogecoin"],
                 "AVAXUSDT": ["AVAX", "AVALANCHE", "avalanche"],
                 "DOTUSDT": ["DOT", "POLKADOT", "polkadot"],
-                "MATICUSDT": ["MATIC", "POLYGON", "polygon"]
+                "MATICUSDT": ["MATIC", "POLYGON", "polygon"],
             }
             search_terms = symbol_variants.get(symbol_key, [underlying])
             search_terms.extend([symbol_key, underlying])
             search_terms = list(set(search_terms))
-            print(f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}")
+            print(
+                f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}"
+            )
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
@@ -325,9 +401,7 @@ class NewsSentimentAnalyzer:
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
                 )
-                match_content = any(
-                    term.lower() in content for term in search_terms
-                )
+                match_content = any(term.lower() in content for term in search_terms)
                 if match_extracted or match_content:
                     matched = True
                     hours_old = (
@@ -343,9 +417,7 @@ class NewsSentimentAnalyzer:
                     total += sentiment * impact * decay
                     total_weight += impact * decay
             if not matched:
-                print(
-                    f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}"
-                )
+                print(f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}")
                 available_symbols = set()
                 for news in self.news_buffer[:5]:
                     available_symbols.update(news.get("symbols", []))
@@ -421,11 +493,13 @@ class NewsSentimentAnalyzer:
                     return int(item["published_on"])
                 if "pubDate" in item:
                     from email.utils import parsedate_to_datetime
+
                     return int(parsedate_to_datetime(item["pubDate"]).timestamp())
             else:
                 pub_date = item.find("pubDate")
                 if pub_date:
                     from email.utils import parsedate_to_datetime
+
                     return int(parsedate_to_datetime(pub_date.text).timestamp())
             return int(datetime.now().timestamp())
         except Exception:
@@ -524,6 +598,7 @@ class NewsSentimentAnalyzer:
                 "top_symbols": [],
                 "top_news": [],
             }
+
 
 def extract_symbols(title: str) -> List[str]:
     """Legacy function for backward compatibility."""
