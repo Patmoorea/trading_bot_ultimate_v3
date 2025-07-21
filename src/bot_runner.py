@@ -663,6 +663,8 @@ class TradingBotM4:
                 },
             },
         }
+        self.positions = {}  # Ajouté : gestion des positions spot par paire
+        self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
 
         bingx_api_key = os.getenv("BINGX_API_KEY")
         bingx_api_secret = os.getenv("BINGX_API_SECRET")
@@ -775,6 +777,13 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
+
+    # Ajoute cette méthode pour savoir si on est long
+    def is_long(self, symbol):
+        return self.positions.get(symbol, {}).get("side") == "long"
+
+    def get_entry_price(self, symbol):
+        return self.positions.get(symbol, {}).get("entry_price")
 
     def update_pairs(self, new_pairs):
         """
@@ -1405,35 +1414,54 @@ class TradingBotM4:
         summary = self.news_analyzer.get_sentiment_summary()
         print("Sentiment summary:", summary)
 
-    def check_stop_loss(self, symbol, side):
-        """Vérifie si un stop-loss est actif pour le symbole et le côté donnés"""
+    def check_stop_loss(self, symbol, price: float = None):
+        """
+        Vérifie si le stop-loss doit être déclenché pour la position SPOT sur le symbole.
+        - Retourne True si le stop doit être déclenché (perte dépassant le seuil)
+        - Le seuil par défaut est self.stop_loss_pct (ex : 0.03 pour -3%)
+        - Utilise le prix d'entrée mémorisé dans self.positions[symbol]['entry_price']
+        - Utilise le dernier prix marché si price n'est pas fourni
+        """
         try:
-            # Si c'est un ordre de vente, pas besoin de vérifier le stop-loss
-            if side.upper() == "SELL":
+            # Vérifie s'il y a une position ouverte (long)
+            pos = self.positions.get(symbol)
+            if not pos or pos.get("side") != "long":
+                return False
+            entry = pos.get("entry_price")
+            if entry is None:
                 return False
 
-            # Récupérer les données de marché récentes
-            if symbol not in self.market_data:
+            # Détermination du prix courant
+            if price is None:
+                # Essaye de récupérer le prix via WebSocket collector s'il existe
+                price = None
+                if hasattr(self, "ws_collector") and self.ws_collector is not None:
+                    price = self.ws_collector.get_last_price(symbol)
+                # Fallback sur market_data
+                if (
+                    price is None
+                    and symbol in self.market_data
+                    and "1h" in self.market_data[symbol]
+                ):
+                    closes = self.market_data[symbol]["1h"].get("close", [])
+                    if closes:
+                        price = closes[-1]
+            if price is None:
+                self.logger.error(
+                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol}"
+                )
                 return False
 
-            # Calculer la variation de prix récente
-            if "1h" in self.market_data[symbol]:
-                data = self.market_data[symbol]["1h"]
-                if "close" in data and len(data["close"]) >= 2:
-                    current_price = data["close"][-1]
-                    previous_price = data["close"][-2]
-                    price_change = (current_price - previous_price) / previous_price
-
-                    # Si le prix a baissé de plus de 5% récemment, activer le stop-loss
-                    if price_change < -0.05:
-                        self.logger.warning(
-                            f"Stop-loss activé pour {symbol}: variation de {price_change:.2%}"
-                        )
-                        return True
-
+            # Calcul de la perte latente
+            loss = (price - entry) / entry
+            if loss < -self.stop_loss_pct:
+                self.logger.warning(
+                    f"[STOPLOSS] Déclenché sur {symbol}: perte = {loss:.2%} (entrée {entry}, prix actuel {price})"
+                )
+                return True
             return False
         except Exception as e:
-            self.logger.error(f"Erreur vérification stop-loss: {e}")
+            self.logger.error(f"[STOPLOSS] Erreur vérification stop-loss: {e}")
             return False
 
     async def execute_trade(
