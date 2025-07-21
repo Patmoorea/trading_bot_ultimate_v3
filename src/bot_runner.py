@@ -3956,6 +3956,27 @@ async def handle_arbitrage_opportunities(bot):
         logging.error(f"Erreur gestion arbitrage: {e}")
 
 
+async def execute_trade_decisions(bot, trade_decisions):
+    """
+    Exécute toutes les décisions de trade du cycle.
+    """
+    for decision in trade_decisions:
+        pair = decision.get("pair")
+        action = decision.get("action")
+        confidence = decision.get("confidence", 0)
+        amount = calculate_position_size(
+            bot, decision
+        )  # Utilise la fonction déjà présente
+        # Log avant exécution
+        log_dashboard(
+            f"[EXECUTE TRADE] {pair} | Action: {action.upper()} | Amount: {amount} | Confidence: {confidence}"
+        )
+        # Exécution réelle
+        trade_result = await bot.execute_trade(pair, action, amount)
+        # Notification Telegram
+        await send_trade_notification(bot, decision, trade_result, amount)
+
+
 async def execute_trade(
     self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
 ):
