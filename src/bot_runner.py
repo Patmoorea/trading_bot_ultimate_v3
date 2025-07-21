@@ -778,6 +778,9 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
+    def is_short(self, symbol):
+        return self.positions.get(symbol, {}).get("side") == "short"
+
     # Ajoute cette méthode pour savoir si on est long
     def is_long(self, symbol):
         return self.positions.get(symbol, {}).get("side") == "long"
@@ -791,6 +794,51 @@ class TradingBotM4:
         """
         self.pairs_valid = new_pairs
         self._initialize_ai()  # Recrée PPO et l'input_dim pour les nouvelles paires
+
+    def check_short_stop(self, symbol, price: float = None, trailing_pct: float = 0.03):
+        """
+        Déclenche le stop-loss court et/ou le trailing stop sur une position short BingX.
+        - trailing_pct : trailing stop en % (ex: 0.03 = 3%)
+        """
+        pos = self.positions.get(symbol)
+        if not pos or pos.get("side") != "short":
+            return False
+        entry = pos.get("entry_price")
+        if entry is None:
+            return False
+
+        # Récupère le prix courant si non fourni
+        if price is None:
+            try:
+                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                ticker = self.bingx_client.fetch_ticker_sync(symbol_bingx)
+                price = float(ticker["last"])
+            except Exception:
+                return False
+
+        # Initialisation du plus bas atteint depuis l'ouverture
+        if "min_price" not in pos or pos["min_price"] is None:
+            pos["min_price"] = price
+
+        # Màj du plus bas (pour trailing stop)
+        if price < pos["min_price"]:
+            pos["min_price"] = price
+
+        # Stop-loss court (si perte trop forte = prix monte trop)
+        if price > entry * (1 + self.stop_loss_pct):
+            self.logger.warning(
+                f"[SHORT STOPLOSS] Déclenché sur {symbol}: prix={price} > {entry} + {self.stop_loss_pct*100}%"
+            )
+            return True
+
+        # Trailing stop (si le prix remonte de X% par rapport au plus bas atteint)
+        if price > pos["min_price"] * (1 + trailing_pct):
+            self.logger.warning(
+                f"[SHORT TRAILING STOP] Déclenché sur {symbol}: prix={price} > min={pos['min_price']} + {trailing_pct*100}%"
+            )
+            return True
+
+        return False
 
     def update_pairs_from_config(self):
         self.pairs_valid = self.config["TRADING"]["pairs"]
@@ -3483,13 +3531,32 @@ async def run_clean_bot():
                     # Hot reload IA
                     bot.check_reload_dl_model()
 
-                    # === PATCH : Déclenchement automatique du stop-loss ===
+                    # === PATCH : Déclenchement automatique du stop-loss SPOT ===
                     for symbol, pos in list(bot.positions.items()):
                         if bot.is_long(symbol) and bot.check_stop_loss(symbol):
                             print(
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
+
+                    # === PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX ===
+                    for symbol, pos in list(bot.positions.items()):
+                        if bot.is_short(symbol):
+                            try:
+                                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                                ticker = await bot.bingx_client.fetch_ticker(
+                                    symbol_bingx
+                                )
+                                price = float(ticker["last"])
+                            except Exception:
+                                continue
+                            if bot.check_short_stop(
+                                symbol, price=price, trailing_pct=0.03
+                            ):
+                                print(
+                                    f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
+                                )
+                                await bot.execute_trade(symbol, "BUY", pos["amount"])
 
                     # Exécution du cycle de trading
                     trade_decisions, regime = await execute_trading_cycle(
@@ -3734,7 +3801,10 @@ async def execute_trade(
     """
     Exécute un ordre de trading avec logs détaillés.
     - BUY sur Binance spot (quoteOrderQty)
-    - SELL = short sur BingX (futures)
+    - SELL sur Binance spot (revente, si déjà long)
+    - SHORT sur BingX (futures)
+    - BUY sur BingX pour rachat short
+    - Gère le suivi de position SPOT et le stop-loss automatique
     """
     if not self.is_live_trading:
         log_dashboard(
@@ -3743,6 +3813,40 @@ async def execute_trade(
         self.logger.info(
             f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
         )
+        # Gestion état simulée
+        if side.upper() == "BUY":
+            if self.is_long(symbol):
+                log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)")
+                return {"status": "skipped", "reason": "already long"}
+            self.positions[symbol] = {
+                "side": "long",
+                "entry_price": price or 0,
+                "amount": amount,
+            }
+        elif side.upper() == "SELL":
+            if not self.is_long(symbol):
+                log_dashboard(
+                    f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
+                )
+                return {"status": "skipped", "reason": "not in position"}
+            self.positions.pop(symbol, None)
+        elif side.upper() == "SHORT":
+            if self.is_short(symbol):
+                log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré (simu)")
+                return {"status": "skipped", "reason": "already short"}
+            self.positions[symbol] = {
+                "side": "short",
+                "entry_price": price or 0,
+                "amount": amount,
+                "min_price": price or 0,
+            }
+        elif side.upper() == "BUY" and self.is_short(symbol):
+            if not self.is_short(symbol):
+                log_dashboard(
+                    f"[ORDER] Pas en position short sur {symbol}, rachat ignoré (simu)"
+                )
+                return {"status": "skipped", "reason": "not in short"}
+            self.positions.pop(symbol, None)
         return {
             "status": "simulated",
             "symbol": symbol,
@@ -3756,8 +3860,11 @@ async def execute_trade(
             f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
         )
 
+        # ----- ACHAT SPOT -----
         if side.upper() == "BUY" and symbol.endswith("USDC"):
-            # -- ACHAT sur Binance --
+            if self.is_long(symbol):
+                log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
+                return {"status": "skipped", "reason": "already long"}
             bid, ask = self.get_ws_orderbook(symbol)
             if bid is None or ask is None:
                 log_dashboard(
@@ -3765,7 +3872,7 @@ async def execute_trade(
                 )
                 return {"status": "error", "reason": "Orderbook WS not available"}
             orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
-            recent_trades = []  # Optionnel: récup via WS si tu veux
+            recent_trades = []
             market_data = {
                 "recent_trades": recent_trades,
                 "volatility": self.calculate_volatility(
@@ -3783,25 +3890,82 @@ async def execute_trade(
                 iceberg=iceberg,
                 iceberg_visible_size=iceberg_visible_size,
             )
+            if result.get("status") == "completed":
+                self.positions[symbol] = {
+                    "side": "long",
+                    "entry_price": result.get("avg_price", price),
+                    "amount": result.get("filled_amount", amount),
+                }
 
-        elif side.upper() == "SELL":
-            # -- SHORT sur BingX --
+        # ----- VENTE SPOT -----
+        elif side.upper() == "SELL" and symbol.endswith("USDC"):
+            if not self.is_long(symbol):
+                log_dashboard(
+                    f"[ORDER] Pas en position long sur {symbol}, vente ignorée."
+                )
+                return {"status": "skipped", "reason": "not in position"}
+            bid, ask = self.get_ws_orderbook(symbol)
+            if bid is None or ask is None:
+                log_dashboard(
+                    f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
+                )
+                return {"status": "error", "reason": "Orderbook WS not available"}
+            orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+            pos = self.positions[symbol]
+            market_data = {
+                "recent_trades": [],
+                "volatility": self.calculate_volatility(
+                    self.market_data.get(symbol, {}).get("1h", {})
+                ),
+                "regime": self.regime,
+                "binance_client": self.binance_client,
+            }
+            result = await self.executor.execute_order(
+                symbol=symbol,
+                side=side,
+                quoteOrderQty=pos["amount"],
+                orderbook=orderbook,
+                market_data=market_data,
+                iceberg=iceberg,
+                iceberg_visible_size=iceberg_visible_size,
+            )
+            if result.get("status") == "completed":
+                self.positions.pop(symbol, None)
+
+        # ----- OUVERTURE SHORT BINGX -----
+        elif side.upper() == "SHORT":
+            if self.is_short(symbol):
+                log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré.")
+                return {"status": "skipped", "reason": "already short"}
             symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
             ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
             price_bingx = float(ticker["last"])
-            qty = amount / price_bingx  # amount est en USDT, qty en coin
+            qty = amount / price_bingx
             result = await self.bingx_executor.short_order(
                 symbol_bingx, qty, leverage=3
             )
+            if result.get("status") == "completed":
+                self.positions[symbol] = {
+                    "side": "short",
+                    "entry_price": price_bingx,
+                    "amount": qty,
+                    "min_price": price_bingx,
+                }
+
+        # ----- FERMETURE SHORT BINGX -----
+        elif side.upper() == "BUY" and self.is_short(symbol):
+            symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+            pos = self.positions[symbol]
+            qty = pos["amount"]
+            # Il faut avoir une méthode close_short_order côté BingXOrderExecutor, sinon utiliser un BUY ordinaire sur futures
+            result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
+            if result.get("status") == "completed":
+                self.positions.pop(symbol, None)
 
         else:
             return {"status": "rejected", "reason": "unsupported side"}
 
-        # Ajoute un délai de sécurité pour ne pas spammer l’API
-        if self.is_live_trading:
-            await asyncio.sleep(1.5)
-
-        # Enregistrement du résultat
+        # ----- LOGS & NOTIF -----
         if result["status"] == "completed":
             log_dashboard(
                 f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
