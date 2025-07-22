@@ -895,27 +895,33 @@ class TradingBotM4:
 
     def get_ws_orderbook(self, symbol):
         """
-        Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket).
+        Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket) ou via Binance API.
         - symbol : exemple 'BTCUSDC'
         Retourne : tuple (bid, ask) ou (None, None) si non dispo.
         """
         try:
-            # Récupère le dernier orderbook du ws_collector (ou adapte selon ton implémentation)
-            # Tu peux aussi stocker le dernier prix dans market_data
+            # Méthode ws_collector (stub ou réelle)
             if hasattr(self, "ws_collector") and self.ws_collector is not None:
-                ob = self.ws_collector.get_orderbook(symbol)
-                if ob:  # ob = {'bids': [[prix, qty]], 'asks': [[prix, qty]]}
-                    bid = (
-                        float(ob["bids"][0][0])
-                        if ob["bids"] and len(ob["bids"][0]) > 0
-                        else None
+                bid, ask = self.ws_collector.get_orderbook(symbol)
+                # Si les valeurs existent et sont numériques, retourne-les
+                if bid is not None and ask is not None:
+                    return float(bid), float(ask)
+                # Sinon, tente la récupération via Binance API si disponible
+            # Fallback sur Binance API réelle (live trading uniquement)
+            if (
+                getattr(self, "is_live_trading", False)
+                and hasattr(self, "binance_client")
+                and self.binance_client is not None
+            ):
+                try:
+                    ob = self.binance_client.get_order_book(symbol=symbol, limit=5)
+                    best_bid = float(ob["bids"][0][0]) if ob["bids"] else None
+                    best_ask = float(ob["asks"][0][0]) if ob["asks"] else None
+                    return best_bid, best_ask
+                except Exception as e:
+                    self.logger.warning(
+                        f"[WS] Erreur récupération orderbook Binance API pour {symbol}: {e}"
                     )
-                    ask = (
-                        float(ob["asks"][0][0])
-                        if ob["asks"] and len(ob["asks"][0]) > 0
-                        else None
-                    )
-                    return bid, ask
         except Exception as e:
             self.logger.warning(
                 f"[WS] Erreur récupération orderbook WS pour {symbol}: {e}"
