@@ -3975,13 +3975,27 @@ async def execute_trade_decisions(bot, trade_decisions):
     """
     Exécute toutes les décisions de trade du cycle.
     """
+    # Seuil de confiance minimal pour exécuter un trade (à ajuster selon ton risque)
+    MIN_CONFIDENCE = 0.5
+
     for decision in trade_decisions:
         pair = decision.get("pair")
         action = decision.get("action")
         confidence = decision.get("confidence", 0)
-        amount = calculate_position_size(
-            bot, decision
-        )  # Utilise la fonction déjà présente
+        amount = calculate_position_size(bot, decision)
+
+        # FILTRE : n'exécute que buy/sell avec confiance suffisante
+        if action not in ["buy", "sell"]:
+            log_dashboard(
+                f"[SKIP TRADE] {pair} | Action: {action.upper()} ignorée (neutral)"
+            )
+            continue
+        if confidence < MIN_CONFIDENCE:
+            log_dashboard(
+                f"[SKIP TRADE] {pair} | Confiance trop faible ({confidence:.2f})"
+            )
+            continue
+
         # Log avant exécution
         log_dashboard(
             f"[EXECUTE TRADE] {pair} | Action: {action.upper()} | Amount: {amount} | Confidence: {confidence}"
