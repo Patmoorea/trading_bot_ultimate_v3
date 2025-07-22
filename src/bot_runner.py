@@ -1790,7 +1790,9 @@ class TradingBotM4:
         - SELL sur Binance spot (revente, si déjà long)
         - SHORT sur BingX (futures)
         - Gère le suivi de position SPOT et le stop-loss automatique
+        - Vérifie solde et positions pour éviter achats inutiles
         """
+        # Mode simulation
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -1832,9 +1834,18 @@ class TradingBotM4:
 
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
+                # Synchronise le portefeuille réel avant achat
+                self.sync_binance_positions()
                 if self.is_long(symbol):
                     log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
                     return {"status": "skipped", "reason": "already long"}
+                # Vérifie le solde USDC avant d'acheter
+                usdc_balance = self.get_binance_real_balance("USDC")
+                if usdc_balance is not None and amount > usdc_balance:
+                    log_dashboard(
+                        f"[ORDER] Solde insuffisant pour achat {symbol}. Requis: {amount}, dispo: {usdc_balance}"
+                    )
+                    return {"status": "skipped", "reason": "insufficient balance"}
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
