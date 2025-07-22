@@ -3072,16 +3072,22 @@ class TradingBotM4:
                 print(f"[SYNC ERROR] {pair_key}: {e}")
 
     def save_shared_data(self):
-        """Met à jour les données partagées sans effacer la clé 'sentiment'"""
+        """Met à jour les données partagées sans effacer la clé 'sentiment' (PATCH: ne sauvegarde pas d'historique géant)"""
         try:
             # Charger les données existantes pour préserver 'sentiment'
             if os.path.exists(self.data_file):
                 with open(self.data_file, "r") as f:
-                    data = json.load(f)
+                    try:
+                        data = json.load(f)
+                    except Exception as e:
+                        print(
+                            f"[ERROR] JSON corrompu, création d'un nouveau fichier: {e}"
+                        )
+                        data = {}
             else:
                 data = {}
 
-            # MAJ des sections
+            # PATCH: On ne sauvegarde que le dernier état synthétique, PAS tout l'historique complet !
             data.update(
                 {
                     "timestamp": get_current_time(),
@@ -3092,13 +3098,12 @@ class TradingBotM4:
                         "last_update": get_current_time(),
                         "performance": self.get_performance_metrics(),
                     },
-                    "market_data": self.market_data,
-                    "indicators": self.indicators,
-                    "positions": self.positions,  # <=== AJOUT pour sauvegarder le portefeuille !
+                    "positions": self.positions,  # Portefeuille
+                    "indicators": self.indicators,  # Indicateurs synthétiques
                 }
             )
 
-            # Ajoute les prédictions IA si besoin
+            # Ajoute les prédictions IA si besoin (toujours synthétique)
             if self.ai_enabled:
                 ai_predictions = {}
                 for pair in self.pairs_valid:
@@ -3115,25 +3120,67 @@ class TradingBotM4:
             # NE PAS EFFACER 'sentiment' si déjà présent
             # (on ne touche pas à data["sentiment"])
 
+            # PATCH: Ne pas sauvegarder market_data complet si trop gros !
+            # (Si besoin, limite sa taille ou supprime la clé pour éviter les fichiers géants)
+            if "market_data" in data and isinstance(data["market_data"], dict):
+                for k in list(data["market_data"].keys()):
+                    if isinstance(data["market_data"][k], dict):
+                        # Ne garde que les derniers points par timeframe
+                        for tf in data["market_data"][k]:
+                            v = data["market_data"][k][tf]
+                            if isinstance(v, dict):
+                                for arr_key in [
+                                    "open",
+                                    "high",
+                                    "low",
+                                    "close",
+                                    "volume",
+                                    "timestamp",
+                                ]:
+                                    if (
+                                        arr_key in v
+                                        and isinstance(v[arr_key], list)
+                                        and len(v[arr_key]) > 100
+                                    ):
+                                        v[arr_key] = v[arr_key][
+                                            -100:
+                                        ]  # Garde les 100 derniers points max
+            # Ou bien, on peut décider de supprimer complètement la clé market_data pour la sauvegarde
+            # del data["market_data"]
+
             with open(self.data_file, "w") as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
             self.logger.error(f"Error saving shared data: {e}")
 
+    # PATCH: Lecture sécurisée du fichier partagé
     def get_performance_metrics(self):
-        """Récupère les métriques de performance actuelles"""
+        """Récupère les métriques de performance actuelles (PATCH: lecture JSON sécurisée)"""
         try:
             with open(self.data_file, "r") as f:
-                data = json.load(f)
+                try:
+                    data = json.load(f)
+                except Exception as e:
+                    print(f"[ERROR] JSON corrompu, retourne métriques simulées: {e}")
+                    return {
+                        "total_trades": self.current_cycle * 2,
+                        "win_rate": 0.62 + (self.current_cycle * 0.001),
+                        "profit_factor": 1.85 + (self.current_cycle * 0.01),
+                        "balance": 10000 + (self.current_cycle * 100),
+                        "wins": int(self.current_cycle * 1.2),
+                        "losses": self.current_cycle - int(self.current_cycle * 1.2),
+                        "total_profit": self.current_cycle * 150,
+                        "total_loss": self.current_cycle * 50,
+                    }
 
-            # AJOUT ICI : récupération du solde réel Binance
             real_balance = self.get_binance_real_balance("USDC")
             if real_balance is not None:
                 data["bot_status"]["performance"]["balance"] = real_balance
 
             return data["bot_status"]["performance"]
-        except:
-            # Retourne des métriques simulées si le fichier n'existe pas
+        except Exception as e:
+            print(f"[ERROR] Impossible de lire les métriques: {e}")
+            # Retourne des métriques simulées si le fichier n'existe pas ou est corrompu
             return {
                 "total_trades": self.current_cycle * 2,
                 "win_rate": 0.62 + (self.current_cycle * 0.001),
@@ -3456,17 +3503,22 @@ class TradingBotM4:
         pair_key = pair.replace("/", "").upper()
         print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
         df_live = self.ws_collector.get_dataframe(pair_key, tf)
-        if df_live is not None and not df_live.empty:
-            df_live = add_dl_features(df_live)
-            # Ici : plus jamais de reset si NaN/inf, on log juste le nombre de NaN restant
-            for col in ["rsi", "macd", "volatility"]:
-                n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
-                if n_nan > 0:
-                    print(f"⚠️ Attention : {n_nan} NaN dans {col} même après correction")
-            print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
-            train_with_live_data(df_live)
-        else:
-            print("Aucune donnée live disponible pour entraîner le modèle.")
+        # ------ PATCH: Sécurité données ------
+        if df_live is None or len(df_live) < 30:
+            print("Pas assez de données pour entraîner le modèle.")
+            return
+        if df_live.isnull().any().any():
+            print("Données corrompues (NaN détecté), entraînement skip.")
+            return
+        # -------------------------------------
+        df_live = add_dl_features(df_live)
+        # Log sur les NaN restants
+        for col in ["rsi", "macd", "volatility"]:
+            n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
+            if n_nan > 0:
+                print(f"⚠️ Attention : {n_nan} NaN dans {col} même après correction")
+        print(f"Entraînement du modèle IA sur {len(df_live)} lignes live…")
+        train_with_live_data(df_live)
 
     def train_cnn_lstm_on_all_live(self):
         """
@@ -3485,22 +3537,25 @@ class TradingBotM4:
             for tf in self.config["TRADING"]["timeframes"]:
                 print(f"→ Entraînement IA sur {pair_key} / {tf}")
                 df_live = self.ws_collector.get_dataframe(pair_key, tf)
-                if df_live is not None and not df_live.empty:
-                    df_live = add_dl_features(df_live)
-                    for col in ["rsi", "macd", "volatility"]:
-                        n_nan = (
-                            df_live[col].isna().sum() if col in df_live.columns else 0
-                        )
-                        if n_nan > 0:
-                            print(
-                                f"⚠️ Attention : {n_nan} NaN dans {col} même après correction"
-                            )
+                # ------ PATCH: Sécurité données ------
+                if df_live is None or len(df_live) < 30:
+                    print(f"  Pas assez de données pour {pair_key} / {tf}, skip.")
+                    continue
+                if df_live.isnull().any().any():
                     print(
-                        f"  {len(df_live)} lignes live trouvées, entraînement en cours…"
+                        f"  Données corrompues (NaN détecté) pour {pair_key}/{tf}, skip."
                     )
-                    train_with_live_data(df_live)
-                else:
-                    print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
+                    continue
+                # -------------------------------------
+                df_live = add_dl_features(df_live)
+                for col in ["rsi", "macd", "volatility"]:
+                    n_nan = df_live[col].isna().sum() if col in df_live.columns else 0
+                    if n_nan > 0:
+                        print(
+                            f"⚠️ Attention : {n_nan} NaN dans {col} même après correction"
+                        )
+                print(f"  {len(df_live)} lignes live trouvées, entraînement en cours…")
+                train_with_live_data(df_live)
 
 
 def load_config():
