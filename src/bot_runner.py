@@ -704,6 +704,7 @@ class TradingBotM4:
             },
         }
         self.positions = {}  # Ajouté : gestion des positions spot par paire
+        self.data_file = SHARED_DATA_PATH
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
 
         bingx_api_key = os.getenv("BINGX_API_KEY")
@@ -790,6 +791,17 @@ class TradingBotM4:
         # Sécurité avancée: gestion de clé cold wallet
         # Ajoute cette option (True = utilisation automatique, False = ignorée)
         self.use_cold_wallet_key = False  # ou False selon besoin
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, "r") as f:
+                    data = json.load(f)
+                positions = data.get("positions", {})
+                if isinstance(positions, dict):
+                    self.positions = positions
+                    print(f"✅ Positions restaurées: {list(self.positions.keys())}")
+            except Exception as e:
+                print(f"Erreur restauration positions: {e}")
+        self.initialize_shared_data()
 
         self.key_manager = KeyManager()
         if self.use_cold_wallet_key:
@@ -1577,6 +1589,8 @@ class TradingBotM4:
         else:
             self.is_live_trading = False
             self.binance_client = None
+            # Synchronise avec le portefeuille réel Binance
+            self.sync_binance_positions()
             self.binance_connector = None
             self.executor = None
             self.logger.warning(
@@ -3012,6 +3026,51 @@ class TradingBotM4:
         with open(self.data_file, "w") as f:
             json.dump(data, f, indent=4)
 
+    def sync_binance_positions(self):
+        """
+        Synchronise le portefeuille réel Binance avec self.positions au démarrage.
+        Ne fonctionne que pour le SPOT sur Binance, pour USDC (ex: BTCUSDC, ETHUSDC...).
+        """
+        if not getattr(self, "is_live_trading", False) or not hasattr(
+            self, "binance_client"
+        ):
+            print("[SYNC] Trading réel Binance non actif, synchronisation ignorée.")
+            return
+
+        # Liste des paires spot à surveiller
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            base = pair_key.replace("USDC", "")
+            quote = "USDC"
+            symbol_binance = base + quote
+
+            try:
+                # Vérifie le solde du token (base)
+                balance = self.binance_client.get_asset_balance(asset=base)
+                if balance and float(balance["free"]) > 0:
+                    # Récupère le dernier prix d'achat (optionnel, via l'historique)
+                    trades = self.binance_client.get_my_trades(symbol=symbol_binance)
+                    entry_price = None
+                    amount = 0
+                    for trade in reversed(trades):
+                        if trade["isBuyer"]:
+                            entry_price = float(trade["price"])
+                            amount += float(trade["qty"])
+                            break  # On prend le dernier achat
+                    if entry_price is None:
+                        entry_price = 0
+                    # Enregistre la position dans le portefeuille du bot
+                    self.positions[pair_key] = {
+                        "side": "long",
+                        "entry_price": entry_price,
+                        "amount": float(balance["free"]),
+                    }
+                    print(
+                        f"[SYNC] Position SPOT détectée sur {pair_key} : {balance['free']} @ {entry_price}"
+                    )
+            except Exception as e:
+                print(f"[SYNC ERROR] {pair_key}: {e}")
+
     def save_shared_data(self):
         """Met à jour les données partagées sans effacer la clé 'sentiment'"""
         try:
@@ -3035,6 +3094,7 @@ class TradingBotM4:
                     },
                     "market_data": self.market_data,
                     "indicators": self.indicators,
+                    "positions": self.positions,  # <=== AJOUT pour sauvegarder le portefeuille !
                 }
             )
 
