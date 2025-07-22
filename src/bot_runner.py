@@ -703,6 +703,7 @@ class TradingBotM4:
                 },
             },
         }
+        symbol_key = symbol.replace("/", "").upper()
         self.positions = {}  # Ajouté : gestion des positions spot par paire
         self.data_file = SHARED_DATA_PATH
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
@@ -797,6 +798,7 @@ class TradingBotM4:
                     data = json.load(f)
                 positions = data.get("positions", {})
                 if isinstance(positions, dict):
+                    symbol_key = symbol.replace("/", "").upper()
                     self.positions = positions
                     print(f"✅ Positions restaurées: {list(self.positions.keys())}")
             except Exception as e:
@@ -830,14 +832,16 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
 
-    def is_short(self, symbol):
-        return self.positions.get(symbol, {}).get("side") == "short"
-
-    # Ajoute cette méthode pour savoir si on est long
     def is_long(self, symbol):
-        return self.positions.get(symbol, {}).get("side") == "long"
+        symbol_key = symbol.replace("/", "").upper()
+        return self.positions.get(symbol_key, {}).get("side") == "long"
+
+    def is_short(self, symbol):
+        symbol_key = symbol.replace("/", "").upper()
+        return self.positions.get(symbol_key, {}).get("side") == "short"
 
     def get_entry_price(self, symbol):
+        symbol_key = symbol.replace("/", "").upper()
         return self.positions.get(symbol, {}).get("entry_price")
 
     def update_pairs(self, new_pairs):
@@ -852,6 +856,7 @@ class TradingBotM4:
         Déclenche le stop-loss court et/ou le trailing stop sur une position short BingX.
         - trailing_pct : trailing stop en % (ex: 0.03 = 3%)
         """
+        symbol_key = symbol.replace("/", "").upper()
         pos = self.positions.get(symbol)
         if not pos or pos.get("side") != "short":
             return False
@@ -1051,6 +1056,7 @@ class TradingBotM4:
         - trailing_pct: % de recul depuis le plus haut pour déclencher la vente (ex: 0.02 = 2%)
         - min_profit_pct: profit minimal pour activer le trailing stop (ex: 0.01 = 1%)
         """
+        symbol_key = symbol.replace("/", "").upper()
         pos = self.positions.get(symbol)
         if not pos or pos.get("side") != "long":
             return False
@@ -1092,6 +1098,7 @@ class TradingBotM4:
         Take profit sur position long SPOT.
         - take_profit_pct: % de profit pour déclencher la vente (ex: 0.04 = 4%)
         """
+        symbol_key = symbol.replace("/", "").upper()
         pos = self.positions.get(symbol)
         if not pos or pos.get("side") != "long":
             return False
@@ -1841,6 +1848,7 @@ class TradingBotM4:
         """
         try:
             # Vérifie s'il y a une position ouverte (long)
+            symbol_key = symbol.replace("/", "").upper()
             pos = self.positions.get(symbol)
             if not pos or pos.get("side") != "long":
                 return False
@@ -1907,6 +1915,7 @@ class TradingBotM4:
                         f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)"
                     )
                     return {"status": "skipped", "reason": "already long"}
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "long",
                     "entry_price": price or 0,
@@ -1918,6 +1927,7 @@ class TradingBotM4:
                         f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                     )
                     return {"status": "skipped", "reason": "not in position"}
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions.pop(symbol, None)
             return {
                 "status": "simulated",
@@ -1972,6 +1982,7 @@ class TradingBotM4:
                     iceberg_visible_size=iceberg_visible_size,
                 )
                 if result.get("status") == "completed":
+                    symbol_key = symbol.replace("/", "").upper()
                     self.positions[symbol] = {
                         "side": "long",
                         "entry_price": result.get("avg_price", price),
@@ -1992,6 +2003,7 @@ class TradingBotM4:
                     )
                     return {"status": "error", "reason": "Orderbook WS not available"}
                 orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+                symbol_key = symbol.replace("/", "").upper()
                 pos = self.positions[symbol]
                 market_data = {
                     "recent_trades": [],
@@ -2011,6 +2023,7 @@ class TradingBotM4:
                     iceberg_visible_size=iceberg_visible_size,
                 )
                 if result.get("status") == "completed":
+                    symbol_key = symbol.replace("/", "").upper()
                     self.positions.pop(symbol, None)
 
             # ----- SHORT BINGX -----
@@ -2519,7 +2532,6 @@ class TradingBotM4:
                 f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}"
             )
 
-        # === PATCH : Utilise le nouveau résumé pour remplir le sentiment_data ===
         # Utilise la liste enrichie, pas juste sentiment_scores, si besoin
         summary = get_sentiment_summary_from_batch(
             [
@@ -2543,6 +2555,9 @@ class TradingBotM4:
         major_events = (
             "; ".join(summary["top_news"][:3]) if summary["top_news"] else "Aucun"
         )
+
+        # PATCH : Log le vrai score calculé, pas celui du shared_data précédent !
+        print(f"[DEBUG SENTIMENT GLOBAL FINAL] avg_sentiment={sentiment_global}")
 
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
@@ -3245,6 +3260,7 @@ class TradingBotM4:
                     if entry_price is None:
                         entry_price = 0
                     # Enregistre la position dans le portefeuille du bot
+                    symbol_key = symbol.replace("/", "").upper()
                     self.positions[pair_key] = {
                         "side": "long",
                         "entry_price": entry_price,
@@ -3273,6 +3289,7 @@ class TradingBotM4:
                 data = {}
 
             # PATCH: On ne sauvegarde que le dernier état synthétique, PAS tout l'historique complet !
+            symbol_key = symbol.replace("/", "").upper()
             data.update(
                 {
                     "timestamp": get_current_time(),
@@ -4399,6 +4416,7 @@ async def execute_trade(
             if self.is_long(symbol):
                 log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)")
                 return {"status": "skipped", "reason": "already long"}
+            symbol_key = symbol.replace("/", "").upper()
             self.positions[symbol] = {
                 "side": "long",
                 "entry_price": price or 0,
@@ -4410,11 +4428,13 @@ async def execute_trade(
                     f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                 )
                 return {"status": "skipped", "reason": "not in position"}
+            symbol_key = symbol.replace("/", "").upper()
             self.positions.pop(symbol, None)
         elif side.upper() == "SHORT":
             if self.is_short(symbol):
                 log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré (simu)")
                 return {"status": "skipped", "reason": "already short"}
+            symbol_key = symbol.replace("/", "").upper()
             self.positions[symbol] = {
                 "side": "short",
                 "entry_price": price or 0,
@@ -4427,6 +4447,7 @@ async def execute_trade(
                     f"[ORDER] Pas en position short sur {symbol}, rachat ignoré (simu)"
                 )
                 return {"status": "skipped", "reason": "not in short"}
+            symbol_key = symbol.replace("/", "").upper()
             self.positions.pop(symbol, None)
         return {
             "status": "simulated",
@@ -4472,6 +4493,7 @@ async def execute_trade(
                 iceberg_visible_size=iceberg_visible_size,
             )
             if result.get("status") == "completed":
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "long",
                     "entry_price": result.get("avg_price", price),
@@ -4492,6 +4514,7 @@ async def execute_trade(
                 )
                 return {"status": "error", "reason": "Orderbook WS not available"}
             orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
+            symbol_key = symbol.replace("/", "").upper()
             pos = self.positions[symbol]
             market_data = {
                 "recent_trades": [],
@@ -4511,6 +4534,7 @@ async def execute_trade(
                 iceberg_visible_size=iceberg_visible_size,
             )
             if result.get("status") == "completed":
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions.pop(symbol, None)
 
         # ----- OUVERTURE SHORT BINGX -----
@@ -4526,6 +4550,7 @@ async def execute_trade(
                 symbol_bingx, qty, leverage=3
             )
             if result.get("status") == "completed":
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "short",
                     "entry_price": price_bingx,
@@ -4536,11 +4561,13 @@ async def execute_trade(
         # ----- FERMETURE SHORT BINGX -----
         elif side.upper() == "BUY" and self.is_short(symbol):
             symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+            symbol_key = symbol.replace("/", "").upper()
             pos = self.positions[symbol]
             qty = pos["amount"]
             # Il faut avoir une méthode close_short_order côté BingXOrderExecutor, sinon utiliser un BUY ordinaire sur futures
             result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
             if result.get("status") == "completed":
+                symbol_key = symbol.replace("/", "").upper()
                 self.positions.pop(symbol, None)
 
         else:
