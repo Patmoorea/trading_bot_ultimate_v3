@@ -615,6 +615,45 @@ class WarningFilter:
 sys.stderr = WarningFilter(sys.stderr)
 
 
+def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
+    import numpy as np
+
+    # Filtre les news avec score
+    valid = [
+        item
+        for item in sentiment_scores
+        if "sentiment" in item and item["sentiment"] is not None
+    ]
+    if not valid:
+        return {
+            "sentiment_global": 0.0,
+            "n_news": 0,
+            "top_symbols": [],
+            "top_news": [],
+        }
+    # Calcul de la moyenne pondérée
+    sentiments = [item["sentiment"] for item in valid]
+    sentiment_global = float(np.mean(sentiments))
+    # Top news (par score absolu)
+    top_news = sorted(valid, key=lambda x: abs(x["sentiment"]), reverse=True)[:top_n]
+    top_news_titles = [news["title"] for news in top_news if "title" in news]
+    # Top symbols (fréquence + score fort)
+    symbol_scores = {}
+    for item in valid:
+        for s in item.get("symbols", []):
+            symbol_scores.setdefault(s, []).append(item["sentiment"])
+    top_symbols = sorted(
+        symbol_scores.items(), key=lambda kv: abs(np.mean(kv[1])), reverse=True
+    )
+    top_symbols = [s for s, scores in top_symbols[:top_n]]
+    return {
+        "sentiment_global": sentiment_global,
+        "n_news": len(valid),
+        "top_symbols": top_symbols,
+        "top_news": top_news_titles,
+    }
+
+
 class TradingBotM4:
     def __init__(self):
         # Configuration de base existante...
@@ -2234,46 +2273,6 @@ class TradingBotM4:
             print("[SENTIMENT SAVE] shared_data.json mis à jour avec les sentiments")
         except Exception as e:
             print(f"[SENTIMENT SAVE ERROR] {e}")
-
-    def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
-        # Filtre les news avec score
-        valid = [
-            item
-            for item in sentiment_scores
-            if "sentiment" in item and item["sentiment"] is not None
-        ]
-        if not valid:
-            return {
-                "sentiment_global": 0.0,
-                "n_news": 0,
-                "top_symbols": [],
-                "top_news": [],
-            }
-        # Calcul de la moyenne pondérée
-        sentiments = [item["sentiment"] for item in valid]
-        sentiment_global = float(np.mean(sentiments))
-        # Top news (par score absolu)
-        top_news = sorted(valid, key=lambda x: abs(x["sentiment"]), reverse=True)[
-            :top_n
-        ]
-        top_news_titles = [news["title"] for news in top_news if "title" in news]
-        # Top symbols (fréquence + score fort)
-        symbol_scores = {}
-        for item in valid:
-            for s in item.get("symbols", []):
-                symbol_scores.setdefault(s, []).append(item["sentiment"])
-        top_symbols = sorted(
-            symbol_scores.items(), key=lambda kv: abs(np.mean(kv[1])), reverse=True
-        )
-        top_symbols = [s for s, scores in top_symbols[:top_n]]
-        return {
-            "sentiment_global": sentiment_global,
-            "n_news": len(valid),
-            "top_symbols": top_symbols,
-            "top_news": top_news_titles,
-        }
-
-    # Puis modifie ta méthode _save_sentiment_data pour utiliser ce résumé :
 
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
