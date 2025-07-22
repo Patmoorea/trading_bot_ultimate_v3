@@ -943,6 +943,35 @@ class TradingBotM4:
             )
         return None, None
 
+    def get_last_price(self, symbol, tf="1h"):
+        """
+        Récupère le dernier prix pour un symbole, compatible avec ws_collector et market_data.
+        Utilise les données live du ws_collector si dispo, sinon fallback sur market_data ou API Binance.
+        """
+        # 1. Essaye via ws_collector (DataFrame close)
+        if hasattr(self, "ws_collector") and self.ws_collector is not None:
+            df = self.ws_collector.get_dataframe(symbol, tf)
+            if df is not None and not df.empty and "close" in df.columns:
+                return float(df["close"].iloc[-1])
+        # 2. Fallback sur market_data partagé
+        if symbol in self.market_data and tf in self.market_data[symbol]:
+            closes = self.market_data[symbol][tf].get("close", [])
+            if closes:
+                return float(closes[-1])
+        # 3. Fallback sur orderbook WS (bid/ask)
+        bid, ask = self.get_ws_orderbook(symbol)
+        if bid is not None and ask is not None:
+            return (bid + ask) / 2
+        # 4. Fallback sur API Binance si live
+        if getattr(self, "is_live_trading", False) and hasattr(self, "binance_client"):
+            try:
+                symbol_binance = symbol.replace("/", "")
+                ticker = self.binance_client.get_ticker(symbol=symbol_binance)
+                return float(ticker.get("lastPrice", 0))
+            except Exception:
+                pass
+        return None
+
     def check_trailing_stop(
         self, symbol, price=None, trailing_pct=0.02, min_profit_pct=0.01
     ):
@@ -957,7 +986,7 @@ class TradingBotM4:
         entry = pos.get("entry_price")
         if price is None:
             # Récupère le dernier prix
-            price = self.ws_collector.get_last_price(symbol)
+            price = self.get_last_price(symbol)
             if (
                 price is None
                 and symbol in self.market_data
@@ -997,7 +1026,7 @@ class TradingBotM4:
             return False
         entry = pos.get("entry_price")
         if price is None:
-            price = self.ws_collector.get_last_price(symbol)
+            price = self.get_last_price(symbol)
             if (
                 price is None
                 and symbol in self.market_data
@@ -1753,7 +1782,7 @@ class TradingBotM4:
                 # Essaye de récupérer le prix via WebSocket collector s'il existe
                 price = None
                 if hasattr(self, "ws_collector") and self.ws_collector is not None:
-                    price = self.ws_collector.get_last_price(symbol)
+                    price = self.get_last_price(symbol)
                 # Fallback sur market_data
                 if (
                     price is None
