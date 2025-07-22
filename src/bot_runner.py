@@ -4037,7 +4037,7 @@ async def run_clean_bot():
                                 hasattr(bot, "ws_collector")
                                 and bot.ws_collector is not None
                             ):
-                                price = bot.ws_collector.get_last_price(symbol)
+                                price = bot.get_last_price(symbol)
                             if (
                                 price is None
                                 and symbol in bot.market_data
