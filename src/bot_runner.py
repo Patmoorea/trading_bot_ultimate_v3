@@ -892,6 +892,77 @@ class TradingBotM4:
 
         return False
 
+    def sync_binance_positions(self):
+        """
+        Synchronise le portefeuille spot réel Binance avec self.positions, et calcule le PnL latente.
+        """
+        if not getattr(self, "is_live_trading", False) or not hasattr(
+            self, "binance_client"
+        ):
+            print("[SYNC] Trading réel Binance non actif, synchronisation ignorée.")
+            return
+
+        positions = {}
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            base = pair_key.replace("USDC", "")
+            quote = "USDC"
+            symbol_binance = base + quote
+
+            try:
+                # Solde de la position SPOT
+                balance = self.binance_client.get_asset_balance(asset=base)
+                amount = (
+                    float(balance["free"])
+                    if balance and float(balance["free"]) > 0
+                    else 0
+                )
+
+                # Dernier trade d'achat (prix d'entrée)
+                trades = self.binance_client.get_my_trades(symbol=symbol_binance)
+                entry_price = None
+                for trade in reversed(trades):
+                    if trade["isBuyer"]:
+                        entry_price = float(trade["price"])
+                        break
+                if entry_price is None:
+                    entry_price = 0
+
+                # Dernier prix du marché
+                ticker = self.binance_client.get_ticker(symbol=symbol_binance)
+                current_price = float(ticker.get("lastPrice", 0))
+
+                # Calcul du PnL
+                if entry_price > 0 and current_price > 0:
+                    pnl_pct = ((current_price - entry_price) / entry_price) * 100
+                    pnl_usd = (current_price - entry_price) * amount
+                else:
+                    pnl_pct = 0
+                    pnl_usd = 0
+
+                if amount > 0:
+                    positions[pair_key] = {
+                        "side": "long",
+                        "entry_price": entry_price,
+                        "amount": amount,
+                        "current_price": current_price,
+                        "pnl_pct": pnl_pct,
+                        "pnl_usd": pnl_usd,
+                    }
+            except Exception as e:
+                print(f"[SYNC ERROR] {pair_key}: {e}")
+
+        # Sauvegarde dans shared_data.json
+        try:
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+
+        data["positions_binance"] = positions
+        with open(self.data_file, "w") as f:
+            json.dump(data, f, indent=2)
+
     def update_pairs_from_config(self):
         self.pairs_valid = self.config["TRADING"]["pairs"]
 
