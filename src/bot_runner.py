@@ -3268,9 +3268,9 @@ class TradingBotM4:
                 print(f"[SYNC ERROR] {pair_key}: {e}")
 
     def save_shared_data(self):
-        """Met à jour les données partagées sans effacer la clé 'sentiment' (PATCH: ne sauvegarde pas d'historique géant)"""
+        """Met à jour les données partagées sans effacer les clés importantes (PATCH: préserve toutes les clés, y compris positions_binance et sentiment)"""
         try:
-            # Charger les données existantes pour préserver 'sentiment'
+            # Charger les données existantes pour préserver toutes les clés
             if os.path.exists(self.data_file):
                 with open(self.data_file, "r") as f:
                     try:
@@ -3283,7 +3283,7 @@ class TradingBotM4:
             else:
                 data = {}
 
-            # PATCH: On ne sauvegarde que le dernier état synthétique, PAS tout l'historique complet !
+            # Met à jour ou ajoute les clés synthétiques principales du bot
             data.update(
                 {
                     "timestamp": get_current_time(),
@@ -3294,7 +3294,7 @@ class TradingBotM4:
                         "last_update": get_current_time(),
                         "performance": self.get_performance_metrics(),
                     },
-                    "positions": self.positions,  # Portefeuille
+                    "positions": self.positions,  # Portefeuille simulé/IA
                     "indicators": self.indicators,  # Indicateurs synthétiques
                 }
             )
@@ -3313,8 +3313,8 @@ class TradingBotM4:
                         ]
                 data["ai_predictions"] = ai_predictions
 
-            # NE PAS EFFACER 'sentiment' si déjà présent
-            # (on ne touche pas à data["sentiment"])
+            # NE PAS EFFACER 'sentiment' ni 'positions_binance' ni 'trade_history' si déjà présents
+            # (on ne touche pas à data["sentiment"], data["positions_binance"], etc.)
 
             # PATCH: Ne pas sauvegarder market_data complet si trop gros !
             # (Si besoin, limite sa taille ou supprime la clé pour éviter les fichiers géants)
@@ -3344,6 +3344,7 @@ class TradingBotM4:
             # Ou bien, on peut décider de supprimer complètement la clé market_data pour la sauvegarde
             # del data["market_data"]
 
+            # Ecrit le fichier partagé en conservant toutes les clés existantes
             with open(self.data_file, "w") as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
