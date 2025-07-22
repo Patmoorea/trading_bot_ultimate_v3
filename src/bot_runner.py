@@ -896,17 +896,15 @@ class TradingBotM4:
     def get_ws_orderbook(self, symbol):
         """
         Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket) ou via Binance API.
-        - symbol : exemple 'BTCUSDC'
+        - symbol : exemple 'BTC/USDC'
         Retourne : tuple (bid, ask) ou (None, None) si non dispo.
         """
         try:
             # Méthode ws_collector (stub ou réelle)
             if hasattr(self, "ws_collector") and self.ws_collector is not None:
                 bid, ask = self.ws_collector.get_orderbook(symbol)
-                # Si les valeurs existent et sont numériques, retourne-les
                 if bid is not None and ask is not None:
                     return float(bid), float(ask)
-                # Sinon, tente la récupération via Binance API si disponible
             # Fallback sur Binance API réelle (live trading uniquement)
             if (
                 getattr(self, "is_live_trading", False)
@@ -914,7 +912,11 @@ class TradingBotM4:
                 and self.binance_client is not None
             ):
                 try:
-                    ob = self.binance_client.get_order_book(symbol=symbol, limit=5)
+                    # CORRECTION ICI : enlever le /
+                    symbol_binance = symbol.replace("/", "")
+                    ob = self.binance_client.get_order_book(
+                        symbol=symbol_binance, limit=5
+                    )
                     best_bid = float(ob["bids"][0][0]) if ob["bids"] else None
                     best_ask = float(ob["asks"][0][0]) if ob["asks"] else None
                     return best_bid, best_ask
