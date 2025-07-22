@@ -88,6 +88,7 @@ def add_dl_features(df):
     # Tri par timestamp pour éviter des NaN liés au mauvais ordre
     if "timestamp" in df.columns:
         df = df.sort_values("timestamp")
+        df = df.reset_index(drop=True)
         df = df.drop_duplicates(subset="timestamp", keep="last")
 
     # RSI 14
@@ -2320,7 +2321,14 @@ class TradingBotM4:
             )
 
         # === PATCH : Utilise le nouveau résumé pour remplir le sentiment_data ===
-        summary = get_sentiment_summary_from_batch(sentiment_scores)
+        # Utilise la liste enrichie, pas juste sentiment_scores, si besoin
+        summary = get_sentiment_summary_from_batch(
+            [
+                data
+                for key, data in self.market_data.items()
+                if data.get("sentiment") is not None
+            ]
+        )
         sentiment_global = summary["sentiment_global"]
         impact_score = float(
             np.mean(
