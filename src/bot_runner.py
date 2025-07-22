@@ -703,7 +703,6 @@ class TradingBotM4:
                 },
             },
         }
-        symbol_key = symbol.replace("/", "").upper()
         self.positions = {}  # Ajouté : gestion des positions spot par paire
         self.data_file = SHARED_DATA_PATH
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
@@ -798,7 +797,6 @@ class TradingBotM4:
                     data = json.load(f)
                 positions = data.get("positions", {})
                 if isinstance(positions, dict):
-                    symbol_key = symbol.replace("/", "").upper()
                     self.positions = positions
                     print(f"✅ Positions restaurées: {list(self.positions.keys())}")
             except Exception as e:
@@ -1915,7 +1913,6 @@ class TradingBotM4:
                         f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)"
                     )
                     return {"status": "skipped", "reason": "already long"}
-                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "long",
                     "entry_price": price or 0,
@@ -1982,7 +1979,6 @@ class TradingBotM4:
                     iceberg_visible_size=iceberg_visible_size,
                 )
                 if result.get("status") == "completed":
-                    symbol_key = symbol.replace("/", "").upper()
                     self.positions[symbol] = {
                         "side": "long",
                         "entry_price": result.get("avg_price", price),
@@ -3260,7 +3256,6 @@ class TradingBotM4:
                     if entry_price is None:
                         entry_price = 0
                     # Enregistre la position dans le portefeuille du bot
-                    symbol_key = symbol.replace("/", "").upper()
                     self.positions[pair_key] = {
                         "side": "long",
                         "entry_price": entry_price,
@@ -3289,7 +3284,6 @@ class TradingBotM4:
                 data = {}
 
             # PATCH: On ne sauvegarde que le dernier état synthétique, PAS tout l'historique complet !
-            symbol_key = symbol.replace("/", "").upper()
             data.update(
                 {
                     "timestamp": get_current_time(),
@@ -4416,7 +4410,6 @@ async def execute_trade(
             if self.is_long(symbol):
                 log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)")
                 return {"status": "skipped", "reason": "already long"}
-            symbol_key = symbol.replace("/", "").upper()
             self.positions[symbol] = {
                 "side": "long",
                 "entry_price": price or 0,
@@ -4434,7 +4427,6 @@ async def execute_trade(
             if self.is_short(symbol):
                 log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré (simu)")
                 return {"status": "skipped", "reason": "already short"}
-            symbol_key = symbol.replace("/", "").upper()
             self.positions[symbol] = {
                 "side": "short",
                 "entry_price": price or 0,
@@ -4493,7 +4485,6 @@ async def execute_trade(
                 iceberg_visible_size=iceberg_visible_size,
             )
             if result.get("status") == "completed":
-                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "long",
                     "entry_price": result.get("avg_price", price),
@@ -4550,7 +4541,6 @@ async def execute_trade(
                 symbol_bingx, qty, leverage=3
             )
             if result.get("status") == "completed":
-                symbol_key = symbol.replace("/", "").upper()
                 self.positions[symbol] = {
                     "side": "short",
                     "entry_price": price_bingx,

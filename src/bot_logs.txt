@@ -480,3 +480,437 @@
 2025-07-22T22:32:09.367799 | [EXECUTE TRADE] SUI/USDC | Action: BUY | Amount: 6.63 | Confidence: 0.6501100743663898
 2025-07-22T22:32:09.368105 | [ORDER] Tentative d'exécution: buy 6.63 SUI/USDC (iceberg: False)
 2025-07-22T22:32:20.966146 | [ORDER] Solde insuffisant pour achat SUI/USDC. Requis: 6.63, dispo: 2.39623027
+2025-07-22T22:39:41.814392 | [NEWS] Score sentiment global: 0.26 | Impact: 0.56 | Événements: Aucun
+2025-07-22T22:40:47.323368 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0689 | Tendance: 0.0047
+2025-07-22T22:40:47.324451 | 🎯 Stratégie active: Range/Scalping
+2025-07-22T22:40:47.324505 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-22T22:41:30.434868 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.435069 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.438536 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.438581 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.432 | AI: 1.000 | Sentiment: 0.179 | Total: 0.588 | Action: BUY | Confidence: 0.588
+2025-07-22T22:41:30.438609 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.484726 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.484850 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.486852 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.486893 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.689 | AI: 1.000 | Sentiment: 0.179 | Total: 0.711 | Action: BUY | Confidence: 0.711
+2025-07-22T22:41:30.486920 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.532933 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.533049 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.534864 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.534904 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.122 | AI: 1.000 | Sentiment: 0.179 | Total: 0.439 | Action: BUY | Confidence: 0.439
+2025-07-22T22:41:30.534934 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.580595 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.580704 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.582506 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.582541 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.772 | AI: 1.000 | Sentiment: 0.179 | Total: 0.751 | Action: BUY | Confidence: 0.751
+2025-07-22T22:41:30.582569 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.628731 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.628869 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.630857 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.630896 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.812 | AI: 1.000 | Sentiment: 0.179 | Total: 0.770 | Action: BUY | Confidence: 0.770
+2025-07-22T22:41:30.630925 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.675403 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.675513 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-07-22T22:41:30.677307 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.677342 | [ANALYZE_SIGNALS] BTCUSDC | Tech: 0.872 | AI: 1.000 | Sentiment: 0.179 | Total: 0.799 | Action: BUY | Confidence: 0.799
+2025-07-22T22:41:30.677372 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.722784 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.722917 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.724824 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.724866 | [ANALYZE_SIGNALS] ETHUSDC | Tech: 0.522 | AI: 0.009 | Sentiment: 0.179 | Total: 0.334 | Action: BUY | Confidence: 0.334
+2025-07-22T22:41:30.724896 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.770910 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.771035 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.772995 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.773051 | [ANALYZE_SIGNALS] ETHUSDC | Tech: 0.832 | AI: 0.009 | Sentiment: 0.179 | Total: 0.483 | Action: BUY | Confidence: 0.483
+2025-07-22T22:41:30.773082 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.818704 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.818825 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.820709 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.820748 | [ANALYZE_SIGNALS] ETHUSDC | Tech: 0.702 | AI: 0.009 | Sentiment: 0.179 | Total: 0.420 | Action: BUY | Confidence: 0.420
+2025-07-22T22:41:30.820778 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.866025 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.866136 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.867960 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.868071 | [ANALYZE_SIGNALS] ETHUSDC | Tech: 0.502 | AI: 0.009 | Sentiment: 0.179 | Total: 0.324 | Action: BUY | Confidence: 0.324
+2025-07-22T22:41:30.868116 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.913938 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.914131 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.915977 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.916017 | [ANALYZE_SIGNALS] ETHUSDC | Tech: -0.020 | AI: 0.009 | Sentiment: 0.179 | Total: 0.073 | Action: NEUTRAL | Confidence: 0.073
+2025-07-22T22:41:30.916047 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.960321 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:30.960434 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-07-22T22:41:30.962227 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:30.962262 | [ANALYZE_SIGNALS] ETHUSDC | Tech: 0.639 | AI: 0.009 | Sentiment: 0.179 | Total: 0.390 | Action: BUY | Confidence: 0.390
+2025-07-22T22:41:30.962291 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.008170 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.008301 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.010176 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.010216 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.229 | AI: 0.009 | Sentiment: 0.179 | Total: 0.193 | Action: NEUTRAL | Confidence: 0.193
+2025-07-22T22:41:31.010246 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.056091 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.056203 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.057982 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.058021 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.463 | AI: 0.009 | Sentiment: 0.179 | Total: 0.306 | Action: BUY | Confidence: 0.306
+2025-07-22T22:41:31.058051 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.103082 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.103289 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.105100 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.105141 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.463 | AI: 0.009 | Sentiment: 0.179 | Total: 0.305 | Action: BUY | Confidence: 0.305
+2025-07-22T22:41:31.105172 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.149679 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.149790 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.151567 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.151610 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.766 | AI: 0.009 | Sentiment: 0.179 | Total: 0.451 | Action: BUY | Confidence: 0.451
+2025-07-22T22:41:31.151642 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.195694 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.195803 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.197557 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.197600 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.110 | AI: 0.009 | Sentiment: 0.179 | Total: 0.136 | Action: NEUTRAL | Confidence: 0.136
+2025-07-22T22:41:31.197633 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.242929 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.243060 | [AI] Prédiction IA sollicitée pour LTCUSDC
+2025-07-22T22:41:31.244995 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.245045 | [ANALYZE_SIGNALS] LTCUSDC | Tech: 0.670 | AI: 0.009 | Sentiment: 0.179 | Total: 0.405 | Action: BUY | Confidence: 0.405
+2025-07-22T22:41:31.245077 | [DEBUG SENTIMENT] symbol=LTCUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.291036 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.291151 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.292952 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.292999 | [ANALYZE_SIGNALS] XRPUSDC | Tech: -0.222 | AI: 0.009 | Sentiment: 0.179 | Total: -0.023 | Action: NEUTRAL | Confidence: 0.023
+2025-07-22T22:41:31.293033 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.349445 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.349630 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.351697 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.351782 | [ANALYZE_SIGNALS] XRPUSDC | Tech: 0.212 | AI: 0.009 | Sentiment: 0.179 | Total: 0.185 | Action: NEUTRAL | Confidence: 0.185
+2025-07-22T22:41:31.351841 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.398349 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.398485 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.400435 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.400478 | [ANALYZE_SIGNALS] XRPUSDC | Tech: 0.153 | AI: 0.009 | Sentiment: 0.179 | Total: 0.157 | Action: NEUTRAL | Confidence: 0.157
+2025-07-22T22:41:31.400510 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.445360 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.445489 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.447294 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.447340 | [ANALYZE_SIGNALS] XRPUSDC | Tech: 0.521 | AI: 0.009 | Sentiment: 0.179 | Total: 0.333 | Action: BUY | Confidence: 0.333
+2025-07-22T22:41:31.447375 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.492599 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.492713 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.494549 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.494596 | [ANALYZE_SIGNALS] XRPUSDC | Tech: 0.230 | AI: 0.009 | Sentiment: 0.179 | Total: 0.194 | Action: NEUTRAL | Confidence: 0.194
+2025-07-22T22:41:31.494630 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.539496 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.539652 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-22T22:41:31.541501 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.541545 | [ANALYZE_SIGNALS] XRPUSDC | Tech: 0.608 | AI: 0.009 | Sentiment: 0.179 | Total: 0.375 | Action: BUY | Confidence: 0.375
+2025-07-22T22:41:31.541578 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:31.586703 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.586829 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:31.588552 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871498 | news_enabled=True
+2025-07-22T22:41:31.588600 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.132 | AI: 0.009 | Sentiment: -0.172 | Total: -0.012 | Action: NEUTRAL | Confidence: 0.012
+2025-07-22T22:41:31.588641 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871498 | news_enabled=True
+2025-07-22T22:41:31.633347 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.633464 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:31.635183 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871498 | news_enabled=True
+2025-07-22T22:41:31.635221 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.388 | AI: 0.009 | Sentiment: -0.172 | Total: 0.111 | Action: NEUTRAL | Confidence: 0.111
+2025-07-22T22:41:31.635248 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871498 | news_enabled=True
+2025-07-22T22:41:31.715156 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:31.715678 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:31.738469 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:31.738695 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.540 | AI: 0.009 | Sentiment: -0.172 | Total: 0.184 | Action: NEUTRAL | Confidence: 0.184
+2025-07-22T22:41:31.738793 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:32.055664 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.056171 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:32.060959 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871492 | news_enabled=True
+2025-07-22T22:41:32.061188 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.273 | AI: 0.009 | Sentiment: -0.172 | Total: 0.056 | Action: NEUTRAL | Confidence: 0.056
+2025-07-22T22:41:32.061282 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871492 | news_enabled=True
+2025-07-22T22:41:32.148634 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.148764 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:32.150546 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:32.150587 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.250 | AI: 0.009 | Sentiment: -0.172 | Total: 0.045 | Action: NEUTRAL | Confidence: 0.045
+2025-07-22T22:41:32.150616 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:32.180635 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.180761 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-22T22:41:32.182624 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:32.182689 | [ANALYZE_SIGNALS] DOGEUSDC | Tech: 0.443 | AI: 0.009 | Sentiment: -0.172 | Total: 0.138 | Action: NEUTRAL | Confidence: 0.138
+2025-07-22T22:41:32.182720 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=-0.17233972638871495 | news_enabled=True
+2025-07-22T22:41:32.256174 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.256341 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.258573 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.258653 | [ANALYZE_SIGNALS] BNBUSDC | Tech: 0.462 | AI: 0.009 | Sentiment: 0.179 | Total: 0.305 | Action: BUY | Confidence: 0.305
+2025-07-22T22:41:32.258685 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.305866 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.306001 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.308102 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.308158 | [ANALYZE_SIGNALS] BNBUSDC | Tech: -0.159 | AI: 0.009 | Sentiment: 0.179 | Total: 0.007 | Action: NEUTRAL | Confidence: 0.007
+2025-07-22T22:41:32.308188 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.355406 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.355542 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.357542 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.357630 | [ANALYZE_SIGNALS] BNBUSDC | Tech: -0.048 | AI: 0.009 | Sentiment: 0.179 | Total: 0.060 | Action: NEUTRAL | Confidence: 0.060
+2025-07-22T22:41:32.357692 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.404387 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.404532 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.406393 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.406437 | [ANALYZE_SIGNALS] BNBUSDC | Tech: 0.785 | AI: 0.009 | Sentiment: 0.179 | Total: 0.460 | Action: BUY | Confidence: 0.460
+2025-07-22T22:41:32.406466 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.451359 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.451493 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.453352 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.453391 | [ANALYZE_SIGNALS] BNBUSDC | Tech: 0.283 | AI: 0.009 | Sentiment: 0.179 | Total: 0.219 | Action: BUY | Confidence: 0.219
+2025-07-22T22:41:32.453420 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.498834 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.498957 | [AI] Prédiction IA sollicitée pour BNBUSDC
+2025-07-22T22:41:32.500763 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.500798 | [ANALYZE_SIGNALS] BNBUSDC | Tech: 0.672 | AI: 0.009 | Sentiment: 0.179 | Total: 0.406 | Action: BUY | Confidence: 0.406
+2025-07-22T22:41:32.500827 | [DEBUG SENTIMENT] symbol=BNBUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.545765 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.545889 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.547784 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.547834 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.437 | AI: 0.009 | Sentiment: 0.179 | Total: 0.293 | Action: BUY | Confidence: 0.293
+2025-07-22T22:41:32.547867 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.592901 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.593029 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.594874 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.594912 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.583 | AI: 0.009 | Sentiment: 0.179 | Total: 0.363 | Action: BUY | Confidence: 0.363
+2025-07-22T22:41:32.594941 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.640702 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.640815 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.642664 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.642722 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.583 | AI: 0.009 | Sentiment: 0.179 | Total: 0.363 | Action: BUY | Confidence: 0.363
+2025-07-22T22:41:32.642762 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.687282 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.687466 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.689283 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.689316 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.542 | AI: 0.009 | Sentiment: 0.179 | Total: 0.344 | Action: BUY | Confidence: 0.344
+2025-07-22T22:41:32.689344 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.733563 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.733708 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.735490 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.735532 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.462 | AI: 0.009 | Sentiment: 0.179 | Total: 0.305 | Action: BUY | Confidence: 0.305
+2025-07-22T22:41:32.735565 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.780232 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.780347 | [AI] Prédiction IA sollicitée pour ADAUSDC
+2025-07-22T22:41:32.782105 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.782151 | [ANALYZE_SIGNALS] ADAUSDC | Tech: 0.472 | AI: 0.009 | Sentiment: 0.179 | Total: 0.310 | Action: BUY | Confidence: 0.310
+2025-07-22T22:41:32.782186 | [DEBUG SENTIMENT] symbol=ADAUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.827042 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.827155 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:32.828925 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.828968 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.636 | AI: 0.009 | Sentiment: 0.179 | Total: 0.389 | Action: BUY | Confidence: 0.389
+2025-07-22T22:41:32.829000 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.873725 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.873830 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:32.875584 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.875620 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.824 | AI: 0.009 | Sentiment: 0.179 | Total: 0.479 | Action: BUY | Confidence: 0.479
+2025-07-22T22:41:32.875649 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.919557 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.919666 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:32.921414 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.921460 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.680 | AI: 0.009 | Sentiment: 0.179 | Total: 0.410 | Action: BUY | Confidence: 0.410
+2025-07-22T22:41:32.921494 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.965996 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:32.966113 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:32.967844 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:32.967886 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.071 | AI: 0.009 | Sentiment: 0.179 | Total: 0.117 | Action: NEUTRAL | Confidence: 0.117
+2025-07-22T22:41:32.967920 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.012089 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.012202 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:33.013956 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.013998 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.632 | AI: 0.009 | Sentiment: 0.179 | Total: 0.387 | Action: BUY | Confidence: 0.387
+2025-07-22T22:41:33.014032 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.056648 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.056781 | [AI] Prédiction IA sollicitée pour SOLUSDC
+2025-07-22T22:41:33.058723 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.058774 | [ANALYZE_SIGNALS] SOLUSDC | Tech: 0.672 | AI: 0.009 | Sentiment: 0.179 | Total: 0.406 | Action: BUY | Confidence: 0.406
+2025-07-22T22:41:33.058809 | [DEBUG SENTIMENT] symbol=SOLUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.105223 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.105341 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.107200 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.107240 | [ANALYZE_SIGNALS] TRXUSDC | Tech: 0.105 | AI: 0.009 | Sentiment: 0.179 | Total: 0.134 | Action: NEUTRAL | Confidence: 0.134
+2025-07-22T22:41:33.107271 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.152905 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.153030 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.155010 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.155066 | [ANALYZE_SIGNALS] TRXUSDC | Tech: 0.023 | AI: 0.009 | Sentiment: 0.179 | Total: 0.094 | Action: NEUTRAL | Confidence: 0.094
+2025-07-22T22:41:33.155103 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.200956 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.201076 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.202863 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.202899 | [ANALYZE_SIGNALS] TRXUSDC | Tech: -0.031 | AI: 0.009 | Sentiment: 0.179 | Total: 0.068 | Action: NEUTRAL | Confidence: 0.068
+2025-07-22T22:41:33.202930 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.247100 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.247216 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.248974 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.249018 | [ANALYZE_SIGNALS] TRXUSDC | Tech: 0.174 | AI: 0.009 | Sentiment: 0.179 | Total: 0.167 | Action: NEUTRAL | Confidence: 0.167
+2025-07-22T22:41:33.249052 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.293960 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.294081 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.295925 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.295968 | [ANALYZE_SIGNALS] TRXUSDC | Tech: -0.388 | AI: 0.009 | Sentiment: 0.179 | Total: -0.103 | Action: NEUTRAL | Confidence: 0.103
+2025-07-22T22:41:33.296003 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.341710 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.341828 | [AI] Prédiction IA sollicitée pour TRXUSDC
+2025-07-22T22:41:33.343638 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.343684 | [ANALYZE_SIGNALS] TRXUSDC | Tech: 0.614 | AI: 0.009 | Sentiment: 0.179 | Total: 0.378 | Action: BUY | Confidence: 0.378
+2025-07-22T22:41:33.343714 | [DEBUG SENTIMENT] symbol=TRXUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.388771 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.388889 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.390657 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.390696 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.214 | AI: 0.009 | Sentiment: 0.179 | Total: 0.186 | Action: NEUTRAL | Confidence: 0.186
+2025-07-22T22:41:33.390733 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.435645 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.435769 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.437609 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.437660 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.583 | AI: 0.009 | Sentiment: 0.179 | Total: 0.363 | Action: BUY | Confidence: 0.363
+2025-07-22T22:41:33.437688 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.482103 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.482232 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.484082 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.484119 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.594 | AI: 0.009 | Sentiment: 0.179 | Total: 0.369 | Action: BUY | Confidence: 0.369
+2025-07-22T22:41:33.484149 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.528489 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.528595 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.530352 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.530387 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.589 | AI: 0.009 | Sentiment: 0.179 | Total: 0.366 | Action: BUY | Confidence: 0.366
+2025-07-22T22:41:33.530415 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.575613 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.575736 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.577570 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.577605 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.254 | AI: 0.009 | Sentiment: 0.179 | Total: 0.205 | Action: BUY | Confidence: 0.205
+2025-07-22T22:41:33.577632 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.604743 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-22T22:41:33.604836 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-22T22:41:33.606597 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.606628 | [ANALYZE_SIGNALS] SUIUSDC | Tech: 0.753 | AI: 0.009 | Sentiment: 0.179 | Total: 0.445 | Action: BUY | Confidence: 0.445
+2025-07-22T22:41:33.606652 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.17928573724554484 | news_enabled=True
+2025-07-22T22:41:33.606693 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.59 | Tech: 0.43 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606717 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.71 | Tech: 0.69 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606742 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.44 | Tech: 0.12 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606764 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.75 | Tech: 0.77 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606788 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.77 | Tech: 0.81 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606810 | [TRADE DECISION] BTC/USDC | Action: BUY | Confiance: 0.80 | Tech: 0.87 | IA: 1.00 | Sentiment: 0.18
+2025-07-22T22:41:33.606831 | [TRADE DECISION] ETH/USDC | Action: BUY | Confiance: 0.33 | Tech: 0.52 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606852 | [TRADE DECISION] ETH/USDC | Action: BUY | Confiance: 0.48 | Tech: 0.83 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606873 | [TRADE DECISION] ETH/USDC | Action: BUY | Confiance: 0.42 | Tech: 0.70 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606894 | [TRADE DECISION] ETH/USDC | Action: BUY | Confiance: 0.32 | Tech: 0.50 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606916 | [TRADE DECISION] ETH/USDC | Action: NEUTRAL | Confiance: 0.07 | Tech: -0.02 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606937 | [TRADE DECISION] ETH/USDC | Action: BUY | Confiance: 0.39 | Tech: 0.64 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606958 | [TRADE DECISION] LTC/USDC | Action: NEUTRAL | Confiance: 0.19 | Tech: 0.23 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.606987 | [TRADE DECISION] LTC/USDC | Action: BUY | Confiance: 0.31 | Tech: 0.46 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607022 | [TRADE DECISION] LTC/USDC | Action: BUY | Confiance: 0.31 | Tech: 0.46 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607047 | [TRADE DECISION] LTC/USDC | Action: BUY | Confiance: 0.45 | Tech: 0.77 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607072 | [TRADE DECISION] LTC/USDC | Action: NEUTRAL | Confiance: 0.14 | Tech: 0.11 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607095 | [TRADE DECISION] LTC/USDC | Action: BUY | Confiance: 0.41 | Tech: 0.67 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607120 | [TRADE DECISION] XRP/USDC | Action: NEUTRAL | Confiance: 0.02 | Tech: -0.22 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607142 | [TRADE DECISION] XRP/USDC | Action: NEUTRAL | Confiance: 0.18 | Tech: 0.21 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607165 | [TRADE DECISION] XRP/USDC | Action: NEUTRAL | Confiance: 0.16 | Tech: 0.15 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607187 | [TRADE DECISION] XRP/USDC | Action: BUY | Confiance: 0.33 | Tech: 0.52 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607208 | [TRADE DECISION] XRP/USDC | Action: NEUTRAL | Confiance: 0.19 | Tech: 0.23 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607230 | [TRADE DECISION] XRP/USDC | Action: BUY | Confiance: 0.38 | Tech: 0.61 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607254 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.01 | Tech: 0.13 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607275 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.11 | Tech: 0.39 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607296 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.18 | Tech: 0.54 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607317 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.06 | Tech: 0.27 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607338 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.05 | Tech: 0.25 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607359 | [TRADE DECISION] DOGE/USDC | Action: NEUTRAL | Confiance: 0.14 | Tech: 0.44 | IA: 0.01 | Sentiment: -0.17
+2025-07-22T22:41:33.607380 | [TRADE DECISION] BNB/USDC | Action: BUY | Confiance: 0.31 | Tech: 0.46 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607401 | [TRADE DECISION] BNB/USDC | Action: NEUTRAL | Confiance: 0.01 | Tech: -0.16 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607421 | [TRADE DECISION] BNB/USDC | Action: NEUTRAL | Confiance: 0.06 | Tech: -0.05 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607441 | [TRADE DECISION] BNB/USDC | Action: BUY | Confiance: 0.46 | Tech: 0.79 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607464 | [TRADE DECISION] BNB/USDC | Action: BUY | Confiance: 0.22 | Tech: 0.28 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607485 | [TRADE DECISION] BNB/USDC | Action: BUY | Confiance: 0.41 | Tech: 0.67 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607506 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.29 | Tech: 0.44 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607527 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.36 | Tech: 0.58 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607547 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.36 | Tech: 0.58 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607568 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.34 | Tech: 0.54 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607589 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.30 | Tech: 0.46 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607609 | [TRADE DECISION] ADA/USDC | Action: BUY | Confiance: 0.31 | Tech: 0.47 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607630 | [TRADE DECISION] SOL/USDC | Action: BUY | Confiance: 0.39 | Tech: 0.64 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607650 | [TRADE DECISION] SOL/USDC | Action: BUY | Confiance: 0.48 | Tech: 0.82 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607671 | [TRADE DECISION] SOL/USDC | Action: BUY | Confiance: 0.41 | Tech: 0.68 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607691 | [TRADE DECISION] SOL/USDC | Action: NEUTRAL | Confiance: 0.12 | Tech: 0.07 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607710 | [TRADE DECISION] SOL/USDC | Action: BUY | Confiance: 0.39 | Tech: 0.63 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607730 | [TRADE DECISION] SOL/USDC | Action: BUY | Confiance: 0.41 | Tech: 0.67 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607751 | [TRADE DECISION] TRX/USDC | Action: NEUTRAL | Confiance: 0.13 | Tech: 0.11 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607771 | [TRADE DECISION] TRX/USDC | Action: NEUTRAL | Confiance: 0.09 | Tech: 0.02 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607791 | [TRADE DECISION] TRX/USDC | Action: NEUTRAL | Confiance: 0.07 | Tech: -0.03 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607812 | [TRADE DECISION] TRX/USDC | Action: NEUTRAL | Confiance: 0.17 | Tech: 0.17 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607832 | [TRADE DECISION] TRX/USDC | Action: NEUTRAL | Confiance: 0.10 | Tech: -0.39 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607855 | [TRADE DECISION] TRX/USDC | Action: BUY | Confiance: 0.38 | Tech: 0.61 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607879 | [TRADE DECISION] SUI/USDC | Action: NEUTRAL | Confiance: 0.19 | Tech: 0.21 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607918 | [TRADE DECISION] SUI/USDC | Action: BUY | Confiance: 0.36 | Tech: 0.58 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607952 | [TRADE DECISION] SUI/USDC | Action: BUY | Confiance: 0.37 | Tech: 0.59 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.607992 | [TRADE DECISION] SUI/USDC | Action: BUY | Confiance: 0.37 | Tech: 0.59 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.608028 | [TRADE DECISION] SUI/USDC | Action: BUY | Confiance: 0.21 | Tech: 0.25 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.608055 | [TRADE DECISION] SUI/USDC | Action: BUY | Confiance: 0.44 | Tech: 0.75 | IA: 0.01 | Sentiment: 0.18
+2025-07-22T22:41:33.608105 | [EXECUTE TRADE] BTC/USDC | Action: BUY | Amount: 6.47 | Confidence: 0.5878549317608833
+2025-07-22T22:41:33.608130 | [ORDER] Tentative d'exécution: buy 6.47 BTC/USDC (iceberg: False)
+2025-07-22T22:41:45.254489 | [ORDER] Solde insuffisant pour achat BTC/USDC. Requis: 6.47, dispo: 2.39623027
+2025-07-22T22:41:46.693644 | [EXECUTE TRADE] BTC/USDC | Action: BUY | Amount: 6.78 | Confidence: 0.7112008068093084
+2025-07-22T22:41:46.694195 | [ORDER] Tentative d'exécution: buy 6.78 BTC/USDC (iceberg: False)
+2025-07-22T22:41:58.146131 | [ORDER] Solde insuffisant pour achat BTC/USDC. Requis: 6.78, dispo: 2.39623027
+2025-07-22T22:41:59.275611 | [SKIP TRADE] BTC/USDC | Confiance trop faible (0.44)
+2025-07-22T22:41:59.275844 | [EXECUTE TRADE] BTC/USDC | Action: BUY | Amount: 6.88 | Confidence: 0.7514644557264406
+2025-07-22T22:41:59.275890 | [ORDER] Tentative d'exécution: buy 6.88 BTC/USDC (iceberg: False)
+2025-07-22T22:42:11.789966 | [ORDER] Solde insuffisant pour achat BTC/USDC. Requis: 6.88, dispo: 2.39623027
+2025-07-22T22:42:13.092804 | [EXECUTE TRADE] BTC/USDC | Action: BUY | Amount: 6.93 | Confidence: 0.770390422482107
+2025-07-22T22:42:13.093331 | [ORDER] Tentative d'exécution: buy 6.93 BTC/USDC (iceberg: False)
+2025-07-22T22:42:26.542272 | [ORDER] Solde insuffisant pour achat BTC/USDC. Requis: 6.93, dispo: 2.39623027
+2025-07-22T22:42:27.748537 | [EXECUTE TRADE] BTC/USDC | Action: BUY | Amount: 7.0 | Confidence: 0.7991895391791571
+2025-07-22T22:42:27.749278 | [ORDER] Tentative d'exécution: buy 7.0 BTC/USDC (iceberg: False)
+2025-07-22T22:42:40.232485 | [ORDER] Solde insuffisant pour achat BTC/USDC. Requis: 7.0, dispo: 2.39623027
+2025-07-22T22:42:41.438796 | [SKIP TRADE] ETH/USDC | Confiance trop faible (0.33)
+2025-07-22T22:42:41.439464 | [SKIP TRADE] ETH/USDC | Confiance trop faible (0.48)
+2025-07-22T22:42:41.439727 | [SKIP TRADE] ETH/USDC | Confiance trop faible (0.42)
+2025-07-22T22:42:41.439931 | [SKIP TRADE] ETH/USDC | Confiance trop faible (0.32)
+2025-07-22T22:42:41.440187 | [SKIP TRADE] ETH/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.440354 | [SKIP TRADE] ETH/USDC | Confiance trop faible (0.39)
+2025-07-22T22:42:41.440565 | [SKIP TRADE] LTC/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.440723 | [SKIP TRADE] LTC/USDC | Confiance trop faible (0.31)
+2025-07-22T22:42:41.440891 | [SKIP TRADE] LTC/USDC | Confiance trop faible (0.31)
+2025-07-22T22:42:41.441057 | [SKIP TRADE] LTC/USDC | Confiance trop faible (0.45)
+2025-07-22T22:42:41.441210 | [SKIP TRADE] LTC/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.441369 | [SKIP TRADE] LTC/USDC | Confiance trop faible (0.41)
+2025-07-22T22:42:41.441519 | [SKIP TRADE] XRP/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.441683 | [SKIP TRADE] XRP/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.441833 | [SKIP TRADE] XRP/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.441998 | [SKIP TRADE] XRP/USDC | Confiance trop faible (0.33)
+2025-07-22T22:42:41.442163 | [SKIP TRADE] XRP/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.442314 | [SKIP TRADE] XRP/USDC | Confiance trop faible (0.38)
+2025-07-22T22:42:41.442464 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.442612 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.442760 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.442908 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.443054 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.443201 | [SKIP TRADE] DOGE/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.443348 | [SKIP TRADE] BNB/USDC | Confiance trop faible (0.31)
+2025-07-22T22:42:41.443495 | [SKIP TRADE] BNB/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.443641 | [SKIP TRADE] BNB/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.443788 | [SKIP TRADE] BNB/USDC | Confiance trop faible (0.46)
+2025-07-22T22:42:41.443935 | [SKIP TRADE] BNB/USDC | Confiance trop faible (0.22)
+2025-07-22T22:42:41.444081 | [SKIP TRADE] BNB/USDC | Confiance trop faible (0.41)
+2025-07-22T22:42:41.444229 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.29)
+2025-07-22T22:42:41.444375 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.36)
+2025-07-22T22:42:41.444526 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.36)
+2025-07-22T22:42:41.444676 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.34)
+2025-07-22T22:42:41.444824 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.30)
+2025-07-22T22:42:41.444970 | [SKIP TRADE] ADA/USDC | Confiance trop faible (0.31)
+2025-07-22T22:42:41.445128 | [SKIP TRADE] SOL/USDC | Confiance trop faible (0.39)
+2025-07-22T22:42:41.445274 | [SKIP TRADE] SOL/USDC | Confiance trop faible (0.48)
+2025-07-22T22:42:41.445441 | [SKIP TRADE] SOL/USDC | Confiance trop faible (0.41)
+2025-07-22T22:42:41.445586 | [SKIP TRADE] SOL/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.445733 | [SKIP TRADE] SOL/USDC | Confiance trop faible (0.39)
+2025-07-22T22:42:41.445852 | [SKIP TRADE] SOL/USDC | Confiance trop faible (0.41)
+2025-07-22T22:42:41.445959 | [SKIP TRADE] TRX/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446066 | [SKIP TRADE] TRX/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446174 | [SKIP TRADE] TRX/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446293 | [SKIP TRADE] TRX/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446400 | [SKIP TRADE] TRX/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446507 | [SKIP TRADE] TRX/USDC | Confiance trop faible (0.38)
+2025-07-22T22:42:41.446615 | [SKIP TRADE] SUI/USDC | Action: NEUTRAL ignorée (neutral)
+2025-07-22T22:42:41.446722 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.36)
+2025-07-22T22:42:41.446831 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.37)
+2025-07-22T22:42:41.446939 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.37)
+2025-07-22T22:42:41.447051 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.21)
+2025-07-22T22:42:41.447150 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.44)
