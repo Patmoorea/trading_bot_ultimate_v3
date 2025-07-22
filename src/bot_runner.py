@@ -3277,12 +3277,12 @@ class TradingBotM4:
 
     def add_indicators(self, df):
         """
-        Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
+        Calcule tous les indicateurs techniques nécessaires pour les stratégies.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
-        (Version enrichie avec indicateurs avancés)
+        Version robuste avec correction du bug VWAP "not datetime ordered".
         """
         try:
-            # Gestion entrée : DataFrame, liste de dicts, liste de listes
+            # Conversion en DataFrame si besoin
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
@@ -3316,12 +3316,24 @@ class TradingBotM4:
                 )
                 return None
 
-            # Tri et conversion du timestamp pour tous les indicateurs ET VWAP
+            # Tri et nettoyage du timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
                 df["timestamp"] = pd.to_datetime(df["timestamp"])
                 df = df.drop_duplicates(subset="timestamp", keep="last")
                 df = df.sort_values("timestamp")
                 df = df.reset_index(drop=True)
+                # PATCH VWAP : drop lignes avec timestamp non strictement croissant
+                # (removes all but first if timestamps are duplicated)
+                df = df[df["timestamp"].diff().dt.total_seconds().fillna(1) > 0]
+                if not df["timestamp"].is_monotonic_increasing:
+                    self.logger.error(
+                        "[ERROR VWAP] Timestamps NOT strictly increasing, VWAP will be invalid!"
+                    )
+                    print(
+                        "[ERROR VWAP] Timestamps NOT strictly increasing, VWAP will be invalid!"
+                    )
+                    # Optionnel: raise ou return None
+                    return None
 
             if df.empty:
                 self.logger.warning(
@@ -3333,7 +3345,7 @@ class TradingBotM4:
             try:
                 df_ta = df.copy()
 
-                # Calcul des indicateurs classiques
+                # Indicateurs classiques
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty:
                     if isinstance(sma_20, pd.Series):
@@ -3399,12 +3411,14 @@ class TradingBotM4:
 
                 # Indicateurs avancés supplémentaires
                 try:
-                    # PATCH : on reforce ici le tri strict et datetime juste avant VWMA/VWAP
                     if "timestamp" in df_ta.columns:
                         df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
                         df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
                         df_ta = df_ta.sort_values("timestamp")
                         df_ta = df_ta.reset_index(drop=True)
+                        df_ta = df_ta[
+                            df_ta["timestamp"].diff().dt.total_seconds().fillna(1) > 0
+                        ]
                     vwma = df_ta.ta.vwma(length=20)
                     df_ta["vwma_20"] = vwma
                 except Exception:
@@ -3415,12 +3429,23 @@ class TradingBotM4:
                 except Exception:
                     df_ta["obv"] = np.nan
                 try:
-                    # PATCH : reforce tri juste avant VWAP !
+                    # PATCH strict: re-tri juste avant VWAP
                     if "timestamp" in df_ta.columns:
                         df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
                         df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
                         df_ta = df_ta.sort_values("timestamp")
                         df_ta = df_ta.reset_index(drop=True)
+                        df_ta = df_ta[
+                            df_ta["timestamp"].diff().dt.total_seconds().fillna(1) > 0
+                        ]
+                        if not df_ta["timestamp"].is_monotonic_increasing:
+                            self.logger.error(
+                                "[ERROR VWAP] Timestamps NOT strictly increasing, VWAP will be invalid!"
+                            )
+                            print(
+                                "[ERROR VWAP] Timestamps NOT strictly increasing, VWAP will be invalid!"
+                            )
+                            return None
                     vwap = df_ta.ta.vwap()
                     df_ta["vwap"] = vwap
                 except Exception:
