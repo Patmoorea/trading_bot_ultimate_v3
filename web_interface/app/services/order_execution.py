@@ -109,13 +109,16 @@ class SmartOrderExecutor:
                     "timestamp": datetime.now(timezone.utc),
                 }
 
+            # PATCH : corrige le symbole pour Binance !
+            symbol_binance = symbol.replace("/", "")
+
             api_args = {
-                "symbol": symbol,
+                "symbol": symbol_binance,
                 "side": side,
                 "type": "MARKET",
             }
             # PATCH: Un seul des deux!
-            if side.upper() == "BUY" and symbol.endswith("USDC"):
+            if side.upper() == "BUY" and symbol_binance.endswith("USDC"):
                 api_args["quoteOrderQty"] = execution_plan["plan"]["amount"]
             else:
                 api_args["quantity"] = execution_plan["plan"]["amount"]
@@ -123,7 +126,7 @@ class SmartOrderExecutor:
             if iceberg:
                 api_args["icebergQty"] = iceberg_visible_size
 
-            order_response = await binance_client.create_order(**api_args)
+            order_response = binance_client.create_order(**api_args)
             # Analyse la réponse et construis le résultat
             return {
                 "status": "completed",
