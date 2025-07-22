@@ -3501,6 +3501,8 @@ class TradingBotM4:
                 )
                 return None
 
+            print("[DEBUG] Timestamps avant tri:", df["timestamp"].head(10).tolist())
+
             # Tri et nettoyage du timestamp pour tous les indicateurs
             if "timestamp" in df.columns:
                 df["timestamp"] = pd.to_datetime(df["timestamp"])
@@ -4026,7 +4028,7 @@ async def run_clean_bot():
                     # Hot reload IA
                     bot.check_reload_dl_model()
 
-                    # === PATCH : Gestion complète de la sortie de position SPOT (STOPLOSS, TAKE PROFIT, TRAILING STOP) ===
+                    # PATCH : Gestion complète de la sortie de position SPOT (STOPLOSS, TAKE PROFIT, TRAILING STOP)
                     for symbol, pos in list(bot.positions.items()):
                         if bot.is_long(symbol):
                             # Récupération du dernier prix marché
@@ -4074,7 +4076,7 @@ async def run_clean_bot():
                                 await bot.execute_trade(symbol, "SELL", pos["amount"])
                                 continue
 
-                    # === PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX ===
+                    # PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX
                     for symbol, pos in list(bot.positions.items()):
                         if bot.is_short(symbol):
                             try:
@@ -4143,17 +4145,20 @@ async def run_clean_bot():
                                     "ta": indics if indics else {},
                                 }
 
+                    # Synchronise les positions SPOT réelles Binance pour le dashboard (PATCH CRUCIAL)
+                    bot.sync_binance_positions()
+
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
 
-                    # === Entraînement automatique IA toutes les 50 itérations ===
+                    # Entraînement automatique IA toutes les 50 itérations
                     if cycle % 50 == 0:
                         print(
                             "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
                         )
                         bot.train_cnn_lstm_on_all_live()
 
-                    # === Fin entraînement IA auto ===
+                    # Fin entraînement IA auto
                     bot.train_cnn_lstm_on_all_live()
                     print(
                         "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
