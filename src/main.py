@@ -277,12 +277,30 @@ with tab3:
 # --- TAB4 PORTEFEUILLE / POSITIONS ---
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
+    # Position simulée (ancienne logique)
     positions = shared_data.get("positions", {})
-    if positions:
-        df_pos = pd.DataFrame(positions).T
+    # Ajout: positions réelles Binance SPOT
+    positions_binance = shared_data.get("positions_binance", {})
+    if positions_binance:
+        pos_data = []
+        for symbol, pos in positions_binance.items():
+            pos_data.append(
+                {
+                    "Symbole": symbol,
+                    "Side": pos.get("side", ""),
+                    "Quantité": pos.get("amount", 0),
+                    "Prix d'entrée": f"{pos.get('entry_price', 0):.4f}",
+                    "Prix actuel": f"{pos.get('current_price', 0):.4f}",
+                    "% Gain/Perte": f"{pos.get('pnl_pct', 0):.2f}%",
+                    "Gain/Perte ($)": f"{pos.get('pnl_usd', 0):.2f}",
+                }
+            )
+        df_pos = pd.DataFrame(pos_data)
         st.dataframe(df_pos, use_container_width=True)
     else:
-        st.info("Aucune position ouverte.")
+        st.info("Aucune position SPOT ouverte sur Binance.")
+
+    # Historique des positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])
     if closed:
@@ -290,6 +308,7 @@ with tab4:
         st.dataframe(df_closed, use_container_width=True)
     else:
         st.info("Aucune position fermée ce cycle.")
+
     st.markdown("#### Historique des trades")
     trades = shared_data.get("trade_history", [])
     if trades:
