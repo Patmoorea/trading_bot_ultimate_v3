@@ -943,6 +943,80 @@ class TradingBotM4:
             )
         return None, None
 
+    def check_trailing_stop(
+        self, symbol, price=None, trailing_pct=0.02, min_profit_pct=0.01
+    ):
+        """
+        Trailing stop sur position long SPOT.
+        - trailing_pct: % de recul depuis le plus haut pour déclencher la vente (ex: 0.02 = 2%)
+        - min_profit_pct: profit minimal pour activer le trailing stop (ex: 0.01 = 1%)
+        """
+        pos = self.positions.get(symbol)
+        if not pos or pos.get("side") != "long":
+            return False
+        entry = pos.get("entry_price")
+        if price is None:
+            # Récupère le dernier prix
+            price = self.ws_collector.get_last_price(symbol)
+            if (
+                price is None
+                and symbol in self.market_data
+                and "1h" in self.market_data[symbol]
+            ):
+                closes = self.market_data[symbol]["1h"].get("close", [])
+                if closes:
+                    price = closes[-1]
+        if price is None:
+            return False
+
+        # Initialisation du plus haut atteint
+        if (
+            "max_price" not in pos
+            or pos["max_price"] is None
+            or price > pos["max_price"]
+        ):
+            pos["max_price"] = price
+
+        # Trailing stop activé si on a déjà au moins min_profit_pct
+        if pos["max_price"] >= entry * (1 + min_profit_pct):
+            # Si le prix redescend de trailing_pct depuis le max
+            if price <= pos["max_price"] * (1 - trailing_pct):
+                print(
+                    f"[TRAILING STOP] Déclenché sur {symbol} (max={pos['max_price']:.2f}, actuel={price:.2f})"
+                )
+                return True
+        return False
+
+    def check_take_profit(self, symbol, price=None, take_profit_pct=0.04):
+        """
+        Take profit sur position long SPOT.
+        - take_profit_pct: % de profit pour déclencher la vente (ex: 0.04 = 4%)
+        """
+        pos = self.positions.get(symbol)
+        if not pos or pos.get("side") != "long":
+            return False
+        entry = pos.get("entry_price")
+        if price is None:
+            price = self.ws_collector.get_last_price(symbol)
+            if (
+                price is None
+                and symbol in self.market_data
+                and "1h" in self.market_data[symbol]
+            ):
+                closes = self.market_data[symbol]["1h"].get("close", [])
+                if closes:
+                    price = closes[-1]
+        if price is None:
+            return False
+
+        # Déclenche la vente si le profit atteint le seuil
+        if price >= entry * (1 + take_profit_pct):
+            print(
+                f"[TAKE PROFIT] Déclenché sur {symbol} (entrée={entry:.2f}, actuel={price:.2f})"
+            )
+            return True
+        return False
+
     async def execute_arbitrage_cross_exchange(self, opportunity, amount):
         """
         Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs et notifications Telegram.
@@ -3841,13 +3915,53 @@ async def run_clean_bot():
                     # Hot reload IA
                     bot.check_reload_dl_model()
 
-                    # === PATCH : Déclenchement automatique du stop-loss SPOT ===
+                    # === PATCH : Gestion complète de la sortie de position SPOT (STOPLOSS, TAKE PROFIT, TRAILING STOP) ===
                     for symbol, pos in list(bot.positions.items()):
-                        if bot.is_long(symbol) and bot.check_stop_loss(symbol):
-                            print(
-                                f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
-                            )
-                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                        if bot.is_long(symbol):
+                            # Récupération du dernier prix marché
+                            price = None
+                            if (
+                                hasattr(bot, "ws_collector")
+                                and bot.ws_collector is not None
+                            ):
+                                price = bot.ws_collector.get_last_price(symbol)
+                            if (
+                                price is None
+                                and symbol in bot.market_data
+                                and "1h" in bot.market_data[symbol]
+                            ):
+                                closes = bot.market_data[symbol]["1h"].get("close", [])
+                                if closes:
+                                    price = closes[-1]
+
+                            # 1. Stop-loss classique
+                            if bot.check_stop_loss(symbol, price=price):
+                                print(f"[STOPLOSS] Vente auto pour perte sur {symbol}")
+                                await bot.execute_trade(symbol, "SELL", pos["amount"])
+                                continue
+
+                            # 2. Take-profit : vente directe si profit atteint
+                            if bot.check_take_profit(
+                                symbol, price=price, take_profit_pct=0.04
+                            ):  # 4% de profit
+                                print(
+                                    f"[TAKE PROFIT] Vente auto pour profit sur {symbol}"
+                                )
+                                await bot.execute_trade(symbol, "SELL", pos["amount"])
+                                continue
+
+                            # 3. Trailing stop : vente si le prix retombe de 2% après un plus haut
+                            if bot.check_trailing_stop(
+                                symbol,
+                                price=price,
+                                trailing_pct=0.02,
+                                min_profit_pct=0.01,
+                            ):
+                                print(
+                                    f"[TRAILING STOP] Vente auto suiveuse sur {symbol}"
+                                )
+                                await bot.execute_trade(symbol, "SELL", pos["amount"])
+                                continue
 
                     # === PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX ===
                     for symbol, pos in list(bot.positions.items()):
