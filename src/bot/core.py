@@ -1979,8 +1979,9 @@ class TradingBotM4:
             take_profit = signal["price"] * (1 + signal["risk_ratio"] * 2)
 
             # Placement de l'ordre
+
             order = await self.exchange.create_order(
-                symbol=signal["symbol"],
+                symbol=signal["symbol"].replace("/", ""),
                 type="limit",
                 side=signal["side"],
                 amount=signal["amount"],
@@ -2309,7 +2310,7 @@ Take Profit: {take_profit}""",
 
                 # Placement de l'ordre avec stop loss
                 order = await self.exchange.create_order(
-                    symbol=decision["symbol"],
+                    symbol=decision["symbol"].replace("/", ""),
                     type="limit",
                     side="buy",  # Achat uniquement comme demandé
                     amount=position_size,
