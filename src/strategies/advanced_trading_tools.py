@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class GridTrading:
     """
     Simple grid trading logic for spot/futures.
@@ -26,12 +27,14 @@ class GridTrading:
                 order_type = "buy"
             else:
                 order_type = "sell"
-            grid_orders.append({
-                "symbol": self.symbol,
-                "price": float(price),
-                "qty": self.base_qty,
-                "type": order_type
-            })
+            grid_orders.append(
+                {
+                    "symbol": self.symbol,
+                    "price": float(price),
+                    "qty": self.base_qty,
+                    "type": order_type,
+                }
+            )
         return grid_orders
 
     def check_rebalance(self, current_price, positions):
@@ -46,6 +49,7 @@ class GridTrading:
                 return {"action": "sell", "price": level, "qty": self.base_qty}
         return None
 
+
 class DCA:
     """
     Dollar-Cost Averaging logic for spot/futures.
@@ -53,6 +57,7 @@ class DCA:
         dca = DCA(symbol="BTCUSDT", base_qty=0.01, max_steps=5)
         order = dca.next_step(current_step)
     """
+
     def __init__(self, symbol, base_qty=0.01, max_steps=5):
         self.symbol = symbol
         self.base_qty = base_qty
@@ -63,10 +68,16 @@ class DCA:
         Returns the next DCA order (buy) for the current step.
         """
         if current_step < self.max_steps:
-            qty = self.base_qty * (1.5 ** current_step)
-            return {"symbol": self.symbol, "qty": qty, "type": "buy", "step": current_step}
+            qty = self.base_qty * (1.5**current_step)
+            return {
+                "symbol": self.symbol,
+                "qty": qty,
+                "type": "buy",
+                "step": current_step,
+            }
         else:
             return None
+
 
 def anti_slippage(order_price, last_price, slippage_pct=0.2):
     """
@@ -77,6 +88,7 @@ def anti_slippage(order_price, last_price, slippage_pct=0.2):
     if abs(order_price - last_price) > max_slippage:
         return False
     return True
+
 
 # === EXEMPLES D'UTILISATION ===
 if __name__ == "__main__":

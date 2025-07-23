@@ -73,6 +73,21 @@ from src.ai.hybrid_model import HybridAI
 from bingx_order_executor import BingXOrderExecutor
 from src.exchanges.bingx_exchange import BingXExchange
 
+from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+
+# Ajoute cette importation si tu veux le monitoring Prometheus :
+try:
+    from src.monitoring.prometheus_exporter import (
+        start_prometheus_server,
+        update_metrics,
+    )
+
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+
+from src.strategies.advanced_trading_tools import GridTrading, DCA, anti_slippage
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -3781,92 +3796,215 @@ class TradingBotM4:
                 print(f"  {len(df_live)} lignes live trouvées, entraînement en cours…")
                 train_with_live_data(df_live)
 
-
-def load_config():
-    """Charge la configuration"""
-    try:
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
-            return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
-    except:
-        return ["BTC/USDT", "ETH/USDT"]
-
-
-async def run_clean_bot():
-    """
-    Fonction principale du bot de trading
-    Gère l'initialisation, l'analyse de marché et l'exécution des stratégies
-    """
-    print(">>> RUN_CLEAN_BOT DEMARRE <<<")
-    orderflow_indicators = AdvancedIndicators()
-    logger = logging.getLogger(__name__)
-
-    async def initialize_bot():
-        """Initialisation du bot et de ses composants"""
-        print(">>> INITIALIZE_BOT <<<")
-        bot = None
+    def load_config():
+        """Charge la configuration des paires valides"""
+        CONFIG_PATH = "config.json"
         try:
-            print("\n=== DÉMARRAGE DU BOT ===")
-            print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+                return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
+        except Exception:
+            return ["BTC/USDT", "ETH/USDT"]
 
-            # 1. Configuration initiale
-            valid_pairs = load_config()
+    async def run_clean_bot():
+        """
+        Fonction principale du bot de trading
+        Gère l'initialisation, l'analyse de marché, l'exécution des stratégies,
+        le monitoring Prometheus, les alertes critiques et les hooks Grid/DCA/anti-slippage.
+        """
+        print(">>> RUN_CLEAN_BOT DEMARRE <<<")
+        orderflow_indicators = AdvancedIndicators()
+        logger = logging.getLogger(__name__)
 
-            # 2. Création et configuration du bot
-            bot = TradingBotM4()
-            bot.pairs_valid = valid_pairs
+        async def initialize_bot():
+            print(">>> INITIALIZE_BOT <<<")
+            bot = None
+            try:
+                print("\n=== DÉMARRAGE DU BOT ===")
+                print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
 
-            # 3. Préchargement historique (optionnel, sécurisé)
-            if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
-                for symbol in bot.config["TRADING"]["pairs"]:
-                    symbol_binance = symbol.replace("/", "").upper()
-                    for tf in bot.config["TRADING"]["timeframes"]:
-                        try:
-                            bot.ws_collector.preload_historical(
-                                bot.binance_client, symbol_binance, tf, limit=2000
-                            )
-                            print(f"Préchargement {symbol_binance} {tf} OK")
-                        except Exception as e:
-                            print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
+                # 1. Configuration initiale
+                valid_pairs = load_config()
 
-            # 4. Setup des composants internes (websockets, news, etc)
-            ok = await bot._setup_components()
-            if not ok:
-                print("❌ Echec de l'initialisation des composants.")
+                # 2. Création et configuration du bot
+                bot = TradingBotM4()
+                bot.pairs_valid = valid_pairs
+
+                # 3. Préchargement historique (optionnel, sécurisé)
+                if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
+                    for symbol in bot.config["TRADING"]["pairs"]:
+                        symbol_binance = symbol.replace("/", "").upper()
+                        for tf in bot.config["TRADING"]["timeframes"]:
+                            try:
+                                bot.ws_collector.preload_historical(
+                                    bot.binance_client, symbol_binance, tf, limit=2000
+                                )
+                                print(f"Préchargement {symbol_binance} {tf} OK")
+                            except Exception as e:
+                                print(
+                                    f"Erreur préchargement {symbol_binance} {tf} : {e}"
+                                )
+
+                # 4. Setup des composants internes (websockets, news, etc)
+                ok = await bot._setup_components()
+                if not ok:
+                    print("❌ Echec de l'initialisation des composants.")
+                    return None, None
+
+                # 5. Chargement des données de marché réelles si trading live
+                if getattr(bot, "is_live_trading", False):
+                    await bot._fetch_real_market_data()
+                    for sym in bot.market_data:
+                        print(f"{sym}: {list(bot.market_data[sym].keys())}")
+
+                # 6. Premier rapport d'analyse
+                try:
+                    initial_report = await bot.generate_market_analysis_report(cycle=0)
+                except Exception as e:
+                    initial_report = (
+                        f"[ERREUR] Impossible de générer le rapport initial: {e}"
+                    )
+
+                # 7. Envoi du message Telegram d'initialisation
+                try:
+                    await bot.telegram.send_message(
+                        "🚀 <b>Bot Trading démarré</b>\n"
+                        "✅ Initialisation réussie\n"
+                        f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
+                        f"{initial_report}"
+                    )
+                except Exception as e:
+                    print(f"Erreur lors de l'envoi Telegram : {e}")
+
+                print("✅ Bot initialized successfully")
+                return bot, valid_pairs
+
+            except Exception as e:
+                logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
+                print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
                 return None, None
 
-            # 5. Chargement des données de marché réelles si trading live
-            if getattr(bot, "is_live_trading", False):
-                await bot._fetch_real_market_data()
-                for sym in bot.market_data:
-                    print(f"{sym}: {list(bot.market_data[sym].keys())}")
+        # --- INITIALISATION BOT ---
+        bot, valid_pairs = await initialize_bot()
+        if bot is None:
+            print("❌ Initialisation échouée, arrêt du bot.")
+            return
 
-            # 6. Premier rapport d'analyse
+        # --- DÉMARRAGE MONITORING PROMETHEUS ---
+        if PROMETHEUS_AVAILABLE:
             try:
-                initial_report = await bot.generate_market_analysis_report(cycle=0)
+                start_prometheus_server(port=9900)
+                print("✅ Prometheus exporter lancé sur le port 9900")
             except Exception as e:
-                initial_report = (
-                    f"[ERREUR] Impossible de générer le rapport initial: {e}"
-                )
+                print(f"⚠️ Prometheus non initialisé : {e}")
 
-            # 7. Envoi du message Telegram d'initialisation
+        # --- Initialisation des modules avancés (Grid/DCA) ---
+        grid = GridTrading(
+            symbol="BTCUSDT",
+            min_price=25000,
+            max_price=35000,
+            grid_size=10,
+            base_qty=0.001,
+        )
+        dca = DCA(symbol="BTCUSDT", base_qty=0.002, max_steps=3)
+        grid_positions = {}  # Pour suivre les grids exécutées
+        dca_step = 0
+
+        # --- BOUCLE PRINCIPALE DU BOT ---
+        alerts = []
+        cycle = 0
+        while True:
+            cycle += 1
+            start_time = time.time()
             try:
+                # === 1. Logique complète de trading ===
+                await bot.run_trading_cycle(cycle=cycle)  # <-- Ta logique existante
+
+                # === 2. HOOKS AVANCÉS : GRID & DCA ===
+                current_price = bot.get_last_price("BTC/USDC")
+
+                # --- GRID LOGIC ---
+                grid_order = grid.check_rebalance(current_price, grid_positions)
+                if grid_order:
+                    if anti_slippage(
+                        grid_order["price"], current_price, slippage_pct=0.3
+                    ):
+                        await bot.execute_trade(
+                            "BTC/USDC",
+                            grid_order["action"],
+                            grid_order["qty"],
+                            price=grid_order["price"],
+                        )
+                        grid_positions[grid_order["price"]] = True
+
+                # --- DCA LOGIC (exemple simplifié : incrémente dca_step à chaque cycle) ---
+                dca_order = dca.next_step(current_step=dca_step)
+                if dca_order:
+                    await bot.execute_trade(
+                        "BTC/USDC", dca_order["type"], dca_order["qty"]
+                    )
+                    dca_step += 1
+
+                # === 3. Récupération de l'état à sauvegarder ===
+                if hasattr(bot, "get_performance_metrics"):
+                    bot_status = bot.get_performance_metrics()
+                elif hasattr(bot, "bot_status"):
+                    bot_status = bot.bot_status
+                else:
+                    bot_status = {}
+
+                # Chargement de l'état partagé
+                try:
+                    with open(bot.data_file, "r") as f:
+                        shared_data = json.load(f)
+                except Exception:
+                    shared_data = {}
+
+                # === 4. Monitoring/Alertes critiques ===
+                now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                alerts = shared_data.get("alerts", [])
+                balance = (
+                    bot_status.get("balance", 0)
+                    if "balance" in bot_status
+                    else bot_status.get("performance", {}).get("balance", 0)
+                )
+                if balance < 1000:
+                    alerts.append(
+                        {
+                            "level": "critical",
+                            "message": "Balance trop faible",
+                            "timestamp": now,
+                        }
+                    )
+                    await bot.telegram.send_message(
+                        "🚨 ALERTE CRITIQUE : Balance trop faible !"
+                    )
+
+                shared_data["alerts"] = alerts[-10:]  # Dernières 10 alertes
+                shared_data["bot_status"] = bot_status
+
+                # --- 5. Monitoring Prometheus ---
+                if PROMETHEUS_AVAILABLE:
+                    try:
+                        update_metrics(bot_status)
+                    except Exception as e:
+                        print(f"Prometheus update error : {e}")
+
+                # --- 6. Sauvegarde de l'état partagé ---
+                with open(bot.data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
+
+                # --- 7. Logs, dashboard, etc. ---
+                duration = time.time() - start_time
+                print(f"✅ Cycle {cycle} terminé en {duration:.1f}s")
+                await asyncio.sleep(30)
+
+            except Exception as e:
+                logger.error(f"Erreur cycle {cycle}: {e}", exc_info=True)
                 await bot.telegram.send_message(
-                    "🚀 <b>Bot Trading démarré</b>\n"
-                    "✅ Initialisation réussie\n"
-                    f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
-                    f"{initial_report}"
+                    f"❌ Erreur critique cycle {cycle}: {e}"
                 )
-            except Exception as e:
-                print(f"Erreur lors de l'envoi Telegram : {e}")
-
-            print("✅ Bot initialized successfully")
-            return bot, valid_pairs
-
-        except Exception as e:
-            logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
-            print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
-            return None, None
+                await asyncio.sleep(60)
 
     async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
         try:
