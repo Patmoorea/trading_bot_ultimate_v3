@@ -3388,11 +3388,26 @@ class TradingBotM4:
                         "total_loss": self.current_cycle * 50,
                     }
 
+            # Correction ici : vérifie la présence des clés
+            perf = data.get("bot_status", {}).get("performance")
+            if not isinstance(perf, dict):
+                # Cas où la clé n’existe pas ou est au mauvais format
+                return {
+                    "total_trades": self.current_cycle * 2,
+                    "win_rate": 0.62 + (self.current_cycle * 0.001),
+                    "profit_factor": 1.85 + (self.current_cycle * 0.01),
+                    "balance": 10000 + (self.current_cycle * 100),
+                    "wins": int(self.current_cycle * 1.2),
+                    "losses": self.current_cycle - int(self.current_cycle * 1.2),
+                    "total_profit": self.current_cycle * 150,
+                    "total_loss": self.current_cycle * 50,
+                }
+
             real_balance = self.get_binance_real_balance("USDC")
             if real_balance is not None:
-                data["bot_status"]["performance"]["balance"] = real_balance
+                perf["balance"] = real_balance
 
-            return data["bot_status"]["performance"]
+            return perf
         except Exception as e:
             print(f"[ERROR] Impossible de lire les métriques: {e}")
             # Retourne des métriques simulées si le fichier n'existe pas ou est corrompu

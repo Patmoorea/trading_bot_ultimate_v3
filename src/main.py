@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from binance.client import Client
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
+from src.bot_runner import _generate_analysis_report
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -259,7 +260,6 @@ with tab3:
     news_sentiment = shared_data.get("sentiment", None)
     trade_decisions = shared_data.get("trade_decisions", {})
     # Rapport global
-    from src.bot_runner import _generate_analysis_report
 
     report = _generate_analysis_report(
         indicators, regime, news_sentiment, trade_decisions
