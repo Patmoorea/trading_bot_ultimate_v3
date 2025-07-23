@@ -1985,8 +1985,9 @@ class TradingBotM4:
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
+                symbol_binance = symbol.replace("/", "")
                 result = await self.executor.execute_order(
-                    symbol=symbol,
+                    symbol=symbol_binance,
                     side=side,
                     quoteOrderQty=amount,
                     orderbook=orderbook,
@@ -2025,8 +2026,9 @@ class TradingBotM4:
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
+                symbol_binance = symbol.replace("/", "")
                 result = await self.executor.execute_order(
-                    symbol=symbol,
+                    symbol=symbol_binance,
                     side=side,
                     quoteOrderQty=pos["amount"],
                     orderbook=orderbook,
@@ -4575,14 +4577,14 @@ async def execute_trade(
 
         # ----- ACHAT SPOT -----
         if side.upper() == "BUY" and symbol.endswith("USDC"):
-            symbol_b = symbol_binance(symbol)
+            symbol_binance = symbol_binance(symbol)
             if self.is_long(symbol):
                 log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
                 return {"status": "skipped", "reason": "already long"}
 
             # Vérifier minNotional avant d'envoyer l'ordre
             try:
-                info = self.binance_client.get_symbol_info(symbol_b)
+                info = self.binance_client.get_symbol_info(symbol_binance)
                 min_notional = None
                 for f in info["filters"]:
                     if f["filterType"] == "MIN_NOTIONAL":
@@ -4592,7 +4594,7 @@ async def execute_trade(
                 bid, ask = self.get_ws_orderbook(symbol)
                 prix = ask if ask is not None else None
                 if prix is None:
-                    ticker = self.binance_client.get_ticker(symbol=symbol_b)
+                    ticker = self.binance_client.get_ticker(symbol=symbol_binance)
                     prix = float(ticker.get("lastPrice", 0))
                 notional = amount * prix if prix else 0
                 if min_notional is not None and notional < min_notional:
@@ -4627,8 +4629,9 @@ async def execute_trade(
                 "regime": self.regime,
                 "binance_client": self.binance_client,
             }
+            symbol_binance = symbol.replace("/", "")
             result = await self.executor.execute_order(
-                symbol=symbol_b,
+                symbol=symbol_binance,
                 side=side,
                 quoteOrderQty=amount,
                 orderbook=orderbook,
@@ -4656,7 +4659,7 @@ async def execute_trade(
 
             # Vérifier minNotional avant d'envoyer l'ordre
             try:
-                info = self.binance_client.get_symbol_info(symbol_b)
+                info = self.binance_client.get_symbol_info(symbol_binance)
                 min_notional = None
                 for f in info["filters"]:
                     if f["filterType"] == "MIN_NOTIONAL":
@@ -4665,7 +4668,7 @@ async def execute_trade(
                 bid, ask = self.get_ws_orderbook(symbol)
                 prix = bid if bid is not None else None
                 if prix is None:
-                    ticker = self.binance_client.get_ticker(symbol=symbol_b)
+                    ticker = self.binance_client.get_ticker(symbol=symbol_binance)
                     prix = float(ticker.get("lastPrice", 0))
                 pos = self.positions[symbol_key]
                 notional = pos["amount"] * prix if prix else 0
@@ -4695,8 +4698,9 @@ async def execute_trade(
                 "regime": self.regime,
                 "binance_client": self.binance_client,
             }
+            symbol_binance = symbol.replace("/", "")
             result = await self.executor.execute_order(
-                symbol=symbol_b,
+                symbol=symbol_binance,
                 side=side,
                 quoteOrderQty=pos["amount"],
                 orderbook=orderbook,
