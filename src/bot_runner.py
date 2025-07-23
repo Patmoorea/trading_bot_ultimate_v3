@@ -522,7 +522,7 @@ class TelegramNotifier:
                     continue
             # Filtrage par volatilité
             if filter_volatility and market_data and news.get("symbols"):
-                symbol = news["symbols"][0].replace("/", "")
+                symbol = news["symbols"][0].replace("/", "").upper()
                 vol = market_data.get(symbol, {}).get("1h", {}).get("volatility", 0)
                 if vol is not None and vol < filter_volatility:
                     continue
@@ -1026,7 +1026,7 @@ class TradingBotM4:
             ):
                 try:
                     # CORRECTION ICI : enlever le /
-                    symbol_binance = symbol.replace("/", "")
+                    symbol_binance = symbol.replace("/", "").upper()
                     ob = self.binance_client.get_order_book(
                         symbol=symbol_binance, limit=5
                     )
@@ -1065,7 +1065,7 @@ class TradingBotM4:
         # 4. Fallback sur API Binance si live
         if getattr(self, "is_live_trading", False) and hasattr(self, "binance_client"):
             try:
-                symbol_binance = symbol.replace("/", "")
+                symbol_binance = symbol.replace("/", "").upper()
                 ticker = self.binance_client.get_ticker(symbol=symbol_binance)
                 return float(ticker.get("lastPrice", 0))
             except Exception:
@@ -1995,7 +1995,7 @@ class TradingBotM4:
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
-                symbol_binance = symbol.replace("/", "")
+                symbol_binance = symbol.replace("/", "").upper()
                 result = await self.executor.execute_order(
                     symbol=symbol_binance,
                     side=side,
@@ -2036,7 +2036,7 @@ class TradingBotM4:
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
-                symbol_binance = symbol.replace("/", "")
+                symbol_binance = symbol.replace("/", "").upper()
                 result = await self.executor.execute_order(
                     symbol=symbol_binance,
                     side=side,
@@ -2914,7 +2914,7 @@ class TradingBotM4:
             market_data = {}
 
             for pair in self.pairs_valid:
-                pair_binance = pair.replace("/", "")
+                pair_binance = pair.replace("/", "").upper()
                 market_data[pair_binance] = {}
 
                 for tf_name, tf_value in timeframes.items():
@@ -4546,7 +4546,7 @@ async def execute_trade(
     """
 
     def symbol_binance(sym):
-        return sym.replace("/", "")
+        return sym.replace("/", "").upper()
 
     if not self.is_live_trading:
         log_dashboard(
@@ -4657,7 +4657,7 @@ async def execute_trade(
                 "regime": self.regime,
                 "binance_client": self.binance_client,
             }
-            symbol_binance = symbol.replace("/", "")
+            symbol_binance = symbol.replace("/", "").upper()
             result = await self.executor.execute_order(
                 symbol=symbol_binance,
                 side=side,
@@ -4726,7 +4726,7 @@ async def execute_trade(
                 "regime": self.regime,
                 "binance_client": self.binance_client,
             }
-            symbol_binance = symbol.replace("/", "")
+            symbol_binance = symbol.replace("/", "").upper()
             result = await self.executor.execute_order(
                 symbol=symbol_binance,
                 side=side,
@@ -5199,7 +5199,7 @@ if __name__ == "__main__":
         api_secret = os.getenv("BINANCE_API_SECRET")
 
         for pair in pairs:
-            symbol = pair.replace("/", "")
+            symbol = pair.replace("/", "").upper()
             print(f"Téléchargement des données pour {symbol}...")
             df = fetch_binance_ohlcv(
                 symbol,
