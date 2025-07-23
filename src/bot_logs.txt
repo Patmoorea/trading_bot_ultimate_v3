@@ -3015,3 +3015,11 @@
 2025-07-23T18:12:11.032445 | [ORDER] Tentative d'exécution: neutral 5.09 SUI/USDC (iceberg: False)
 2025-07-23T18:12:12.183023 | [EXECUTE TRADE] SUI/USDC | Action: BUY | Amount: 6.6 | Confidence: 0.6400221220023433
 2025-07-23T18:12:12.184593 | [ORDER] Tentative d'exécution: buy 6.6 SUI/USDC (iceberg: False)
+2025-07-23T18:41:56.156957 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-23T18:41:56.157967 | Initialisation des modèles d'IA...
+2025-07-23T18:41:56.192567 | ✅ Modèles d'IA initialisés avec succès
+2025-07-23T18:41:57.716619 | ✅ PPO Strategy initialized successfully
+2025-07-23T18:41:57.716980 | ✅ Bot initialisé avec Telegram: True
+2025-07-23T18:41:57.717021 | ✅ Trading en direct: True
+2025-07-23T18:41:57.717052 | ✅ IA activée: True
+2025-07-23T18:41:57.717082 | ✅ Analyse de news activée: True

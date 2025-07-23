@@ -3583,7 +3583,9 @@ async def run_clean_bot():
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
-
+                    print(
+                        f"[DEBUG COLLECTOR] {pair_key} {tf} {len(df) if df is not None and not df.empty else 0} lignes"
+                    )
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
