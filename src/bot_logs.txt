@@ -4184,3 +4184,12 @@
 2025-07-23T00:16:47.589125 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.39)
 2025-07-23T00:16:47.589271 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.22)
 2025-07-23T00:16:47.589412 | [SKIP TRADE] SUI/USDC | Confiance trop faible (0.44)
+2025-07-23T04:50:02.523289 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-23T04:50:02.524332 | Initialisation des modèles d'IA...
+2025-07-23T04:50:02.559035 | ✅ Modèles d'IA initialisés avec succès
+2025-07-23T04:50:04.130059 | ✅ PPO Strategy initialized successfully
+2025-07-23T04:50:04.130622 | ✅ Bot initialisé avec Telegram: True
+2025-07-23T04:50:04.130790 | ✅ Trading en direct: True
+2025-07-23T04:50:04.130839 | ✅ IA activée: True
+2025-07-23T04:50:04.130884 | ✅ Analyse de news activée: True
+2025-07-23T04:50:49.683674 | [NEWS] Lancement boucle d'analyse des news…
