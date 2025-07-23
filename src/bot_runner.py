@@ -73,6 +73,8 @@ from src.ai.hybrid_model import HybridAI
 from bingx_order_executor import BingXOrderExecutor
 from src.exchanges.bingx_exchange import BingXExchange
 
+from src.risk_tools import kelly_criterion, calculate_var, calculate_max_drawdown
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -816,6 +818,103 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
+
+    def sync_positions_with_binance(self):
+        """
+        Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
+        """
+        if self.is_live_trading and self.binance_client:
+            assets = [
+                "DOGE",
+                "BTC",
+                "ETH",
+                "LTC",
+                "XRP",
+                "BNB",
+                "ADA",
+                "SOL",
+                "TRX",
+                "SUI",
+            ]
+            for asset in assets:
+                try:
+                    balance = self.binance_client.get_asset_balance(asset=asset)
+                    if balance and float(balance.get("free", 0)) > 0:
+                        symbol = f"{asset}/USDC"
+                        self.positions[symbol] = {
+                            "side": "long",
+                            "entry_price": 0,  # Remplace 0 si tu as le vrai prix d'achat
+                            "amount": float(balance.get("free", 0)),
+                        }
+                except Exception as e:
+                    print(f"[SYNC POSITIONS] Erreur pour {asset}: {e}")
+
+        # ... après avoir initialisé self.binance_client et self.is_live_trading ...
+        # Place cet appel tout à la fin du __init__ :
+        self.sync_positions_with_binance()
+
+    def sync_positions_with_binance(self):
+        """
+        Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
+        """
+        if self.is_live_trading and self.binance_client:
+            assets = [
+                "DOGE",
+                "BTC",
+                "ETH",
+                "LTC",
+                "XRP",
+                "BNB",
+                "ADA",
+                "SOL",
+                "TRX",
+                "SUI",
+            ]
+            for asset in assets:
+                try:
+                    balance = self.binance_client.get_asset_balance(asset=asset)
+                    if balance and float(balance.get("free", 0)) > 0:
+                        symbol = f"{asset}/USDC"
+                        self.positions[symbol] = {
+                            "side": "long",
+                            "entry_price": 0,  # Remplace 0 si tu as le vrai prix d'achat
+                            "amount": float(balance.get("free", 0)),
+                        }
+                except Exception as e:
+                    print(f"[SYNC POSITIONS] Erreur pour {asset}: {e}")
+        # ... après avoir initialisé self.binance_client et self.is_live_trading ...
+        # Place cet appel tout à la fin du __init__ :
+        self.sync_positions_with_binance()
+
+    def sync_positions_with_binance(self):
+        """
+        Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
+        """
+        if self.is_live_trading and self.binance_client:
+            assets = [
+                "DOGE",
+                "BTC",
+                "ETH",
+                "LTC",
+                "XRP",
+                "BNB",
+                "ADA",
+                "SOL",
+                "TRX",
+                "SUI",
+            ]
+            for asset in assets:
+                try:
+                    balance = self.binance_client.get_asset_balance(asset=asset)
+                    if balance and float(balance.get("free", 0)) > 0:
+                        symbol = f"{asset}/USDC"
+                        self.positions[symbol] = {
+                            "side": "long",
+                            "entry_price": 0,  # Remplace 0 si tu as le vrai prix d'achat
+                            "amount": float(balance.get("free", 0)),
+                        }
+                except Exception as e:
+                    print(f"[SYNC POSITIONS] Erreur pour {asset}: {e}")
 
     def is_short(self, symbol):
         return self.positions.get(symbol, {}).get("side") == "short"
@@ -1778,11 +1877,37 @@ class TradingBotM4:
 
             # ----- VENTE SPOT -----
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
-                if not self.is_long(symbol):
-                    log_dashboard(
-                        f"[ORDER] Pas en position long sur {symbol}, vente ignorée."
-                    )
-                    return {"status": "skipped", "reason": "not in position"}
+                allow_sell = False
+                use_amount = None
+                # 1. Vente si position "virtuelle" long
+                if self.is_long(symbol):
+                    allow_sell = True
+                    use_amount = self.positions[symbol]["amount"]
+                else:
+                    # 2. Vente autorisée si solde réel Binance dispo
+                    asset = symbol.replace("/USDC", "").replace("USDC", "")
+                    balance = None
+                    try:
+                        balance = self.binance_client.get_asset_balance(asset=asset)
+                    except Exception as e:
+                        log_dashboard(
+                            f"[ORDER] Erreur récupération balance {asset}: {e}"
+                        )
+                    if balance and float(balance.get("free", 0)) >= amount:
+                        allow_sell = True
+                        use_amount = amount
+                        log_dashboard(
+                            f"[ORDER] Vente autorisée sur solde réel {asset}: {balance.get('free', 0)}"
+                        )
+                    else:
+                        log_dashboard(
+                            f"[ORDER] Pas en position long ni de solde suffisant sur {symbol}, vente ignorée."
+                        )
+                        return {
+                            "status": "skipped",
+                            "reason": "not in position or insufficient balance",
+                        }
+
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
@@ -1790,7 +1915,6 @@ class TradingBotM4:
                     )
                     return {"status": "error", "reason": "Orderbook WS not available"}
                 orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
-                pos = self.positions[symbol]
                 market_data = {
                     "recent_trades": [],
                     "volatility": self.calculate_volatility(
@@ -1802,13 +1926,14 @@ class TradingBotM4:
                 result = await self.executor.execute_order(
                     symbol=symbol,
                     side=side,
-                    quoteOrderQty=pos["amount"],
+                    quoteOrderQty=use_amount,
                     orderbook=orderbook,
                     market_data=market_data,
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
-                if result.get("status") == "completed":
+                # Retire la position virtuelle si elle existait
+                if result.get("status") == "completed" and self.is_long(symbol):
                     self.positions.pop(symbol, None)
 
             # ----- SHORT BINGX -----
@@ -3321,6 +3446,31 @@ class TradingBotM4:
                         df_ta["kc_lower"] = kc["KCLower_20_2_10"]
                 except Exception:
                     df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
+                try:
+                    supertrend = df_ta.ta.supertrend(length=7, multiplier=3.0)
+                    if supertrend is not None and not supertrend.empty:
+                        df_ta["supertrend"] = supertrend.iloc[:, 0]
+                except Exception:
+                    pass
+                try:
+                    ichimoku = df_ta.ta.ichimoku()
+                    if ichimoku is not None and not ichimoku.empty:
+                        df_ta["ichimoku_a"] = ichimoku["ISA_9"]
+                        df_ta["ichimoku_b"] = ichimoku["ISB_26"]
+                except Exception:
+                    pass
+                try:
+                    keltner = df_ta.ta.kc()
+                    if keltner is not None and not keltner.empty:
+                        df_ta["keltner_upper"] = keltner["KCUpper_20_2_10"]
+                        df_ta["keltner_lower"] = keltner["KCLower_20_2_10"]
+                except Exception:
+                    pass
+                try:
+                    accdist = df_ta.ta.accdist()
+                    df_ta["accumulation"] = accdist
+                except Exception:
+                    pass
 
                 all_indics = [
                     "sma_20",
@@ -3583,9 +3733,9 @@ async def run_clean_bot():
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
-                    print(
-                        f"[DEBUG COLLECTOR] {pair_key} {tf} {len(df) if df is not None and not df.empty else 0} lignes"
-                    )
+                    # print(
+                    # f"[DEBUG COLLECTOR] {pair_key} {tf} {len(df) if df is not None and not df.empty else 0} lignes"
+                    # )
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
@@ -4331,7 +4481,8 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
 
 
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
-    """Envoie les rapports de fin de cycle"""
+    """Envoie les rapports de fin de cycle et alertes de risque avancé"""
+
     try:
         # 1. Rapport des trades si nécessaire
         if trade_decisions:
@@ -4388,13 +4539,25 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                 "sentiment": decision.get("signals", {}).get("sentiment", 0),
             }
 
-        # PATCH : Sauvegarde des décisions dans shared_data.json pour dashboard Streamlit
+        # PATCH : Sauvegarde des décisions dans shared_data.json pour dashboard Streamlit + equity_history
         try:
             with open(bot.data_file, "r") as f:
-                shared_data = json.load(f)
-            shared_data["trade_decisions"] = trade_decisions_dict
+                data = json.load(f)
+            data["trade_decisions"] = trade_decisions_dict
+
+            # ==== AJOUT HISTORIQUE BALANCE POUR DRAWDOWN/VaR ====
+            perf = bot.get_performance_metrics()
+            equity_history = data.get("equity_history", [])
+            equity_history.append(
+                {"timestamp": get_current_time(), "balance": perf.get("balance", 0)}
+            )
+            # Limite la taille de l'historique si besoin
+            if len(equity_history) > 1000:
+                equity_history = equity_history[-1000:]
+            data["equity_history"] = equity_history
+
             with open(bot.data_file, "w") as f:
-                json.dump(shared_data, f, indent=4)
+                json.dump(data, f, indent=4)
         except Exception as e:
             logging.error(f"Erreur sauvegarde trade_decisions : {e}")
 
@@ -4411,6 +4574,47 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         await bot.telegram.send_message(
             build_telegram_summary(bot, trade_decisions, news_sentiment)
         )
+
+        # ==== ALERTES RISQUE AVANCÉES (Kelly, Drawdown, VaR) ====
+        try:
+            # 1. Kelly
+            kelly = kelly_criterion(
+                win_rate=perf.get("win_rate", 0),
+                payoff_ratio=perf.get("profit_factor", 1),
+            )
+            if abs(kelly) > 0.5:
+                await bot.telegram.send_message(
+                    f"⚠️ Kelly fraction élevée : {kelly:.2f} — attention à la taille des positions !"
+                )
+
+            # 2. Drawdown
+            equity_curve = [
+                pt.get("balance", 0)
+                for pt in equity_history
+                if pt.get("balance", 0) > 0
+            ]
+            if equity_curve and len(equity_curve) > 10:
+                max_dd = calculate_max_drawdown(np.array(equity_curve))
+                if max_dd < -0.15:
+                    await bot.telegram.send_message(
+                        f"🚨 Max drawdown dépassé : {max_dd:.2%} ! Pause conseillée ou réduction risque."
+                    )
+
+            # 3. VaR
+            returns = []
+            try:
+                equity_curve_np = np.array(equity_curve)
+                returns = np.diff(equity_curve_np) / equity_curve_np[:-1]
+            except Exception:
+                returns = []
+            if returns is not None and len(returns) > 10:
+                var95 = calculate_var(returns, 0.05)
+                if var95 < -0.05:
+                    await bot.telegram.send_message(
+                        f"🛑 VaR(95%) critique : {var95:.2%} sur la période !"
+                    )
+        except Exception as e:
+            logging.error(f"Erreur alertes risque avancé : {e}")
 
     except Exception as e:
         logging.error(f"Erreur envoi rapports: {e}")

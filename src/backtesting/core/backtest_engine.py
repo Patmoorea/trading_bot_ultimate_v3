@@ -114,3 +114,13 @@ class BacktestEngine:
         self.positions = {}
         self.trades = []
         self.metrics = {}
+
+    def monte_carlo_backtest(equity_curve, n_simulations=1000):
+        results = []
+        returns = np.diff(equity_curve) / equity_curve[:-1]
+        for _ in range(n_simulations):
+            simulated = [equity_curve[0]]
+            for r in np.random.choice(returns, size=len(returns)):
+                simulated.append(simulated[-1] * (1 + r))
+            results.append(simulated[-1])
+        return np.percentile(results, [5, 50, 95])  # VaR5%, Median, VaR95%

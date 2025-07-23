@@ -12,6 +12,7 @@ from binance.client import Client
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 from src.bot_runner import _generate_analysis_report
+from src.risk_tools import kelly_criterion, calculate_var, calculate_max_drawdown
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -397,6 +398,7 @@ with tab5:
 with tab6:
     st.subheader("Performance et Métriques")
     perf = shared_data.get("bot_status", {}).get("performance", {})
+    equity_history = shared_data.get("equity_history", [])
     returns = shared_data.get("returns_array", np.linspace(0, 27.5, 30))
     x_axis = list(range(len(returns)))
     cumulative_returns = 1 + np.array(returns) / 100
@@ -428,6 +430,35 @@ with tab6:
     col2.metric("Max Drawdown", f"{perf.get('max_drawdown',0):.1%}")
     col3.metric("Sharpe Ratio", f"{perf.get('sharpe_ratio',0):.2f}")
     col3.metric("Balance Finale", f"${perf.get('balance',10000):,.0f}")
+
+    # --- Ajout Risk Management avancé ---
+    equity_curve = [
+        pt.get("balance", 0) for pt in equity_history if pt.get("balance", 0) > 0
+    ]
+    kelly = None
+    max_dd = None
+    var95 = None
+    if equity_curve and len(equity_curve) > 10:
+        equity_curve_np = np.array(equity_curve)
+        max_dd = calculate_max_drawdown(equity_curve_np)
+        returns_curve = np.diff(equity_curve_np) / equity_curve_np[:-1]
+        if len(returns_curve) > 10:
+            var95 = calculate_var(returns_curve, 0.05)
+        kelly = kelly_criterion(
+            win_rate=perf.get("win_rate", 0), payoff_ratio=perf.get("profit_factor", 1)
+        )
+    with st.expander("📉 Indicateurs avancés de risque"):
+        st.metric("Kelly optimal", f"{kelly:.2f}" if kelly is not None else "N/A")
+        st.metric("Max Drawdown", f"{max_dd:.2%}" if max_dd is not None else "N/A")
+        st.metric("VaR (95%)", f"{var95:.2%}" if var95 is not None else "N/A")
+        if kelly is not None and abs(kelly) > 0.5:
+            st.warning(
+                f"⚠️ Kelly fraction élevée : {kelly:.2f} — attention à la taille des positions !"
+            )
+        if max_dd is not None and max_dd < -0.15:
+            st.error(f"🚨 Max drawdown dépassé : {max_dd:.2%} ! Pause conseillée.")
+        if var95 is not None and var95 < -0.05:
+            st.error(f"🛑 VaR(95%) critique : {var95:.2%}")
 
 # --- TAB LOGS ---
 with tab_logs:
