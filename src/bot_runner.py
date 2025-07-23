@@ -1,5 +1,6 @@
 import os
 
+print("=== DEBUT SCRIPT BOT_RUNNER ===")
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
 import warnings
@@ -348,8 +349,8 @@ os.environ["STREAMLIT_HIDE_WARNINGS"] = "1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 # Supprimer TOUS les warnings Python
-warnings.filterwarnings("ignore")
-warnings.simplefilter("ignore")
+# warnings.filterwarnings("ignore")
+# warnings.simplefilter("ignore")
 
 # Configuration logging pour ne montrer que nos messages
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -3807,6 +3808,17 @@ class TradingBotM4:
             return ["BTC/USDT", "ETH/USDT"]
 
     async def run_clean_bot():
+        print(">>> RUN_CLEAN_BOT DEMARRE <<<")
+        try:
+            print(">>> TEST AVANT AdvancedIndicators <<<")
+            orderflow_indicators = AdvancedIndicators()
+            print(">>> TEST APRES AdvancedIndicators <<<")
+        except Exception as e:
+            print("ERREUR à l'instanciation d'AdvancedIndicators :", e)
+            import traceback
+
+            traceback.print_exc()
+
         """
         Fonction principale du bot de trading
         Gère l'initialisation, l'analyse de marché, l'exécution des stratégies,
@@ -4335,9 +4347,6 @@ class TradingBotM4:
             await handle_shutdown(bot, "👋 Bot arrêté proprement")
         except Exception as e:
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
-
-    # Démarrage de la boucle principale
-    await main()
 
 
 def prepare_ohlcv_data(ohlcv_data):
@@ -5155,4 +5164,5 @@ if __name__ == "__main__":
         sys.exit(0)
 
     else:
+        print("=== Lancement run_clean_bot ===")
         asyncio.run(run_clean_bot())
