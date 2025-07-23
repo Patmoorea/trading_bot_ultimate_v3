@@ -4514,6 +4514,10 @@ async def execute_trade(
     - BUY sur BingX pour rachat short
     - Gère le suivi de position SPOT et le stop-loss automatique
     """
+
+    def symbol_binance(sym):
+        return sym.replace("/", "")
+
     if not self.is_live_trading:
         log_dashboard(
             f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -4522,6 +4526,7 @@ async def execute_trade(
             f"SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
         )
         # Gestion état simulée
+        symbol_key = symbol.replace("/", "").upper()
         if side.upper() == "BUY":
             if self.is_long(symbol):
                 log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré (simu)")
@@ -4537,7 +4542,6 @@ async def execute_trade(
                     f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                 )
                 return {"status": "skipped", "reason": "not in position"}
-            symbol_key = symbol.replace("/", "").upper()
             self.positions.pop(symbol_key, None)
         elif side.upper() == "SHORT":
             if self.is_short(symbol):
@@ -4555,7 +4559,6 @@ async def execute_trade(
                     f"[ORDER] Pas en position short sur {symbol}, rachat ignoré (simu)"
                 )
                 return {"status": "skipped", "reason": "not in short"}
-            symbol_key = symbol.replace("/", "").upper()
             self.positions.pop(symbol_key, None)
         return {
             "status": "simulated",
@@ -4572,10 +4575,43 @@ async def execute_trade(
 
         # ----- ACHAT SPOT -----
         if side.upper() == "BUY" and symbol.endswith("USDC"):
+            symbol_b = symbol_binance(symbol)
             if self.is_long(symbol):
                 log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
                 return {"status": "skipped", "reason": "already long"}
-            bid, ask = self.get_ws_orderbook(symbol)
+
+            # Vérifier minNotional avant d'envoyer l'ordre
+            try:
+                info = self.binance_client.get_symbol_info(symbol_b)
+                min_notional = None
+                for f in info["filters"]:
+                    if f["filterType"] == "MIN_NOTIONAL":
+                        min_notional = float(f["minNotional"])
+                        break
+                # Utilise le prix du carnet d'ordres si possible
+                bid, ask = self.get_ws_orderbook(symbol)
+                prix = ask if ask is not None else None
+                if prix is None:
+                    ticker = self.binance_client.get_ticker(symbol=symbol_b)
+                    prix = float(ticker.get("lastPrice", 0))
+                notional = amount * prix if prix else 0
+                if min_notional is not None and notional < min_notional:
+                    log_dashboard(
+                        f"[ORDER] Montant trop petit pour {symbol}: {notional} < minNotional {min_notional}"
+                    )
+                    return {
+                        "status": "error",
+                        "reason": f"minNotional {min_notional} non atteint",
+                    }
+            except Exception as e:
+                log_dashboard(f"[ORDER] Impossible de vérifier minNotional: {e}")
+
+            usdc_balance = self.get_binance_real_balance("USDC")
+            if usdc_balance is not None and amount > usdc_balance:
+                log_dashboard(
+                    f"[ORDER] Solde insuffisant pour achat {symbol}. Requis: {amount}, dispo: {usdc_balance}"
+                )
+                return {"status": "skipped", "reason": "insufficient balance"}
             if bid is None or ask is None:
                 log_dashboard(
                     f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
@@ -4592,7 +4628,7 @@ async def execute_trade(
                 "binance_client": self.binance_client,
             }
             result = await self.executor.execute_order(
-                symbol=symbol,
+                symbol=symbol_b,
                 side=side,
                 quoteOrderQty=amount,
                 orderbook=orderbook,
@@ -4600,6 +4636,7 @@ async def execute_trade(
                 iceberg=iceberg,
                 iceberg_visible_size=iceberg_visible_size,
             )
+            symbol_key = symbol.replace("/", "").upper()
             if result.get("status") == "completed":
                 self.positions[symbol_key] = {
                     "side": "long",
@@ -4609,19 +4646,46 @@ async def execute_trade(
 
         # ----- VENTE SPOT -----
         elif side.upper() == "SELL" and symbol.endswith("USDC"):
+            symbol_b = symbol_binance(symbol)
+            symbol_key = symbol.replace("/", "").upper()
             if not self.is_long(symbol):
                 log_dashboard(
                     f"[ORDER] Pas en position long sur {symbol}, vente ignorée."
                 )
                 return {"status": "skipped", "reason": "not in position"}
-            bid, ask = self.get_ws_orderbook(symbol)
+
+            # Vérifier minNotional avant d'envoyer l'ordre
+            try:
+                info = self.binance_client.get_symbol_info(symbol_b)
+                min_notional = None
+                for f in info["filters"]:
+                    if f["filterType"] == "MIN_NOTIONAL":
+                        min_notional = float(f["minNotional"])
+                        break
+                bid, ask = self.get_ws_orderbook(symbol)
+                prix = bid if bid is not None else None
+                if prix is None:
+                    ticker = self.binance_client.get_ticker(symbol=symbol_b)
+                    prix = float(ticker.get("lastPrice", 0))
+                pos = self.positions[symbol_key]
+                notional = pos["amount"] * prix if prix else 0
+                if min_notional is not None and notional < min_notional:
+                    log_dashboard(
+                        f"[ORDER] Montant trop petit pour {symbol} (vente): {notional} < minNotional {min_notional}"
+                    )
+                    return {
+                        "status": "error",
+                        "reason": f"minNotional {min_notional} non atteint",
+                    }
+            except Exception as e:
+                log_dashboard(f"[ORDER] Impossible de vérifier minNotional: {e}")
+
             if bid is None or ask is None:
                 log_dashboard(
                     f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
                 )
                 return {"status": "error", "reason": "Orderbook WS not available"}
             orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
-            symbol_key = symbol.replace("/", "").upper()
             pos = self.positions[symbol_key]
             market_data = {
                 "recent_trades": [],
@@ -4632,7 +4696,7 @@ async def execute_trade(
                 "binance_client": self.binance_client,
             }
             result = await self.executor.execute_order(
-                symbol=symbol,
+                symbol=symbol_b,
                 side=side,
                 quoteOrderQty=pos["amount"],
                 orderbook=orderbook,
@@ -4641,7 +4705,6 @@ async def execute_trade(
                 iceberg_visible_size=iceberg_visible_size,
             )
             if result.get("status") == "completed":
-                symbol_key = symbol.replace("/", "").upper()
                 self.positions.pop(symbol_key, None)
 
         # ----- OUVERTURE SHORT BINGX -----
@@ -4656,6 +4719,7 @@ async def execute_trade(
             result = await self.bingx_executor.short_order(
                 symbol_bingx, qty, leverage=3
             )
+            symbol_key = symbol.replace("/", "").upper()
             if result.get("status") == "completed":
                 self.positions[symbol_key] = {
                     "side": "short",
@@ -4673,7 +4737,6 @@ async def execute_trade(
             # Il faut avoir une méthode close_short_order côté BingXOrderExecutor, sinon utiliser un BUY ordinaire sur futures
             result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
             if result.get("status") == "completed":
-                symbol_key = symbol.replace("/", "").upper()
                 self.positions.pop(symbol_key, None)
 
         else:

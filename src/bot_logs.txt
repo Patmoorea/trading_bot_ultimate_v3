@@ -4194,3 +4194,47 @@
 2025-07-23T04:50:04.130884 | ✅ Analyse de news activée: True
 2025-07-23T04:50:49.683674 | [NEWS] Lancement boucle d'analyse des news…
 2025-07-23T04:51:31.101681 | [NEWS] Score sentiment global: -0.16 | Impact: 0.57 | Événements: Aucun
+2025-07-23T04:54:25.879561 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-23T04:54:25.880637 | Initialisation des modèles d'IA...
+2025-07-23T04:54:25.915793 | ✅ Modèles d'IA initialisés avec succès
+2025-07-23T04:54:27.464783 | ✅ PPO Strategy initialized successfully
+2025-07-23T04:54:27.465183 | ✅ Bot initialisé avec Telegram: True
+2025-07-23T04:54:27.465295 | ✅ Trading en direct: True
+2025-07-23T04:54:27.465330 | ✅ IA activée: True
+2025-07-23T04:54:27.465367 | ✅ Analyse de news activée: True
+2025-07-23T04:55:14.394998 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-23T04:55:30.156274 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T04:55:30.156562 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T04:55:30.156603 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T04:56:02.346016 | [NEWS] Score sentiment global: -0.16 | Impact: 0.57 | Événements: Aucun
+2025-07-23T04:56:24.453954 | [ORDER] Tentative d'exécution: buy 0.002 BTC/USDC (iceberg: False)
+2025-07-23T04:57:09.068150 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T04:57:09.069080 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T04:57:09.069227 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T04:57:25.799994 | [ORDER] Tentative d'exécution: buy 0.003 BTC/USDC (iceberg: False)
+2025-07-23T04:58:09.809918 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T04:58:09.813210 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T04:58:09.813346 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T04:58:23.409142 | [ORDER] Tentative d'exécution: buy 0.0045000000000000005 BTC/USDC (iceberg: False)
+2025-07-23T04:59:05.957264 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T04:59:05.958648 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T04:59:05.958823 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T04:59:56.809931 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T04:59:56.812148 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T04:59:56.812386 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T05:00:47.534314 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T05:00:47.536397 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T05:00:47.536556 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T05:01:38.069975 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T05:01:38.072790 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T05:01:38.072985 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T05:02:29.844802 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T05:02:29.856963 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T05:02:29.866884 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T05:03:13.245027 | [NEWS] Score sentiment global: -0.16 | Impact: 0.56 | Événements: Aucun
+2025-07-23T05:03:21.656062 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T05:03:21.656832 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T05:03:21.657101 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T05:04:15.394414 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T05:04:15.397460 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T05:04:15.397658 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
