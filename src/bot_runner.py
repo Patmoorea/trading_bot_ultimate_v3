@@ -3990,11 +3990,12 @@ async def execute_trade(
     """
     Exécute un ordre de trading avec logs détaillés.
     - BUY sur Binance spot (quoteOrderQty)
-    - SELL sur Binance spot (revente, si déjà long)
+    - SELL sur Binance spot (revente, si déjà long OU si solde réel suffisant)
     - SHORT sur BingX (futures)
     - BUY sur BingX pour rachat short
     - Gère le suivi de position SPOT et le stop-loss automatique
     """
+
     if not self.is_live_trading:
         log_dashboard(
             f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -4088,11 +4089,35 @@ async def execute_trade(
 
         # ----- VENTE SPOT -----
         elif side.upper() == "SELL" and symbol.endswith("USDC"):
-            if not self.is_long(symbol):
-                log_dashboard(
-                    f"[ORDER] Pas en position long sur {symbol}, vente ignorée."
-                )
-                return {"status": "skipped", "reason": "not in position"}
+            # 1. Vente si position virtuelle "long"
+            allow_sell = False
+            use_amount = None
+            if self.is_long(symbol):
+                allow_sell = True
+                use_amount = self.positions[symbol]["amount"]
+            else:
+                # 2. Sinon, vente si solde réel Binance dispo
+                asset = symbol.replace("USDC", "")
+                balance = None
+                try:
+                    balance = self.binance_client.get_asset_balance(asset=asset)
+                except Exception as e:
+                    log_dashboard(f"[ORDER] Erreur récupération balance {asset}: {e}")
+                if balance and float(balance.get("free", 0)) >= amount:
+                    allow_sell = True
+                    use_amount = amount
+                    log_dashboard(
+                        f"[ORDER] Vente autorisée sur solde réel {asset}: {balance['free']}"
+                    )
+                else:
+                    log_dashboard(
+                        f"[ORDER] Pas en position long ni de solde suffisant sur {symbol}, vente ignorée."
+                    )
+                    return {
+                        "status": "skipped",
+                        "reason": "not in position or insufficient balance",
+                    }
+
             bid, ask = self.get_ws_orderbook(symbol)
             if bid is None or ask is None:
                 log_dashboard(
@@ -4100,7 +4125,6 @@ async def execute_trade(
                 )
                 return {"status": "error", "reason": "Orderbook WS not available"}
             orderbook = {"bids": [[bid, 1.0]], "asks": [[ask, 1.0]]}
-            pos = self.positions[symbol]
             market_data = {
                 "recent_trades": [],
                 "volatility": self.calculate_volatility(
@@ -4112,13 +4136,13 @@ async def execute_trade(
             result = await self.executor.execute_order(
                 symbol=symbol,
                 side=side,
-                quoteOrderQty=pos["amount"],
+                quoteOrderQty=use_amount,
                 orderbook=orderbook,
                 market_data=market_data,
                 iceberg=iceberg,
                 iceberg_visible_size=iceberg_visible_size,
             )
-            if result.get("status") == "completed":
+            if result.get("status") == "completed" and self.is_long(symbol):
                 self.positions.pop(symbol, None)
 
         # ----- OUVERTURE SHORT BINGX -----
