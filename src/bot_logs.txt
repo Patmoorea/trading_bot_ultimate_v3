@@ -4193,3 +4193,4 @@
 2025-07-23T04:50:04.130839 | ✅ IA activée: True
 2025-07-23T04:50:04.130884 | ✅ Analyse de news activée: True
 2025-07-23T04:50:49.683674 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-23T04:51:31.101681 | [NEWS] Score sentiment global: -0.16 | Impact: 0.57 | Événements: Aucun

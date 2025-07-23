@@ -3919,7 +3919,7 @@ async def run_clean_bot():
         start_time = time.time()
         try:
             # === 1. Logique complète de trading ===
-            await bot.run_trading_cycle(cycle=cycle)  # <-- Ta logique existante
+            await execute_trading_cycle(bot, valid_pairs)  # <-- Ta logique existante
 
             # === 2. HOOKS AVANCÉS : GRID & DCA ===
             current_price = bot.get_last_price("BTC/USDC")
