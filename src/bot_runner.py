@@ -3996,6 +3996,7 @@ class TradingBotM4:
 
                 # --- 7. Logs, dashboard, etc. ---
                 duration = time.time() - start_time
+                bot_status["latency"] = duration
                 print(f"✅ Cycle {cycle} terminé en {duration:.1f}s")
                 await asyncio.sleep(30)
 
