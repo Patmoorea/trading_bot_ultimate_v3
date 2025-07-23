@@ -349,8 +349,8 @@ os.environ["STREAMLIT_HIDE_WARNINGS"] = "1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 # Supprimer TOUS les warnings Python
-# warnings.filterwarnings("ignore")
-# warnings.simplefilter("ignore")
+warnings.filterwarnings("ignore")
+warnings.simplefilter("ignore")
 
 # Configuration logging pour ne montrer que nos messages
 logging.basicConfig(level=logging.INFO, format="%(message)s")
