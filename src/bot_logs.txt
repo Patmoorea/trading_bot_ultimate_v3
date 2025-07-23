@@ -2114,3 +2114,28 @@
 2025-07-23T16:36:32.692312 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
 2025-07-23T16:36:32.693428 | 🎯 Stratégie active: Range/Scalping
 2025-07-23T16:36:32.693593 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:39:31.356217 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-23T16:39:31.358380 | Initialisation des modèles d'IA...
+2025-07-23T16:39:31.388591 | ✅ Modèles d'IA initialisés avec succès
+2025-07-23T16:39:32.969816 | ✅ PPO Strategy initialized successfully
+2025-07-23T16:39:32.970241 | ✅ Bot initialisé avec Telegram: True
+2025-07-23T16:39:32.970289 | ✅ Trading en direct: True
+2025-07-23T16:39:32.970328 | ✅ IA activée: True
+2025-07-23T16:39:32.970365 | ✅ Analyse de news activée: True
+2025-07-23T16:40:17.655313 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-23T16:40:33.863380 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T16:40:33.863821 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T16:40:33.863899 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:41:04.649150 | [ORDER] Tentative d'exécution: buy 0.002 BTC/USDC (iceberg: False)
+2025-07-23T16:41:50.725747 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T16:41:50.726967 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T16:41:50.727193 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:42:05.751569 | [ORDER] Tentative d'exécution: buy 0.003 BTC/USDC (iceberg: False)
+2025-07-23T16:55:40.489752 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-23T16:55:40.490571 | Initialisation des modèles d'IA...
+2025-07-23T16:55:40.519587 | ✅ Modèles d'IA initialisés avec succès
+2025-07-23T16:55:42.404094 | ✅ PPO Strategy initialized successfully
+2025-07-23T16:55:42.404545 | ✅ Bot initialisé avec Telegram: True
+2025-07-23T16:55:42.404610 | ✅ Trading en direct: True
+2025-07-23T16:55:42.404666 | ✅ IA activée: True
+2025-07-23T16:55:42.404719 | ✅ Analyse de news activée: True

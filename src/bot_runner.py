@@ -3948,6 +3948,17 @@ async def run_clean_bot():
             # === 1. Logique complète de trading ===
             await execute_trading_cycle(bot, valid_pairs)  # <-- Ta logique existante
 
+            # === DEBUG WS BUFFER ===
+            print("=== DEBUG WS BUFFER ===")
+            print(
+                "Keys in ws_collector.buffers:", list(bot.ws_collector.buffers.keys())
+            )
+            for pair in bot.pairs_valid:
+                pair_key = pair.replace("/", "").upper()
+                for tf in bot.config["TRADING"]["timeframes"]:
+                    df = bot.ws_collector.get_dataframe(pair_key, tf)
+                    print(f"{pair_key} {tf}: {0 if df is None else len(df)} lignes")
+
             # === 2. HOOKS AVANCÉS : GRID & DCA ===
             current_price = bot.get_last_price("BTC/USDC")
 
