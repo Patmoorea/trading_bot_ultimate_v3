@@ -277,9 +277,6 @@ with tab3:
 # --- TAB4 PORTEFEUILLE / POSITIONS ---
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
-    # Position simulée (ancienne logique)
-    positions = shared_data.get("positions", {})
-    # Ajout: positions réelles Binance SPOT
     positions_binance = shared_data.get("positions_binance", {})
     if positions_binance:
         pos_data = []

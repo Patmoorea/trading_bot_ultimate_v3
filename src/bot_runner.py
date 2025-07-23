@@ -913,7 +913,8 @@ class TradingBotM4:
 
     def sync_binance_positions(self):
         """
-        Synchronise le portefeuille spot réel Binance avec self.positions, et calcule le PnL latente.
+        Synchronise le portefeuille réel Binance avec self.positions, et calcule le PnL latente.
+        Met à jour la clé positions_binance dans shared_data.json à chaque appel.
         """
         if not getattr(self, "is_live_trading", False) or not hasattr(
             self, "binance_client"
@@ -971,16 +972,25 @@ class TradingBotM4:
             except Exception as e:
                 print(f"[SYNC ERROR] {pair_key}: {e}")
 
-        # Sauvegarde dans shared_data.json
+        # Sauvegarde dans shared_data.json, MAJ ou ajout propre de la clé positions_binance
         try:
-            with open(self.data_file, "r") as f:
-                data = json.load(f)
-        except Exception:
-            data = {}
+            if os.path.exists(self.data_file):
+                with open(self.data_file, "r") as f:
+                    try:
+                        data = json.load(f)
+                    except Exception as e:
+                        print(
+                            f"[ERROR] JSON corrompu, création d'un nouveau fichier: {e}"
+                        )
+                        data = {}
+            else:
+                data = {}
 
-        data["positions_binance"] = positions
-        with open(self.data_file, "w") as f:
-            json.dump(data, f, indent=2)
+            data["positions_binance"] = positions
+            with open(self.data_file, "w") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"[SYNC ERROR] Impossible de sauvegarder positions_binance: {e}")
 
     def update_pairs_from_config(self):
         self.pairs_valid = self.config["TRADING"]["pairs"]
@@ -3966,6 +3976,9 @@ async def run_clean_bot():
                 bot_status = bot.bot_status
             else:
                 bot_status = {}
+
+            # Synchronise et sauvegarde le portefeuille Binance à chaque cycle
+            bot.sync_binance_positions()
 
             # Chargement de l'état partagé
             try:
