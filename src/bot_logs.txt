@@ -2080,3 +2080,6 @@
 2025-07-23T16:24:04.286708 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
 2025-07-23T16:24:04.287578 | 🎯 Stratégie active: Range/Scalping
 2025-07-23T16:24:04.287772 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:24:57.620232 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T16:24:57.620931 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T16:24:57.621097 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
