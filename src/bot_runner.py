@@ -3831,9 +3831,76 @@ def load_config():
     try:
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)
-            return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
+            # Correction : fallback sur USDC, PAS USDT !
+            return config.get("valid_pairs", ["BTC/USDC", "ETH/USDC"])
     except Exception:
-        return ["BTC/USDT", "ETH/USDT"]
+        # Correction ici aussi !
+        return ["BTC/USDC", "ETH/USDC"]
+
+
+async def initialize_bot():
+    print(">>> INITIALIZE_BOT <<<")
+    bot = None
+    try:
+        print("\n=== DÉMARRAGE DU BOT ===")
+        print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
+
+        # 1. Configuration initiale
+        valid_pairs = load_config()
+
+        # 2. Création et configuration du bot
+        bot = TradingBotM4()
+        bot.pairs_valid = valid_pairs
+
+        # 3. Préchargement historique (optionnel, sécurisé)
+        if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
+            for symbol in bot.config["TRADING"]["pairs"]:
+                symbol_binance = symbol.replace("/", "").upper()
+                for tf in bot.config["TRADING"]["timeframes"]:
+                    try:
+                        bot.ws_collector.preload_historical(
+                            bot.binance_client, symbol_binance, tf, limit=2000
+                        )
+                        print(f"Préchargement {symbol_binance} {tf} OK")
+                    except Exception as e:
+                        print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
+
+        # 4. Setup des composants internes (websockets, news, etc)
+        ok = await bot._setup_components()
+        if not ok:
+            print("❌ Echec de l'initialisation des composants.")
+            return None, None
+
+        # 5. Chargement des données de marché réelles si trading live
+        if getattr(bot, "is_live_trading", False):
+            await bot._fetch_real_market_data()
+            for sym in bot.market_data:
+                print(f"{sym}: {list(bot.market_data[sym].keys())}")
+
+        # 6. Premier rapport d'analyse
+        try:
+            initial_report = await bot.generate_market_analysis_report(cycle=0)
+        except Exception as e:
+            initial_report = f"[ERREUR] Impossible de générer le rapport initial: {e}"
+
+        # 7. Envoi du message Telegram d'initialisation
+        try:
+            await bot.telegram.send_message(
+                "🚀 <b>Bot Trading démarré</b>\n"
+                "✅ Initialisation réussie\n"
+                f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
+                f"{initial_report}"
+            )
+        except Exception as e:
+            print(f"Erreur lors de l'envoi Telegram : {e}")
+
+        print("✅ Bot initialized successfully")
+        return bot, valid_pairs
+
+    except Exception as e:
+        logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
+        print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
+        return None, None
 
 
 async def run_clean_bot():
@@ -3845,72 +3912,6 @@ async def run_clean_bot():
     print(">>> RUN_CLEAN_BOT DEMARRE <<<")
     orderflow_indicators = AdvancedIndicators()
     logger = logging.getLogger(__name__)
-
-    async def initialize_bot():
-        print(">>> INITIALIZE_BOT <<<")
-        bot = None
-        try:
-            print("\n=== DÉMARRAGE DU BOT ===")
-            print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
-
-            # 1. Configuration initiale
-            valid_pairs = load_config()
-
-            # 2. Création et configuration du bot
-            bot = TradingBotM4()
-            bot.pairs_valid = valid_pairs
-
-            # 3. Préchargement historique (optionnel, sécurisé)
-            if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
-                for symbol in bot.config["TRADING"]["pairs"]:
-                    symbol_binance = symbol.replace("/", "").upper()
-                    for tf in bot.config["TRADING"]["timeframes"]:
-                        try:
-                            bot.ws_collector.preload_historical(
-                                bot.binance_client, symbol_binance, tf, limit=2000
-                            )
-                            print(f"Préchargement {symbol_binance} {tf} OK")
-                        except Exception as e:
-                            print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
-
-            # 4. Setup des composants internes (websockets, news, etc)
-            ok = await bot._setup_components()
-            if not ok:
-                print("❌ Echec de l'initialisation des composants.")
-                return None, None
-
-            # 5. Chargement des données de marché réelles si trading live
-            if getattr(bot, "is_live_trading", False):
-                await bot._fetch_real_market_data()
-                for sym in bot.market_data:
-                    print(f"{sym}: {list(bot.market_data[sym].keys())}")
-
-            # 6. Premier rapport d'analyse
-            try:
-                initial_report = await bot.generate_market_analysis_report(cycle=0)
-            except Exception as e:
-                initial_report = (
-                    f"[ERREUR] Impossible de générer le rapport initial: {e}"
-                )
-
-            # 7. Envoi du message Telegram d'initialisation
-            try:
-                await bot.telegram.send_message(
-                    "🚀 <b>Bot Trading démarré</b>\n"
-                    "✅ Initialisation réussie\n"
-                    f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
-                    f"{initial_report}"
-                )
-            except Exception as e:
-                print(f"Erreur lors de l'envoi Telegram : {e}")
-
-            print("✅ Bot initialized successfully")
-            return bot, valid_pairs
-
-        except Exception as e:
-            logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
-            print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
-            return None, None
 
     # --- INITIALISATION BOT ---
     bot, valid_pairs = await initialize_bot()
