@@ -3797,556 +3797,523 @@ class TradingBotM4:
                 print(f"  {len(df_live)} lignes live trouvées, entraînement en cours…")
                 train_with_live_data(df_live)
 
-    def load_config():
-        """Charge la configuration des paires valides"""
-        CONFIG_PATH = "config.json"
+
+def load_config():
+    """Charge la configuration des paires valides"""
+    CONFIG_PATH = "config.json"
+    try:
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+            return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
+    except Exception:
+        return ["BTC/USDT", "ETH/USDT"]
+
+
+async def run_clean_bot():
+    """
+    Fonction principale du bot de trading
+    Gère l'initialisation, l'analyse de marché, l'exécution des stratégies,
+    le monitoring Prometheus, les alertes critiques et les hooks Grid/DCA/anti-slippage.
+    """
+    print(">>> RUN_CLEAN_BOT DEMARRE <<<")
+    orderflow_indicators = AdvancedIndicators()
+    logger = logging.getLogger(__name__)
+
+    async def initialize_bot():
+        print(">>> INITIALIZE_BOT <<<")
+        bot = None
         try:
-            with open(CONFIG_PATH, "r") as f:
-                config = json.load(f)
-                return config.get("valid_pairs", ["BTC/USDT", "ETH/USDT"])
-        except Exception:
-            return ["BTC/USDT", "ETH/USDT"]
+            print("\n=== DÉMARRAGE DU BOT ===")
+            print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
 
-    async def run_clean_bot():
-        print(">>> RUN_CLEAN_BOT DEMARRE <<<")
-        try:
-            print(">>> TEST AVANT AdvancedIndicators <<<")
-            orderflow_indicators = AdvancedIndicators()
-            print(">>> TEST APRES AdvancedIndicators <<<")
-        except Exception as e:
-            print("ERREUR à l'instanciation d'AdvancedIndicators :", e)
-            import traceback
+            # 1. Configuration initiale
+            valid_pairs = load_config()
 
-            traceback.print_exc()
+            # 2. Création et configuration du bot
+            bot = TradingBotM4()
+            bot.pairs_valid = valid_pairs
 
-        """
-        Fonction principale du bot de trading
-        Gère l'initialisation, l'analyse de marché, l'exécution des stratégies,
-        le monitoring Prometheus, les alertes critiques et les hooks Grid/DCA/anti-slippage.
-        """
-        print(">>> RUN_CLEAN_BOT DEMARRE <<<")
-        orderflow_indicators = AdvancedIndicators()
-        logger = logging.getLogger(__name__)
+            # 3. Préchargement historique (optionnel, sécurisé)
+            if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
+                for symbol in bot.config["TRADING"]["pairs"]:
+                    symbol_binance = symbol.replace("/", "").upper()
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        try:
+                            bot.ws_collector.preload_historical(
+                                bot.binance_client, symbol_binance, tf, limit=2000
+                            )
+                            print(f"Préchargement {symbol_binance} {tf} OK")
+                        except Exception as e:
+                            print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
 
-        async def initialize_bot():
-            print(">>> INITIALIZE_BOT <<<")
-            bot = None
-            try:
-                print("\n=== DÉMARRAGE DU BOT ===")
-                print("🚀 Trading Bot Ultimate v4 - Version Ultra-Propre")
-
-                # 1. Configuration initiale
-                valid_pairs = load_config()
-
-                # 2. Création et configuration du bot
-                bot = TradingBotM4()
-                bot.pairs_valid = valid_pairs
-
-                # 3. Préchargement historique (optionnel, sécurisé)
-                if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
-                    for symbol in bot.config["TRADING"]["pairs"]:
-                        symbol_binance = symbol.replace("/", "").upper()
-                        for tf in bot.config["TRADING"]["timeframes"]:
-                            try:
-                                bot.ws_collector.preload_historical(
-                                    bot.binance_client, symbol_binance, tf, limit=2000
-                                )
-                                print(f"Préchargement {symbol_binance} {tf} OK")
-                            except Exception as e:
-                                print(
-                                    f"Erreur préchargement {symbol_binance} {tf} : {e}"
-                                )
-
-                # 4. Setup des composants internes (websockets, news, etc)
-                ok = await bot._setup_components()
-                if not ok:
-                    print("❌ Echec de l'initialisation des composants.")
-                    return None, None
-
-                # 5. Chargement des données de marché réelles si trading live
-                if getattr(bot, "is_live_trading", False):
-                    await bot._fetch_real_market_data()
-                    for sym in bot.market_data:
-                        print(f"{sym}: {list(bot.market_data[sym].keys())}")
-
-                # 6. Premier rapport d'analyse
-                try:
-                    initial_report = await bot.generate_market_analysis_report(cycle=0)
-                except Exception as e:
-                    initial_report = (
-                        f"[ERREUR] Impossible de générer le rapport initial: {e}"
-                    )
-
-                # 7. Envoi du message Telegram d'initialisation
-                try:
-                    await bot.telegram.send_message(
-                        "🚀 <b>Bot Trading démarré</b>\n"
-                        "✅ Initialisation réussie\n"
-                        f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
-                        f"{initial_report}"
-                    )
-                except Exception as e:
-                    print(f"Erreur lors de l'envoi Telegram : {e}")
-
-                print("✅ Bot initialized successfully")
-                return bot, valid_pairs
-
-            except Exception as e:
-                logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
-                print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
+            # 4. Setup des composants internes (websockets, news, etc)
+            ok = await bot._setup_components()
+            if not ok:
+                print("❌ Echec de l'initialisation des composants.")
                 return None, None
 
-        # --- INITIALISATION BOT ---
-        bot, valid_pairs = await initialize_bot()
-        if bot is None:
-            print("❌ Initialisation échouée, arrêt du bot.")
-            return
+            # 5. Chargement des données de marché réelles si trading live
+            if getattr(bot, "is_live_trading", False):
+                await bot._fetch_real_market_data()
+                for sym in bot.market_data:
+                    print(f"{sym}: {list(bot.market_data[sym].keys())}")
 
-        # --- DÉMARRAGE MONITORING PROMETHEUS ---
-        if PROMETHEUS_AVAILABLE:
+            # 6. Premier rapport d'analyse
             try:
-                start_prometheus_server(port=9900)
-                print("✅ Prometheus exporter lancé sur le port 9900")
+                initial_report = await bot.generate_market_analysis_report(cycle=0)
             except Exception as e:
-                print(f"⚠️ Prometheus non initialisé : {e}")
-
-        # --- Initialisation des modules avancés (Grid/DCA) ---
-        grid = GridTrading(
-            symbol="BTCUSDT",
-            min_price=25000,
-            max_price=35000,
-            grid_size=10,
-            base_qty=0.001,
-        )
-        dca = DCA(symbol="BTCUSDT", base_qty=0.002, max_steps=3)
-        grid_positions = {}  # Pour suivre les grids exécutées
-        dca_step = 0
-
-        # --- BOUCLE PRINCIPALE DU BOT ---
-        alerts = []
-        cycle = 0
-        while True:
-            cycle += 1
-            start_time = time.time()
-            try:
-                # === 1. Logique complète de trading ===
-                await bot.run_trading_cycle(cycle=cycle)  # <-- Ta logique existante
-
-                # === 2. HOOKS AVANCÉS : GRID & DCA ===
-                current_price = bot.get_last_price("BTC/USDC")
-
-                # --- GRID LOGIC ---
-                grid_order = grid.check_rebalance(current_price, grid_positions)
-                if grid_order:
-                    if anti_slippage(
-                        grid_order["price"], current_price, slippage_pct=0.3
-                    ):
-                        await bot.execute_trade(
-                            "BTC/USDC",
-                            grid_order["action"],
-                            grid_order["qty"],
-                            price=grid_order["price"],
-                        )
-                        grid_positions[grid_order["price"]] = True
-
-                # --- DCA LOGIC (exemple simplifié : incrémente dca_step à chaque cycle) ---
-                dca_order = dca.next_step(current_step=dca_step)
-                if dca_order:
-                    await bot.execute_trade(
-                        "BTC/USDC", dca_order["type"], dca_order["qty"]
-                    )
-                    dca_step += 1
-
-                # === 3. Récupération de l'état à sauvegarder ===
-                if hasattr(bot, "get_performance_metrics"):
-                    bot_status = bot.get_performance_metrics()
-                elif hasattr(bot, "bot_status"):
-                    bot_status = bot.bot_status
-                else:
-                    bot_status = {}
-
-                # Chargement de l'état partagé
-                try:
-                    with open(bot.data_file, "r") as f:
-                        shared_data = json.load(f)
-                except Exception:
-                    shared_data = {}
-
-                # === 4. Monitoring/Alertes critiques ===
-                now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-                alerts = shared_data.get("alerts", [])
-                balance = (
-                    bot_status.get("balance", 0)
-                    if "balance" in bot_status
-                    else bot_status.get("performance", {}).get("balance", 0)
+                initial_report = (
+                    f"[ERREUR] Impossible de générer le rapport initial: {e}"
                 )
-                if balance < 1000:
-                    alerts.append(
-                        {
-                            "level": "critical",
-                            "message": "Balance trop faible",
-                            "timestamp": now,
-                        }
-                    )
-                    await bot.telegram.send_message(
-                        "🚨 ALERTE CRITIQUE : Balance trop faible !"
-                    )
 
-                shared_data["alerts"] = alerts[-10:]  # Dernières 10 alertes
-                shared_data["bot_status"] = bot_status
-
-                # --- 5. Monitoring Prometheus ---
-                if PROMETHEUS_AVAILABLE:
-                    try:
-                        update_metrics(bot_status)
-                    except Exception as e:
-                        print(f"Prometheus update error : {e}")
-
-                # --- 6. Sauvegarde de l'état partagé ---
-                with open(bot.data_file, "w") as f:
-                    json.dump(shared_data, f, indent=4)
-
-                # --- 7. Logs, dashboard, etc. ---
-                duration = time.time() - start_time
-                bot_status["latency"] = duration
-                print(f"✅ Cycle {cycle} terminé en {duration:.1f}s")
-                await asyncio.sleep(30)
-
-            except Exception as e:
-                logger.error(f"Erreur cycle {cycle}: {e}", exc_info=True)
+            # 7. Envoi du message Telegram d'initialisation
+            try:
                 await bot.telegram.send_message(
-                    f"❌ Erreur critique cycle {cycle}: {e}"
+                    "🚀 <b>Bot Trading démarré</b>\n"
+                    "✅ Initialisation réussie\n"
+                    f"📊 Paires configurées: {', '.join(valid_pairs)}\n\n"
+                    f"{initial_report}"
                 )
-                await asyncio.sleep(60)
+            except Exception as e:
+                print(f"Erreur lors de l'envoi Telegram : {e}")
 
-    async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
+            print("✅ Bot initialized successfully")
+            return bot, valid_pairs
+
+        except Exception as e:
+            logger.error(f"Erreur d'initialisation: {e}", exc_info=True)
+            print(f"❌ ERREUR FATALE lors de l'initialisation: {e}")
+            return None, None
+
+    # --- INITIALISATION BOT ---
+    bot, valid_pairs = await initialize_bot()
+    if bot is None:
+        print("❌ Initialisation échouée, arrêt du bot.")
+        return
+
+    # --- DÉMARRAGE MONITORING PROMETHEUS ---
+    if PROMETHEUS_AVAILABLE:
         try:
-            pair_key = pair.replace("/", "").upper()
-            if not market_data or pair_key not in market_data:
-                return None
+            start_prometheus_server(port=9900)
+            print("✅ Prometheus exporter lancé sur le port 9900")
+        except Exception as e:
+            print(f"⚠️ Prometheus non initialisé : {e}")
 
-            ohlcv_df = bot.ws_collector.get_dataframe(pair_key, tf)
-            if ohlcv_df is None or len(ohlcv_df) < 20:
-                return None
+    # --- Initialisation des modules avancés (Grid/DCA) ---
+    grid = GridTrading(
+        symbol="BTCUSDT",
+        min_price=25000,
+        max_price=35000,
+        grid_size=10,
+        base_qty=0.001,
+    )
+    dca = DCA(symbol="BTCUSDT", base_qty=0.002, max_steps=3)
+    grid_positions = {}  # Pour suivre les grids exécutées
+    dca_step = 0
 
-            indicators_data = bot.add_indicators(ohlcv_df)
+    # --- BOUCLE PRINCIPALE DU BOT ---
+    alerts = []
+    cycle = 0
+    while True:
+        cycle += 1
+        start_time = time.time()
+        try:
+            # === 1. Logique complète de trading ===
+            await bot.run_trading_cycle(cycle=cycle)  # <-- Ta logique existante
 
-            # === PATCH AUTO-STRATEGIE ===
-            if hasattr(bot, "auto_strategy_config") and bot.auto_strategy_config:
-                auto_cfg = bot.auto_strategy_config
-                if (
-                    pair_key.upper() == auto_cfg["pair"].upper()
-                    and tf == auto_cfg["timeframe"]
-                ):
-                    action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
-                    signal = {"action": action, "confidence": 1.0}
-                else:
-                    # Appel standard
-                    signal = await bot.analyze_signals(
-                        pair_key, ohlcv_df, indicators_data
+            # === 2. HOOKS AVANCÉS : GRID & DCA ===
+            current_price = bot.get_last_price("BTC/USDC")
+
+            # --- GRID LOGIC ---
+            grid_order = grid.check_rebalance(current_price, grid_positions)
+            if grid_order:
+                if anti_slippage(grid_order["price"], current_price, slippage_pct=0.3):
+                    await bot.execute_trade(
+                        "BTC/USDC",
+                        grid_order["action"],
+                        grid_order["qty"],
+                        price=grid_order["price"],
                     )
-                    signal["pair"] = pair
-                    signal["tf"] = tf
-                    return signal
+                    grid_positions[grid_order["price"]] = True
+
+            # --- DCA LOGIC (exemple simplifié : incrémente dca_step à chaque cycle) ---
+            dca_order = dca.next_step(current_step=dca_step)
+            if dca_order:
+                await bot.execute_trade("BTC/USDC", dca_order["type"], dca_order["qty"])
+                dca_step += 1
+
+            # === 3. Récupération de l'état à sauvegarder ===
+            if hasattr(bot, "get_performance_metrics"):
+                bot_status = bot.get_performance_metrics()
+            elif hasattr(bot, "bot_status"):
+                bot_status = bot.bot_status
+            else:
+                bot_status = {}
+
+            # Chargement de l'état partagé
+            try:
+                with open(bot.data_file, "r") as f:
+                    shared_data = json.load(f)
+            except Exception:
+                shared_data = {}
+
+            # === 4. Monitoring/Alertes critiques ===
+            now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            alerts = shared_data.get("alerts", [])
+            balance = (
+                bot_status.get("balance", 0)
+                if "balance" in bot_status
+                else bot_status.get("performance", {}).get("balance", 0)
+            )
+            if balance < 1000:
+                alerts.append(
+                    {
+                        "level": "critical",
+                        "message": "Balance trop faible",
+                        "timestamp": now,
+                    }
+                )
+                await bot.telegram.send_message(
+                    "🚨 ALERTE CRITIQUE : Balance trop faible !"
+                )
+
+            shared_data["alerts"] = alerts[-10:]  # Dernières 10 alertes
+            shared_data["bot_status"] = bot_status
+
+            # --- 5. Monitoring Prometheus ---
+            if PROMETHEUS_AVAILABLE:
+                try:
+                    update_metrics(bot_status)
+                except Exception as e:
+                    print(f"Prometheus update error : {e}")
+
+            # --- 6. Sauvegarde de l'état partagé ---
+            with open(bot.data_file, "w") as f:
+                json.dump(shared_data, f, indent=4)
+
+            # --- 7. Logs, dashboard, etc. ---
+            duration = time.time() - start_time
+            bot_status["latency"] = duration
+            print(f"✅ Cycle {cycle} terminé en {duration:.1f}s")
+            await asyncio.sleep(30)
+
+        except Exception as e:
+            logger.error(f"Erreur cycle {cycle}: {e}", exc_info=True)
+            await bot.telegram.send_message(f"❌ Erreur critique cycle {cycle}: {e}")
+            await asyncio.sleep(60)
+
+
+async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
+    try:
+        pair_key = pair.replace("/", "").upper()
+        if not market_data or pair_key not in market_data:
+            return None
+
+        ohlcv_df = bot.ws_collector.get_dataframe(pair_key, tf)
+        if ohlcv_df is None or len(ohlcv_df) < 20:
+            return None
+
+        indicators_data = bot.add_indicators(ohlcv_df)
+
+        # === PATCH AUTO-STRATEGIE ===
+        if hasattr(bot, "auto_strategy_config") and bot.auto_strategy_config:
+            auto_cfg = bot.auto_strategy_config
+            if (
+                pair_key.upper() == auto_cfg["pair"].upper()
+                and tf == auto_cfg["timeframe"]
+            ):
+                action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
+                signal = {"action": action, "confidence": 1.0}
             else:
                 # Appel standard
                 signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data)
                 signal["pair"] = pair
                 signal["tf"] = tf
                 return signal
-            # === FIN PATCH AUTO-STRATEGIE ===
-
+        else:
+            # Appel standard
+            signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data)
+            signal["pair"] = pair
+            signal["tf"] = tf
             return signal
+        # === FIN PATCH AUTO-STRATEGIE ===
 
-        except Exception as e:
-            logger.error(f"Erreur analyse {pair}: {e}")
-            return None
+        return signal
 
-    async def execute_trading_cycle(bot, valid_pairs):
-        """Exécute un cycle complet de trading"""
+    except Exception as e:
+        logger.error(f"Erreur analyse {pair}: {e}")
+        return None
+
+
+async def execute_trading_cycle(bot, valid_pairs):
+    """Exécute un cycle complet de trading"""
+    try:
+        # 0. Import avancé des indicateurs orderflow (à placer en haut du fichier !)
         try:
-            # 0. Import avancé des indicateurs orderflow (à placer en haut du fichier !)
+            from src.analysis.technical.advanced.advanced_indicators import (
+                AdvancedIndicators,
+            )
+
+            orderflow_indicators = AdvancedIndicators()
+        except Exception as e:
+            orderflow_indicators = None
+            print("[Orderflow] Impossible d'importer AdvancedIndicators:", e)
+
+        # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
+        for pair in bot.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            if pair_key not in bot.market_data:
+                bot.market_data[pair_key] = {}
+            for tf in bot.config["TRADING"]["timeframes"]:
+                df = bot.ws_collector.get_dataframe(pair_key, tf)
+
+                if df is not None and not df.empty:
+                    bot.market_data[pair_key][tf] = {
+                        "open": df["open"].tolist(),
+                        "high": df["high"].tolist(),
+                        "low": df["low"].tolist(),
+                        "close": df["close"].tolist(),
+                        "volume": df["volume"].tolist(),
+                        "timestamp": [
+                            int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]
+                        ],
+                    }
+                    # 1bis. Calcul et injection des indicateurs orderflow avancés
+                    if orderflow_indicators is not None:
+                        try:
+                            bid_ask = None
+                            liquidity_wave = None
+                            smart_money = None
+                            if hasattr(orderflow_indicators, "_bid_ask_ratio"):
+                                bid_ask = orderflow_indicators._bid_ask_ratio(df)
+                            if hasattr(orderflow_indicators, "_liquidity_wave"):
+                                liquidity_wave = orderflow_indicators._liquidity_wave(
+                                    df
+                                )
+                            if hasattr(orderflow_indicators, "_smart_money_index"):
+                                smart_money = orderflow_indicators._smart_money_index(
+                                    df
+                                )
+                            bot.market_data[pair_key][tf]["orderflow"] = {
+                                "bid_ask_ratio": bid_ask,
+                                "liquidity_wave": liquidity_wave,
+                                "smart_money_index": smart_money,
+                            }
+                        except Exception as e:
+                            print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
+                else:
+                    # Ajout d'un log utile pour debug volume/DF vide
+                    print(f"[DEBUG] DataFrame vide pour {pair_key} {tf}")
+
+        # Log debug sur la structure finale (optionnel)
+        for sym in bot.market_data:
+            print(f"[DEBUG] {sym}: {list(bot.market_data[sym].keys())}")
+
+        # 2. Analyse de marché
+        regime, market_data, indicators = await bot.study_market("7d")
+        strategy = bot.choose_strategy(regime, indicators)
+        log_dashboard(f"🎯 Stratégie active: {strategy}")
+
+        # 3. Détection d'arbitrage
+        await handle_arbitrage_opportunities(bot)
+
+        # 4. Analyse des paires pour CHAQUE timeframe
+        trade_decisions = []
+        for pair in valid_pairs:
+            for tf in bot.config["TRADING"]["timeframes"]:
+                decision = await market_analysis_cycle(
+                    bot, pair, bot.market_data, tf=tf
+                )
+                if decision:
+                    trade_decisions.append(decision)
+
+        # === AJOUT : LOG DES DÉCISIONS FINALES ===
+        for decision in trade_decisions:
+            signals = decision.get("signals", {})
+            log_dashboard(
+                f"[TRADE DECISION] {decision['pair']} | "
+                f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
+                f"Tech: {signals.get('technical', 0):.2f} | "
+                f"IA: {signals.get('ai', 0):.2f} | "
+                f"Sentiment: {signals.get('sentiment', 0):.2f}"
+            )
+        # === FIN AJOUT ===
+
+        # 5. Exécution des trades
+        await execute_trade_decisions(bot, trade_decisions)
+
+        return trade_decisions, regime
+
+    except Exception as e:
+        logger.error(f"Erreur cycle trading: {e}")
+        raise
+
+
+# Fonction principale
+async def main():
+    try:
+        # Initialisation
+        bot, valid_pairs = await initialize_bot()
+        if bot is None:
+            print("Erreur critique à l'initialisation du bot. Arrêt.")
+            return
+
+        await bot.test_news_sentiment()
+
+        # Analyse initiale du marché
+        regime, _, _ = await bot.study_market("7d")
+        log_dashboard(f"🔈 Régime de marché détecté: {regime}")
+
+        # Boucle principale
+        cycle = 0
+        while True:
+            cycle += 1
+            start = datetime.utcnow()
             try:
-                from src.analysis.technical.advanced.advanced_indicators import (
-                    AdvancedIndicators,
-                )
+                print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
+                # Hot reload IA
+                bot.check_reload_dl_model()
 
-                orderflow_indicators = AdvancedIndicators()
-            except Exception as e:
-                orderflow_indicators = None
-                print("[Orderflow] Impossible d'importer AdvancedIndicators:", e)
+                # PATCH : Gestion complète de la sortie de position SPOT (STOPLOSS, TAKE PROFIT, TRAILING STOP)
+                for symbol, pos in list(bot.positions.items()):
+                    if bot.is_long(symbol):
+                        # Récupération du dernier prix marché
+                        price = None
+                        if (
+                            hasattr(bot, "ws_collector")
+                            and bot.ws_collector is not None
+                        ):
+                            price = bot.get_last_price(symbol)
+                        if (
+                            price is None
+                            and symbol in bot.market_data
+                            and "1h" in bot.market_data[symbol]
+                        ):
+                            closes = bot.market_data[symbol]["1h"].get("close", [])
+                            if closes:
+                                price = closes[-1]
 
-            # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
-            for pair in bot.pairs_valid:
-                pair_key = pair.replace("/", "").upper()
-                if pair_key not in bot.market_data:
-                    bot.market_data[pair_key] = {}
-                for tf in bot.config["TRADING"]["timeframes"]:
-                    df = bot.ws_collector.get_dataframe(pair_key, tf)
+                        # 1. Stop-loss classique
+                        if bot.check_stop_loss(symbol, price=price):
+                            print(f"[STOPLOSS] Vente auto pour perte sur {symbol}")
+                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            continue
 
-                    if df is not None and not df.empty:
-                        bot.market_data[pair_key][tf] = {
-                            "open": df["open"].tolist(),
-                            "high": df["high"].tolist(),
-                            "low": df["low"].tolist(),
-                            "close": df["close"].tolist(),
-                            "volume": df["volume"].tolist(),
-                            "timestamp": [
-                                int(pd.Timestamp(t).timestamp())
-                                for t in df["timestamp"]
-                            ],
-                        }
-                        # 1bis. Calcul et injection des indicateurs orderflow avancés
-                        if orderflow_indicators is not None:
-                            try:
-                                bid_ask = None
-                                liquidity_wave = None
-                                smart_money = None
-                                if hasattr(orderflow_indicators, "_bid_ask_ratio"):
-                                    bid_ask = orderflow_indicators._bid_ask_ratio(df)
-                                if hasattr(orderflow_indicators, "_liquidity_wave"):
-                                    liquidity_wave = (
-                                        orderflow_indicators._liquidity_wave(df)
-                                    )
-                                if hasattr(orderflow_indicators, "_smart_money_index"):
-                                    smart_money = (
-                                        orderflow_indicators._smart_money_index(df)
-                                    )
-                                bot.market_data[pair_key][tf]["orderflow"] = {
-                                    "bid_ask_ratio": bid_ask,
-                                    "liquidity_wave": liquidity_wave,
-                                    "smart_money_index": smart_money,
-                                }
-                            except Exception as e:
-                                print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
-                    else:
-                        # Ajout d'un log utile pour debug volume/DF vide
-                        print(f"[DEBUG] DataFrame vide pour {pair_key} {tf}")
+                        # 2. Take-profit : vente directe si profit atteint
+                        if bot.check_take_profit(
+                            symbol, price=price, take_profit_pct=0.04
+                        ):  # 4% de profit
+                            print(f"[TAKE PROFIT] Vente auto pour profit sur {symbol}")
+                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            continue
 
-            # Log debug sur la structure finale (optionnel)
-            for sym in bot.market_data:
-                print(f"[DEBUG] {sym}: {list(bot.market_data[sym].keys())}")
+                        # 3. Trailing stop : vente si le prix retombe de 2% après un plus haut
+                        if bot.check_trailing_stop(
+                            symbol,
+                            price=price,
+                            trailing_pct=0.02,
+                            min_profit_pct=0.01,
+                        ):
+                            print(f"[TRAILING STOP] Vente auto suiveuse sur {symbol}")
+                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            continue
 
-            # 2. Analyse de marché
-            regime, market_data, indicators = await bot.study_market("7d")
-            strategy = bot.choose_strategy(regime, indicators)
-            log_dashboard(f"🎯 Stratégie active: {strategy}")
+                # PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX
+                for symbol, pos in list(bot.positions.items()):
+                    if bot.is_short(symbol):
+                        try:
+                            symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                            ticker = await bot.bingx_client.fetch_ticker(symbol_bingx)
+                            price = float(ticker["last"])
+                        except Exception:
+                            continue
+                        if bot.check_short_stop(symbol, price=price, trailing_pct=0.03):
+                            print(
+                                f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
+                            )
+                            await bot.telegram.send_message(
+                                f"🔴 <b>STOP SHORT déclenché</b>\n"
+                                f"Pair: {symbol}\n"
+                                f"Prix actuel: {price}\n"
+                                f"Position couverte automatiquement (stop/trailing stop)"
+                            )
+                            await bot.execute_trade(symbol, "BUY", pos["amount"])
 
-            # 3. Détection d'arbitrage
-            await handle_arbitrage_opportunities(bot)
+                # Exécution du cycle de trading
+                trade_decisions, regime = await execute_trading_cycle(bot, valid_pairs)
 
-            # 4. Analyse des paires pour CHAQUE timeframe
-            trade_decisions = []
-            for pair in valid_pairs:
-                for tf in bot.config["TRADING"]["timeframes"]:
-                    decision = await market_analysis_cycle(
-                        bot, pair, bot.market_data, tf=tf
-                    )
-                    if decision:
-                        trade_decisions.append(decision)
+                # Mise à jour des données du bot
+                bot.current_cycle = cycle
+                bot.regime = regime
 
-            # === AJOUT : LOG DES DÉCISIONS FINALES ===
-            for decision in trade_decisions:
-                signals = decision.get("signals", {})
-                log_dashboard(
-                    f"[TRADE DECISION] {decision['pair']} | "
-                    f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
-                    f"Tech: {signals.get('technical', 0):.2f} | "
-                    f"IA: {signals.get('ai', 0):.2f} | "
-                    f"Sentiment: {signals.get('sentiment', 0):.2f}"
-                )
-            # === FIN AJOUT ===
+                # Calcul et stockage des indicateurs pour chaque paire/timeframe
+                bot.indicators = {}
+                for pair in bot.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        if (
+                            pair_key in bot.market_data
+                            and tf in bot.market_data[pair_key]
+                        ):
+                            trend = bot.calculate_trend(bot.market_data[pair_key][tf])
+                            volatility = bot.calculate_volatility(
+                                bot.market_data[pair_key][tf]
+                            )
+                            volume_profile = bot.calculate_volume_profile(
+                                bot.market_data[pair_key][tf]
+                            )
+                            dominant_signal = bot.get_dominant_signal(pair, tf)
+                            # Ajoute les indicateurs techniques bruts
+                            df = bot.ws_collector.get_dataframe(pair_key, tf)
+                            indics = (
+                                bot.add_indicators(df)
+                                if df is not None and not df.empty
+                                else {}
+                            )
+                            tf_key = f"{tf} | {pair}"
+                            bot.indicators[tf_key] = {
+                                "trend": {"trend_strength": trend},
+                                "volatility": {"current_volatility": volatility},
+                                "volume": {"volume_profile": volume_profile},
+                                "dominant_signal": dominant_signal,
+                                "ta": indics if indics else {},
+                            }
 
-            # 5. Exécution des trades
-            await execute_trade_decisions(bot, trade_decisions)
+                # Synchronise les positions SPOT réelles Binance pour le dashboard (PATCH CRUCIAL)
+                bot.sync_binance_positions()
 
-            return trade_decisions, regime
+                # Sauvegarde de l'état du bot à chaque cycle
+                bot.save_shared_data()
 
-        except Exception as e:
-            logger.error(f"Erreur cycle trading: {e}")
-            raise
-
-    # Fonction principale
-    async def main():
-        try:
-            # Initialisation
-            bot, valid_pairs = await initialize_bot()
-            if bot is None:
-                print("Erreur critique à l'initialisation du bot. Arrêt.")
-                return
-
-            await bot.test_news_sentiment()
-
-            # Analyse initiale du marché
-            regime, _, _ = await bot.study_market("7d")
-            log_dashboard(f"🔈 Régime de marché détecté: {regime}")
-
-            # Boucle principale
-            cycle = 0
-            while True:
-                cycle += 1
-                start = datetime.utcnow()
-                try:
-                    print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
-                    # Hot reload IA
-                    bot.check_reload_dl_model()
-
-                    # PATCH : Gestion complète de la sortie de position SPOT (STOPLOSS, TAKE PROFIT, TRAILING STOP)
-                    for symbol, pos in list(bot.positions.items()):
-                        if bot.is_long(symbol):
-                            # Récupération du dernier prix marché
-                            price = None
-                            if (
-                                hasattr(bot, "ws_collector")
-                                and bot.ws_collector is not None
-                            ):
-                                price = bot.get_last_price(symbol)
-                            if (
-                                price is None
-                                and symbol in bot.market_data
-                                and "1h" in bot.market_data[symbol]
-                            ):
-                                closes = bot.market_data[symbol]["1h"].get("close", [])
-                                if closes:
-                                    price = closes[-1]
-
-                            # 1. Stop-loss classique
-                            if bot.check_stop_loss(symbol, price=price):
-                                print(f"[STOPLOSS] Vente auto pour perte sur {symbol}")
-                                await bot.execute_trade(symbol, "SELL", pos["amount"])
-                                continue
-
-                            # 2. Take-profit : vente directe si profit atteint
-                            if bot.check_take_profit(
-                                symbol, price=price, take_profit_pct=0.04
-                            ):  # 4% de profit
-                                print(
-                                    f"[TAKE PROFIT] Vente auto pour profit sur {symbol}"
-                                )
-                                await bot.execute_trade(symbol, "SELL", pos["amount"])
-                                continue
-
-                            # 3. Trailing stop : vente si le prix retombe de 2% après un plus haut
-                            if bot.check_trailing_stop(
-                                symbol,
-                                price=price,
-                                trailing_pct=0.02,
-                                min_profit_pct=0.01,
-                            ):
-                                print(
-                                    f"[TRAILING STOP] Vente auto suiveuse sur {symbol}"
-                                )
-                                await bot.execute_trade(symbol, "SELL", pos["amount"])
-                                continue
-
-                    # PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX
-                    for symbol, pos in list(bot.positions.items()):
-                        if bot.is_short(symbol):
-                            try:
-                                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
-                                ticker = await bot.bingx_client.fetch_ticker(
-                                    symbol_bingx
-                                )
-                                price = float(ticker["last"])
-                            except Exception:
-                                continue
-                            if bot.check_short_stop(
-                                symbol, price=price, trailing_pct=0.03
-                            ):
-                                print(
-                                    f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
-                                )
-                                await bot.telegram.send_message(
-                                    f"🔴 <b>STOP SHORT déclenché</b>\n"
-                                    f"Pair: {symbol}\n"
-                                    f"Prix actuel: {price}\n"
-                                    f"Position couverte automatiquement (stop/trailing stop)"
-                                )
-                                await bot.execute_trade(symbol, "BUY", pos["amount"])
-
-                    # Exécution du cycle de trading
-                    trade_decisions, regime = await execute_trading_cycle(
-                        bot, valid_pairs
-                    )
-
-                    # Mise à jour des données du bot
-                    bot.current_cycle = cycle
-                    bot.regime = regime
-
-                    # Calcul et stockage des indicateurs pour chaque paire/timeframe
-                    bot.indicators = {}
-                    for pair in bot.pairs_valid:
-                        pair_key = pair.replace("/", "").upper()
-                        for tf in bot.config["TRADING"]["timeframes"]:
-                            if (
-                                pair_key in bot.market_data
-                                and tf in bot.market_data[pair_key]
-                            ):
-                                trend = bot.calculate_trend(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                volatility = bot.calculate_volatility(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                volume_profile = bot.calculate_volume_profile(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                dominant_signal = bot.get_dominant_signal(pair, tf)
-                                # Ajoute les indicateurs techniques bruts
-                                df = bot.ws_collector.get_dataframe(pair_key, tf)
-                                indics = (
-                                    bot.add_indicators(df)
-                                    if df is not None and not df.empty
-                                    else {}
-                                )
-                                tf_key = f"{tf} | {pair}"
-                                bot.indicators[tf_key] = {
-                                    "trend": {"trend_strength": trend},
-                                    "volatility": {"current_volatility": volatility},
-                                    "volume": {"volume_profile": volume_profile},
-                                    "dominant_signal": dominant_signal,
-                                    "ta": indics if indics else {},
-                                }
-
-                    # Synchronise les positions SPOT réelles Binance pour le dashboard (PATCH CRUCIAL)
-                    bot.sync_binance_positions()
-
-                    # Sauvegarde de l'état du bot à chaque cycle
-                    bot.save_shared_data()
-
-                    # Entraînement automatique IA toutes les 50 itérations
-                    if cycle % 50 == 0:
-                        print(
-                            "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
-                        )
-                        bot.train_cnn_lstm_on_all_live()
-
-                    # Fin entraînement IA auto
-                    bot.train_cnn_lstm_on_all_live()
+                # Entraînement automatique IA toutes les 50 itérations
+                if cycle % 50 == 0:
                     print(
-                        "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
+                        "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
                     )
-                    # Calcul de la durée du cycle et affichage
-                    duration = (datetime.utcnow() - start).total_seconds()
-                    print(f"✅ Cycle terminé en {duration:.1f}s")
+                    bot.train_cnn_lstm_on_all_live()
 
-                    # Envoi des mises à jour et rapports Telegram
-                    await send_cycle_reports(
-                        bot, trade_decisions, cycle, regime, duration
-                    )
+                # Fin entraînement IA auto
+                bot.train_cnn_lstm_on_all_live()
+                print("=== Entraînement MANUEL IA sur toutes les paires/timeframes ===")
+                # Calcul de la durée du cycle et affichage
+                duration = (datetime.utcnow() - start).total_seconds()
+                print(f"✅ Cycle terminé en {duration:.1f}s")
 
-                except Exception as e:
-                    error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-                    logger.error(error_msg)
-                    await bot.telegram.send_message(error_msg)
+                # Envoi des mises à jour et rapports Telegram
+                await send_cycle_reports(bot, trade_decisions, cycle, regime, duration)
 
-                # Attente avant le prochain cycle
-                await asyncio.sleep(30)
+            except Exception as e:
+                error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
+                logger.error(error_msg)
+                await bot.telegram.send_message(error_msg)
 
-        except KeyboardInterrupt:
-            await handle_shutdown(bot, "👋 Bot arrêté proprement")
-        except Exception as e:
-            await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+            # Attente avant le prochain cycle
+            await asyncio.sleep(30)
+
+    except KeyboardInterrupt:
+        await handle_shutdown(bot, "👋 Bot arrêté proprement")
+    except Exception as e:
+        await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
 
 def prepare_ohlcv_data(ohlcv_data):
