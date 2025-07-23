@@ -2139,3 +2139,12 @@
 2025-07-23T16:55:42.404610 | ✅ Trading en direct: True
 2025-07-23T16:55:42.404666 | ✅ IA activée: True
 2025-07-23T16:55:42.404719 | ✅ Analyse de news activée: True
+2025-07-23T16:56:32.616420 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-23T16:56:49.161106 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T16:56:49.161622 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T16:56:49.161686 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:57:22.888639 | [ORDER] Tentative d'exécution: buy 0.002 BTC/USDC (iceberg: False)
+2025-07-23T16:58:07.191610 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0000 | Tendance: 0.0000
+2025-07-23T16:58:07.192704 | 🎯 Stratégie active: Range/Scalping
+2025-07-23T16:58:07.192876 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-23T16:58:20.315008 | [ORDER] Tentative d'exécution: buy 0.003 BTC/USDC (iceberg: False)
