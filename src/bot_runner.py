@@ -83,6 +83,10 @@ from src.portfolio.exit_manager import ExitManager
 
 from src.analysis.filters.volatility_anomaly_filter import filter_market
 
+from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
+
+from src.risk_tools.news_pause_manager import NewsPauseManager
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -717,6 +721,8 @@ class TradingBotM4:
                 },
             },
         }
+        self.news_pause_manager = NewsPauseManager(cooldown_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
+        
         self.exit_manager = ExitManager(tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03)
         
         self.signal_fusion_params = self.load_signal_fusion_params()
@@ -3611,6 +3617,8 @@ def filter_pairs(
     - vol_threshold: seuil max de volatilité autorisée (filtre)
     - anomaly_threshold: seuil max d'anomalie prix (z-score)
     """
+    from src.analysis.filters.volatility_anomaly_filter import filter_market
+    from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
 
     candidates = []
     for pair in bot.pairs_valid:
@@ -3623,6 +3631,7 @@ def filter_pairs(
         ):
             closes = bot.market_data[pair_key]["1h"]["close"]
             if len(closes) >= 20:
+                import numpy as np
                 returns = np.diff(np.log(closes[-20:]))
                 vol = float(np.std(returns))
             else:
@@ -3649,7 +3658,6 @@ def filter_pairs(
             )
         ):
             import pandas as pd
-
             df_ohlcv = pd.DataFrame({
                 "close": bot.market_data[pair_key]["1h"]["close"],
                 "high": bot.market_data[pair_key]["1h"]["high"],
@@ -3671,9 +3679,12 @@ def filter_pairs(
 
     # Classe par volatilité x signal décroissant
     candidates.sort(key=lambda x: x[1] * x[2], reverse=True)
-    # Retourne la liste des paires sélectionnées (top N)
-    filtered = [c[0] for c in candidates[:top_n]]
-    return filtered
+    filtered_candidates = [c[0] for c in candidates]
+    # Filtrage corrélation: sélectionne des paires peu corrélées entre elles
+    filtered_uncorr = filter_uncorrelated_pairs(
+        bot.market_data, filtered_candidates, timeframe="1h", window=50, corr_threshold=0.85, top_n=top_n
+    )
+    return filtered_uncorr
     
 def load_config():
     """Charge la configuration"""
@@ -3962,6 +3973,25 @@ async def run_clean_bot():
             while True:
                 cycle += 1
                 start = datetime.utcnow()
+
+                # === [NEWS PAUSE MANAGER] : PAUSE AUTO SUR NEWS CRITIQUE ===
+                try:
+                    with open(bot.data_file, "r") as f:
+                        shared_data = json.load(f)
+                    news_sentiment = shared_data.get("sentiment", {})
+                    news_list = news_sentiment.get("scores", [])
+                except Exception:
+                    news_list = []
+
+                # Vérifie si une news majeure déclenche la pause auto
+                if bot.news_pause_manager.check_news_and_trigger(news_list, cycle):
+                    print(f"[NEWS PAUSE] Trading suspendu pour {bot.news_pause_manager.cooldown_cycles} cycles.")
+                    await bot.telegram.send_message(f"🚨 Pause automatique du trading due à une news critique détectée !")
+                if bot.news_pause_manager.is_paused(cycle):
+                    print(f"[NEWS PAUSE] Trading en pause (cycle {cycle}/{bot.news_pause_manager.pause_until_cycle})")
+                    await asyncio.sleep(30)
+                    continue  # saute tout le cycle
+
                 try:
                     print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
                     # Hot reload IA
