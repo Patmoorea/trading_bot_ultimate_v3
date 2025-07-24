@@ -3818,7 +3818,31 @@ async def run_clean_bot():
 
             # 4. Analyse des paires pour CHAQUE timeframe (génère signaux bruts multi-tf)
             # === Filtering dynamique des paires ===
-            selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
+            SHARED_DATA_PATH = "src/shared_data.json"
+            try:
+                with open(SHARED_DATA_PATH, "r") as f:
+                    shared_data = json.load(f)
+                f_params = shared_data.get("filtering_params", {})
+                min_vol = float(f_params.get("min_volatility", 0.01))
+                min_sig = float(f_params.get("min_signal", 0.3))
+                n_top = int(f_params.get("top_n", 5))
+            except Exception:
+                min_vol, min_sig, n_top = 0.01, 0.3, 5
+
+            selected_pairs = filter_pairs(bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top)
+            
+            #Tu évites les marchés plats mais tu ne rates pas les signaux moyens.
+            #selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
+            
+            #Pour être très sélectif (seulement les gros mouvements et signaux très forts) :
+            #selected_pairs = filter_pairs(bot, min_volatility=0.02, min_signal=0.5, top_n=3)
+            
+            #Pour trader plus large (plus de paires, moins exigeant) :
+            #selected_pairs = filter_pairs(bot, min_volatility=0.005, min_signal=0.2, top_n=8)
+            
+            #Pour ne jamais trader plus de 2 paires à la fois, même si beaucoup sont "OK" :
+            #selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=2)
+
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
             if ignored_pairs:

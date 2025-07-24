@@ -152,6 +152,25 @@ with st.sidebar:
     if st.sidebar.button("🔄 Rafraîchir"):
         st.rerun()
 
+        st.sidebar.markdown("---")
+        st.sidebar.header("🎛️ Sélection dynamique des paires")
+        min_volatility = st.sidebar.slider("Volatilité min", 0.0, 0.05, 0.01, 0.001)
+        min_signal = st.sidebar.slider("Signal min", 0.0, 1.0, 0.3, 0.01)
+        top_n = st.sidebar.slider("Nb max paires à trader", 1, 10, 5, 1)
+    # Sauvegarde dans shared_data.json (pour que le bot les lise au prochain cycle)
+    # (Tu peux aussi utiliser un fichier dédié, ici on patch dans shared_data)
+    try:
+        shared_data = load_json_file(SHARED_DATA_PATH)
+        shared_data["filtering_params"] = {
+            "min_volatility": float(min_volatility),
+            "min_signal": float(min_signal),
+            "top_n": int(top_n),
+        }
+        with open(SHARED_DATA_PATH, "w") as f:
+            json.dump(shared_data, f, indent=2)
+    except Exception as e:
+        st.sidebar.warning(f"Erreur sauvegarde filtres dynamiques: {e}")
+
 # --- TABS ---
 tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
     [
