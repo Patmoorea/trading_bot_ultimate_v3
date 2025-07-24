@@ -15,9 +15,23 @@ from binance.client import Client
 from dotenv import load_dotenv
 
 from src.bot_runner import TradingBotM4
+from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 
 # === INSTANCE DU BOT (NE PAS MODIFIER CETTE LIGNE SANS RAISON) ===
 bot = TradingBotM4()
+
+# === INSTANTIATE NEWS ANALYZER AND LOAD NEWS BUFFER ===
+bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
+# Optionally, fetch news before running optimization (if method is async, use asyncio.run)
+try:
+    if hasattr(bot.news_analyzer, "fetch_all_news"):
+        fetch_result = bot.news_analyzer.fetch_all_news()
+        if hasattr(fetch_result, "__await__"):
+            import asyncio
+
+            asyncio.run(fetch_result)
+except Exception as e:
+    print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
 
 
 def enrich_signals_with_real_values(bot, df, pair_key):
@@ -118,9 +132,6 @@ def fetch_binance_ohlcv(
     from time import sleep
 
     client = Client(api_key, api_secret)
-    # Patch pour timeout global (solution compatible avec anciennes versions python-binance)
-    import functools
-
     client.session.request = functools.partial(client.session.request, timeout=timeout)
     last_exception = None
 
@@ -164,7 +175,6 @@ def fetch_binance_ohlcv(
     df[["open", "high", "low", "close", "volume"]] = df[
         ["open", "high", "low", "close", "volume"]
     ].astype(float)
-    # Tri par timestamp pour cohérence
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
 
@@ -205,7 +215,6 @@ def run_full_backtest(df, fusion_params, initial_capital=10000, verbose=False):
     return results
 
 
-# === OPTUNA CALLBACKS POUR SUIVI EN LIVE ET SAUVEGARDE ===
 def print_trial_progress(study, trial):
     print(
         f"[Optuna] Trial {trial.number} terminé : Value={trial.value} | "
@@ -226,10 +235,15 @@ def optuna_callback(study, trial):
     save_best_params(study, trial)
 
 
-# === OBJECTIVE ===
-
-
 def objective(trial):
+    # Optionally, fetch news at the start of each trial to refresh buffer
+    if hasattr(bot, "news_analyzer"):
+        fetch_result = bot.news_analyzer.fetch_all_news()
+        if hasattr(fetch_result, "__await__"):
+            import asyncio
+
+            asyncio.run(fetch_result)
+
     tech_weight = trial.suggest_float("tech_weight", 0.0, 1.0)
     ia_weight = trial.suggest_float("ia_weight", 0.0, 1.0 - tech_weight)
     sentiment_weight = 1.0 - tech_weight - ia_weight

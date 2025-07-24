@@ -8927,3 +8927,15 @@
 2025-07-24T16:18:58.678643 | ✅ Trading en direct: True
 2025-07-24T16:18:58.678681 | ✅ IA activée: True
 2025-07-24T16:18:58.678720 | ✅ Analyse de news activée: True
+2025-07-24T17:18:50.670881 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T17:18:50.672617 | Initialisation des modèles d'IA...
+2025-07-24T17:18:50.729996 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T17:18:52.217468 | ✅ PPO Strategy initialized successfully
+2025-07-24T17:18:52.218173 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T17:18:52.218230 | ✅ Trading en direct: True
+2025-07-24T17:18:52.218293 | ✅ IA activée: True
+2025-07-24T17:18:52.218332 | ✅ Analyse de news activée: True
+2025-07-24T17:19:47.416808 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-24T17:21:19.119709 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0544 | Tendance: 0.0009
+2025-07-24T17:21:19.120968 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-24T17:21:39.597511 | [NEWS] Score sentiment global: 0.25 | Impact: 0.56 | Événements: Here's Why Ethereum ETF Investors Are Outperforming Their Bitcoin Counterparts; Why Ethereum Will Keep Climbing in Coming Months: Bitwise; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
