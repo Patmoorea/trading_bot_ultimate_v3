@@ -722,7 +722,7 @@ class TradingBotM4:
                 },
             },
         }
-        self.news_pause_manager = NewsPauseManager(cooldown_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
+        self.news_pause_manager = NewsPauseManager(pause_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
         
         self.exit_manager = ExitManager(tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03)
         
@@ -3984,12 +3984,13 @@ async def run_clean_bot():
                 except Exception:
                     news_list = []
 
-                if bot.news_pause_manager.check_news_and_trigger(news_list, cycle):
-                    print(f"[NEWS PAUSE] Trading suspendu pour {bot.news_pause_manager.cooldown_cycles} cycles.")
-                    await bot.telegram.send_message(f"🚨 Pause automatique du trading due à une news critique détectée !")
-                if bot.news_pause_manager.is_paused(cycle):
-                    print(f"[NEWS PAUSE] Trading en pause (cycle {cycle}/{bot.news_pause_manager.pause_until_cycle})")
+                # --- Correction : utilise scan_news et should_pause
+                if bot.news_pause_manager.scan_news(news_list):
+                    print("🚨 Pause trading à cause d'une news critique !")
+                if bot.news_pause_manager.should_pause():
+                    print("Trading en pause, on skip ce cycle.")
                     await asyncio.sleep(30)
+                    bot.news_pause_manager.on_cycle_end()
                     continue
 
                 try:
@@ -4151,6 +4152,9 @@ async def run_clean_bot():
                     error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
                     logger.error(error_msg)
                     await bot.telegram.send_message(error_msg)
+
+                # Fin du cycle : décrémente la pause si active
+                bot.news_pause_manager.on_cycle_end()
 
                 # Attente avant le prochain cycle
                 await asyncio.sleep(30)
