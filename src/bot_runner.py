@@ -81,6 +81,7 @@ from src.portfolio.position_sizer import dynamic_position_size, compute_drawdown
 
 from src.portfolio.exit_manager import ExitManager
 
+from src.analysis.filters.volatility_anomaly_filter import filter_market
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -3592,49 +3593,87 @@ class TradingBotM4:
                 else:
                     print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
 
-def filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5):
-        """
-        Retourne la liste des paires à trader ce cycle, classées par opportunité.
-        - min_volatility: volatilité min (ex: 0.01)
-        - min_signal: valeur absolue du signal min (ex: 0.3)
-        - top_n: nombre max de paires retenues
-        """
-        candidates = []
-        for pair in bot.pairs_valid:
-            pair_key = pair.replace("/", "").upper()
-            # Récupère la volatilité sur 1h
-            if (
-                pair_key in bot.market_data
-                and "1h" in bot.market_data[pair_key]
-                and "close" in bot.market_data[pair_key]["1h"]
-            ):
-                closes = bot.market_data[pair_key]["1h"]["close"]
-                if len(closes) >= 20:
-                    returns = np.diff(np.log(closes[-20:]))
-                    vol = float(np.std(returns))
-                else:
-                    vol = 0
+def filter_pairs(
+    bot,
+    min_volatility=0.01,
+    min_signal=0.3,
+    top_n=5,
+    vol_anomaly_filter=True,
+    vol_threshold=0.12,
+    anomaly_threshold=4.0,
+):
+    """
+    Retourne la liste des paires à trader ce cycle, classées par opportunité.
+    - min_volatility: volatilité min (ex: 0.01)
+    - min_signal: valeur absolue du signal min (ex: 0.3)
+    - top_n: nombre max de paires retenues
+    - vol_anomaly_filter: active le filtre de volatilité/anomalie
+    - vol_threshold: seuil max de volatilité autorisée (filtre)
+    - anomaly_threshold: seuil max d'anomalie prix (z-score)
+    """
+
+    candidates = []
+    for pair in bot.pairs_valid:
+        pair_key = pair.replace("/", "").upper()
+        # Récupère la volatilité sur 1h
+        if (
+            pair_key in bot.market_data
+            and "1h" in bot.market_data[pair_key]
+            and "close" in bot.market_data[pair_key]["1h"]
+        ):
+            closes = bot.market_data[pair_key]["1h"]["close"]
+            if len(closes) >= 20:
+                returns = np.diff(np.log(closes[-20:]))
+                vol = float(np.std(returns))
             else:
                 vol = 0
+        else:
+            vol = 0
 
-            # Récupère le signal technique/IA/sentiment (exemple: total_score du dernier cycle)
-            signal = 0
-            if (
-                pair_key in bot.market_data
-                and "ai_prediction" in bot.market_data[pair_key]
-            ):
-                signal = bot.market_data[pair_key]["ai_prediction"]
-            # Peut aussi utiliser la dernière décision ou un signal custom
+        # Récupère le signal technique/IA/sentiment (exemple: total_score du dernier cycle)
+        signal = 0
+        if (
+            pair_key in bot.market_data
+            and "ai_prediction" in bot.market_data[pair_key]
+        ):
+            signal = bot.market_data[pair_key]["ai_prediction"]
 
-            # Filtrage
-            if vol > min_volatility and abs(signal) > min_signal:
-                candidates.append((pair, vol, abs(signal)))
+        # Nouveau: filtre volatilité/anomalie marché (optionnel)
+        df_ohlcv = None
+        if (
+            pair_key in bot.market_data
+            and "1h" in bot.market_data[pair_key]
+            and all(
+                k in bot.market_data[pair_key]["1h"]
+                for k in ["close", "high", "low", "volume"]
+            )
+        ):
+            import pandas as pd
 
-        # Classe par volatilité x signal décroissant
-        candidates.sort(key=lambda x: x[1]*x[2], reverse=True)
-        # Retourne la liste des paires sélectionnées (top N)
-        filtered = [c[0] for c in candidates[:top_n]]
-        return filtered
+            df_ohlcv = pd.DataFrame({
+                "close": bot.market_data[pair_key]["1h"]["close"],
+                "high": bot.market_data[pair_key]["1h"]["high"],
+                "low": bot.market_data[pair_key]["1h"]["low"],
+                "volume": bot.market_data[pair_key]["1h"]["volume"],
+            })
+
+        is_clean = True
+        if vol_anomaly_filter and df_ohlcv is not None and len(df_ohlcv) >= 50:
+            is_clean = filter_market(
+                df_ohlcv,
+                vol_threshold=vol_threshold,
+                anomaly_threshold=anomaly_threshold,
+                price_col="close",
+            )
+        # Filtrage
+        if vol > min_volatility and abs(signal) > min_signal and is_clean:
+            candidates.append((pair, vol, abs(signal)))
+
+    # Classe par volatilité x signal décroissant
+    candidates.sort(key=lambda x: x[1] * x[2], reverse=True)
+    # Retourne la liste des paires sélectionnées (top N)
+    filtered = [c[0] for c in candidates[:top_n]]
+    return filtered
     
 def load_config():
     """Charge la configuration"""
