@@ -134,11 +134,12 @@ def fetch_binance_ohlcv(symbol, interval, start_str, end_str, api_key, api_secre
     df[["open", "high", "low", "close", "volume"]] = df[
         ["open", "high", "low", "close", "volume"]
     ].astype(float)
+    # Tri par timestamp pour cohérence
+    df = df.sort_values("timestamp").reset_index(drop=True)
     return df
 
 
 def fusion_signal_series(df, fusion_params):
-    # Si une des colonnes est async/coroutine, on la résout en synchrone
     def getval(val):
         if hasattr(val, "__await__"):
             import asyncio
@@ -172,6 +173,30 @@ def run_full_backtest(df, fusion_params, initial_capital=10000, verbose=False):
     if verbose:
         print(f"[BACKTEST] Résultat: {results}")
     return results
+
+
+# === OPTUNA CALLBACKS POUR SUIVI EN LIVE ET SAUVEGARDE ===
+def print_trial_progress(study, trial):
+    print(
+        f"[Optuna] Trial {trial.number} terminé : Value={trial.value} | "
+        f"Params={trial.params} | Best Value={study.best_value:.4f} (Trial {study.best_trial.number})"
+    )
+
+
+def save_best_params(study, trial, path=BEST_PARAMS_PATH):
+    best_params = study.best_trial.params
+    best_params["score"] = study.best_value
+    with open(path, "w") as f:
+        json.dump(best_params, f, indent=2)
+    print(f"[Optuna] Best params sauvegardés: {best_params}")
+
+
+def optuna_callback(study, trial):
+    print_trial_progress(study, trial)
+    save_best_params(study, trial)
+
+
+# === OBJECTIVE ===
 
 
 def objective(trial):
@@ -221,7 +246,7 @@ def objective(trial):
 
 def optimize_signal_fusion_and_mm(n_trials=50):
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=n_trials)
+    study.optimize(objective, n_trials=n_trials, callbacks=[optuna_callback])
     print("Best params:", study.best_params)
     os.makedirs(os.path.dirname(BEST_PARAMS_PATH), exist_ok=True)
     with open(BEST_PARAMS_PATH, "w") as f:

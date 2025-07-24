@@ -478,30 +478,46 @@ class NewsSentimentAnalyzer:
     #   ]
     #   analyzer.add_news(dummy_news)
     # ==============================================================
+
     async def get_symbol_sentiment(self, symbol: str) -> float:
         try:
             print(f"CALLING get_symbol_sentiment: symbol='{symbol}'")
             symbol_key = symbol.replace("/", "").upper()
-            underlying = symbol_key.replace("USDT", "").replace("USD", "")
-            print(f"[DEBUG INIT] symbol_key='{symbol_key}' underlying='{underlying}'")
-            symbol_variants = {
-                "BTCUSDT": ["BTC", "BITCOIN", "bitcoin"],
-                "ETHUSDT": ["ETH", "ETHEREUM", "ethereum", "ether"],
-                "ADAUSDT": ["ADA", "CARDANO", "cardano"],
-                "SOLUSDT": ["SOL", "SOLANA", "solana"],
-                "BNBUSDT": ["BNB", "BINANCE", "binance"],
-                "XRPUSDT": ["XRP", "RIPPLE", "ripple"],
-                "DOGEUSDT": ["DOGE", "DOGECOIN", "dogecoin"],
-                "AVAXUSDT": ["AVAX", "AVALANCHE", "avalanche"],
-                "DOTUSDT": ["DOT", "POLKADOT", "polkadot"],
-                "MATICUSDT": ["MATIC", "POLYGON", "polygon"],
+
+            # === MAPPING complet pour tous les coins connus (3, 4, 5, 6+ lettres) ===
+            coin_mapping = {
+                "BTC": ["BTC", "BITCOIN"],
+                "ETH": ["ETH", "ETHEREUM"],
+                "SOL": ["SOL", "SOLANA"],
+                "ADA": ["ADA", "CARDANO"],
+                "TRX": ["TRX", "TRON"],
+                "BNB": ["BNB", "BINANCE"],
+                "XRP": ["XRP", "RIPPLE"],
+                "DOGE": ["DOGE", "DOGECOIN"],
+                "AVAX": ["AVAX", "AVALANCHE"],
+                "DOT": ["DOT", "POLKADOT"],
+                "MATIC": ["MATIC", "POLYGON"],
+                "LUNC": ["LUNC", "LUNACLASSIC"],  # 4 lettres
+                "BTTOLD": ["BTTOLD", "BITTORRENT OLD"],  # 6 lettres exemple
+                "PEPEAI": ["PEPEAI", "PEPE AI"],  # 6 lettres exemple
+                # Ajoute d'autres coins ici si besoin
             }
-            search_terms = symbol_variants.get(symbol_key, [underlying])
-            search_terms.extend([symbol_key, underlying])
-            search_terms = list(set(search_terms))
+
+            # Extraction générique du coin principal, longueur quelconque
+            coin = None
+            for cm in sorted(coin_mapping.keys(), key=len, reverse=True):
+                if symbol_key.startswith(cm):
+                    coin = cm
+                    break
+            if coin is None:
+                coin = symbol_key[:3]  # fallback
+
+            search_terms = coin_mapping.get(coin, [coin])
+
             print(
                 f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}"
             )
+
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
@@ -514,12 +530,12 @@ class NewsSentimentAnalyzer:
                 title = news.get("title", "").lower()
                 text = news.get("text", "").lower()
                 content = f"{title} {text}"
-                if news_symbols:
-                    pass
+                # Recherche par symboles extraits
                 match_extracted = any(
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
                 )
+                # Recherche dans le texte de la news
                 match_content = any(term.lower() in content for term in search_terms)
                 if match_extracted or match_content:
                     matched = True
@@ -535,6 +551,7 @@ class NewsSentimentAnalyzer:
                     )
                     total += sentiment * impact * decay
                     total_weight += impact * decay
+
             if not matched:
                 print(f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}")
                 available_symbols = set()

@@ -77,6 +77,7 @@ from src.exchanges.bingx_exchange import BingXExchange
 
 from src.risk_tools import kelly_criterion, calculate_var, calculate_max_drawdown
 
+from src.portfolio.position_sizer import dynamic_position_size, compute_drawdown
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -4407,29 +4408,44 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 def calculate_position_size(bot, decision):
     """
     Calcule le montant en USDC à investir (et non la quantité de BTC).
-    Prend en compte les pondérations optimisées si elles existent (mm_risk Optuna).
+    Utilise le money management dynamique avancé.
     """
     try:
-        # 1. Récupère le paramètre mm_risk optimisé si présent (sinon fallback)
-        mm_risk = 0.05  # par défaut 5% du capital
+        # 1. mm_risk optimisé si dispo, sinon fallback
+        mm_risk = 0.05
         if hasattr(bot, "signal_fusion_params") and bot.signal_fusion_params:
             mm_risk = bot.signal_fusion_params.get("mm_risk", 0.05)
 
-        # 2. Récupère la balance réelle (ou simulée si non live)
+        # 2. Balance du bot (réelle ou simulée)
         try:
             balance = bot.get_performance_metrics().get("balance", 10000)
         except Exception:
             balance = 10000
 
-        # 3. Pondère selon la confiance et la volatilité du signal
+        # 3. Paramètres dynamiques
         confidence = decision.get("confidence", 0.5)
-        volatility = decision.get("signals", {}).get("volatility", 0.5)
+        volatility = abs(decision.get("signals", {}).get("volatility", 0.5))
+        # Drawdown
+        try:
+            with open(bot.data_file, "r") as f:
+                data = json.load(f)
+            equity_curve = [pt["balance"] for pt in data.get("equity_history", []) if "balance" in pt]
+            drawdown = compute_drawdown(np.array(equity_curve)) if equity_curve else 0
+        except Exception:
+            drawdown = 0
+        # Performance récente (gain moyen sur les 10 derniers trades)
+        perf_recent = 0
+        try:
+            if equity_curve and len(equity_curve) > 10:
+                perf_recent = (equity_curve[-1] - equity_curve[-11]) / equity_curve[-11]
+        except Exception:
+            pass
 
-        # 4. Position sizing dynamique : plus confiance, moins volatilité = plus d'expo
-        # On module mm_risk par la confiance (max 1) et (1-volatility)
-        size = balance * mm_risk * confidence * (1 - volatility)
+        # 4. Sizing dynamique
+        risk_pct = dynamic_position_size(mm_risk, volatility, confidence, drawdown, perf_recent)
+        size = balance * risk_pct
 
-        # 5. Sécurité : minimum d'ordre sur Binance (typiquement 5 USDC), arrondi 2 décimales
+        # 5. Min notional
         min_notional = 5
         size = max(min_notional, round(size, 2))
 
@@ -4438,7 +4454,7 @@ def calculate_position_size(bot, decision):
     except Exception as e:
         import logging
         logging.error(f"Erreur calcul montant USDC: {e}")
-        return 10  # Fallback en cas d'erreur
+        return 10
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):
