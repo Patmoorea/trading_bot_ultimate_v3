@@ -112,12 +112,12 @@ class NewsSentimentAnalyzer:
                 "weight": 0.7,
             },
             # CryptoPanic (clé API requise)
-            {
-                "name": "CryptoPanic",
-                "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={self.crypto_panic_api_key}&public=true",
-                "type": "json",
-                "weight": 0.8,
-            },
+            # {
+            # "name": "CryptoPanic",
+            # "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={self.crypto_panic_api_key}&public=true",
+            # "type": "json",
+            # "weight": 0.8,
+            # },
             # NewsAPI (clé API requise)
             {
                 "name": "NewsAPI",
