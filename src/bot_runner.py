@@ -78,6 +78,10 @@ from src.exchanges.bingx_exchange import BingXExchange
 from src.risk_tools import kelly_criterion, calculate_var, calculate_max_drawdown
 
 from src.portfolio.position_sizer import dynamic_position_size, compute_drawdown
+
+from src.portfolio.exit_manager import ExitManager
+
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -712,6 +716,8 @@ class TradingBotM4:
                 },
             },
         }
+        self.exit_manager = ExitManager(tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03)
+        
         self.signal_fusion_params = self.load_signal_fusion_params()
         
         self.positions = {}  # Ajouté : gestion des positions spot par paire
@@ -3823,7 +3829,7 @@ async def run_clean_bot():
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
-    # Fonction principale
+        # Fonction principale
     async def main():
         try:
             # Initialisation
@@ -3855,6 +3861,55 @@ async def run_clean_bot():
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
+
+                    # === PATCH : TP partiels et Trailing TP sur toutes les positions longues ===
+                    for symbol, pos in list(bot.positions.items()):
+                        if pos.get("side") != "long":
+                            continue
+
+                        # --- Initialisation des champs si première fois ---
+                        if "filled_tp_targets" not in pos:
+                            pos["filled_tp_targets"] = [False, False]  # 2 niveaux de TP
+                        if "price_history" not in pos:
+                            pos["price_history"] = [pos["entry_price"]]
+                        if "max_price" not in pos:
+                            pos["max_price"] = pos["entry_price"]
+
+                        # --- Ajoute le dernier prix à price_history ---
+                        last_price = None
+                        if hasattr(bot, "ws_collector"):
+                            last_price = bot.ws_collector.get_last_price(symbol)
+                        if last_price is None and symbol in bot.market_data and "1h" in bot.market_data[symbol]:
+                            closes = bot.market_data[symbol]["1h"].get("close", [])
+                            if closes:
+                                last_price = closes[-1]
+                        if last_price is None:
+                            continue  # On ne peut rien faire sans prix
+
+                        pos["price_history"].append(last_price)
+
+                        # 1. TP partiels
+                        to_exit, new_filled = bot.exit_manager.check_tp_partial(
+                            pos["entry_price"], last_price, pos["filled_tp_targets"]
+                        )
+                        if to_exit > 0 and pos["amount"] > 0:
+                            amount_to_sell = pos["amount"] * to_exit
+                            await bot.execute_trade(symbol, "SELL", amount_to_sell)
+                            pos["amount"] -= amount_to_sell
+                            pos["filled_tp_targets"] = new_filled
+                            # Si tout vendu, retire la position
+                            if pos["amount"] <= 0:
+                                bot.positions.pop(symbol)
+                                continue
+
+                        # 2. Trailing stop sur le reste
+                        should_exit, new_max = bot.exit_manager.check_trailing(
+                            pos["entry_price"], pos["price_history"], pos.get("max_price", pos["entry_price"])
+                        )
+                        pos["max_price"] = new_max
+                        if should_exit and pos["amount"] > 0:
+                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            bot.positions.pop(symbol)
 
                     # === PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX ===
                     for symbol, pos in list(bot.positions.items()):
@@ -3964,7 +4019,6 @@ async def run_clean_bot():
 
     # Démarrage de la boucle principale
     await main()
-
 
 def prepare_ohlcv_data(ohlcv_data):
     """Prépare les données OHLCV pour l'analyse"""
