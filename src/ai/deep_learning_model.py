@@ -7,10 +7,9 @@ import os
 
 def features_to_array(features: Dict[str, np.ndarray]) -> np.ndarray:
     """
-    Transforme un dict de features (avec arrays et scalaires) en un unique array 2D
+    Transforme un dict de features (avec arrays ou scalaires) en un unique array 2D
     adapté à l'entrée du modèle CNN-LSTM.
-    - close, high, low, volume : array shape (N,)
-    - rsi, macd, volatility : scalaires
+    - close, high, low, volume, rsi, macd, volatility : array shape (N,)
     Retourne un array shape (N, 7)
     """
     close = np.array(features["close"])
@@ -18,9 +17,15 @@ def features_to_array(features: Dict[str, np.ndarray]) -> np.ndarray:
     low = np.array(features["low"])
     volume = np.array(features["volume"])
     N = close.shape[0]
-    rsi = np.full(N, features["rsi"])
-    macd = np.full(N, features["macd"])
-    volatility = np.full(N, features["volatility"])
+    rsi = np.array(features["rsi"])
+    if np.isscalar(rsi) or rsi.shape == ():
+        rsi = np.full(N, rsi)
+    macd = np.array(features["macd"])
+    if np.isscalar(macd) or macd.shape == ():
+        macd = np.full(N, macd)
+    volatility = np.array(features["volatility"])
+    if np.isscalar(volatility) or volatility.shape == ():
+        volatility = np.full(N, volatility)
     arr = np.stack([close, high, low, volume, rsi, macd, volatility], axis=1)
     return arr
 
@@ -50,46 +55,32 @@ class DeepLearningModel:
         """
         Prédit la sortie du modèle.
         ATTENTION: `features` doit toujours être un dictionnaire
-        avec les clés 'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
+        avec les clés 'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'
+        et chaque entrée doit être un np.array shape (N,) ou un scalaire.
         """
         try:
-            if not isinstance(features, dict):
+            if not isinstance(features, dict) or any(
+                k not in features
+                for k in ["close", "high", "low", "volume", "rsi", "macd", "volatility"]
+            ):
                 raise ValueError(
                     "Features must be a dict with keys: close, high, low, volume, rsi, macd, volatility"
                 )
-            # S'assurer que le modèle est initialisé
+            if features["close"].shape[0] < 10:
+                return 0.0
             if not self.initialized:
                 self.initialize()
-
-            # DEBUG : affiche un aperçu des features
-            sample = {
-                k: (v if isinstance(v, float) else v[:3]) for k, v in features.items()
-            }
-            print(f"[DL] Features (sample): {sample}")
-
             x = self._prepare_features(features)
             with torch.no_grad():
                 prediction = self.model(x)
-
-            raw_pred = prediction.item()
-            print(f"[DL] raw_pred: {raw_pred}")
-            # Pas de normalisation : déjà entre 0 et 1 grâce au sigmoid
-            print(f"[DL] normalized_pred: {raw_pred}")
-
-            return float(raw_pred)
-
+            return float(prediction.item())
         except Exception as e:
             print(f"Error in DL prediction: {e}")
-            # Retourner une prédiction aléatoire faible au lieu de 0
             return np.random.uniform(0.0, 0.1)
 
     def _prepare_features(self, features: Dict[str, np.ndarray]) -> torch.Tensor:
-        """
-        Transforme le dict de features en un tensor shape (batch=1, 7, N)
-        pour l'entrée du CNN.
-        """
         arr = features_to_array(features)  # shape (N, 7)
-        arr = arr.T  # (7, N) car Conv1d attend (batch, channels, seq_len)
+        arr = arr.T  # (7, N)
         arr = np.expand_dims(arr, axis=0)  # (1, 7, N)
         return torch.FloatTensor(arr)
 

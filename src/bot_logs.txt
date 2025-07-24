@@ -8444,3 +8444,99 @@
 2025-07-24T02:02:32.573246 | [ORDER] Tentative d'exécution: neutral 5.11 TRX/USDC (iceberg: False)
 2025-07-24T02:02:33.695659 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5.3 | Confidence: 0.12055545765671905
 2025-07-24T02:02:33.697048 | [ORDER] Tentative d'exécution: neutral 5.3 SUI/USDC (iceberg: False)
+2025-07-24T04:36:34.314403 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:36:34.320349 | Initialisation des modèles d'IA...
+2025-07-24T04:36:34.360989 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:36:34.793565 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:36:34.794197 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:36:34.794239 | ✅ Trading en direct: True
+2025-07-24T04:36:34.794277 | ✅ IA activée: True
+2025-07-24T04:36:34.794312 | ✅ Analyse de news activée: True
+2025-07-24T04:37:07.216665 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:37:07.221442 | Initialisation des modèles d'IA...
+2025-07-24T04:37:07.243168 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:37:08.882096 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:37:08.882784 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:37:08.882899 | ✅ Trading en direct: True
+2025-07-24T04:37:08.882938 | ✅ IA activée: True
+2025-07-24T04:37:08.882974 | ✅ Analyse de news activée: True
+2025-07-24T04:39:26.558780 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:39:26.564074 | Initialisation des modèles d'IA...
+2025-07-24T04:39:26.593516 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:39:28.335064 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:39:28.335601 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:39:28.335643 | ✅ Trading en direct: True
+2025-07-24T04:39:28.335672 | ✅ IA activée: True
+2025-07-24T04:39:28.335702 | ✅ Analyse de news activée: True
+2025-07-24T04:42:11.866241 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:42:11.867510 | Initialisation des modèles d'IA...
+2025-07-24T04:42:11.897532 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:42:13.492710 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:42:13.493989 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:42:13.494102 | ✅ Trading en direct: True
+2025-07-24T04:42:13.494206 | ✅ IA activée: True
+2025-07-24T04:42:13.494251 | ✅ Analyse de news activée: True
+2025-07-24T04:46:15.118357 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:46:15.121220 | Initialisation des modèles d'IA...
+2025-07-24T04:46:15.151273 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:46:16.735192 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:46:16.736362 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:46:16.736432 | ✅ Trading en direct: True
+2025-07-24T04:46:16.736487 | ✅ IA activée: True
+2025-07-24T04:46:16.736536 | ✅ Analyse de news activée: True
+2025-07-24T04:49:30.314972 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:49:30.316688 | Initialisation des modèles d'IA...
+2025-07-24T04:49:30.354996 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:49:32.083933 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:49:32.085071 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:49:32.085155 | ✅ Trading en direct: True
+2025-07-24T04:49:32.085223 | ✅ IA activée: True
+2025-07-24T04:49:32.085285 | ✅ Analyse de news activée: True
+2025-07-24T04:51:22.819824 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:51:22.822218 | Initialisation des modèles d'IA...
+2025-07-24T04:51:22.850882 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:51:24.581284 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:51:24.582284 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:51:24.582357 | ✅ Trading en direct: True
+2025-07-24T04:51:24.582414 | ✅ IA activée: True
+2025-07-24T04:51:24.582469 | ✅ Analyse de news activée: True
+2025-07-24T04:53:10.676890 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:53:10.681764 | Initialisation des modèles d'IA...
+2025-07-24T04:53:10.718503 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:53:12.416005 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:53:12.417115 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:53:12.417189 | ✅ Trading en direct: True
+2025-07-24T04:53:12.417248 | ✅ IA activée: True
+2025-07-24T04:53:12.417304 | ✅ Analyse de news activée: True
+2025-07-24T04:55:22.998421 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T04:55:23.000469 | Initialisation des modèles d'IA...
+2025-07-24T04:55:23.030334 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T04:55:24.561802 | ✅ PPO Strategy initialized successfully
+2025-07-24T04:55:24.562738 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T04:55:24.562798 | ✅ Trading en direct: True
+2025-07-24T04:55:24.562847 | ✅ IA activée: True
+2025-07-24T04:55:24.562892 | ✅ Analyse de news activée: True
+2025-07-24T05:00:51.746300 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T05:00:51.748615 | Initialisation des modèles d'IA...
+2025-07-24T05:00:51.780640 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T05:00:53.494452 | ✅ PPO Strategy initialized successfully
+2025-07-24T05:00:53.495489 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T05:00:53.495560 | ✅ Trading en direct: True
+2025-07-24T05:00:53.495616 | ✅ IA activée: True
+2025-07-24T05:00:53.495671 | ✅ Analyse de news activée: True
+2025-07-24T05:02:37.836018 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T05:02:37.837136 | Initialisation des modèles d'IA...
+2025-07-24T05:02:37.865463 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T05:02:39.423706 | ✅ PPO Strategy initialized successfully
+2025-07-24T05:02:39.424921 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T05:02:39.424993 | ✅ Trading en direct: True
+2025-07-24T05:02:39.425057 | ✅ IA activée: True
+2025-07-24T05:02:39.425115 | ✅ Analyse de news activée: True
+2025-07-24T05:04:53.400173 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T05:04:53.401889 | Initialisation des modèles d'IA...
+2025-07-24T05:04:53.444104 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T05:04:55.006951 | ✅ PPO Strategy initialized successfully
+2025-07-24T05:04:55.008135 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T05:04:55.008210 | ✅ Trading en direct: True
+2025-07-24T05:04:55.008268 | ✅ IA activée: True
+2025-07-24T05:04:55.008316 | ✅ Analyse de news activée: True

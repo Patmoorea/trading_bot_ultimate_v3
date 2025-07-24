@@ -8,29 +8,109 @@ from src.backtesting.core.backtest_engine import BacktestEngine
 from src.bot_runner import calculate_position_size
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
 
-# Ajoute ces imports pour le fetch dynamique
 from binance.client import Client
 from dotenv import load_dotenv
 
+from src.bot_runner import TradingBotM4
+
+# === INSTANCE DU BOT (NE PAS MODIFIER CETTE LIGNE SANS RAISON) ===
+bot = TradingBotM4()
+
+
+def enrich_signals_with_real_values(bot, df, pair_key):
+    indics = bot.add_indicators(df)
+    rsi = indics.get("rsi_14", 50)
+    df["signal_tech"] = (rsi - 50) / 50
+
+    for col, default in [("close", 0.0), ("high", 0.0), ("low", 0.0), ("volume", 0.0)]:
+        if col not in df.columns:
+            df[col] = default
+        df[col] = df[col].fillna(default)
+    df["rsi"] = df["rsi_14"] if "rsi_14" in df.columns else 50.0
+    if "macd" not in df.columns and "macd" in indics:
+        df["macd"] = indics["macd"] if indics["macd"] is not None else 0.0
+    elif "macd" not in df.columns:
+        df["macd"] = 0.0
+    df["macd"] = df["macd"].fillna(0.0)
+    if "volatility" not in df.columns:
+        if "volatility" in indics and indics["volatility"] is not None:
+            df["volatility"] = indics["volatility"]
+        else:
+            df["volatility"] = 0.0
+    df["volatility"] = df["volatility"].fillna(0.0)
+    df["rsi"] = df["rsi"].fillna(50.0)
+
+    # 2. Signal IA (DeepLearningModel)
+    if hasattr(bot, "dl_model") and bot.dl_model:
+        from src.ai.deep_learning_model import features_to_array
+
+        def ia_predictor(row):
+            idx = row.name
+            window = df.loc[:idx].tail(63).copy()
+            for col, default in [
+                ("close", 0.0),
+                ("high", 0.0),
+                ("low", 0.0),
+                ("volume", 0.0),
+                ("rsi", 50.0),
+                ("macd", 0.0),
+                ("volatility", 0.0),
+            ]:
+                if col not in window.columns:
+                    window[col] = default
+                window[col] = window[col].fillna(default)
+            if len(window) < 10:
+                return 0.0
+            features = {
+                "close": np.array(window["close"]),
+                "high": np.array(window["high"]),
+                "low": np.array(window["low"]),
+                "volume": np.array(window["volume"]),
+                "rsi": np.array(window["rsi"]),
+                "macd": np.array(window["macd"]),
+                "volatility": np.array(window["volatility"]),
+            }
+            try:
+                return float(bot.dl_model.predict(features))
+            except Exception as e:
+                print(f"Error in DL prediction: {e}")
+                return 0.0
+
+        df["signal_ia"] = df.apply(ia_predictor, axis=1)
+    else:
+        df["signal_ia"] = 0.0
+
+    # 3. Signal sentiment (NewsSentimentAnalyzer)
+    if hasattr(bot, "news_analyzer") and bot.news_analyzer:
+        sentiment_score = bot.news_analyzer.get_symbol_sentiment(pair_key)
+        # Si le score est async/coroutine (parfois avec certains analyzers), on force un appel synchrone
+        if hasattr(sentiment_score, "__await__"):
+            import asyncio
+
+            sentiment_score = asyncio.run(sentiment_score)
+        df["signal_sentiment"] = sentiment_score
+    else:
+        df["signal_sentiment"] = 0.0
+
+    return df
+
+
 BEST_PARAMS_PATH = "config/best_signal_params.json"
 
-# Charger les clés API depuis .env
 load_dotenv()
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
 BINANCE_INTERVAL_MAP = {
     "1h": Client.KLINE_INTERVAL_1HOUR,
     "4h": Client.KLINE_INTERVAL_4HOUR,
-    # Ajoute d'autres timeframes si besoin
 }
 
 
 def fetch_binance_ohlcv(symbol, interval, start_str, end_str, api_key, api_secret):
-    """Télécharge des données historiques OHLCV depuis Binance."""
     client = Client(api_key, api_secret)
     klines = client.get_historical_klines(symbol, interval, start_str, end_str)
     if not klines or len(klines) == 0:
-        print(f"[FETCH] Aucune donnée récupérée pour {symbol} {interval}")
+        print(f"[FETCH] No data for {symbol} {interval}")
         return None
     df = pd.DataFrame(
         klines,
@@ -57,28 +137,37 @@ def fetch_binance_ohlcv(symbol, interval, start_str, end_str, api_key, api_secre
     return df
 
 
-def simple_fusion_strategy(row, fusion_params):
-    """
-    Exemple de stratégie de fusion. Adapter à ton format réel de signaux.
-    """
-    get = lambda x: row[x] if x in row else row.get(x, 0)
-    score = (
-        fusion_params["tech_weight"] * get("signal_tech")
-        + fusion_params["ia_weight"] * get("signal_ia")
-        + fusion_params["sentiment_weight"] * get("signal_sentiment")
-    )
-    if score > fusion_params["buy_threshold"]:
-        return "buy"
-    elif score < fusion_params["sell_threshold"]:
-        return "sell"
-    return "hold"
+def fusion_signal_series(df, fusion_params):
+    # Si une des colonnes est async/coroutine, on la résout en synchrone
+    def getval(val):
+        if hasattr(val, "__await__"):
+            import asyncio
+
+            return asyncio.run(val)
+        return val
+
+    def fusion(row):
+        score = np.clip(
+            fusion_params["tech_weight"] * getval(row.get("signal_tech", 0))
+            + fusion_params["ia_weight"] * getval(row.get("signal_ia", 0))
+            + fusion_params["sentiment_weight"]
+            * getval(row.get("signal_sentiment", 0)),
+            -10,
+            10,
+        )
+        if score > fusion_params["buy_threshold"]:
+            return 1
+        elif score < fusion_params["sell_threshold"]:
+            return -1
+        return 0
+
+    return df.apply(fusion, axis=1)
 
 
-def run_full_backtest(
-    df, fusion_params, strategy_func, initial_capital=10000, verbose=False
-):
+def run_full_backtest(df, fusion_params, initial_capital=10000, verbose=False):
+    signals = fusion_signal_series(df, fusion_params)
     results = BacktestEngine(initial_capital=initial_capital).run_backtest(
-        df, strategy_func, fusion_params=fusion_params
+        df, lambda *_args, **_kwargs: signals
     )
     if verbose:
         print(f"[BACKTEST] Résultat: {results}")
@@ -117,13 +206,13 @@ def objective(trial):
             )
             if df is None or len(df) < 100:
                 continue
-            results = run_full_backtest(
-                df,
-                fusion_params,
-                strategy_func=simple_fusion_strategy,
-                initial_capital=10000,
+            df = enrich_signals_with_real_values(
+                bot, df, pair_key=pair.replace("/", "")
             )
-            profit = results.get("final_balance", 0) - 10000 if results else -9999
+            results = run_full_backtest(df, fusion_params, initial_capital=10000)
+            profit = results.get("final_capital", 0) - 10000 if results else -9999
+            if profit is None or np.isnan(profit):
+                profit = -99999
             all_scores.append(profit)
     avg_profit = np.mean(all_scores) if all_scores else -99999
     print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")

@@ -144,18 +144,6 @@ class NewsSentimentAnalyzer:
                 "weight": 0.8,
             },
             {
-                "name": "BitcoinMagazine",
-                "url": "https://bitcoinmagazine.com/.rss/full/",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "CryptoSlate",
-                "url": "https://cryptoslate.com/feed/",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
                 "name": "NewsBTC",
                 "url": "https://www.newsbtc.com/feed/",
                 "type": "rss",
@@ -474,6 +462,22 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"News update failed: {str(e)}", exc_info=True)
             return {"mean": 0.0, "std": 0.0, "scores": [], "items": []}
 
+    # ==============================================================
+    # Pour activer les signaux sentiment, il est nécessaire de fournir
+    # un flux de news réel au NewsSentimentAnalyzer.
+    # Exemple d'intégration (Cointelegraph, CoinDesk, Twitter, etc.) :
+    #
+    #   news_data = fetch_cointelegraph_news()  # ou autre fonction
+    #   analyzer = NewsSentimentAnalyzer(config)
+    #   analyzer.add_news(news_data)
+    #
+    # Pour des tests, tu peux simuler manuellement le buffer avec :
+    #   dummy_news = [
+    #       {'symbols': ['BTCUSDC'], 'title': 'Bitcoin explose', 'sentiment': 0.8},
+    #       {'symbols': ['ETHUSDC'], 'title': 'Ethereum chute', 'sentiment': -0.5},
+    #   ]
+    #   analyzer.add_news(dummy_news)
+    # ==============================================================
     async def get_symbol_sentiment(self, symbol: str) -> float:
         try:
             print(f"CALLING get_symbol_sentiment: symbol='{symbol}'")

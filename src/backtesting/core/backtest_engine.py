@@ -72,9 +72,21 @@ class BacktestEngine:
         self.current_capital += pnl
         self.positions = {}
 
-    def calculate_metrics(self) -> Dict:
+    def calculate_metrics(self) -> dict:
+        # PATCH: Always return a metrics dict with numeric values, even if no trades
         if not self.trades:
-            return {}
+            return {
+                "total_trades": 0,
+                "winning_trades": 0,
+                "losing_trades": 0,
+                "win_rate": 0.0,
+                "avg_win": 0.0,
+                "avg_loss": 0.0,
+                "max_drawdown": 0.0,
+                "sharpe_ratio": 0.0,
+                "final_capital": self.current_capital,
+                "total_return": 0.0,
+            }
         pnls = [trade["pnl"] for trade in self.trades]
         winning_trades = [pnl for pnl in pnls if pnl > 0]
         losing_trades = [pnl for pnl in pnls if pnl < 0]
@@ -82,15 +94,20 @@ class BacktestEngine:
             "total_trades": len(self.trades),
             "winning_trades": len(winning_trades),
             "losing_trades": len(losing_trades),
-            "win_rate": len(winning_trades) / len(self.trades),
-            "avg_win": np.mean(winning_trades) if winning_trades else 0,
-            "avg_loss": np.mean(losing_trades) if losing_trades else 0,
-            "max_drawdown": self._calculate_max_drawdown(),
-            "sharpe_ratio": self._calculate_sharpe_ratio(),
-            "final_capital": self.current_capital,
-            "total_return": (self.current_capital - self.initial_capital)
-            / self.initial_capital,
+            "win_rate": len(winning_trades) / len(self.trades) if self.trades else 0.0,
+            "avg_win": float(np.mean(winning_trades)) if winning_trades else 0.0,
+            "avg_loss": float(np.mean(losing_trades)) if losing_trades else 0.0,
+            "max_drawdown": float(self._calculate_max_drawdown()),
+            "sharpe_ratio": float(self._calculate_sharpe_ratio()),
+            "final_capital": float(self.current_capital),
+            "total_return": float(
+                (self.current_capital - self.initial_capital) / self.initial_capital
+            ),
         }
+        # Patch: never return nan, always numeric
+        for k, v in self.metrics.items():
+            if v is None or (isinstance(v, float) and (np.isnan(v) or np.isinf(v))):
+                self.metrics[k] = 0.0
         return self.metrics
 
     def _calculate_max_drawdown(self) -> float:

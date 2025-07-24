@@ -37,7 +37,6 @@ from src.strategies.arbitrage.execution.execution import ArbitrageExecutor
 from src.ai.enhanced_cnn_lstm import EnhancedCNNLSTM
 from src.ai_models.hybrid.cnn_lstm_enhanced import EnhancedCNNLSTM
 from src.ai.ppo_gtrxl import PPOGTrXL
-from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.connectors.binance import BinanceConnector
 from src.ai.deep_learning_model import DeepLearningModel
 from src.ai.ppo_strategy import PPOStrategy
@@ -258,6 +257,8 @@ def fetch_binance_ohlcv(
     df[["open", "high", "low", "close", "volume"]] = df[
         ["open", "high", "low", "close", "volume"]
     ].astype(float)
+    # 🔷 Tri systématique par timestamp après chargement OHLCV
+    df = df.sort_values("timestamp").reset_index(drop=True)
     return df
 
 
@@ -287,6 +288,9 @@ def main():
     if args.backtest:
         log_dashboard("=== Lancement du backtesting quantitatif ===")
         df = pd.read_csv(args.data)
+        # 🔷 Tri par timestamp pour cohérence des indicateurs
+        if "timestamp" in df.columns:
+            df = df.sort_values("timestamp").reset_index(drop=True)
 
         # Choix de la stratégie
         strategy_map = {
