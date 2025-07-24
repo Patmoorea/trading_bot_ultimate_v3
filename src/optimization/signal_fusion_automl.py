@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import optuna
 import time
+import functools
 
 from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
@@ -117,17 +118,15 @@ def fetch_binance_ohlcv(
     from time import sleep
 
     client = Client(api_key, api_secret)
+    # Patch pour timeout global (solution compatible avec anciennes versions python-binance)
+    import functools
+
+    client.session.request = functools.partial(client.session.request, timeout=timeout)
     last_exception = None
 
     for attempt in range(retries):
         try:
-            klines = client.get_historical_klines(
-                symbol,
-                interval,
-                start_str,
-                end_str,
-                requests_params={"timeout": timeout},
-            )
+            klines = client.get_historical_klines(symbol, interval, start_str, end_str)
             break
         except Exception as e:
             print(
@@ -270,6 +269,7 @@ def objective(trial):
             if profit is None or np.isnan(profit):
                 profit = -99999
             all_scores.append(profit)
+            time.sleep(1)  # Limite la fréquence des appels API
     avg_profit = np.mean(all_scores) if all_scores else -99999
     print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
     return avg_profit
