@@ -87,6 +87,7 @@ from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
 
 from src.risk_tools.news_pause_manager import NewsPauseManager
 
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -3983,14 +3984,13 @@ async def run_clean_bot():
                 except Exception:
                     news_list = []
 
-                # Vérifie si une news majeure déclenche la pause auto
                 if bot.news_pause_manager.check_news_and_trigger(news_list, cycle):
                     print(f"[NEWS PAUSE] Trading suspendu pour {bot.news_pause_manager.cooldown_cycles} cycles.")
                     await bot.telegram.send_message(f"🚨 Pause automatique du trading due à une news critique détectée !")
                 if bot.news_pause_manager.is_paused(cycle):
                     print(f"[NEWS PAUSE] Trading en pause (cycle {cycle}/{bot.news_pause_manager.pause_until_cycle})")
                     await asyncio.sleep(30)
-                    continue  # saute tout le cycle
+                    continue
 
                 try:
                     print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")

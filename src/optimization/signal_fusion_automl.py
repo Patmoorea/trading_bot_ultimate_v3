@@ -16,13 +16,13 @@ from dotenv import load_dotenv
 
 from src.bot_runner import TradingBotM4
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
+from src.risk_tools.news_pause_manager import NewsPauseManager
 
 # === INSTANCE DU BOT (NE PAS MODIFIER CETTE LIGNE SANS RAISON) ===
 bot = TradingBotM4()
 
 # === INSTANTIATE NEWS ANALYZER AND LOAD NEWS BUFFER ===
 bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
-# Optionally, fetch news before running optimization (if method is async, use asyncio.run)
 try:
     if hasattr(bot.news_analyzer, "fetch_all_news"):
         fetch_result = bot.news_analyzer.fetch_all_news()
@@ -33,8 +33,11 @@ try:
 except Exception as e:
     print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
 
+# === NEWS PAUSE SYSTEME : INSTANTIATION ===
+pause_manager = NewsPauseManager(pause_cycles=5)
 
-def enrich_signals_with_real_values(bot, df, pair_key):
+
+def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
     indics = bot.add_indicators(df)
     rsi = indics.get("rsi_14", 50)
     df["signal_tech"] = (rsi - 50) / 50
@@ -99,12 +102,14 @@ def enrich_signals_with_real_values(bot, df, pair_key):
 
     # 3. Signal sentiment (NewsSentimentAnalyzer)
     if hasattr(bot, "news_analyzer") and bot.news_analyzer:
-        sentiment_score = bot.news_analyzer.get_symbol_sentiment(pair_key)
-        # Si le score est async/coroutine (parfois avec certains analyzers), on force un appel synchrone
-        if hasattr(sentiment_score, "__await__"):
-            import asyncio
+        import asyncio
 
-            sentiment_score = asyncio.run(sentiment_score)
+        # On veut toujours utiliser la news_list du cycle courant si disponible !
+        if news_list is None:
+            news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
+        sentiment_score = asyncio.run(
+            bot.news_analyzer.get_symbol_sentiment(pair_key, news_list=news_list)
+        )
         df["signal_sentiment"] = sentiment_score
     else:
         df["signal_sentiment"] = 0.0
@@ -263,6 +268,7 @@ def objective(trial):
     pairs = ["BTC/USDC", "ETH/USDC", "SOL/USDC"]
     timeframes = ["1h", "4h"]
     all_scores = []
+
     for pair in pairs:
         for tf in timeframes:
             df = fetch_binance_ohlcv(
@@ -275,15 +281,30 @@ def objective(trial):
             )
             if df is None or len(df) < 100:
                 continue
+
+            # === NEWS PAUSE SYSTEME : ICI ===
+            import asyncio
+
+            news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
+            if pause_manager.scan_news(news_list):
+                print("🚨 Pause trading à cause d'une news critique !")
+            if pause_manager.should_pause():
+                print("Trading en pause, on skip ce cycle.")
+                pause_manager.on_cycle_end()
+                continue
+
             df = enrich_signals_with_real_values(
-                bot, df, pair_key=pair.replace("/", "")
+                bot, df, pair_key=pair.replace("/", ""), news_list=news_list
             )
+
             results = run_full_backtest(df, fusion_params, initial_capital=10000)
             profit = results.get("final_capital", 0) - 10000 if results else -9999
             if profit is None or np.isnan(profit):
                 profit = -99999
             all_scores.append(profit)
             time.sleep(1)  # Limite la fréquence des appels API
+            pause_manager.on_cycle_end()
+
     avg_profit = np.mean(all_scores) if all_scores else -99999
     print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
     return avg_profit
