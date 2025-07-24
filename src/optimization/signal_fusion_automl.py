@@ -3,6 +3,8 @@ import json
 import numpy as np
 import pandas as pd
 import optuna
+import time
+
 from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.bot_runner import calculate_position_size
@@ -106,12 +108,41 @@ BINANCE_INTERVAL_MAP = {
 }
 
 
-def fetch_binance_ohlcv(symbol, interval, start_str, end_str, api_key, api_secret):
+def fetch_binance_ohlcv(
+    symbol, interval, start_str, end_str, api_key, api_secret, retries=3, timeout=60
+):
+    """
+    Récupère les données OHLCV depuis Binance avec gestion du timeout et des retries.
+    """
+    from time import sleep
+
     client = Client(api_key, api_secret)
-    klines = client.get_historical_klines(symbol, interval, start_str, end_str)
+    last_exception = None
+
+    for attempt in range(retries):
+        try:
+            klines = client.get_historical_klines(
+                symbol,
+                interval,
+                start_str,
+                end_str,
+                requests_params={"timeout": timeout},
+            )
+            break
+        except Exception as e:
+            print(
+                f"[FETCH] Attempt {attempt+1}/{retries} failed for {symbol} {interval} (error: {e})"
+            )
+            last_exception = e
+            sleep(5)
+    else:
+        print(f"[FETCH] All retries failed for {symbol} {interval}")
+        raise last_exception
+
     if not klines or len(klines) == 0:
         print(f"[FETCH] No data for {symbol} {interval}")
         return None
+
     df = pd.DataFrame(
         klines,
         columns=[
