@@ -8919,3 +8919,11 @@
 2025-07-24T14:57:46.461404 | ✅ Trading en direct: True
 2025-07-24T14:57:46.461447 | ✅ IA activée: True
 2025-07-24T14:57:46.461504 | ✅ Analyse de news activée: True
+2025-07-24T16:18:57.075715 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-24T16:18:57.076958 | Initialisation des modèles d'IA...
+2025-07-24T16:18:57.114138 | ✅ Modèles d'IA initialisés avec succès
+2025-07-24T16:18:58.678022 | ✅ PPO Strategy initialized successfully
+2025-07-24T16:18:58.678592 | ✅ Bot initialisé avec Telegram: True
+2025-07-24T16:18:58.678643 | ✅ Trading en direct: True
+2025-07-24T16:18:58.678681 | ✅ IA activée: True
+2025-07-24T16:18:58.678720 | ✅ Analyse de news activée: True

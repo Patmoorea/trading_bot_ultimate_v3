@@ -835,7 +835,7 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
-    
+
     def load_signal_fusion_params(self):
         path = "config/best_signal_params.json"
         if os.path.exists(path):
@@ -3592,7 +3592,50 @@ class TradingBotM4:
                 else:
                     print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
 
+def filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5):
+        """
+        Retourne la liste des paires à trader ce cycle, classées par opportunité.
+        - min_volatility: volatilité min (ex: 0.01)
+        - min_signal: valeur absolue du signal min (ex: 0.3)
+        - top_n: nombre max de paires retenues
+        """
+        candidates = []
+        for pair in bot.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            # Récupère la volatilité sur 1h
+            if (
+                pair_key in bot.market_data
+                and "1h" in bot.market_data[pair_key]
+                and "close" in bot.market_data[pair_key]["1h"]
+            ):
+                closes = bot.market_data[pair_key]["1h"]["close"]
+                if len(closes) >= 20:
+                    returns = np.diff(np.log(closes[-20:]))
+                    vol = float(np.std(returns))
+                else:
+                    vol = 0
+            else:
+                vol = 0
 
+            # Récupère le signal technique/IA/sentiment (exemple: total_score du dernier cycle)
+            signal = 0
+            if (
+                pair_key in bot.market_data
+                and "ai_prediction" in bot.market_data[pair_key]
+            ):
+                signal = bot.market_data[pair_key]["ai_prediction"]
+            # Peut aussi utiliser la dernière décision ou un signal custom
+
+            # Filtrage
+            if vol > min_volatility and abs(signal) > min_signal:
+                candidates.append((pair, vol, abs(signal)))
+
+        # Classe par volatilité x signal décroissant
+        candidates.sort(key=lambda x: x[1]*x[2], reverse=True)
+        # Retourne la liste des paires sélectionnées (top N)
+        filtered = [c[0] for c in candidates[:top_n]]
+        return filtered
+    
 def load_config():
     """Charge la configuration"""
     try:
@@ -3774,8 +3817,15 @@ async def run_clean_bot():
             await handle_arbitrage_opportunities(bot)
 
             # 4. Analyse des paires pour CHAQUE timeframe (génère signaux bruts multi-tf)
+            # === Filtering dynamique des paires ===
+            selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
+            print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
+            ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
+            if ignored_pairs:
+                print(f"[DYNAMIQUE] Paires ignorées (pas d'opportunité) : {ignored_pairs}")
+
             trade_decisions = []
-            for pair in valid_pairs:
+            for pair in selected_pairs:
                 for tf in bot.config["TRADING"]["timeframes"]:
                     decision = await market_analysis_cycle(bot, pair, bot.market_data, tf=tf)
                     if decision:
