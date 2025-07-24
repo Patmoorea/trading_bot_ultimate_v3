@@ -15,6 +15,9 @@ import pandas as pd
 import pandas_ta as pta
 import pyarrow as pa
 import pyarrow.parquet as pq
+import argparse
+import json
+import lz4.frame
 
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -704,6 +707,8 @@ class TradingBotM4:
                 },
             },
         }
+        self.signal_fusion_params = self.load_signal_fusion_params()
+        
         self.positions = {}  # Ajouté : gestion des positions spot par paire
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
 
@@ -820,6 +825,23 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
     
+    def load_signal_fusion_params(self):
+        path = "config/best_signal_params.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                params = json.load(f)
+            print(f"[OPTIM] Pondérations optimisées chargées : {params}")
+            return params
+        # Valeurs par défaut
+        return {
+            "tech_weight": 0.6,
+            "ia_weight": 0.3,
+            "sentiment_weight": 0.1,
+            "buy_threshold": 0.2,
+            "sell_threshold": -0.2,
+            "mm_risk": 0.05,
+        }
+        
     def aggregate_timeframe_signals(self, pair, signals_per_tf):
         """
         Fusionne les signaux multi-timeframes pour une paire donnée.
@@ -1211,8 +1233,11 @@ class TradingBotM4:
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
-        Analyse la paire, retourne la décision réelle (pondération dynamique tech/IA/news selon tf)
+        Analyse la paire, retourne la décision réelle (pondération dynamique tech/IA/news selon tf OU selon params optimisés si présents)
         """
+        # Prefer params optimisés si présents
+        params = getattr(self, "signal_fusion_params", None)
+
         if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
             auto_cfg = self.auto_strategy_config
             log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {symbol}")
@@ -1336,21 +1361,35 @@ class TradingBotM4:
 
         arbitrage_score = 0
 
-        # === Pondération dynamique selon timeframe ===
-        tf_weights = {
-            "1m":    {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
-            "5m":    {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
-            "15m":   {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
-            "1h":    {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
-            "4h":    {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
-            "1d":    {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
-        }
-        w = tf_weights.get(tf, tf_weights["1h"])
+        # === Pondération dynamique (Optuna ou fallback legacy) ===
+        if params is not None:
+            # Si optimisation Optuna présente, on l'utilise
+            tech_w = params.get("tech_weight", 0.6)
+            ia_w = params.get("ia_weight", 0.3)
+            sent_w = params.get("sentiment_weight", 0.1)
+            buy_thr = params.get("buy_threshold", 0.2)
+            sell_thr = params.get("sell_threshold", -0.2)
+        else:
+            # Sinon, legacy pondération selon TF
+            tf_weights = {
+                "1m":    {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
+                "5m":    {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
+                "15m":   {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
+                "1h":    {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
+                "4h":    {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
+                "1d":    {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
+            }
+            w = tf_weights.get(tf, tf_weights["1h"])
+            tech_w = w["tech"]
+            ia_w = w["ai"]
+            sent_w = w["sentiment"]
+            buy_thr = 0.2
+            sell_thr = -0.2
 
         total_score = (
-            w["tech"] * tech_score
-            + w["ai"] * ai_score
-            + w["sentiment"] * sentiment_score
+            tech_w * tech_score
+            + ia_w * ai_score
+            + sent_w * sentiment_score
             + 0.05 * arbitrage_score
         )
 
@@ -1363,9 +1402,9 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             },
         }
-        if total_score > 0.2:
+        if total_score > buy_thr:
             decision["action"] = "buy"
-        elif total_score < -0.2:
+        elif total_score < sell_thr:
             decision["action"] = "sell"
 
         log_dashboard(
@@ -4362,28 +4401,40 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
 
 def calculate_position_size(bot, decision):
-    """Calcule le montant en USDC à investir (et non la quantité de BTC)"""
+    """
+    Calcule le montant en USDC à investir (et non la quantité de BTC).
+    Prend en compte les pondérations optimisées si elles existent (mm_risk Optuna).
+    """
     try:
-        # Par exemple, on investit de 10 à 100 USDC selon la confiance et la volatilité
-        base_usdc = 5  # minimum à investir (doit être > minNotional Binance, ici 5)
-        max_usdc = 10  # maximum à investir
+        # 1. Récupère le paramètre mm_risk optimisé si présent (sinon fallback)
+        mm_risk = 0.05  # par défaut 5% du capital
+        if hasattr(bot, "signal_fusion_params") and bot.signal_fusion_params:
+            mm_risk = bot.signal_fusion_params.get("mm_risk", 0.05)
 
-        volatility_factor = decision.get("signals", {}).get("volatility", 0.5)
+        # 2. Récupère la balance réelle (ou simulée si non live)
+        try:
+            balance = bot.get_performance_metrics().get("balance", 10000)
+        except Exception:
+            balance = 10000
+
+        # 3. Pondère selon la confiance et la volatilité du signal
         confidence = decision.get("confidence", 0.5)
+        volatility = decision.get("signals", {}).get("volatility", 0.5)
 
-        # Plus la volatilité est faible et la confiance élevée, plus on investit
-        invest_usdc = base_usdc + (max_usdc - base_usdc) * confidence * (
-            1 - volatility_factor
-        )
+        # 4. Position sizing dynamique : plus confiance, moins volatilité = plus d'expo
+        # On module mm_risk par la confiance (max 1) et (1-volatility)
+        size = balance * mm_risk * confidence * (1 - volatility)
 
-        # Securité : arrondi à 2 décimales et respect du minimum
-        invest_usdc = max(base_usdc, round(invest_usdc, 2))
+        # 5. Sécurité : minimum d'ordre sur Binance (typiquement 5 USDC), arrondi 2 décimales
+        min_notional = 5
+        size = max(min_notional, round(size, 2))
 
-        return invest_usdc  # <<< Montant USDC à investir
+        return size
 
     except Exception as e:
+        import logging
         logging.error(f"Erreur calcul montant USDC: {e}")
-        return 10  # fallback
+        return 10  # Fallback en cas d'erreur
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):
@@ -4612,7 +4663,7 @@ def objective(trial):
 if __name__ == "__main__":
 
     # --- 1. Argument parsing avancé
-    parser = argparse.ArgumentParser()
+    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
@@ -4657,15 +4708,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "--auto-n", type=int, default=50, help="Nombre de stratégies à générer/tester"
     )
-    args, unknown = parser.parse_known_args()
-    args, unknown = parser.parse_known_args()
-
-    # Ajoute ici d'autres paramètres si besoin...
+    parser.add_argument(
+        "--optuna-signal-fusion",
+        action="store_true",
+        help="Lance l'optimisation AutoML des pondérations de signaux",
+    )
     args, unknown = parser.parse_known_args()
 
     # --- 2. Mode AutoML/Tuning (prioritaire sur tout le reste)
     if "automl" in sys.argv or "tune" in sys.argv:
         asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
+
+    # --- 2bis. Mode Optuna signal fusion
+    elif args.optuna_signal_fusion:
+        from src.optimization.signal_fusion_automl import optimize_signal_fusion_and_mm
+        optimize_signal_fusion_and_mm(n_trials=100)
+        exit(0)
 
     # --- 3. Mode auto-strategy (AUTO-ML stratégies)
     elif "auto-strategy" in sys.argv:
@@ -4737,7 +4795,7 @@ if __name__ == "__main__":
 
         sys.exit(0)
 
-    # --- 3. Mode backtest CLI
+    # --- 4. Mode backtest CLI
     elif args.backtest:
         print("=== Lancement du backtesting quantitatif ===")
         # 1. Charge les paires depuis la config
@@ -4788,11 +4846,14 @@ if __name__ == "__main__":
             print(f"Résultats du backtest pour {pair} :")
             print(results)
         sys.exit(0)
+
+    # --- 5. Entraînement IA live
     elif "train-cnn-lstm" in sys.argv:
         bot = TradingBotM4()
         # Modifie ici la paire/timeframe si besoin
         bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 
+    # --- 6. Lancement du bot de trading en mode normal
     else:
         asyncio.run(run_clean_bot())
