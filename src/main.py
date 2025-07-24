@@ -152,13 +152,26 @@ with st.sidebar:
     if st.sidebar.button("🔄 Rafraîchir"):
         st.rerun()
 
-        st.sidebar.markdown("---")
-        st.sidebar.header("🎛️ Sélection dynamique des paires")
-        min_volatility = st.sidebar.slider("Volatilité min", 0.0, 0.05, 0.01, 0.001)
-        min_signal = st.sidebar.slider("Signal min", 0.0, 1.0, 0.3, 0.01)
-        top_n = st.sidebar.slider("Nb max paires à trader", 1, 10, 5, 1)
+    # --- AJOUT SLIDERS ET AFFICHAGE SEUILS ACTIFS ---
+    st.sidebar.markdown("---")
+    st.sidebar.header("🎛️ Sélection dynamique des paires")
+    min_volatility = st.sidebar.slider("Volatilité min", 0.0, 0.05, 0.01, 0.001)
+    min_signal = st.sidebar.slider("Signal min", 0.0, 1.0, 0.3, 0.01)
+    top_n = st.sidebar.slider("Nb max paires à trader", 1, 10, 5, 1)
+
+    st.sidebar.markdown(
+        f"""
+        <div style='background-color: #232b2b; padding: 8px; border-radius: 5px; margin-top: 10px;'>
+            <b>🎯 Seuils de filtering actifs</b><br>
+            • Volatilité min : <span style='color:#00ff00'>{min_volatility:.3f}</span><br>
+            • Signal min : <span style='color:#00ff00'>{min_signal:.2f}</span><br>
+            • Nb paires max : <span style='color:#00ff00'>{top_n}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # Sauvegarde dans shared_data.json (pour que le bot les lise au prochain cycle)
-    # (Tu peux aussi utiliser un fichier dédié, ici on patch dans shared_data)
     try:
         shared_data = load_json_file(SHARED_DATA_PATH)
         shared_data["filtering_params"] = {
