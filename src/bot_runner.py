@@ -818,7 +818,37 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
-
+        self.sync_positions_with_binance()
+    
+    def aggregate_timeframe_signals(self, pair, signals_per_tf):
+        """
+        Fusionne les signaux multi-timeframes pour une paire donnée.
+        signals_per_tf : dict { "1m": {"action":..., "confidence":...}, ... }
+        Retourne : action globale ('buy', 'sell', 'neutral') et confiance moyenne pondérée.
+        """
+        # Pondération : TF + importance (ex : plus fort sur 1h, 4h)
+        tf_weights = {"1m": 1, "5m": 2, "15m": 3, "1h": 5, "4h": 4, "1d": 2}
+        total_weight = 0
+        score = 0
+        for tf, d in signals_per_tf.items():
+            w = tf_weights.get(tf, 1)
+            total_weight += w
+            if d["action"] == "buy":
+                score += w * d.get("confidence", 0.5)
+            elif d["action"] == "sell":
+                score -= w * d.get("confidence", 0.5)
+            # neutral = 0
+        if total_weight == 0:
+            return "neutral", 0
+        avg_score = score / total_weight
+        # Seuils ajustables
+        if avg_score > 0.2:
+            return "buy", avg_score
+        elif avg_score < -0.2:
+            return "sell", abs(avg_score)
+        else:
+            return "neutral", abs(avg_score)
+       
     def sync_positions_with_binance(self):
         """
         Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
@@ -1179,9 +1209,9 @@ class TradingBotM4:
 
             await asyncio.sleep(self.news_update_interval)
 
-    async def analyze_signals(self, symbol, ohlcv_df, indicators):
+    async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
-        Analyse la paire, retourne la décision réelle (plus aucun patch de test IA)
+        Analyse la paire, retourne la décision réelle (pondération dynamique tech/IA/news selon tf)
         """
         if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
             auto_cfg = self.auto_strategy_config
@@ -1215,8 +1245,8 @@ class TradingBotM4:
         # Calcul des scores techniques avec amplification
         if close and sma_20:
             tech_factors += 1
-            pct_diff = (close - sma_20) / sma_20 * 100  # Pourcentage de différence
-            tech_score += np.clip(pct_diff * 2, -1, 1)  # Amplifier et limiter
+            pct_diff = (close - sma_20) / sma_20 * 100
+            tech_score += np.clip(pct_diff * 2, -1, 1)
 
         if close and sma_50:
             tech_factors += 1
@@ -1230,37 +1260,36 @@ class TradingBotM4:
 
         if rsi_14:
             tech_factors += 1
-            # RSI plus réactif : suracheté/survendu plus marqué
             if rsi_14 > 70:
-                tech_score -= 0.8  # Signal de vente fort
+                tech_score -= 0.8
             elif rsi_14 < 30:
-                tech_score += 0.8  # Signal d'achat fort
+                tech_score += 0.8
             else:
-                tech_score += (rsi_14 - 50) / 25  # Signal graduel
+                tech_score += (rsi_14 - 50) / 25
 
         if macd and macd_signal:
             tech_factors += 1
             macd_diff = macd - macd_signal
-            tech_score += np.clip(macd_diff * 10, -1, 1)  # Amplifier MACD
+            tech_score += np.clip(macd_diff * 10, -1, 1)
 
         if macd_hist:
             tech_factors += 1
-            tech_score += np.clip(macd_hist * 15, -1, 1)  # Amplifier histogramme
+            tech_score += np.clip(macd_hist * 15, -1, 1)
 
         if bb_upper and bb_lower and close:
             tech_factors += 1
             bb_position = (close - bb_lower) / (bb_upper - bb_lower)
             if bb_position < 0.2:
-                tech_score += 0.6  # Proche de la bande inférieure = achat
+                tech_score += 0.6
             elif bb_position > 0.8:
-                tech_score -= 0.6  # Proche de la bande supérieure = vente
+                tech_score -= 0.6
 
         if psar and prev_close and close:
             tech_factors += 1
             if prev_close < psar and close > psar:
-                tech_score += 0.8  # Signal d'achat fort
+                tech_score += 0.8
             elif prev_close > psar and close < psar:
-                tech_score -= 0.8  # Signal de vente fort
+                tech_score -= 0.8
 
         if momentum_10 and close:
             tech_factors += 1
@@ -1271,10 +1300,8 @@ class TradingBotM4:
             tech_factors += 1
             tech_score += np.clip(zscore_20 * 0.5, -1, 1)
 
-        # Moyenne pondérée au lieu de simple division
         if tech_factors > 0:
             tech_score = tech_score / tech_factors
-            # Amplifier le score final si plusieurs indicateurs convergent
             if abs(tech_score) > 0.3:
                 tech_score *= 1.2
 
@@ -1284,7 +1311,6 @@ class TradingBotM4:
             log_dashboard(f"[AI] Prédiction IA sollicitée pour {symbol}")
             try:
                 features = await self._prepare_features_for_ai(symbol)
-                # log_dashboard(f"[DEBUG AI FEATURES] features: {features}")
                 if features is not None:
                     ai_score = float(self.dl_model.predict(features))
             except Exception as e:
@@ -1293,12 +1319,8 @@ class TradingBotM4:
         sentiment_score = 0
         pair_key = symbol.replace("/", "").upper()
         if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
-            # Utilise le score par symbole si disponible
             try:
-                sentiment_score = await self.news_analyzer.get_symbol_sentiment(
-                    pair_key
-                )
-                # Fallback sur le global si rien de spécifique
+                sentiment_score = await self.news_analyzer.get_symbol_sentiment(pair_key)
                 if sentiment_score == 0:
                     sentiment_score = self.news_analyzer.get_sentiment_summary().get(
                         "sentiment_global", 0.0
@@ -1314,11 +1336,21 @@ class TradingBotM4:
 
         arbitrage_score = 0
 
-        # Amplifier les scores pour avoir des décisions plus marquées
+        # === Pondération dynamique selon timeframe ===
+        tf_weights = {
+            "1m":    {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
+            "5m":    {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
+            "15m":   {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
+            "1h":    {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
+            "4h":    {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
+            "1d":    {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
+        }
+        w = tf_weights.get(tf, tf_weights["1h"])
+
         total_score = (
-            0.4 * tech_score * 1.2  # Amplification réduite
-            + 0.3 * ai_score * 1.0  # Pas d'amplification
-            + 0.3 * sentiment_score * 1.5  # Amplification réduite + poids augmenté
+            w["tech"] * tech_score
+            + w["ai"] * ai_score
+            + w["sentiment"] * sentiment_score
             + 0.05 * arbitrage_score
         )
 
@@ -1331,22 +1363,17 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             },
         }
-        if total_score > 0.2:  # Seuil abaissé
+        if total_score > 0.2:
             decision["action"] = "buy"
-        elif total_score < -0.2:  # Seuil abaissé
+        elif total_score < -0.2:
             decision["action"] = "sell"
 
-        # Log détaillé pour debug
         log_dashboard(
-            f"[ANALYZE_SIGNALS] {symbol} | "
+            f"[ANALYZE_SIGNALS] {symbol} | TF: {tf} | "
             f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sentiment: {sentiment_score:.3f} | "
             f"Total: {total_score:.3f} | Action: {decision['action'].upper()} | "
             f"Confidence: {decision['confidence']:.3f}"
         )
-        log_dashboard(
-            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
-        )
-        print(f"### SENTIMENT CHECK {symbol} = {sentiment_score}")
         return decision
 
     def get_binance_real_balance(self, asset="USDC"):
@@ -3646,29 +3673,23 @@ async def run_clean_bot():
             return None
 
     async def execute_trading_cycle(bot, valid_pairs):
-        """Exécute un cycle complet de trading"""
+        """Exécute un cycle complet de trading (fusion multi-timeframe optimisée)"""
         try:
-            # 0. Import avancé des indicateurs orderflow (à placer en haut du fichier !)
+            # 0. Import avancé des indicateurs orderflow
             try:
-                from src.analysis.technical.advanced.advanced_indicators import (
-                    AdvancedIndicators,
-                )
-
+                from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
                 orderflow_indicators = AdvancedIndicators()
             except Exception as e:
                 orderflow_indicators = None
                 print("[Orderflow] Impossible d'importer AdvancedIndicators:", e)
 
-            # 1. Injection des données live WS dans market_data (remplace le fetch market_data historique !)
+            # 1. Injection des données live WS dans market_data
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
-                    # print(
-                    # f"[DEBUG COLLECTOR] {pair_key} {tf} {len(df) if df is not None and not df.empty else 0} lignes"
-                    # )
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
@@ -3676,27 +3697,14 @@ async def run_clean_bot():
                             "low": df["low"].tolist(),
                             "close": df["close"].tolist(),
                             "volume": df["volume"].tolist(),
-                            "timestamp": [
-                                int(pd.Timestamp(t).timestamp())
-                                for t in df["timestamp"]
-                            ],
+                            "timestamp": [int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]],
                         }
-                        # 1bis. Calcul et injection des indicateurs orderflow avancés
+                        # 1bis. Indicateurs orderflow
                         if orderflow_indicators is not None:
                             try:
-                                bid_ask = None
-                                liquidity_wave = None
-                                smart_money = None
-                                if hasattr(orderflow_indicators, "_bid_ask_ratio"):
-                                    bid_ask = orderflow_indicators._bid_ask_ratio(df)
-                                if hasattr(orderflow_indicators, "_liquidity_wave"):
-                                    liquidity_wave = (
-                                        orderflow_indicators._liquidity_wave(df)
-                                    )
-                                if hasattr(orderflow_indicators, "_smart_money_index"):
-                                    smart_money = (
-                                        orderflow_indicators._smart_money_index(df)
-                                    )
+                                bid_ask = orderflow_indicators._bid_ask_ratio(df) if hasattr(orderflow_indicators, "_bid_ask_ratio") else None
+                                liquidity_wave = orderflow_indicators._liquidity_wave(df) if hasattr(orderflow_indicators, "_liquidity_wave") else None
+                                smart_money = orderflow_indicators._smart_money_index(df) if hasattr(orderflow_indicators, "_smart_money_index") else None
                                 bot.market_data[pair_key][tf]["orderflow"] = {
                                     "bid_ask_ratio": bid_ask,
                                     "liquidity_wave": liquidity_wave,
@@ -3705,12 +3713,7 @@ async def run_clean_bot():
                             except Exception as e:
                                 print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
                     else:
-                        # Ajout d'un log utile pour debug volume/DF vide
                         print(f"[DEBUG] DataFrame vide pour {pair_key} {tf}")
-
-            # Log debug sur la structure finale (optionnel)
-            for sym in bot.market_data:
-                print(f"[DEBUG] {sym}: {list(bot.market_data[sym].keys())}")
 
             # 2. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
@@ -3720,32 +3723,57 @@ async def run_clean_bot():
             # 3. Détection d'arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 4. Analyse des paires pour CHAQUE timeframe
+            # 4. Analyse des paires pour CHAQUE timeframe (génère signaux bruts multi-tf)
             trade_decisions = []
             for pair in valid_pairs:
                 for tf in bot.config["TRADING"]["timeframes"]:
-                    decision = await market_analysis_cycle(
-                        bot, pair, bot.market_data, tf=tf
-                    )
+                    decision = await market_analysis_cycle(bot, pair, bot.market_data, tf=tf)
                     if decision:
+                        decision["tf"] = tf
                         trade_decisions.append(decision)
 
-            # === AJOUT : LOG DES DÉCISIONS FINALES ===
+            # LOG toutes les décisions par timeframe
             for decision in trade_decisions:
                 signals = decision.get("signals", {})
                 log_dashboard(
-                    f"[TRADE DECISION] {decision['pair']} | "
+                    f"[TRADE DECISION] {decision['pair']} | TF: {decision.get('tf','?')} | "
                     f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
                     f"Tech: {signals.get('technical', 0):.2f} | "
                     f"IA: {signals.get('ai', 0):.2f} | "
                     f"Sentiment: {signals.get('sentiment', 0):.2f}"
                 )
-            # === FIN AJOUT ===
 
-            # 5. Exécution des trades
-            await execute_trade_decisions(bot, trade_decisions)
+            # 5. FUSION multi-timeframe : 1 décision centrale par paire (pondérée)
+            signals_by_pair = {pair: {} for pair in valid_pairs}
+            for decision in trade_decisions:
+                pair = decision["pair"]
+                tf = decision.get("tf")
+                if pair in signals_by_pair and tf:
+                    signals_by_pair[pair][tf] = decision
 
-            return trade_decisions, regime
+            final_trade_decisions = []
+            for pair, tf_signals in signals_by_pair.items():
+                action, confidence = bot.aggregate_timeframe_signals(pair, tf_signals)
+                all_details = [(tf, d['action'], d['confidence']) for tf, d in tf_signals.items()]
+                log_dashboard(f"[FUSION] {pair}: {all_details} => FINAL: {action.upper()} ({confidence:.2f})")
+                # Prend le premier tf pour les signaux fusionnés, ou None
+                signals_example = next(iter(tf_signals.values()), {})
+                final_trade_decisions.append({
+                    "pair": pair,
+                    "action": action,
+                    "confidence": confidence,
+                    "signals": {
+                        "details": tf_signals,
+                        "technical": signals_example.get("signals", {}).get("technical", 0),
+                        "ai": signals_example.get("signals", {}).get("ai", 0),
+                        "sentiment": signals_example.get("signals", {}).get("sentiment", 0),
+                    },
+                })
+
+            # 6. Exécution des trades FUSIONNÉS (1 seul trade/pair/cycle)
+            await execute_trade_decisions(bot, final_trade_decisions)
+
+            return final_trade_decisions, regime
 
         except Exception as e:
             logger.error(f"Erreur cycle trading: {e}")
