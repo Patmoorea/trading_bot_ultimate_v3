@@ -3653,14 +3653,14 @@ async def run_clean_bot():
                 else:
                     # Appel standard
                     signal = await bot.analyze_signals(
-                        pair_key, ohlcv_df, indicators_data
+                        pair_key, ohlcv_df, indicators_data, tf=tf
                     )
                     signal["pair"] = pair
                     signal["tf"] = tf
                     return signal
             else:
                 # Appel standard
-                signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data)
+                signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data, tf=tf)
                 signal["pair"] = pair
                 signal["tf"] = tf
                 return signal
