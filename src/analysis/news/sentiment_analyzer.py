@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-
-load_dotenv()
 import os
 import json
 import asyncio
@@ -96,29 +93,17 @@ class NewsSentimentAnalyzer:
         )
         self._model = None
         self._tokenizer = None
-
-        # Adaptation à ton .env
         self.news_api_key = os.getenv("NEWS_API_KEY")
         self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
         self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
         self.news_sources = os.getenv("NEWS_SOURCES", "bloomberg,reuters,coindesk")
-
         self.sources = [
-            # CryptoCompare (pas besoin d'API key)
             {
                 "name": "CryptoCompare",
                 "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
                 "type": "json",
                 "weight": 0.7,
             },
-            # CryptoPanic (clé API requise)
-            # {
-            # "name": "CryptoPanic",
-            # "url": f"https://cryptopanic.com/api/developer/v2/posts/?auth_token={self.crypto_panic_api_key}&public=true",
-            # "type": "json",
-            # "weight": 0.8,
-            # },
-            # NewsAPI (clé API requise)
             {
                 "name": "NewsAPI",
                 "url": (
@@ -156,7 +141,6 @@ class NewsSentimentAnalyzer:
                 "weight": 0.7,
             },
         ]
-
         self.news_buffer: List[Dict] = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
@@ -176,18 +160,6 @@ class NewsSentimentAnalyzer:
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
         return self._tokenizer
 
-    async def connect_ws(url):
-        while True:
-            try:
-                async with websockets.connect(url) as ws:
-                    pass
-            except (asyncio.TimeoutError, websockets.exceptions.InvalidHandshake) as e:
-                print(f"[WS] Erreur {e}, reconnexion dans 5s")
-                await asyncio.sleep(5)
-            except Exception as e:
-                print(f"[WS] Exception: {e}, reconnexion dans 5s")
-                await asyncio.sleep(5)
-
     async def fetch_all_news(self) -> List[Dict]:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
@@ -200,9 +172,7 @@ class NewsSentimentAnalyzer:
             )
         }
         async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(
-                ssl=ssl_context, family=socket.AF_INET
-            ),  # Force IPv4 !
+            connector=aiohttp.TCPConnector(ssl=ssl_context, family=socket.AF_INET),
             headers=headers,
         ) as session:
             tasks = [
@@ -222,6 +192,7 @@ class NewsSentimentAnalyzer:
                     )
             else:
                 print("  (Aucune news récupérée)")
+            self.news_buffer = valid_news  # CRUCIAL: remplissage du buffer ICI
             return valid_news
 
     async def _fetch_source_with_retry(
@@ -332,6 +303,70 @@ class NewsSentimentAnalyzer:
             "source_weight": source["weight"],
         }
 
+    def _parse_json(self, data, source: Dict) -> List[Dict]:
+        # Adapt JSON to your API format
+        news_list = []
+        if source["name"] == "CryptoCompare" and "Data" in data:
+            for n in data["Data"]:
+                title = n.get("title", "")
+                text = n.get("body", "")
+                url = n.get("url", "")
+                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+                news_list.append(
+                    {
+                        "title": title,
+                        "text": text,
+                        "source": source["name"],
+                        "timestamp": n.get(
+                            "published_on", int(datetime.now().timestamp())
+                        ),
+                        "url": url,
+                        "symbols": symbols,
+                        "source_weight": source["weight"],
+                    }
+                )
+        elif source["name"] == "NewsAPI" and "articles" in data:
+            for n in data["articles"]:
+                title = n.get("title", "")
+                text = n.get("description", "") or n.get("content", "")
+                url = n.get("url", "")
+                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+                news_list.append(
+                    {
+                        "title": title,
+                        "text": text,
+                        "source": source["name"],
+                        "timestamp": (
+                            int(
+                                datetime.strptime(
+                                    n.get("publishedAt", datetime.utcnow().isoformat()),
+                                    "%Y-%m-%dT%H:%M:%SZ",
+                                ).timestamp()
+                            )
+                            if n.get("publishedAt")
+                            else int(datetime.now().timestamp())
+                        ),
+                        "url": url,
+                        "symbols": symbols,
+                        "source_weight": source["weight"],
+                    }
+                )
+        # Ajoute d'autres sources JSON ici si besoin
+        return news_list
+
+    def _parse_timestamp(self, item):
+        pub_date = item.find("pubDate")
+        if pub_date and pub_date.text:
+            try:
+                return int(
+                    datetime.strptime(
+                        pub_date.text[:25], "%a, %d %b %Y %H:%M:%S"
+                    ).timestamp()
+                )
+            except Exception:
+                pass
+        return int(datetime.now().timestamp())
+
     def analyze_sentiment_batch(
         self, news_items: List[Dict], low_watermark_ratio: float = None
     ) -> List[Dict]:
@@ -346,29 +381,11 @@ class NewsSentimentAnalyzer:
                 f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2"
             )
             low_watermark_ratio = 0.2
-
-        import inspect
-
-        stack = inspect.stack()
-        if len(stack) > 1:
-            caller = stack[1]
-            print(
-                f"[DEBUG] Called from {caller.filename}:{caller.lineno} with low_watermark_ratio={low_watermark_ratio}"
-            )
-        else:
-            print("[DEBUG] Called from REPL or top-level")
-
-        print("[DEBUG] analyze_sentiment_batch entrée")
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
             return []
-
         try:
-            print("[DEBUG] Début try analyze_sentiment_batch")
-            print("[DEBUG] low_watermark_ratio:", low_watermark_ratio)
             texts = [f"{item['title']}. {item['text']}"[:512] for item in news_items]
-            print("[DEBUG] Nombre de textes à analyser:", len(texts))
-
             inputs = self.tokenizer(
                 texts,
                 return_tensors="pt",
@@ -377,12 +394,9 @@ class NewsSentimentAnalyzer:
                 max_length=512,
             )
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
-            print("[DEBUG] Inputs batch prêt (device:", self.device, ")")
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 scores = torch.nn.functional.softmax(outputs.logits, dim=-1)
-            print("[DEBUG] Softmax scores:", scores.tolist()[:5])
-
             results = []
             for i, item in enumerate(news_items):
                 sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
@@ -397,22 +411,10 @@ class NewsSentimentAnalyzer:
                         ),
                     }
                 )
-            mean_sent = np.mean([res["sentiment"] for res in results]) if results else 0
-            std_sent = np.std([res["sentiment"] for res in results]) if results else 0
-            print(
-                f"Analyzed {len(results)}/{len(news_items)} items | Mean: {mean_sent:.4f} ± {std_sent:.4f}"
-            )
-            for i, res in enumerate(results[:5]):
-                print(
-                    f"  - Sentiment {i+1}: {res['sentiment']:.4f} | Titre: {res['title'][:60]}"
-                )
-            print("[DEBUG] analyze_sentiment_batch RETURN TYPE:", type(results))
             return results
         except Exception as e:
             print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
-            print("[DEBUG] Exception details:", repr(e))
             self.logger.error(f"Error in sentiment analysis: {str(e)}")
-            print("[DEBUG] analyze_sentiment_batch RETURN TYPE:", type([]))
             return []
 
     async def update_analysis(self):
@@ -432,15 +434,11 @@ class NewsSentimentAnalyzer:
                 float(np.mean(sentiment_scores)) if sentiment_scores else 0.0
             )
             std_sentiment = float(np.std(sentiment_scores)) if sentiment_scores else 0.0
-
             self.logger.info(
                 f"News analysis: {len(analyzed_news)} items | "
                 f"Mean sentiment: {mean_sentiment:.4f} ± {std_sentiment:.4f}"
             )
-            self.news_buffer = [
-                *self.news_buffer[-100:],
-                *analyzed_news,
-            ][-200:]
+            self.news_buffer = analyzed_news[-200:]  # keep the last 200
             summary = self.get_sentiment_summary()
             await self._save_state(
                 {
@@ -462,29 +460,52 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"News update failed: {str(e)}", exc_info=True)
             return {"mean": 0.0, "std": 0.0, "scores": [], "items": []}
 
-    # ==============================================================
-    # Pour activer les signaux sentiment, il est nécessaire de fournir
-    # un flux de news réel au NewsSentimentAnalyzer.
-    # Exemple d'intégration (Cointelegraph, CoinDesk, Twitter, etc.) :
-    #
-    #   news_data = fetch_cointelegraph_news()  # ou autre fonction
-    #   analyzer = NewsSentimentAnalyzer(config)
-    #   analyzer.add_news(news_data)
-    #
-    # Pour des tests, tu peux simuler manuellement le buffer avec :
-    #   dummy_news = [
-    #       {'symbols': ['BTCUSDC'], 'title': 'Bitcoin explose', 'sentiment': 0.8},
-    #       {'symbols': ['ETHUSDC'], 'title': 'Ethereum chute', 'sentiment': -0.5},
-    #   ]
-    #   analyzer.add_news(dummy_news)
-    # ==============================================================
+    def get_sentiment_summary(self, top_n=5):
+        valid = [
+            item
+            for item in self.news_buffer
+            if "sentiment" in item and item["sentiment"] is not None
+        ]
+        if not valid:
+            return {
+                "sentiment_global": 0.0,
+                "n_news": 0,
+                "top_symbols": [],
+                "top_news": [],
+            }
+        sentiments = [item["sentiment"] for item in valid]
+        sentiment_global = float(np.mean(sentiments))
+        top_news = sorted(valid, key=lambda x: abs(x["sentiment"]), reverse=True)[
+            :top_n
+        ]
+        top_news_titles = [news["title"] for news in top_news if "title" in news]
+        symbol_scores = {}
+        for item in valid:
+            for s in item.get("symbols", []):
+                symbol_scores.setdefault(s, []).append(item["sentiment"])
+        top_symbols = sorted(
+            symbol_scores.items(), key=lambda kv: abs(np.mean(kv[1])), reverse=True
+        )
+        top_symbols = [s for s, scores in top_symbols[:top_n]]
+        return {
+            "sentiment_global": sentiment_global,
+            "n_news": len(valid),
+            "top_symbols": top_symbols,
+            "top_news": top_news_titles,
+        }
+
+    async def _save_state(self, state: dict):
+        # Optionnel : sauvegarde l'état du sentiment dans un fichier
+        try:
+            with open("news_sentiment_state.json", "w") as f:
+                json.dump(state, f, indent=2, default=str)
+        except Exception as e:
+            self.logger.error(f"Failed to save state: {str(e)}")
 
     async def get_symbol_sentiment(self, symbol: str) -> float:
         try:
             print(f"CALLING get_symbol_sentiment: symbol='{symbol}'")
             symbol_key = symbol.replace("/", "").upper()
-
-            # === MAPPING complet pour tous les coins connus (3, 4, 5, 6+ lettres) ===
             coin_mapping = {
                 "BTC": ["BTC", "BITCOIN"],
                 "ETH": ["ETH", "ETHEREUM"],
@@ -497,23 +518,18 @@ class NewsSentimentAnalyzer:
                 "AVAX": ["AVAX", "AVALANCHE"],
                 "DOT": ["DOT", "POLKADOT"],
                 "MATIC": ["MATIC", "POLYGON"],
-                "LUNC": ["LUNC", "LUNACLASSIC"],  # 4 lettres
-                "BTTOLD": ["BTTOLD", "BITTORRENT OLD"],  # 6 lettres exemple
-                "PEPEAI": ["PEPEAI", "PEPE AI"],  # 6 lettres exemple
-                # Ajoute d'autres coins ici si besoin
+                "LUNC": ["LUNC", "LUNACLASSIC"],
+                "BTTOLD": ["BTTOLD", "BITTORRENT OLD"],
+                "PEPEAI": ["PEPEAI", "PEPE AI"],
             }
-
-            # Extraction générique du coin principal, longueur quelconque
             coin = None
             for cm in sorted(coin_mapping.keys(), key=len, reverse=True):
                 if symbol_key.startswith(cm):
                     coin = cm
                     break
             if coin is None:
-                coin = symbol_key[:3]  # fallback
-
+                coin = symbol_key[:3]
             search_terms = coin_mapping.get(coin, [coin])
-
             print(
                 f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}"
             )
@@ -530,12 +546,10 @@ class NewsSentimentAnalyzer:
                 title = news.get("title", "").lower()
                 text = news.get("text", "").lower()
                 content = f"{title} {text}"
-                # Recherche par symboles extraits
                 match_extracted = any(
                     s.upper().strip() in [term.upper() for term in search_terms]
                     for s in news_symbols
                 )
-                # Recherche dans le texte de la news
                 match_content = any(term.lower() in content for term in search_terms)
                 if match_extracted or match_content:
                     matched = True
