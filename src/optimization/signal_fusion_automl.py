@@ -10,10 +10,8 @@ from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.bot_runner import calculate_position_size
 from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
-
 from binance.client import Client
 from dotenv import load_dotenv
-
 from src.bot_runner import TradingBotM4
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.risk_tools.news_pause_manager import NewsPauseManager
@@ -52,7 +50,6 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
     df["volatility"] = df["volatility"].fillna(0.0)
     df["rsi"] = df["rsi"].fillna(50.0)
 
-    # 2. Signal IA (DeepLearningModel)
     if hasattr(bot, "dl_model") and bot.dl_model:
         from src.ai.deep_learning_model import features_to_array
 
@@ -92,11 +89,9 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
     else:
         df["signal_ia"] = 0.0
 
-    # 3. Signal sentiment (NewsSentimentAnalyzer)
     if hasattr(bot, "news_analyzer") and bot.news_analyzer:
         import asyncio
 
-        # On veut toujours utiliser la news_list du cycle courant si disponible !
         if news_list is None:
             news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
         sentiment_score = asyncio.run(
@@ -112,9 +107,6 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str, api_key, api_secret, retries=3, timeout=60
 ):
-    """
-    Récupère les données OHLCV depuis Binance avec gestion du timeout et des retries.
-    """
     from time import sleep
 
     client = Client(api_key, api_secret)
@@ -222,9 +214,11 @@ def optuna_callback(study, trial):
 
 
 def optimize_signal_fusion_and_mm(n_trials=50):
-    # === INSTANCE DU BOT ===
+    print("=== [DIAG] OPTIMIZATION FUNCTION CALLED ===")
     bot = TradingBotM4()
+    print("=== [DIAG] Bot instantiated ===")
     bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
+    print("=== [DIAG] News analyzer instantiated ===")
     try:
         if hasattr(bot.news_analyzer, "fetch_all_news"):
             fetch_result = bot.news_analyzer.fetch_all_news()
@@ -232,12 +226,26 @@ def optimize_signal_fusion_and_mm(n_trials=50):
                 import asyncio
 
                 asyncio.run(fetch_result)
+        print("=== [DIAG] News fetch done ===")
     except Exception as e:
         print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
-    pause_manager = NewsPauseManager(pause_cycles=5)
+    print("=== [DIAG] Pause manager about to be instantiated ===")
+
+    class NoPauseManager:
+        def scan_news(self, news_list):
+            return False
+
+        def should_pause(self):
+            return False
+
+        def on_cycle_end(self):
+            pass
+
+    pause_manager = NoPauseManager()
+    print("=== [DIAG] Pause manager (no pause) instantiated ===")
 
     def objective(trial):
-        # Optionally, fetch news at the start of each trial to refresh buffer
+        print(f"=== [DIAG] Optuna trial {trial.number} started ===")
         if hasattr(bot, "news_analyzer"):
             fetch_result = bot.news_analyzer.fetch_all_news()
             if hasattr(fetch_result, "__await__"):
@@ -281,13 +289,7 @@ def optimize_signal_fusion_and_mm(n_trials=50):
                 import asyncio
 
                 news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-                if pause_manager.scan_news(news_list):
-                    print("🚨 Pause trading à cause d'une news critique !")
-                if pause_manager.should_pause():
-                    print("Trading en pause, on skip ce cycle.")
-                    pause_manager.on_cycle_end()
-                    continue
-
+                # Les pauses sont désactivées par NoPauseManager
                 df = enrich_signals_with_real_values(
                     bot, df, pair_key=pair.replace("/", ""), news_list=news_list
                 )
@@ -304,8 +306,11 @@ def optimize_signal_fusion_and_mm(n_trials=50):
         print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
         return avg_profit
 
+    print("=== [DIAG] CREATING STUDY ===")
     study = optuna.create_study(direction="maximize")
+    print("=== [DIAG] RUNNING OPTIMIZATION ===")
     study.optimize(objective, n_trials=n_trials, callbacks=[optuna_callback])
+    print("=== [DIAG] OPTIMIZATION DONE ===")
     print("Best params:", study.best_params)
     os.makedirs(os.path.dirname(BEST_PARAMS_PATH), exist_ok=True)
     with open(BEST_PARAMS_PATH, "w") as f:
@@ -313,4 +318,7 @@ def optimize_signal_fusion_and_mm(n_trials=50):
     return study.best_params
 
 
-# NOTE: NE RIEN LAISSER S'EXECUTER EN DEHORS DES FONCTIONS !
+if __name__ == "__main__":
+    print("=== OPTIMISATION SIGNAL FUSION & MM ===")
+    best = optimize_signal_fusion_and_mm(n_trials=100)
+    print("Meilleure configuration trouvée :", best)

@@ -854,3 +854,336 @@
 2025-07-25T06:06:43.112714 | ✅ Trading en direct: True
 2025-07-25T06:06:43.112767 | ✅ IA activée: True
 2025-07-25T06:06:43.112816 | ✅ Analyse de news activée: True
+2025-07-25T06:12:38.655682 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T06:12:38.657364 | Initialisation des modèles d'IA...
+2025-07-25T06:12:38.689081 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T06:12:40.285011 | ✅ PPO Strategy initialized successfully
+2025-07-25T06:12:40.285633 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T06:12:40.285701 | ✅ Trading en direct: True
+2025-07-25T06:12:40.285758 | ✅ IA activée: True
+2025-07-25T06:12:40.285812 | ✅ Analyse de news activée: True
+2025-07-25T06:17:45.217657 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T06:17:45.220146 | Initialisation des modèles d'IA...
+2025-07-25T06:17:45.255632 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T06:17:46.864251 | ✅ PPO Strategy initialized successfully
+2025-07-25T06:17:46.864802 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T06:17:46.864861 | ✅ Trading en direct: True
+2025-07-25T06:17:46.864913 | ✅ IA activée: True
+2025-07-25T06:17:46.864961 | ✅ Analyse de news activée: True
+2025-07-25T06:21:03.929300 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T06:21:03.930277 | Initialisation des modèles d'IA...
+2025-07-25T06:21:03.957939 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T06:21:05.546576 | ✅ PPO Strategy initialized successfully
+2025-07-25T06:21:05.547346 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T06:21:05.547429 | ✅ Trading en direct: True
+2025-07-25T06:21:05.547495 | ✅ IA activée: True
+2025-07-25T06:21:05.547557 | ✅ Analyse de news activée: True
+2025-07-25T14:37:43.806454 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:37:43.807509 | Initialisation des modèles d'IA...
+2025-07-25T14:37:43.845310 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:37:45.441917 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:37:45.443128 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:37:45.443299 | ✅ Trading en direct: True
+2025-07-25T14:37:45.443390 | ✅ IA activée: True
+2025-07-25T14:37:45.443471 | ✅ Analyse de news activée: True
+2025-07-25T14:39:06.701050 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:39:06.701950 | Initialisation des modèles d'IA...
+2025-07-25T14:39:06.740744 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:39:08.409609 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:39:08.410025 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:39:08.410068 | ✅ Trading en direct: True
+2025-07-25T14:39:08.410097 | ✅ IA activée: True
+2025-07-25T14:39:08.410125 | ✅ Analyse de news activée: True
+2025-07-25T14:40:00.832340 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-25T14:41:33.080710 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0698 | Tendance: -0.0079
+2025-07-25T14:41:33.081138 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-25T14:42:10.981576 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0703 | Tendance: -0.0079
+2025-07-25T14:42:10.982357 | 🎯 Stratégie active: Range/Scalping
+2025-07-25T14:42:10.982416 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-25T14:42:23.439974 | [NEWS] Score sentiment global: 0.27 | Impact: 0.58 | Événements:  NFT market cap surged to $6.6B in July: DappRadar ; Square Begins Bitcoin Payments for Sellers as Block Stock Hits S&#038;P 500;  Here’s what happened in crypto today 
+2025-07-25T14:43:29.282760 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.283358 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.290390 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.22838978781738392 | news_enabled=True
+2025-07-25T14:43:29.290546 | [ANALYZE_SIGNALS] XRPUSDC | TF: 1m | Tech: -0.393 | AI: 0.447 | Sentiment: 0.228 | Total: -0.079 | Action: NEUTRAL | Confidence: 0.079
+2025-07-25T14:43:29.364731 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.364864 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.366893 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.228389787817384 | news_enabled=True
+2025-07-25T14:43:29.366955 | [ANALYZE_SIGNALS] XRPUSDC | TF: 5m | Tech: -0.458 | AI: 0.447 | Sentiment: 0.228 | Total: -0.118 | Action: NEUTRAL | Confidence: 0.118
+2025-07-25T14:43:29.435278 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.435511 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.437474 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.22838978781738403 | news_enabled=True
+2025-07-25T14:43:29.437524 | [ANALYZE_SIGNALS] XRPUSDC | TF: 15m | Tech: -0.645 | AI: 0.447 | Sentiment: 0.228 | Total: -0.230 | Action: SELL | Confidence: 0.230
+2025-07-25T14:43:29.502803 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.502940 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.505065 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.22838978781738387 | news_enabled=True
+2025-07-25T14:43:29.505132 | [ANALYZE_SIGNALS] XRPUSDC | TF: 1h | Tech: -0.684 | AI: 0.447 | Sentiment: 0.228 | Total: -0.253 | Action: SELL | Confidence: 0.253
+2025-07-25T14:43:29.570095 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.570263 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.572259 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.228389787817384 | news_enabled=True
+2025-07-25T14:43:29.572319 | [ANALYZE_SIGNALS] XRPUSDC | TF: 4h | Tech: -0.644 | AI: 0.447 | Sentiment: 0.228 | Total: -0.230 | Action: SELL | Confidence: 0.230
+2025-07-25T14:43:29.638595 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:43:29.638719 | [AI] Prédiction IA sollicitée pour XRPUSDC
+2025-07-25T14:43:29.640572 | [DEBUG SENTIMENT] symbol=XRPUSDC | sentiment_score=0.22838978781738392 | news_enabled=True
+2025-07-25T14:43:29.640608 | [ANALYZE_SIGNALS] XRPUSDC | TF: 1d | Tech: 0.461 | AI: 0.447 | Sentiment: 0.228 | Total: 0.433 | Action: BUY | Confidence: 0.433
+2025-07-25T14:43:29.640643 | [TRADE DECISION] XRP/USDC | TF: 1m | Action: NEUTRAL | Confiance: 0.08 | Tech: -0.39 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640706 | [TRADE DECISION] XRP/USDC | TF: 5m | Action: NEUTRAL | Confiance: 0.12 | Tech: -0.46 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640735 | [TRADE DECISION] XRP/USDC | TF: 15m | Action: SELL | Confiance: 0.23 | Tech: -0.64 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640761 | [TRADE DECISION] XRP/USDC | TF: 1h | Action: SELL | Confiance: 0.25 | Tech: -0.68 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640787 | [TRADE DECISION] XRP/USDC | TF: 4h | Action: SELL | Confiance: 0.23 | Tech: -0.64 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640813 | [TRADE DECISION] XRP/USDC | TF: 1d | Action: BUY | Confiance: 0.43 | Tech: 0.46 | IA: 0.45 | Sentiment: 0.23
+2025-07-25T14:43:29.640843 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.640870 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.640899 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.640944 | [FUSION] XRP/USDC: [('1m', 'neutral', np.float64(0.0787542907043547)), ('5m', 'neutral', np.float64(0.11764124085221728)), ('15m', 'sell', np.float64(0.22982327875372033)), ('1h', 'sell', np.float64(0.2533011990720922)), ('4h', 'sell', np.float64(0.2296099238342092)), ('1d', 'buy', np.float64(0.4332548804180969))] => FINAL: NEUTRAL (0.12)
+2025-07-25T14:43:29.640971 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.640999 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.641025 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.641050 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.641078 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.641104 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:43:29.641799 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'une des plus grandes sociétés de courtage américaines se lance dans l'immobili
+2025-07-25T14:43:29.641826 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier de Luxe : Christie’s International Real Estate ouvre une division cry
+2025-07-25T14:43:29.641850 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Gold (XAUT) : près de 8 tonnes d’or pour garantir ce stablecoin du métal 
+2025-07-25T14:43:29.641879 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies aux USA : Le premier stablecoin conforme au GENIUS Act arrive
+2025-07-25T14:43:29.641909 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Les stablecoins sont « la prochaine évolution de l’argent » sel
+2025-07-25T14:43:29.641937 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Kraken mise gros sur INK : L’exchange veut intégrer le L2 et le token à son écos
+2025-07-25T14:43:29.641961 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena (ENA) lance le premier stablecoin conforme au GENIUS Act aux États-Unis
+2025-07-25T14:43:29.641984 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier tokenisé : Detroit obtient une mesure provisoire contre RealT
+2025-07-25T14:43:29.642008 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 1 milliard de dollars de puces Nvidia infiltrées en Chine : la contrebande high-
+2025-07-25T14:43:29.642031 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Stablecoins : Les grands projets de Tether aux USA
+2025-07-25T14:43:29.642055 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT ne peut plus payer une partie de ses clients – Pourquoi ?
+2025-07-25T14:43:29.642078 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 64 % des Français ne possédant pas de cryptos envisagent d'en acheter, selon cet
+2025-07-25T14:43:29.642101 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ETF Crypto de Bitwise : La SEC met en pause son propre feu vert !
+2025-07-25T14:43:29.642123 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ledger Recovery Key débarque sur le marché crypto : Zoom sur cette nouveauté de 
+2025-07-25T14:43:29.642146 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Portefeuilles crypto et sécurité : Ledger lance Recovery Key pour les wallets Fl
+2025-07-25T14:43:29.642168 | [NEWS CHECK] ⚠️ News sans champ 'symbols': FTX rembourse 6,2 milliards $ et relance les paiements : la saga touche-t-elle à
+2025-07-25T14:43:29.642191 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Senator Lummis says US is ‘waking up’ on crypto after historic legislative week
+2025-07-25T14:43:29.642213 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Vietnam deploys national blockchain for identity and records 
+2025-07-25T14:43:29.642235 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Nigeria opens doors to stablecoin firms under regulatory oversight 
+2025-07-25T14:43:29.642258 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Asia’s OSL Group raises $300M for stablecoin and global expansion 
+2025-07-25T14:43:29.642280 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How Pump.fun raised $500M in 12 minutes, and what it says about retail FOMO 
+2025-07-25T14:43:29.642303 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Arizona woman sentenced for helping North Korea coders get US crypto jobs 
+2025-07-25T14:43:29.642325 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  NFT market cap surged to $6.6B in July: DappRadar 
+2025-07-25T14:43:29.642348 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Hulk Hogan, Ozzy memecoins soar as tributes roll in over icons’ deaths 
+2025-07-25T14:43:29.642371 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Logan Paul can’t blame CryptoZoo co-founders for collapse, judge says 
+2025-07-25T14:43:29.642393 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How to use ChatGPT Agent for crypto trading in 2025 
+2025-07-25T14:43:29.642416 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Lightning Network could nab 5% of stablecoin flows by 2028: Voltage CEO 
+2025-07-25T14:43:29.642438 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Auction house Christie’s debuts crypto-only real estate team 
+2025-07-25T14:43:29.642461 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  US crypto legislation drives $4B surge in stablecoin supply 
+2025-07-25T14:43:29.642482 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Ex-Gemini, Kraken exec appointed as CEO of crypto advocacy group 
+2025-07-25T14:43:29.642505 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-25T14:43:29.642527 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-25T14:43:29.642550 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-25T14:43:29.642572 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-25T14:43:29.642594 | [NEWS CHECK] ⚠️ News sans champ 'symbols': New ChatGPT Agent Can Book, Browse, and Fill Forms—Just Don't Trust It Yet
+2025-07-25T14:43:29.642617 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cognition’s AI Developer ‘Devin’ Eyes $10 Billion Valuation—Even If It’s Not Min
+2025-07-25T14:43:29.642640 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Senate Will End Up Passing House Version of Crypto Market Structure, Says Tom Em
+2025-07-25T14:43:29.642663 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Will Hyperliquid Hit $69.69 Before September? The Odds Don’t Favor Bulls
+2025-07-25T14:43:29.642685 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena to Bring $1.5 Billion USDtb Stablecoin to US with Anchorage Digital
+2025-07-25T14:43:29.642708 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Future of Prediction Markets Is Content-Native
+2025-07-25T14:43:29.642730 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Vine Meme Coin Spikes After Elon Musk Says the App Is Returning—With an AI Twist
+2025-07-25T14:43:29.642753 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Two Men Charged in NYC Crypto Torture Case Released on $1 Million Bail Each
+2025-07-25T14:43:29.642775 | [NEWS CHECK] ⚠️ News sans champ 'symbols': India Ramps Up Crypto Tax Enforcement with International Data Sharing and AI
+2025-07-25T14:43:29.642797 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Trump Bans ‘Woke AI’ From Federal Contracts in New Executive Order
+2025-07-25T14:43:29.642820 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Another ICO Boom? What the Senate’s Market Structure Bill Means for Crypto Start
+2025-07-25T14:43:29.642844 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ark Invest sells $12M in Coinbase stock, $9.8M in Block Inc. shares amid crypto 
+2025-07-25T14:43:29.642866 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Group secures $300 million in equity funding to fuel global expa
+2025-07-25T14:43:29.642888 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 250,000 Tether Gold tokens in circulation are backed by 7.66 tons of gold, Tethe
+2025-07-25T14:43:29.642910 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Christie’s offers $1 billion in luxury real estate to buyers paying with crypto:
+2025-07-25T14:43:29.642933 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elon Musk’s Grok AI integrates with Kalshi, Paradigm-backed prediction market
+2025-07-25T14:43:29.642955 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Polychain sells remaining $62.5 million TIA stake to Celestia Foundation ahead o
+2025-07-25T14:43:29.642978 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Centralized exchange WOO X investigates ‘contained incident’ resulting in estima
+2025-07-25T14:43:30.218612 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:30.219657 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-25T14:43:32.303333 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:32.304035 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-25T14:43:34.014683 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:34.015188 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-25T14:43:35.814066 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.11811210388954499
+2025-07-25T14:43:35.814255 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-25T14:43:37.540780 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:37.540982 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-25T14:43:39.249892 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:39.250087 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-25T14:43:40.763130 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:43:40.763920 | Initialisation des modèles d'IA...
+2025-07-25T14:43:40.783453 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:43:40.992635 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:40.993336 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-25T14:43:42.392732 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:43:42.393113 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:43:42.393165 | ✅ Trading en direct: True
+2025-07-25T14:43:42.393210 | ✅ IA activée: True
+2025-07-25T14:43:42.393254 | ✅ Analyse de news activée: True
+2025-07-25T14:43:43.445499 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:43.446113 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-25T14:43:45.159637 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:45.160217 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-25T14:43:46.846560 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:43:46.847520 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-25T14:48:05.404267 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:48:05.405144 | Initialisation des modèles d'IA...
+2025-07-25T14:48:05.425864 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:48:07.174683 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:48:07.174929 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:48:07.174964 | ✅ Trading en direct: True
+2025-07-25T14:48:07.174989 | ✅ IA activée: True
+2025-07-25T14:48:07.175012 | ✅ Analyse de news activée: True
+2025-07-25T14:51:43.719362 | [NEWS] Score sentiment global: 0.28 | Impact: 0.57 | Événements:  NFT market cap surged to $6.6B in July: DappRadar ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-25T14:52:16.985715 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:52:16.987592 | Initialisation des modèles d'IA...
+2025-07-25T14:52:17.008712 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:52:18.271622 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:52:18.271939 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:52:18.271969 | ✅ Trading en direct: True
+2025-07-25T14:52:18.271994 | ✅ IA activée: True
+2025-07-25T14:52:18.272017 | ✅ Analyse de news activée: True
+2025-07-25T14:55:28.363356 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:55:28.364117 | Initialisation des modèles d'IA...
+2025-07-25T14:55:28.383753 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:55:30.184885 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:55:30.185179 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:55:30.185225 | ✅ Trading en direct: True
+2025-07-25T14:55:30.185264 | ✅ IA activée: True
+2025-07-25T14:55:30.185302 | ✅ Analyse de news activée: True
+2025-07-25T14:57:11.481051 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:57:11.481696 | Initialisation des modèles d'IA...
+2025-07-25T14:57:11.500146 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:57:12.870562 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:57:12.870913 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:57:12.870960 | ✅ Trading en direct: True
+2025-07-25T14:57:12.871000 | ✅ IA activée: True
+2025-07-25T14:57:12.871039 | ✅ Analyse de news activée: True
+2025-07-25T14:57:25.255812 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0709 | Tendance: -0.0079
+2025-07-25T14:57:25.256293 | 🎯 Stratégie active: Range/Scalping
+2025-07-25T14:57:25.256550 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-25T14:57:49.339389 | [NEWS] Score sentiment global: 0.28 | Impact: 0.57 | Événements:  NFT market cap surged to $6.6B in July: DappRadar ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-25T14:58:19.486325 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.486565 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.488295 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.33368438631822284 | news_enabled=True
+2025-07-25T14:58:19.488334 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 1m | Tech: -0.560 | AI: 0.963 | Sentiment: 0.334 | Total: -0.014 | Action: NEUTRAL | Confidence: 0.014
+2025-07-25T14:58:19.551047 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.551187 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.552871 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.3336843863182229 | news_enabled=True
+2025-07-25T14:58:19.552904 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 5m | Tech: -0.587 | AI: 0.963 | Sentiment: 0.334 | Total: -0.030 | Action: NEUTRAL | Confidence: 0.030
+2025-07-25T14:58:19.615232 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.615333 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.616902 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.3336843863182229 | news_enabled=True
+2025-07-25T14:58:19.616935 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 15m | Tech: -0.588 | AI: 0.963 | Sentiment: 0.334 | Total: -0.030 | Action: NEUTRAL | Confidence: 0.030
+2025-07-25T14:58:19.678796 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.678909 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.680464 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.3336843863182229 | news_enabled=True
+2025-07-25T14:58:19.680509 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 1h | Tech: -0.534 | AI: 0.963 | Sentiment: 0.334 | Total: 0.002 | Action: NEUTRAL | Confidence: 0.002
+2025-07-25T14:58:19.742549 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.742669 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.744310 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.33368438631822284 | news_enabled=True
+2025-07-25T14:58:19.744356 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 4h | Tech: -0.567 | AI: 0.963 | Sentiment: 0.334 | Total: -0.018 | Action: NEUTRAL | Confidence: 0.018
+2025-07-25T14:58:19.784517 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-25T14:58:19.784616 | [AI] Prédiction IA sollicitée pour DOGEUSDC
+2025-07-25T14:58:19.786029 | [DEBUG SENTIMENT] symbol=DOGEUSDC | sentiment_score=0.33368438631822295 | news_enabled=True
+2025-07-25T14:58:19.786066 | [ANALYZE_SIGNALS] DOGEUSDC | TF: 1d | Tech: 0.526 | AI: 0.963 | Sentiment: 0.334 | Total: 0.638 | Action: BUY | Confidence: 0.638
+2025-07-25T14:58:19.786102 | [TRADE DECISION] DOGE/USDC | TF: 1m | Action: NEUTRAL | Confiance: 0.01 | Tech: -0.56 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786133 | [TRADE DECISION] DOGE/USDC | TF: 5m | Action: NEUTRAL | Confiance: 0.03 | Tech: -0.59 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786160 | [TRADE DECISION] DOGE/USDC | TF: 15m | Action: NEUTRAL | Confiance: 0.03 | Tech: -0.59 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786187 | [TRADE DECISION] DOGE/USDC | TF: 1h | Action: NEUTRAL | Confiance: 0.00 | Tech: -0.53 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786213 | [TRADE DECISION] DOGE/USDC | TF: 4h | Action: NEUTRAL | Confiance: 0.02 | Tech: -0.57 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786239 | [TRADE DECISION] DOGE/USDC | TF: 1d | Action: BUY | Confiance: 0.64 | Tech: 0.53 | IA: 0.96 | Sentiment: 0.33
+2025-07-25T14:58:19.786268 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786296 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786321 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786345 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786385 | [FUSION] DOGE/USDC: [('1m', 'neutral', np.float64(0.013709257601116222)), ('5m', 'neutral', np.float64(0.029839174674751417)), ('15m', 'neutral', np.float64(0.03024586736325338)), ('1h', 'neutral', np.float64(0.0019958747372248176)), ('4h', 'neutral', np.float64(0.017795775805856152)), ('1d', 'buy', np.float64(0.6376342418395307))] => FINAL: NEUTRAL (0.08)
+2025-07-25T14:58:19.786411 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786435 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786460 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786487 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.786513 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-25T14:58:19.787144 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'une des plus grandes sociétés de courtage américaines se lance dans l'immobili
+2025-07-25T14:58:19.787175 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier de Luxe : Christie’s International Real Estate ouvre une division cry
+2025-07-25T14:58:19.787200 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Gold (XAUT) : près de 8 tonnes d’or pour garantir ce stablecoin du métal 
+2025-07-25T14:58:19.787224 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies aux USA : Le premier stablecoin conforme au GENIUS Act arrive
+2025-07-25T14:58:19.787249 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Les stablecoins sont « la prochaine évolution de l’argent » sel
+2025-07-25T14:58:19.787272 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Kraken mise gros sur INK : L’exchange veut intégrer le L2 et le token à son écos
+2025-07-25T14:58:19.787295 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena (ENA) lance le premier stablecoin conforme au GENIUS Act aux États-Unis
+2025-07-25T14:58:19.787318 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier tokenisé : Detroit obtient une mesure provisoire contre RealT
+2025-07-25T14:58:19.787342 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 1 milliard de dollars de puces Nvidia infiltrées en Chine : la contrebande high-
+2025-07-25T14:58:19.787365 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Stablecoins : Les grands projets de Tether aux USA
+2025-07-25T14:58:19.787387 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT ne peut plus payer une partie de ses clients – Pourquoi ?
+2025-07-25T14:58:19.787410 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 64 % des Français ne possédant pas de cryptos envisagent d'en acheter, selon cet
+2025-07-25T14:58:19.787433 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ETF Crypto de Bitwise : La SEC met en pause son propre feu vert !
+2025-07-25T14:58:19.787456 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ledger Recovery Key débarque sur le marché crypto : Zoom sur cette nouveauté de 
+2025-07-25T14:58:19.787478 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Portefeuilles crypto et sécurité : Ledger lance Recovery Key pour les wallets Fl
+2025-07-25T14:58:19.787501 | [NEWS CHECK] ⚠️ News sans champ 'symbols': FTX rembourse 6,2 milliards $ et relance les paiements : la saga touche-t-elle à
+2025-07-25T14:58:19.787523 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Smart contract devs think AI code will make crypto safer despite vibe coding fe
+2025-07-25T14:58:19.787546 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Senator Lummis says US is ‘waking up’ on crypto after historic legislative week
+2025-07-25T14:58:19.787569 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Vietnam deploys national blockchain for identity and records 
+2025-07-25T14:58:19.787592 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Nigeria opens doors to stablecoin firms under regulatory oversight 
+2025-07-25T14:58:19.787614 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Asia’s OSL Group raises $300M for stablecoin and global expansion 
+2025-07-25T14:58:19.787637 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How Pump.fun raised $500M in 12 minutes, and what it says about retail FOMO 
+2025-07-25T14:58:19.787659 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Arizona woman sentenced for helping North Korea coders get US crypto jobs 
+2025-07-25T14:58:19.787681 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  NFT market cap surged to $6.6B in July: DappRadar 
+2025-07-25T14:58:19.787704 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Hulk Hogan, Ozzy memecoins soar as tributes roll in over icons’ deaths 
+2025-07-25T14:58:19.787726 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Logan Paul can’t blame CryptoZoo co-founders for collapse, judge says 
+2025-07-25T14:58:19.787749 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How to use ChatGPT Agent for crypto trading in 2025 
+2025-07-25T14:58:19.787771 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Lightning Network could nab 5% of stablecoin flows by 2028: Voltage CEO 
+2025-07-25T14:58:19.787794 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Auction house Christie’s debuts crypto-only real estate team 
+2025-07-25T14:58:19.787816 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  US crypto legislation drives $4B surge in stablecoin supply 
+2025-07-25T14:58:19.787838 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Ex-Gemini, Kraken exec appointed as CEO of crypto advocacy group 
+2025-07-25T14:58:19.787861 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-25T14:58:19.787884 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-25T14:58:19.787906 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-25T14:58:19.787928 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-25T14:58:19.787950 | [NEWS CHECK] ⚠️ News sans champ 'symbols': New ChatGPT Agent Can Book, Browse, and Fill Forms—Just Don't Trust It Yet
+2025-07-25T14:58:19.787972 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cognition’s AI Developer ‘Devin’ Eyes $10 Billion Valuation—Even If It’s Not Min
+2025-07-25T14:58:19.787995 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Senate Will End Up Passing House Version of Crypto Market Structure, Says Tom Em
+2025-07-25T14:58:19.788017 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Will Hyperliquid Hit $69.69 Before September? The Odds Don’t Favor Bulls
+2025-07-25T14:58:19.788039 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena to Bring $1.5 Billion USDtb Stablecoin to US with Anchorage Digital
+2025-07-25T14:58:19.788062 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Future of Prediction Markets Is Content-Native
+2025-07-25T14:58:19.788084 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Vine Meme Coin Spikes After Elon Musk Says the App Is Returning—With an AI Twist
+2025-07-25T14:58:19.788106 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Two Men Charged in NYC Crypto Torture Case Released on $1 Million Bail Each
+2025-07-25T14:58:19.788129 | [NEWS CHECK] ⚠️ News sans champ 'symbols': India Ramps Up Crypto Tax Enforcement with International Data Sharing and AI
+2025-07-25T14:58:19.788151 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Trump Bans ‘Woke AI’ From Federal Contracts in New Executive Order
+2025-07-25T14:58:19.788173 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Another ICO Boom? What the Senate’s Market Structure Bill Means for Crypto Start
+2025-07-25T14:58:19.788197 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ark Invest sells $12M in Coinbase stock, $9.8M in Block Inc. shares amid crypto 
+2025-07-25T14:58:19.788219 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Group secures $300 million in equity funding to fuel global expa
+2025-07-25T14:58:19.788240 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 250,000 Tether Gold tokens in circulation are backed by 7.66 tons of gold, Tethe
+2025-07-25T14:58:19.788263 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Christie’s offers $1 billion in luxury real estate to buyers paying with crypto:
+2025-07-25T14:58:19.788285 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elon Musk’s Grok AI integrates with Kalshi, Paradigm-backed prediction market
+2025-07-25T14:58:19.788307 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Polychain sells remaining $62.5 million TIA stake to Celestia Foundation ahead o
+2025-07-25T14:58:19.788328 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Centralized exchange WOO X investigates ‘contained incident’ resulting in estima
+2025-07-25T14:58:20.365027 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:20.366044 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-25T14:58:22.156163 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:22.156816 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-25T14:58:23.896496 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:23.897129 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-25T14:58:25.686181 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:25.686733 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-25T14:58:27.450646 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.07501579315759184
+2025-07-25T14:58:27.451247 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-25T14:58:29.213199 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:29.214041 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-25T14:58:30.939332 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:30.939909 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-25T14:58:32.743916 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:32.744574 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-25T14:58:34.932069 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:34.932699 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-25T14:58:36.649411 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-25T14:58:36.650252 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-25T14:59:17.859861 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T14:59:17.860333 | Initialisation des modèles d'IA...
+2025-07-25T14:59:17.877658 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T14:59:19.106282 | ✅ PPO Strategy initialized successfully
+2025-07-25T14:59:19.106687 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T14:59:19.106739 | ✅ Trading en direct: True
+2025-07-25T14:59:19.106782 | ✅ IA activée: True
+2025-07-25T14:59:19.106823 | ✅ Analyse de news activée: True
+2025-07-25T17:47:55.955049 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T17:47:55.955747 | Initialisation des modèles d'IA...
+2025-07-25T17:47:55.985714 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T17:47:57.585376 | ✅ PPO Strategy initialized successfully
+2025-07-25T17:47:57.585634 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T17:47:57.585752 | ✅ Trading en direct: True
+2025-07-25T17:47:57.585794 | ✅ IA activée: True
+2025-07-25T17:47:57.585828 | ✅ Analyse de news activée: True
