@@ -794,3 +794,55 @@
 2025-07-25T05:39:55.071372 | ✅ IA activée: True
 2025-07-25T05:39:55.071426 | ✅ Analyse de news activée: True
 2025-07-25T05:40:51.778736 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-25T05:42:28.451619 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0661 | Tendance: -0.0065
+2025-07-25T05:42:28.452269 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-25T05:42:29.685709 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:45:48.507489 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:45:48.508406 | Initialisation des modèles d'IA...
+2025-07-25T05:45:48.539258 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:45:50.131774 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:45:50.132293 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:45:50.132352 | ✅ Trading en direct: True
+2025-07-25T05:45:50.132399 | ✅ IA activée: True
+2025-07-25T05:45:50.132442 | ✅ Analyse de news activée: True
+2025-07-25T05:46:49.881481 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-25T05:47:27.836213 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:47:27.836850 | Initialisation des modèles d'IA...
+2025-07-25T05:47:27.856608 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:47:29.403183 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:47:29.403630 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:47:29.403728 | ✅ Trading en direct: True
+2025-07-25T05:47:29.403762 | ✅ IA activée: True
+2025-07-25T05:47:29.403802 | ✅ Analyse de news activée: True
+2025-07-25T05:49:11.823406 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:49:11.824153 | Initialisation des modèles d'IA...
+2025-07-25T05:49:11.850335 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:49:13.506104 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:49:13.506453 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:49:13.506493 | ✅ Trading en direct: True
+2025-07-25T05:49:13.506524 | ✅ IA activée: True
+2025-07-25T05:49:13.506556 | ✅ Analyse de news activée: True
+2025-07-25T05:57:56.673304 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:57:56.674323 | Initialisation des modèles d'IA...
+2025-07-25T05:57:56.705733 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:57:58.315727 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:57:58.316241 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:57:58.316306 | ✅ Trading en direct: True
+2025-07-25T05:57:58.316362 | ✅ IA activée: True
+2025-07-25T05:57:58.316414 | ✅ Analyse de news activée: True
+2025-07-25T05:58:34.752684 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:58:34.753482 | Initialisation des modèles d'IA...
+2025-07-25T05:58:34.772431 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:58:36.015011 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:58:36.016149 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:58:36.016214 | ✅ Trading en direct: True
+2025-07-25T05:58:36.016270 | ✅ IA activée: True
+2025-07-25T05:58:36.016324 | ✅ Analyse de news activée: True
+2025-07-25T06:01:07.623593 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T06:01:07.624326 | Initialisation des modèles d'IA...
+2025-07-25T06:01:07.652872 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T06:01:09.437465 | ✅ PPO Strategy initialized successfully
+2025-07-25T06:01:09.437796 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T06:01:09.437844 | ✅ Trading en direct: True
+2025-07-25T06:01:09.437907 | ✅ IA activée: True
+2025-07-25T06:01:09.437954 | ✅ Analyse de news activée: True

@@ -4991,6 +4991,7 @@ if __name__ == "__main__":
 
     # --- 2bis. Mode Optuna signal fusion
     elif args.optuna_signal_fusion:
+        print("=== Lancement Optuna signal fusion (diagnostic print) ===")
         from src.optimization.signal_fusion_automl import optimize_signal_fusion_and_mm
         optimize_signal_fusion_and_mm(n_trials=100)
         exit(0)
