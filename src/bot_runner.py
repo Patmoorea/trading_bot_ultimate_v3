@@ -3560,6 +3560,7 @@ class TradingBotM4:
             return
         pair_key = pair.replace("/", "").upper()
         print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
+        print(f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}")
         df_live = self.ws_collector.get_dataframe(pair_key, tf)
         if df_live is not None and not df_live.empty:
             df_live = add_dl_features(df_live)
@@ -3589,6 +3590,7 @@ class TradingBotM4:
             pair_key = pair.replace("/", "").upper()
             for tf in self.config["TRADING"]["timeframes"]:
                 print(f"→ Entraînement IA sur {pair_key} / {tf}")
+                print(f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}")
                 df_live = self.ws_collector.get_dataframe(pair_key, tf)
                 if df_live is not None and not df_live.empty:
                     df_live = add_dl_features(df_live)
@@ -3730,7 +3732,7 @@ async def run_clean_bot():
 
             # 3. Préchargement historique (optionnel, sécurisé)
             if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
-                for symbol in bot.config["TRADING"]["pairs"]:
+                for symbol in bot.pairs_valid:  # PAS bot.config["TRADING"]["pairs"]
                     symbol_binance = symbol.replace("/", "").upper()
                     for tf in bot.config["TRADING"]["timeframes"]:
                         try:
