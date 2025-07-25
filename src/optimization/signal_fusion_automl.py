@@ -18,23 +18,15 @@ from src.bot_runner import TradingBotM4
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.risk_tools.news_pause_manager import NewsPauseManager
 
-# === INSTANCE DU BOT (NE PAS MODIFIER CETTE LIGNE SANS RAISON) ===
-bot = TradingBotM4()
+BEST_PARAMS_PATH = "config/best_signal_params.json"
 
-# === INSTANTIATE NEWS ANALYZER AND LOAD NEWS BUFFER ===
-bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
-try:
-    if hasattr(bot.news_analyzer, "fetch_all_news"):
-        fetch_result = bot.news_analyzer.fetch_all_news()
-        if hasattr(fetch_result, "__await__"):
-            import asyncio
-
-            asyncio.run(fetch_result)
-except Exception as e:
-    print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
-
-# === NEWS PAUSE SYSTEME : INSTANTIATION ===
-pause_manager = NewsPauseManager(pause_cycles=5)
+load_dotenv()
+BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
+BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
+BINANCE_INTERVAL_MAP = {
+    "1h": Client.KLINE_INTERVAL_1HOUR,
+    "4h": Client.KLINE_INTERVAL_4HOUR,
+}
 
 
 def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
@@ -115,17 +107,6 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
         df["signal_sentiment"] = 0.0
 
     return df
-
-
-BEST_PARAMS_PATH = "config/best_signal_params.json"
-
-load_dotenv()
-BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
-BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
-BINANCE_INTERVAL_MAP = {
-    "1h": Client.KLINE_INTERVAL_1HOUR,
-    "4h": Client.KLINE_INTERVAL_4HOUR,
-}
 
 
 def fetch_binance_ohlcv(
@@ -240,77 +221,89 @@ def optuna_callback(study, trial):
     save_best_params(study, trial)
 
 
-def objective(trial):
-    # Optionally, fetch news at the start of each trial to refresh buffer
-    if hasattr(bot, "news_analyzer"):
-        fetch_result = bot.news_analyzer.fetch_all_news()
-        if hasattr(fetch_result, "__await__"):
-            import asyncio
-
-            asyncio.run(fetch_result)
-
-    tech_weight = trial.suggest_float("tech_weight", 0.0, 1.0)
-    ia_weight = trial.suggest_float("ia_weight", 0.0, 1.0 - tech_weight)
-    sentiment_weight = 1.0 - tech_weight - ia_weight
-    buy_threshold = trial.suggest_float("buy_threshold", 0.1, 0.5)
-    sell_threshold = trial.suggest_float("sell_threshold", -0.5, -0.1)
-    mm_risk = trial.suggest_float("mm_risk", 0.01, 0.2)
-
-    fusion_params = {
-        "tech_weight": tech_weight,
-        "ia_weight": ia_weight,
-        "sentiment_weight": sentiment_weight,
-        "buy_threshold": buy_threshold,
-        "sell_threshold": sell_threshold,
-        "mm_risk": mm_risk,
-    }
-
-    pairs = ["BTC/USDC", "ETH/USDC", "SOL/USDC"]
-    timeframes = ["1h", "4h"]
-    all_scores = []
-
-    for pair in pairs:
-        for tf in timeframes:
-            df = fetch_binance_ohlcv(
-                symbol=pair.replace("/", ""),
-                interval=BINANCE_INTERVAL_MAP[tf],
-                start_str="1 Jan, 2023",
-                end_str="now",
-                api_key=BINANCE_API_KEY,
-                api_secret=BINANCE_API_SECRET,
-            )
-            if df is None or len(df) < 100:
-                continue
-
-            # === NEWS PAUSE SYSTEME : ICI ===
-            import asyncio
-
-            news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-            if pause_manager.scan_news(news_list):
-                print("🚨 Pause trading à cause d'une news critique !")
-            if pause_manager.should_pause():
-                print("Trading en pause, on skip ce cycle.")
-                pause_manager.on_cycle_end()
-                continue
-
-            df = enrich_signals_with_real_values(
-                bot, df, pair_key=pair.replace("/", ""), news_list=news_list
-            )
-
-            results = run_full_backtest(df, fusion_params, initial_capital=10000)
-            profit = results.get("final_capital", 0) - 10000 if results else -9999
-            if profit is None or np.isnan(profit):
-                profit = -99999
-            all_scores.append(profit)
-            time.sleep(1)  # Limite la fréquence des appels API
-            pause_manager.on_cycle_end()
-
-    avg_profit = np.mean(all_scores) if all_scores else -99999
-    print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
-    return avg_profit
-
-
 def optimize_signal_fusion_and_mm(n_trials=50):
+    # === INSTANCE DU BOT ===
+    bot = TradingBotM4()
+    bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
+    try:
+        if hasattr(bot.news_analyzer, "fetch_all_news"):
+            fetch_result = bot.news_analyzer.fetch_all_news()
+            if hasattr(fetch_result, "__await__"):
+                import asyncio
+
+                asyncio.run(fetch_result)
+    except Exception as e:
+        print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
+    pause_manager = NewsPauseManager(pause_cycles=5)
+
+    def objective(trial):
+        # Optionally, fetch news at the start of each trial to refresh buffer
+        if hasattr(bot, "news_analyzer"):
+            fetch_result = bot.news_analyzer.fetch_all_news()
+            if hasattr(fetch_result, "__await__"):
+                import asyncio
+
+                asyncio.run(fetch_result)
+
+        tech_weight = trial.suggest_float("tech_weight", 0.0, 1.0)
+        ia_weight = trial.suggest_float("ia_weight", 0.0, 1.0 - tech_weight)
+        sentiment_weight = 1.0 - tech_weight - ia_weight
+        buy_threshold = trial.suggest_float("buy_threshold", 0.1, 0.5)
+        sell_threshold = trial.suggest_float("sell_threshold", -0.5, -0.1)
+        mm_risk = trial.suggest_float("mm_risk", 0.01, 0.2)
+
+        fusion_params = {
+            "tech_weight": tech_weight,
+            "ia_weight": ia_weight,
+            "sentiment_weight": sentiment_weight,
+            "buy_threshold": buy_threshold,
+            "sell_threshold": sell_threshold,
+            "mm_risk": mm_risk,
+        }
+
+        pairs = ["BTC/USDC", "ETH/USDC", "SOL/USDC"]
+        timeframes = ["1h", "4h"]
+        all_scores = []
+
+        for pair in pairs:
+            for tf in timeframes:
+                df = fetch_binance_ohlcv(
+                    symbol=pair.replace("/", ""),
+                    interval=BINANCE_INTERVAL_MAP[tf],
+                    start_str="1 Jan, 2023",
+                    end_str="now",
+                    api_key=BINANCE_API_KEY,
+                    api_secret=BINANCE_API_SECRET,
+                )
+                if df is None or len(df) < 100:
+                    continue
+
+                import asyncio
+
+                news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
+                if pause_manager.scan_news(news_list):
+                    print("🚨 Pause trading à cause d'une news critique !")
+                if pause_manager.should_pause():
+                    print("Trading en pause, on skip ce cycle.")
+                    pause_manager.on_cycle_end()
+                    continue
+
+                df = enrich_signals_with_real_values(
+                    bot, df, pair_key=pair.replace("/", ""), news_list=news_list
+                )
+
+                results = run_full_backtest(df, fusion_params, initial_capital=10000)
+                profit = results.get("final_capital", 0) - 10000 if results else -9999
+                if profit is None or np.isnan(profit):
+                    profit = -99999
+                all_scores.append(profit)
+                time.sleep(1)  # Limite la fréquence des appels API
+                pause_manager.on_cycle_end()
+
+        avg_profit = np.mean(all_scores) if all_scores else -99999
+        print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
+        return avg_profit
+
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=n_trials, callbacks=[optuna_callback])
     print("Best params:", study.best_params)
@@ -320,7 +313,4 @@ def optimize_signal_fusion_and_mm(n_trials=50):
     return study.best_params
 
 
-if __name__ == "__main__":
-    print("=== OPTIMISATION SIGNAL FUSION & MM ===")
-    best = optimize_signal_fusion_and_mm(n_trials=100)
-    print("Meilleure configuration trouvée :", best)
+# NOTE: NE RIEN LAISSER S'EXECUTER EN DEHORS DES FONCTIONS !
