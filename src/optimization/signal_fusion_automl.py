@@ -13,7 +13,6 @@ from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicato
 from binance.client import Client
 from dotenv import load_dotenv
 from src.bot_runner import TradingBotM4
-from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
 from src.risk_tools.news_pause_manager import NewsPauseManager
 
 BEST_PARAMS_PATH = "config/best_signal_params.json"
@@ -25,6 +24,180 @@ BINANCE_INTERVAL_MAP = {
     "1h": Client.KLINE_INTERVAL_1HOUR,
     "4h": Client.KLINE_INTERVAL_4HOUR,
 }
+
+
+# ====== SENTIMENT ANALYZER ENRICHI ======
+def extract_sentiment_from_text(text):
+    bullish = [
+        "record",
+        "ATH",
+        "surge",
+        "pump",
+        "ETF",
+        "buy",
+        "rally",
+        "soar",
+        "inflow",
+        "raise",
+        "log",
+        "million",
+        "upsize",
+        "accumulate",
+        "whale",
+        "gain",
+        "rise",
+        "bullish",
+        "optimism",
+        "leader",
+        "historic",
+        "tops",
+        "hits",
+        "rebound",
+    ]
+    bearish = [
+        "dump",
+        "crash",
+        "liquidation",
+        "bearish",
+        "collapse",
+        "panic",
+        "sell-off",
+        "outflow",
+        "lower",
+        "decline",
+        "move out",
+        "down",
+        "bleeds",
+        "dips",
+        "plunges",
+        "panic",
+        "fear",
+        "loss",
+        "fail",
+        "bear",
+        "delist",
+    ]
+    score = 0.0
+    text_lower = text.lower()
+    for word in bullish:
+        if word in text_lower:
+            score += 0.5
+    for word in bearish:
+        if word in text_lower:
+            score -= 0.5
+    return np.clip(score, -1, 1)
+
+
+# NewsSentimentAnalyzer compatible (remplaçant simple)
+class SimpleNewsSentimentAnalyzer:
+    def __init__(self, config):
+        self.config = config
+        self.news_buffer = []
+        self.sentiment_global = 0.0
+        self.impact_score = 0.0
+        self.n_news = 0
+        self.major_events = ""
+
+    async def fetch_all_news(self):
+        # Ici, charge tes news réelles ou mock data
+        # Pour la démo, on utilise les 10 dernières news du marché
+        # À remplacer par ta vraie source news
+        self.news_buffer = [
+            {"title": "BTC ETF sets new record inflow", "summary": "", "impact": 1.0},
+            {
+                "title": "Whale accumulates 5000 BTC in a single move",
+                "summary": "",
+                "impact": 1.0,
+            },
+            {"title": "Ethereum plunges as market dips", "summary": "", "impact": 1.0},
+            {"title": "Solana surges to new ATH", "summary": "", "impact": 1.0},
+            {
+                "title": "Massive liquidation event for BTC",
+                "summary": "",
+                "impact": 1.0,
+            },
+            {
+                "title": "BlackRock upsizes crypto treasury",
+                "summary": "",
+                "impact": 1.0,
+            },
+        ]
+        return self.news_buffer
+
+    async def get_symbol_sentiment(self, symbol, news_list=None):
+        if news_list is None:
+            news_list = self.news_buffer
+        total = 0.0
+        total_weight = 0.0
+        matched = 0
+        symbol_terms = [
+            symbol.lower(),
+            symbol[:3].lower(),
+        ]  # e.g. BTCUSDC → btcusdc, btc
+        for news in news_list:
+            news_text = news["title"] + " " + news.get("summary", "")
+            # On match le symbole simple
+            if any(t in news_text.lower() for t in symbol_terms):
+                score = extract_sentiment_from_text(news_text)
+                impact = news.get("impact", 1.0)
+                total += score * impact
+                total_weight += impact
+                matched += 1
+        if total_weight > 0:
+            sentiment = total / total_weight
+        else:
+            sentiment = 0.0
+        return np.clip(sentiment, -1, 1)
+
+    def get_sentiment_summary(self):
+        # Calcul du global sur tout le buffer
+        total = 0.0
+        total_weight = 0.0
+        majors = []
+        for news in self.news_buffer:
+            score = extract_sentiment_from_text(
+                news["title"] + " " + news.get("summary", "")
+            )
+            impact = news.get("impact", 1.0)
+            total += score * impact
+            total_weight += impact
+            if "record" in news["title"].lower() or "ATH" in news["title"]:
+                majors.append(news["title"])
+        sentiment_global = total / total_weight if total_weight > 0 else 0.0
+        self.sentiment_global = sentiment_global
+        self.impact_score = total_weight / max(len(self.news_buffer), 1)
+        self.n_news = len(self.news_buffer)
+        self.major_events = "; ".join(majors)
+        return {
+            "sentiment_global": np.clip(sentiment_global, -1, 1),
+            "impact_score": self.impact_score,
+            "n_news": self.n_news,
+            "major_events": self.major_events,
+        }
+
+
+def get_enriched_sentiment(bot, pair_key, news_list):
+    import asyncio
+
+    # Utilise le nouvel analyseur
+    sentiment_score = asyncio.run(
+        bot.news_analyzer.get_symbol_sentiment(pair_key, news_list=news_list)
+    )
+    summary = bot.news_analyzer.get_sentiment_summary()
+    sentiment_global = summary.get("sentiment_global", 0.0)
+    impact_score = summary.get("impact_score", 0.0)
+    n_news = summary.get("n_news", 0)
+    if n_news > 15:
+        impact_factor = min(2.0, 1.0 + impact_score)
+    else:
+        impact_factor = 1.0
+    if sentiment_score == 0:
+        sentiment_score = sentiment_global * impact_factor
+    major_events = summary.get("major_events", "")
+    if major_events and sentiment_score != 0:
+        sentiment_score *= 1.2
+    sentiment_score = np.clip(sentiment_score, -1, 1)
+    return sentiment_score
 
 
 def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
@@ -94,10 +267,7 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
 
         if news_list is None:
             news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-        sentiment_score = asyncio.run(
-            bot.news_analyzer.get_symbol_sentiment(pair_key, news_list=news_list)
-        )
-        df["signal_sentiment"] = sentiment_score
+        df["signal_sentiment"] = get_enriched_sentiment(bot, pair_key, news_list)
     else:
         df["signal_sentiment"] = 0.0
 
@@ -217,7 +387,8 @@ def optimize_signal_fusion_and_mm(n_trials=50):
     print("=== [DIAG] OPTIMIZATION FUNCTION CALLED ===")
     bot = TradingBotM4()
     print("=== [DIAG] Bot instantiated ===")
-    bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
+    # Utilise le nouvel analyseur enrichi !
+    bot.news_analyzer = SimpleNewsSentimentAnalyzer(bot.config)
     print("=== [DIAG] News analyzer instantiated ===")
     try:
         if hasattr(bot.news_analyzer, "fetch_all_news"):
@@ -285,15 +456,12 @@ def optimize_signal_fusion_and_mm(n_trials=50):
                 )
                 if df is None or len(df) < 100:
                     continue
-
                 import asyncio
 
                 news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-                # Les pauses sont désactivées par NoPauseManager
                 df = enrich_signals_with_real_values(
                     bot, df, pair_key=pair.replace("/", ""), news_list=news_list
                 )
-
                 results = run_full_backtest(df, fusion_params, initial_capital=10000)
                 profit = results.get("final_capital", 0) - 10000 if results else -9999
                 if profit is None or np.isnan(profit):
@@ -319,6 +487,6 @@ def optimize_signal_fusion_and_mm(n_trials=50):
 
 
 if __name__ == "__main__":
-    print("=== OPTIMISATION SIGNAL FUSION & MM ===")
+    print("=== OPTIMISATION SIGNAL FUSION & MM (SENTIMENT ENRICHI) ===")
     best = optimize_signal_fusion_and_mm(n_trials=100)
     print("Meilleure configuration trouvée :", best)
