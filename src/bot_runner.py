@@ -1790,9 +1790,16 @@ class TradingBotM4:
                     if closes:
                         price = closes[-1]
             if price is None:
-                self.logger.error(
-                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol}"
+                self.logger.warning(
+                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol} — source manquante (est-ce bien {symbol} ou {symbol.replace('/', '').upper()} ?)"
                 )
+                # 👉 DEBUG : Affiche les clefs market_data et check ws_collector
+                print("[STOPLOSS DEBUG] market_data keys:", list(self.market_data.keys()))
+                if hasattr(self, "ws_collector"):
+                    print("[STOPLOSS DEBUG] ws_collector.last_price:", self.ws_collector.get_last_price(symbol))
+                    # Test alternative format
+                    symbol_ws = symbol.replace("/", "").upper()
+                    print("[STOPLOSS DEBUG] ws_collector.last_price alt:", self.ws_collector.get_last_price(symbol_ws))
                 return False
 
             # Calcul de la perte latente
