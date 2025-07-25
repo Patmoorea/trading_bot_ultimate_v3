@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class NewsPauseManager:
@@ -36,6 +36,7 @@ class NewsPauseManager:
         self.cycles_remaining = 0
         self.last_event_time = None
         self.last_event_news = None
+        self.last_triggered_title = None
         self.alert_callback = alert_callback
 
     def scan_news(self, news_list):
@@ -43,16 +44,22 @@ class NewsPauseManager:
         Scanne la liste des news et déclenche une pause si un mot-clé critique est détecté.
         news_list: liste de dicts (doit contenir "title" et "text")
         """
+        # N'analyse que si la pause n'est pas déjà active
+        if self.cycles_remaining > 0:
+            return False
         for news in news_list:
             title = news.get("title", "") or ""
             text = news.get("text", "") or ""
             content = f"{title} {text}".lower()
             for keyword in self.CRITICAL_KEYWORDS:
-                # Mot-clé exact ou entre mots (ex: ' hack ', 'hack:', ...)
                 if re.search(rf"\b{re.escape(keyword)}\b", content):
+                    # Ne relance pas la pause sur la même news déjà traitée
+                    if title == self.last_triggered_title:
+                        continue
                     self.cycles_remaining = self.pause_cycles
                     self.last_event_time = datetime.now()
                     self.last_event_news = news
+                    self.last_triggered_title = title
                     print(
                         f"[NEWS PAUSE] Trigger: '{keyword}' detected in news: {title[:120]}"
                     )
@@ -63,9 +70,7 @@ class NewsPauseManager:
 
     def should_pause(self):
         """Retourne True si le trading doit être en pause"""
-        if self.cycles_remaining > 0:
-            return True
-        return False
+        return self.cycles_remaining > 0
 
     def on_cycle_end(self):
         """À appeler en fin de chaque cycle de trading pour décrémenter la pause"""
@@ -81,3 +86,4 @@ class NewsPauseManager:
         self.cycles_remaining = 0
         self.last_event_news = None
         self.last_event_time = None
+        self.last_triggered_title = None
