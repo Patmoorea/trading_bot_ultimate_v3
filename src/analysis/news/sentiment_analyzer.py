@@ -65,7 +65,6 @@ class SymbolExtractor:
         for pattern, ticker in self.regex_patterns:
             if pattern.search(text):
                 found.add(ticker)
-        # Paires crypto et tickers
         for pair in re.findall(
             r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
         ):
@@ -192,7 +191,8 @@ class NewsSentimentAnalyzer:
                     )
             else:
                 print("  (Aucune news récupérée)")
-            self.news_buffer = valid_news  # CRUCIAL: remplissage du buffer ICI
+            valid_news = self.patch_news_list(valid_news)
+            self.news_buffer = valid_news
             return valid_news
 
     async def _fetch_source_with_retry(
@@ -304,7 +304,6 @@ class NewsSentimentAnalyzer:
         }
 
     def _parse_json(self, data, source: Dict) -> List[Dict]:
-        # Adapt JSON to your API format
         news_list = []
         if source["name"] == "CryptoCompare" and "Data" in data:
             for n in data["Data"]:
@@ -351,7 +350,6 @@ class NewsSentimentAnalyzer:
                         "source_weight": source["weight"],
                     }
                 )
-        # Ajoute d'autres sources JSON ici si besoin
         return news_list
 
     def _parse_timestamp(self, item):
@@ -370,6 +368,7 @@ class NewsSentimentAnalyzer:
     def analyze_sentiment_batch(
         self, news_items: List[Dict], low_watermark_ratio: float = None
     ) -> List[Dict]:
+        news_items = self.patch_news_list(news_items)
         if low_watermark_ratio is None:
             low_watermark_ratio = self.low_watermark_ratio
         try:
@@ -399,7 +398,7 @@ class NewsSentimentAnalyzer:
                 scores = torch.nn.functional.softmax(outputs.logits, dim=-1)
             results = []
             for i, item in enumerate(news_items):
-                sentiment = float(scores[i][2] - scores[i][0])  # bullish - bearish
+                sentiment = float(scores[i][2] - scores[i][0])
                 results.append(
                     {
                         **item,
@@ -438,7 +437,7 @@ class NewsSentimentAnalyzer:
                 f"News analysis: {len(analyzed_news)} items | "
                 f"Mean sentiment: {mean_sentiment:.4f} ± {std_sentiment:.4f}"
             )
-            self.news_buffer = analyzed_news[-200:]  # keep the last 200
+            self.news_buffer = analyzed_news[-200:]
             summary = self.get_sentiment_summary()
             await self._save_state(
                 {
@@ -494,15 +493,9 @@ class NewsSentimentAnalyzer:
             "top_news": top_news_titles,
         }
 
-    async def _save_state(self, state: dict):
-        # Optionnel : sauvegarde l'état du sentiment dans un fichier
-        try:
-            with open("news_sentiment_state.json", "w") as f:
-                json.dump(state, f, indent=2, default=str)
-        except Exception as e:
-            self.logger.error(f"Failed to save state: {str(e)}")
-
-    async def get_symbol_sentiment(self, symbol: str) -> float:
+    async def get_symbol_sentiment(
+        self, symbol: str, news_list: Optional[list] = None
+    ) -> float:
         try:
             print(f"CALLING get_symbol_sentiment: symbol='{symbol}'")
             symbol_key = symbol.replace("/", "").upper()
@@ -530,18 +523,19 @@ class NewsSentimentAnalyzer:
             if coin is None:
                 coin = symbol_key[:3]
             search_terms = coin_mapping.get(coin, [coin])
+            if news_list is None:
+                news_list = self.news_buffer
             print(
                 f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}"
             )
-
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
             matched = False
             print(
-                f"[DEBUG SENTIMENT] Recherche des news pour {search_terms}... Buffer size: {len(self.news_buffer)}"
+                f"[DEBUG SENTIMENT] Recherche des news pour {search_terms}... Buffer size: {len(news_list)}"
             )
-            for news in self.news_buffer:
+            for news in news_list:
                 news_symbols = news.get("symbols", [])
                 title = news.get("title", "").lower()
                 text = news.get("text", "").lower()
@@ -565,11 +559,10 @@ class NewsSentimentAnalyzer:
                     )
                     total += sentiment * impact * decay
                     total_weight += impact * decay
-
             if not matched:
                 print(f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}")
                 available_symbols = set()
-                for news in self.news_buffer[:5]:
+                for news in news_list[:5]:
                     available_symbols.update(news.get("symbols", []))
                 print(
                     f"[DEBUG SENTIMENT] Symboles disponibles (échantillon): {list(available_symbols)[:10]}"
@@ -583,173 +576,66 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"Error getting sentiment for {symbol}: {str(e)}")
             return 0.0
 
-    async def _save_state(self, data: Optional[Dict] = None):
-        path = self.config.get("news", {}).get(
-            "storage_path", "data/news_analysis.json"
-        )
-        try:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "w") as f:
-                json.dump(
-                    {
-                        "timestamp": datetime.now().isoformat(),
-                        **({"analysis": data} if data else {}),
-                        "buffer_size": len(self.news_buffer),
-                    },
-                    f,
-                    indent=2,
-                )
-        except Exception as e:
-            self.logger.error(f"Save failed: {str(e)}")
+    SYMBOL_MAPPING = {
+        "bitcoin": "BTC",
+        "btc": "BTC",
+        "ethereum": "ETH",
+        "eth": "ETH",
+        "cardano": "ADA",
+        "ada": "ADA",
+        "solana": "SOL",
+        "sol": "SOL",
+        "litecoin": "LTC",
+        "ltc": "LTC",
+        "xrp": "XRP",
+        "dogecoin": "DOGE",
+        "doge": "DOGE",
+        "binancecoin": "BNB",
+        "bnb": "BNB",
+        "tron": "TRX",
+        "trx": "TRX",
+        "sui": "SUI",
+        # Ajoute d'autres mappings si besoin
+    }
 
-    def _parse_json(self, data, source=None):
-        try:
-            if isinstance(data, dict) and "Data" in data:
-                news_items = data["Data"]
-            elif isinstance(data, dict):
-                news_items = data.get("data", []) or data.get("news", []) or []
-            elif isinstance(data, str):
-                data = json.loads(data)
-                news_items = data.get("Data", []) or data.get("data", []) or []
-            else:
-                return []
-            formatted = []
-            for item in news_items:
-                title = item.get("title", "")
-                text = item.get("body", "") or item.get("text", "")
-                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
-                formatted.append(
-                    {
-                        "title": title,
-                        "text": text,
-                        "source": source["name"] if source else "Unknown",
-                        "timestamp": self._parse_timestamp(item),
-                        "url": item.get("url", ""),
-                        "symbols": symbols,
-                        "source_weight": (
-                            source["weight"] if source and "weight" in source else 1.0
-                        ),
-                    }
-                )
-            return formatted
-        except Exception as e:
-            self.logger.error(f"Error parsing JSON news: {e}")
-            return []
+    def _extract_symbols_from_text(self, text):
+        """
+        Tente d'extraire une liste de symboles d'assets à partir du texte/titre.
+        """
+        text = text.lower()
+        found = set()
+        for key, symbol in self.SYMBOL_MAPPING.items():
+            if re.search(r"\b" + re.escape(key) + r"\b", text):
+                found.add(symbol)
+        return list(found)
 
-    def _parse_timestamp(self, item):
-        try:
-            if isinstance(item, dict):
-                if "published_on" in item:
-                    return int(item["published_on"])
-                if "pubDate" in item:
-                    from email.utils import parsedate_to_datetime
+    def patch_news_item(self, news):
+        """
+        Ajoute/force les champs 'symbols' et 'sentiment' dans un dict de news.
+        """
+        # Patch "symbols"
+        if "symbols" not in news or not news["symbols"]:
+            # Essaie d'extraire à partir du titre/texte
+            title = news.get("title", "") or ""
+            text = news.get("text", "") or ""
+            symbols = self._extract_symbols_from_text(title + " " + text)
+            news["symbols"] = symbols
+        # Patch "sentiment"
+        if "sentiment" not in news or news["sentiment"] is None:
+            news["sentiment"] = 0.0  # Neutre si non dispo
+        else:
+            # Securise le type
+            try:
+                news["sentiment"] = float(news["sentiment"])
+            except Exception:
+                news["sentiment"] = 0.0
+        return news
 
-                    return int(parsedate_to_datetime(item["pubDate"]).timestamp())
-            else:
-                pub_date = item.find("pubDate")
-                if pub_date:
-                    from email.utils import parsedate_to_datetime
+    def patch_news_list(self, news_list):
+        """
+        Applique la correction à toute une liste de news.
+        """
+        return [self.patch_news_item(news) for news in news_list]
 
-                    return int(parsedate_to_datetime(pub_date.text).timestamp())
-            return int(datetime.now().timestamp())
-        except Exception:
-            return int(datetime.now().timestamp())
-
-    def _calculate_impact(self, news: Dict, sentiment: float) -> float:
-        impact = news.get("source_weight", 1.0)
-        impact *= 1.0 + min(1.0, abs(sentiment))
-        hours_old = (
-            datetime.now().timestamp()
-            - news.get("timestamp", datetime.now().timestamp())
-        ) / 3600
-        impact *= max(0.1, 1.0 - (hours_old / 48))
-        n_symbols = len(news.get("symbols", []))
-        impact *= min(2.0, 1.0 + n_symbols * 0.1)
-        return max(0.1, min(5.0, impact))
-
-    def get_sentiment_summary(self) -> Dict[str, Any]:
-        try:
-            if not self.news_buffer:
-                return {
-                    "sentiment_global": 0.0,
-                    "n_news": 0,
-                    "top_symbols": [],
-                    "top_news": [],
-                }
-            total = 0.0
-            total_weight = 0.0
-            symbol_stats = {}
-            for item in self.news_buffer:
-                sentiment = item.get("sentiment")
-                impact_score = item.get("impact_score", 1.0)
-                if sentiment is None or impact_score is None:
-                    continue
-                weight = impact_score
-                total += sentiment * weight
-                total_weight += weight
-                for sym in item.get("symbols", []):
-                    sym = sym.upper()
-                    if sym not in symbol_stats:
-                        symbol_stats[sym] = {"total": 0.0, "weight": 0.0, "count": 0}
-                    symbol_stats[sym]["total"] += sentiment * weight
-                    symbol_stats[sym]["weight"] += weight
-                    symbol_stats[sym]["count"] += 1
-            sentiment_global = total / total_weight if total_weight > 0 else 0.0
-            top_symbols = []
-            if symbol_stats:
-                sorted_syms = sorted(
-                    symbol_stats.items(), key=lambda x: x[1]["count"], reverse=True
-                )[:5]
-                for sym, stats in sorted_syms:
-                    avg = (
-                        stats["total"] / stats["weight"] if stats["weight"] > 0 else 0.0
-                    )
-                    top_symbols.append(
-                        {
-                            "symbol": sym,
-                            "sentiment": avg,
-                            "n_news": stats["count"],
-                        }
-                    )
-            valid_news = [
-                item
-                for item in self.news_buffer
-                if item.get("sentiment") is not None
-                and item.get("impact_score") is not None
-            ]
-            top_news = sorted(
-                valid_news,
-                key=lambda x: abs(x.get("sentiment", 0)) * x.get("impact_score", 1),
-                reverse=True,
-            )[:3]
-            top_news_list = [
-                {
-                    "title": n.get("title", ""),
-                    "sentiment": n.get("sentiment", 0),
-                    "impact_score": n.get("impact_score", 1),
-                    "symbols": n.get("symbols", []),
-                    "source": n.get("source", ""),
-                    "url": n.get("url", ""),
-                    "timestamp": n.get("timestamp", 0),
-                }
-                for n in top_news
-            ]
-            return {
-                "sentiment_global": sentiment_global,
-                "n_news": len(self.news_buffer),
-                "top_symbols": top_symbols,
-                "top_news": top_news_list,
-            }
-        except Exception as e:
-            self.logger.error(f"Error in get_sentiment_summary: {e}")
-            return {
-                "sentiment_global": 0.0,
-                "n_news": 0,
-                "top_symbols": [],
-                "top_news": [],
-            }
-
-
-def extract_symbols(title: str) -> List[str]:
-    extractor = SymbolExtractor()
-    return extractor.extract_symbols(title)
+    # Exemple d'utilisation à l'entrée de l'analyse ou juste avant retour :
+    # news_list = self.patch_news_list(news_list)

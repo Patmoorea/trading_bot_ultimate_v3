@@ -722,7 +722,7 @@ class TradingBotM4:
                 },
             },
         }
-        self.news_pause_manager = NewsPauseManager(pause_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
+        self.news_pause_manager = NewsPauseManager(default_pause_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
         
         self.exit_manager = ExitManager(tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03)
         
@@ -4322,7 +4322,26 @@ async def handle_arbitrage_opportunities(bot):
 async def execute_trade_decisions(bot, trade_decisions):
     """
     Exécute toutes les décisions de trade du cycle.
+    Intègre la gestion avancée de pause news par asset/action.
+    Vérifie que les news contiennent bien les champs "symbols" et "sentiment".
     """
+    # Vérification et warning sur les news du cycle (depuis le dernier batch d'analyse)
+    news_list = []
+    try:
+        # On récupère les dernières news utilisées pour la pause
+        with open(bot.data_file, "r") as f:
+            shared_data = json.load(f)
+        news_sentiment = shared_data.get("sentiment", {})
+        news_list = news_sentiment.get("scores", [])
+    except Exception:
+        news_list = []
+    # Vérification des champs "symbols" et "sentiment" dans les news
+    for news in news_list:
+        if "symbols" not in news or not news["symbols"]:
+            log_dashboard(f"[NEWS CHECK] ⚠️ News sans champ 'symbols': {news.get('title', '')[:80]}")
+        if "sentiment" not in news:
+            log_dashboard(f"[NEWS CHECK] ⚠️ News sans champ 'sentiment': {news.get('title', '')[:80]}")
+
     for decision in trade_decisions:
         pair = decision.get("pair")
         action = decision.get("action")
@@ -4330,10 +4349,24 @@ async def execute_trade_decisions(bot, trade_decisions):
         amount = calculate_position_size(
             bot, decision
         )  # Utilise la fonction déjà présente
+
         # Log avant exécution
         log_dashboard(
             f"[EXECUTE TRADE] {pair} | Action: {action.upper()} | Amount: {amount} | Confidence: {confidence}"
         )
+
+        # ----- PATCH : Gestion de la pause news avancée -----
+        # On vérifie si la pause news s'applique à cette paire et action
+        if bot.news_pause_manager.should_pause(pair=pair, action=action.upper()):
+            log_dashboard(
+                f"[NEWS PAUSE] Trade {action.upper()} sur {pair} bloqué (news critique/pause en cours)"
+            )
+            # Notification Telegram si besoin (optionnel)
+            await bot.telegram.send_message(
+                f"🚨 Trading {action.upper()} sur {pair} bloqué à cause d'une news critique !"
+            )
+            continue  # On skip ce trade
+
         # Exécution réelle
         trade_result = await bot.execute_trade(pair, action, amount)
         # Notification Telegram
