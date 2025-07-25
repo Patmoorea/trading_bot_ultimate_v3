@@ -719,6 +719,11 @@ class TradingBotM4:
                     "binancecoin": "BNB",
                     "tron": "TRX",
                     "sui": "SUI",
+                    "stablecoin": "USDT",
+                    "ink": "INK",
+                    "ena": "ENA",
+                    "ledger": "BTC",
+                    "tether": "USDT",
                 },
             },
         }
@@ -3734,6 +3739,17 @@ async def run_clean_bot():
                         except Exception as e:
                             print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
 
+            # === AJOUT DIAGNOSTIC DATAFRAME ===
+            if hasattr(bot, "ws_collector"):
+                print("\n=== DIAGNOSTIC : Contenu du ws_collector ===")
+                for pair in bot.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        df = bot.ws_collector.get_dataframe(pair_key, tf)
+                        print(f"{pair_key}-{tf}: {len(df) if df is not None else 0} lignes")
+                print("=== FIN DIAGNOSTIC ===\n")
+            # === FIN AJOUT ===
+
             # 4. Setup des composants internes (websockets, news, etc)
             ok = await bot._setup_components()
             if not ok:
@@ -5104,7 +5120,19 @@ if __name__ == "__main__":
     # --- 5. Entraînement IA live
     elif "train-cnn-lstm" in sys.argv:
         bot = TradingBotM4()
-        # Modifie ici la paire/timeframe si besoin
+        # Préchargement historique pour chaque paire/timeframe avant entraînement IA
+        if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
+            for symbol in bot.pairs_valid:
+                symbol_binance = symbol.replace("/", "").upper()
+                for tf in bot.config["TRADING"]["timeframes"]:
+                    try:
+                        bot.ws_collector.preload_historical(
+                            bot.binance_client, symbol_binance, tf, limit=2000
+                        )
+                        print(f"Préchargement {symbol_binance} {tf} OK")
+                    except Exception as e:
+                        print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
+        # Lancement de l'entraînement IA sur les données chargées
         bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 

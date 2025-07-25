@@ -771,3 +771,26 @@
 2025-07-25T04:59:37.245633 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
 2025-07-25T04:59:38.892446 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-07-25T04:59:38.893742 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-25T05:06:53.483611 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:10:00.413930 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:10:00.414844 | Initialisation des modèles d'IA...
+2025-07-25T05:10:00.432517 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:10:01.966190 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:10:01.966687 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:10:01.966743 | ✅ Trading en direct: True
+2025-07-25T05:10:01.966789 | ✅ IA activée: True
+2025-07-25T05:10:01.966831 | ✅ Analyse de news activée: True
+2025-07-25T05:12:18.956963 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:17:45.718085 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:23:12.871448 | [NEWS] Score sentiment global: 0.28 | Impact: 0.58 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:28:41.661874 | [NEWS] Score sentiment global: 0.28 | Impact: 0.58 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:34:12.018886 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements: TRON (TRX) Above $0.31, But Is It Just the Beginning? Key Metric Shows Buyers Dominating;  DOGE news update: Treasury purchases may kickstart rally to $0.29 ; JPMorgan says crypto inflows have surged to $60 billion year to date amid regulatory push
+2025-07-25T05:39:53.487673 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-25T05:39:53.489537 | Initialisation des modèles d'IA...
+2025-07-25T05:39:53.514601 | ✅ Modèles d'IA initialisés avec succès
+2025-07-25T05:39:55.070740 | ✅ PPO Strategy initialized successfully
+2025-07-25T05:39:55.071188 | ✅ Bot initialisé avec Telegram: True
+2025-07-25T05:39:55.071323 | ✅ Trading en direct: True
+2025-07-25T05:39:55.071372 | ✅ IA activée: True
+2025-07-25T05:39:55.071426 | ✅ Analyse de news activée: True
+2025-07-25T05:40:51.778736 | [NEWS] Lancement boucle d'analyse des news…
