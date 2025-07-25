@@ -159,6 +159,19 @@ class NewsSentimentAnalyzer:
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
         return self._tokenizer
 
+    async def _save_state(self, data):
+        # Par défaut : sauvegarde dans data/news_analysis.json
+        path = self.config.get("news", {}).get(
+            "storage_path", "data/news_analysis.json"
+        )
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2)
+            self.logger.info(f"[NEWS] State saved to {path}")
+        except Exception as e:
+            self.logger.error(f"[NEWS] Failed to save state: {e}")
+
     async def fetch_all_news(self) -> List[Dict]:
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False

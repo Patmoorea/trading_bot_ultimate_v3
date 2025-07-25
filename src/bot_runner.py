@@ -1766,7 +1766,6 @@ class TradingBotM4:
         - Utilise le dernier prix marché si price n'est pas fourni
         """
         try:
-            # Vérifie s'il y a une position ouverte (long)
             pos = self.positions.get(symbol)
             if not pos or pos.get("side") != "long":
                 return False
@@ -1774,31 +1773,23 @@ class TradingBotM4:
             if entry is None:
                 return False
 
-            # Détermination du prix courant
+            # Utilise toujours le format sans slash pour ws_collector et market_data
+            symbol_ws = symbol.replace("/", "").upper()
             if price is None:
-                # Essaye de récupérer le prix via WebSocket collector s'il existe
-                price = None
                 if hasattr(self, "ws_collector") and self.ws_collector is not None:
-                    price = self.ws_collector.get_last_price(symbol)
-                # Fallback sur market_data
-                if (
-                    price is None
-                    and symbol in self.market_data
-                    and "1h" in self.market_data[symbol]
-                ):
-                    closes = self.market_data[symbol]["1h"].get("close", [])
+                    price = self.ws_collector.get_last_price(symbol_ws)
+                # Fallback sur market_data si rien via le collector
+                if price is None and symbol_ws in self.market_data and "1h" in self.market_data[symbol_ws]:
+                    closes = self.market_data[symbol_ws]["1h"].get("close", [])
                     if closes:
                         price = closes[-1]
             if price is None:
                 self.logger.warning(
-                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol} — source manquante (est-ce bien {symbol} ou {symbol.replace('/', '').upper()} ?)"
+                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol} — source manquante (est-ce bien {symbol} ou {symbol_ws} ?)"
                 )
-                # 👉 DEBUG : Affiche les clefs market_data et check ws_collector
                 print("[STOPLOSS DEBUG] market_data keys:", list(self.market_data.keys()))
                 if hasattr(self, "ws_collector"):
                     print("[STOPLOSS DEBUG] ws_collector.last_price:", self.ws_collector.get_last_price(symbol))
-                    # Test alternative format
-                    symbol_ws = symbol.replace("/", "").upper()
                     print("[STOPLOSS DEBUG] ws_collector.last_price alt:", self.ws_collector.get_last_price(symbol_ws))
                 return False
 
