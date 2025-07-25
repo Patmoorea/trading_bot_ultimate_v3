@@ -1,19 +1,16 @@
 import os
-import json
-import asyncio
 import re
-from datetime import datetime
-from typing import List, Dict, Optional, Set, Any
+import json
 import logging
 import aiohttp
 import ssl
+import socket
+from datetime import datetime
+from typing import List, Dict, Optional, Set, Any
+import numpy as np
 from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import numpy as np
-import websockets
-import random
-import socket
 
 
 class SymbolExtractor:
@@ -85,13 +82,14 @@ class NewsSentimentAnalyzer:
             "low_watermark_ratio", 0.2
         )
         self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
-        self.device = (
-            torch.device("mps")
-            if torch.backends.mps.is_available()
-            else torch.device("cpu")
+        self.device = torch.device(
+            "cuda"
+            if torch.cuda.is_available()
+            else ("mps" if torch.backends.mps.is_available() else "cpu")
         )
         self._model = None
         self._tokenizer = None
+
         self.news_api_key = os.getenv("NEWS_API_KEY")
         self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
         self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
@@ -160,7 +158,6 @@ class NewsSentimentAnalyzer:
         return self._tokenizer
 
     async def _save_state(self, data):
-        # Par défaut : sauvegarde dans data/news_analysis.json
         path = self.config.get("news", {}).get(
             "storage_path", "data/news_analysis.json"
         )
@@ -196,7 +193,6 @@ class NewsSentimentAnalyzer:
             for result in results:
                 if isinstance(result, list):
                     valid_news.extend(result)
-            print(f"\n[NEWS DEBUG] {len(valid_news)} news récupérées ce cycle")
             if valid_news:
                 for idx, n in enumerate(valid_news[:5]):
                     print(
@@ -215,12 +211,16 @@ class NewsSentimentAnalyzer:
             try:
                 news = await self._fetch_source(session, source)
                 if news is not None and len(news) == 0 and attempt < max_retries - 1:
-                    await asyncio.sleep(2 + random.random() * 3)
+                    import asyncio
+
+                    await asyncio.sleep(2 + np.random.random() * 3)
                     continue
                 return news
             except aiohttp.ClientResponseError as cre:
                 if cre.status == 429 and attempt < max_retries - 1:
                     print(f"[{source['name']}] HTTP 429, attente 60s avant retry")
+                    import asyncio
+
                     await asyncio.sleep(60)
                     continue
                 else:
@@ -233,6 +233,8 @@ class NewsSentimentAnalyzer:
                     f"[{source['name']}] Timeout when fetching ({source['url']})"
                 )
                 if attempt < max_retries - 1:
+                    import asyncio
+
                     await asyncio.sleep(5)
                     continue
                 return []
@@ -241,6 +243,8 @@ class NewsSentimentAnalyzer:
                     f"[{source['name']}] Error fetching: {str(e)} ({source['url']})"
                 )
                 if attempt < max_retries - 1:
+                    import asyncio
+
                     await asyncio.sleep(5)
                     continue
                 return []
@@ -271,8 +275,6 @@ class NewsSentimentAnalyzer:
                 if source["type"] == "rss":
                     return self._parse_rss(body, source)
                 else:
-                    import json
-
                     try:
                         data = json.loads(body)
                     except Exception as e:
@@ -412,17 +414,7 @@ class NewsSentimentAnalyzer:
             results = []
             for i, item in enumerate(news_items):
                 sentiment = float(scores[i][2] - scores[i][0])
-                results.append(
-                    {
-                        **item,
-                        "sentiment": sentiment,
-                        "impact_score": (
-                            self._calculate_impact(item, sentiment)
-                            if hasattr(self, "_calculate_impact")
-                            else 1.0
-                        ),
-                    }
-                )
+                results.append({**item, "sentiment": sentiment, "impact_score": 1.0})
             return results
         except Exception as e:
             print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
@@ -447,8 +439,7 @@ class NewsSentimentAnalyzer:
             )
             std_sentiment = float(np.std(sentiment_scores)) if sentiment_scores else 0.0
             self.logger.info(
-                f"News analysis: {len(analyzed_news)} items | "
-                f"Mean sentiment: {mean_sentiment:.4f} ± {std_sentiment:.4f}"
+                f"News analysis: {len(analyzed_news)} items | Mean sentiment: {mean_sentiment:.4f} ± {std_sentiment:.4f}"
             )
             self.news_buffer = analyzed_news[-200:]
             summary = self.get_sentiment_summary()
@@ -510,7 +501,6 @@ class NewsSentimentAnalyzer:
         self, symbol: str, news_list: Optional[list] = None
     ) -> float:
         try:
-            print(f"CALLING get_symbol_sentiment: symbol='{symbol}'")
             symbol_key = symbol.replace("/", "").upper()
             coin_mapping = {
                 "BTC": ["BTC", "BITCOIN"],
@@ -538,16 +528,10 @@ class NewsSentimentAnalyzer:
             search_terms = coin_mapping.get(coin, [coin])
             if news_list is None:
                 news_list = self.news_buffer
-            print(
-                f"[DEBUG SEARCH] Termes de recherche pour {symbol_key}: {search_terms}"
-            )
             total = 0.0
             total_weight = 0.0
             current_time = datetime.now().timestamp()
             matched = False
-            print(
-                f"[DEBUG SENTIMENT] Recherche des news pour {search_terms}... Buffer size: {len(news_list)}"
-            )
             for news in news_list:
                 news_symbols = news.get("symbols", [])
                 title = news.get("title", "").lower()
@@ -566,24 +550,9 @@ class NewsSentimentAnalyzer:
                     decay = 0.5 ** (hours_old / 24)
                     sentiment = news.get("sentiment", 0)
                     impact = news.get("impact_score", 1) or 1
-                    match_type = "extracted" if match_extracted else "content"
-                    print(
-                        f"[DEBUG MATCH] ({match_type}) Titre: {news.get('title', '')[:60]} | Symbols: {news_symbols} | sentiment={sentiment:.4f} | impact={impact:.2f} | decay={decay:.2f}"
-                    )
                     total += sentiment * impact * decay
                     total_weight += impact * decay
-            if not matched:
-                print(f"[DEBUG SENTIMENT] Aucun match trouvé pour {search_terms}")
-                available_symbols = set()
-                for news in news_list[:5]:
-                    available_symbols.update(news.get("symbols", []))
-                print(
-                    f"[DEBUG SENTIMENT] Symboles disponibles (échantillon): {list(available_symbols)[:10]}"
-                )
             score = total / max(total_weight, 1e-6) if total_weight > 0 else 0.0
-            print(
-                f"[DEBUG SENTIMENT] symbol={symbol_key} | sentiment_score={score:.4f} | total={total:.4f} | total_weight={total_weight:.4f} | matched={matched}"
-            )
             return score
         except Exception as e:
             self.logger.error(f"Error getting sentiment for {symbol}: {str(e)}")
@@ -608,13 +577,9 @@ class NewsSentimentAnalyzer:
         "tron": "TRX",
         "trx": "TRX",
         "sui": "SUI",
-        # Ajoute d'autres mappings si besoin
     }
 
     def _extract_symbols_from_text(self, text):
-        """
-        Tente d'extraire une liste de symboles d'assets à partir du texte/titre.
-        """
         text = text.lower()
         found = set()
         for key, symbol in self.SYMBOL_MAPPING.items():
@@ -623,21 +588,14 @@ class NewsSentimentAnalyzer:
         return list(found)
 
     def patch_news_item(self, news):
-        """
-        Ajoute/force les champs 'symbols' et 'sentiment' dans un dict de news.
-        """
-        # Patch "symbols"
         if "symbols" not in news or not news["symbols"]:
-            # Essaie d'extraire à partir du titre/texte
             title = news.get("title", "") or ""
             text = news.get("text", "") or ""
             symbols = self._extract_symbols_from_text(title + " " + text)
             news["symbols"] = symbols
-        # Patch "sentiment"
         if "sentiment" not in news or news["sentiment"] is None:
-            news["sentiment"] = 0.0  # Neutre si non dispo
+            news["sentiment"] = 0.0
         else:
-            # Securise le type
             try:
                 news["sentiment"] = float(news["sentiment"])
             except Exception:
@@ -645,10 +603,4 @@ class NewsSentimentAnalyzer:
         return news
 
     def patch_news_list(self, news_list):
-        """
-        Applique la correction à toute une liste de news.
-        """
         return [self.patch_news_item(news) for news in news_list]
-
-    # Exemple d'utilisation à l'entrée de l'analyse ou juste avant retour :
-    # news_list = self.patch_news_list(news_list)
