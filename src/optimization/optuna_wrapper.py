@@ -27,6 +27,7 @@ def tune_hyperparameters(n_trials=10, cache_dir="data_cache", model_type="hybrid
         print(f">>> OBJECTIVE Optuna appelé, trial: {trial.number}")
         lr = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
         batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
+        batch_size = int(batch_size)  # <-- AJOUTE CETTE LIGNE ICI !!!
         pairs = load_config()  # ex: ["BTC/USDC", "ETH/USDC", ...]
         scores = []
         for pair in pairs:
@@ -42,7 +43,11 @@ def tune_hyperparameters(n_trials=10, cache_dir="data_cache", model_type="hybrid
                         cache_dir=cache_dir,
                     )
                     model.learning_rate = lr
-                    acc = model.validate() if hasattr(model, "validate") else 0.0
+                    acc = (
+                        model.validate(lr=lr, batch_size=batch_size)
+                        if hasattr(model, "validate")
+                        else 0.0
+                    )
                 elif model_type == "dl":
                     # DeepLearningModel: adaptation
                     model = ModelClass()
@@ -88,35 +93,50 @@ def optimize_hyperparameters_full(n_trials=200, timeout=3600, cache_dir="data_ca
     study = optuna.create_study(directions=["maximize", "minimize"])
 
     def objective(trial):
-        lr = trial.suggest_float("lr", 1e-6, 1e-3, log=True)
-        dropout = trial.suggest_float("dropout", 0.1, 0.5)
-        pairs = load_config()
+        print(f">>> OBJECTIVE Optuna appelé, trial: {trial.number}")
+        lr = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
+        batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
+        batch_size = int(batch_size)  # <-- AJOUTE CETTE LIGNE ICI !!!
+        pairs = load_config()  # ex: ["BTC/USDC", "ETH/USDC", ...]
         scores = []
-        latencies = []
         for pair in pairs:
             try:
-                model = HybridAIEnhanced(
-                    pair=pair,
-                    window=30,
-                    interval="1h",
-                    start_str="1 Jan, 2023",
-                    end_str="now",
-                    cache_dir=cache_dir,
-                )
-                model.learning_rate = lr
-                model.dropout = dropout
-                accuracy = model.validate() if hasattr(model, "validate") else 0.0
-                latency = model.get_latency() if hasattr(model, "get_latency") else 0.0
-                print(
-                    f"[Optuna] {pair} | Accuracy={accuracy:.4f} | Latency={latency:.3f}"
-                )
-                scores.append(accuracy)
-                latencies.append(latency)
+                print(f"[Optuna] TRAIN sur {pair}…")
+                if model_type == "hybrid":
+                    model = ModelClass(
+                        pair=pair,
+                        window=30,
+                        interval="1h",
+                        start_str="1 Jan, 2023",
+                        end_str="now",
+                        cache_dir=cache_dir,
+                    )
+                    model.learning_rate = lr
+                    acc = (
+                        model.validate(lr=lr, batch_size=batch_size)
+                        if hasattr(model, "validate")
+                        else 0.0
+                    )
+                elif model_type == "dl":
+                    # DeepLearningModel: adaptation
+                    model = ModelClass()
+                    acc = model.train_and_validate(
+                        pair=pair,
+                        window=30,
+                        interval="1h",
+                        start_str="1 Jan, 2023",
+                        end_str="now",
+                        cache_dir=cache_dir,
+                        lr=lr,
+                        batch_size=batch_size,
+                    )
+                print(f"[Optuna] {pair} | Accuracy={acc:.4f}")
+                scores.append(acc)
             except Exception as e:
                 print(f"[Optuna] Erreur sur {pair}: {e}")
-        avg_score = float(sum(scores)) / len(scores) if scores else 0.0
-        avg_latency = float(sum(latencies)) / len(latencies) if latencies else 0.0
-        return avg_score, avg_latency
+        if not scores:
+            print("[Optuna] Aucune paire dispo pour ce trial !")
+        return float(sum(scores)) / len(scores) if scores else 0.0
 
     study.optimize(objective, n_trials=n_trials, timeout=timeout)
     print("=== Optuna full terminé, best trials ===")
