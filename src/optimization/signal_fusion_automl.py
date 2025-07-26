@@ -25,6 +25,14 @@ BINANCE_INTERVAL_MAP = {
 }
 
 
+def get_all_pairs_from_bot_config(config_path="config/trading_pairs.json"):
+    """Charge toutes les paires configurées pour le bot."""
+    if os.path.exists(config_path):
+        with open(config_path, "r") as f:
+            return json.load(f).get("valid_pairs", ["BTC/USDC", "ETH/USDC"])
+    return ["BTC/USDC", "ETH/USDC"]
+
+
 class DummyBot:
     def __init__(self, config, dl_model):
         self.config = config
@@ -193,6 +201,7 @@ def fetch_binance_ohlcv(
     df = df.sort_values("timestamp").reset_index(drop=True)
     try:
         df.to_csv(cache_file, index=False)
+        print(f"[CACHE] Généré: {cache_file}")
     except Exception as e:
         print(f"[CACHE SAVE ERROR] {e}")
     return df
@@ -272,7 +281,7 @@ def optimize_signal_fusion_and_mm(n_trials=50):
     print("=== [DIAG] OPTIMIZATION FUNCTION CALLED ===")
     config = {
         "TRADING": {
-            "pairs": ["BTC/USDC", "ETH/USDC", "SOL/USDC"],
+            "pairs": get_all_pairs_from_bot_config(),  # PATCH: Toutes les paires de la config bot !
             "timeframes": ["1h", "4h"],
         },
         "news": {

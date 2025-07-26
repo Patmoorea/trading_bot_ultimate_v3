@@ -5004,27 +5004,30 @@ async def handle_shutdown(bot, message):
 
 def objective(trial):
     try:
-        # Hyperparamètres à optimiser
         lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
         batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
 
-        # Charge toutes les paires configurées dans le bot/config
-        pairs = load_config()  # ["BTC/USDC", "ETH/USDC", ...]
+        pairs = load_config()
         scores = []
         for pair in pairs:
-            # Utilise le cache pour chaque paire
-            model = HybridAI(
-                pair=pair,
-                window=30,
-                interval="1h",
-                start_str="1 Jan, 2023",
-                end_str="now",
-                cache_dir="data_cache",
-            )
-            acc = model.train_and_validate(lr=lr, batch_size=batch_size)
-            scores.append(acc)
-        # Retourne la moyenne des scores sur toutes les paires
-        return np.mean(scores)
+            try:
+                print(f"[Optuna] Essayé sur {pair}…")
+                model = HybridAI(
+                    pair=pair,
+                    window=30,
+                    interval="1h",
+                    start_str="1 Jan, 2023",
+                    end_str="now",
+                    cache_dir="data_cache",
+                )
+                acc = model.train_and_validate(lr=lr, batch_size=batch_size)
+                print(f"[Optuna] {pair} | Accuracy={acc:.4f}")
+                scores.append(acc)
+            except Exception as e:
+                print(f"[Optuna] Erreur sur {pair}: {e}")
+        if not scores:
+            print("[Optuna] Aucune paire disponible pour ce trial !")
+        return np.mean(scores) if scores else 0.0
 
     except Exception as e:
         print(f"Erreur critique: {str(e)}")
