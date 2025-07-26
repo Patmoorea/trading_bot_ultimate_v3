@@ -14,7 +14,7 @@ class BacktestEngine:
         self.trades: List[Dict] = []
         self.metrics: Dict = {}
 
-        # Ajout : Chargement automatique des hyperparams Optuna si dispo
+        # Chargement automatique des hyperparams Optuna si dispo
         self.best_params = self._load_optuna_params()
 
     def _load_optuna_params(self) -> Dict:
@@ -36,12 +36,38 @@ class BacktestEngine:
             params.update(self.best_params)
 
         signals = strategy_func(data, **params)
-        for timestamp, row in data.iterrows():
-            signal = signals.loc[timestamp]
-            if signal > 0 and not self.positions:
+        if isinstance(signals, pd.Series):
+            signals = signals.values
+        elif isinstance(signals, pd.DataFrame):
+            signals = signals.iloc[:, 0].values
+        elif isinstance(signals, list):
+            signals = np.array(signals)
+        else:
+            signals = np.array(signals)
+
+        # Debug: print signal distribution
+        # print("Signal distribution:", pd.Series(signals).value_counts())
+
+        # Ajout : support long ET short (bi-directionnel)
+        for i, (timestamp, row) in enumerate(data.iterrows()):
+            signal = signals[i]
+            # print(f"[{timestamp}] Signal: {signal}, Position: {self.positions}")
+
+            # Ouvre une position LONG
+            if signal == 1 and not self.positions:
                 self._open_position("LONG", row["close"], timestamp)
-            elif signal < 0 and self.positions:
+            # Ouvre une position SHORT
+            elif signal == -1 and not self.positions:
+                self._open_position("SHORT", row["close"], timestamp)
+            # Ferme une position (peu importe le sens)
+            elif signal == 0 and self.positions:
                 self._close_position(row["close"], timestamp)
+            # Peut ajouter gestion TP/SL ou autre ici
+
+        # Si position ouverte à la fin du backtest, on la clôture
+        if self.positions:
+            self._close_position(data.iloc[-1]["close"], data.index[-1])
+
         return self.calculate_metrics()
 
     def _open_position(self, direction: str, price: float, timestamp: datetime):
@@ -56,7 +82,8 @@ class BacktestEngine:
     def _close_position(self, price: float, timestamp: datetime):
         if not self.positions:
             return
-        pnl = (price - self.positions["entry_price"]) * self.positions["size"]
+        qty = self.positions["size"] / self.positions["entry_price"]
+        pnl = (price - self.positions["entry_price"]) * qty
         if self.positions["direction"] == "SHORT":
             pnl = -pnl
         self.trades.append(
@@ -73,7 +100,6 @@ class BacktestEngine:
         self.positions = {}
 
     def calculate_metrics(self) -> dict:
-        # PATCH: Always return a metrics dict with numeric values, even if no trades
         if not self.trades:
             return {
                 "total_trades": 0,
@@ -104,7 +130,6 @@ class BacktestEngine:
                 (self.current_capital - self.initial_capital) / self.initial_capital
             ),
         }
-        # Patch: never return nan, always numeric
         for k, v in self.metrics.items():
             if v is None or (isinstance(v, float) and (np.isnan(v) or np.isinf(v))):
                 self.metrics[k] = 0.0
@@ -117,12 +142,14 @@ class BacktestEngine:
         capital_curve = pd.Series(capital_curve)
         rolling_max = capital_curve.expanding().max()
         drawdowns = (capital_curve - rolling_max) / rolling_max
-        return drawdowns.min()
+        return drawdowns.min() if not drawdowns.empty else 0.0
 
     def _calculate_sharpe_ratio(self, risk_free_rate: float = 0.02) -> float:
         if not self.trades:
-            return 0
+            return 0.0
         returns = pd.Series([trade["pnl"] for trade in self.trades])
+        if returns.std() == 0:
+            return 0.0
         excess_returns = returns.mean() - risk_free_rate / 252
         return np.sqrt(252) * excess_returns / returns.std()
 
@@ -132,6 +159,7 @@ class BacktestEngine:
         self.trades = []
         self.metrics = {}
 
+    @staticmethod
     def monte_carlo_backtest(equity_curve, n_simulations=1000):
         results = []
         returns = np.diff(equity_curve) / equity_curve[:-1]

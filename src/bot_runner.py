@@ -727,12 +727,16 @@ class TradingBotM4:
                 },
             },
         }
-        self.news_pause_manager = NewsPauseManager(default_pause_cycles=6)  # 6 cycles = 3 minutes si cycle=30s
-        
-        self.exit_manager = ExitManager(tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03)
-        
+        self.news_pause_manager = NewsPauseManager(
+            default_pause_cycles=6
+        )  # 6 cycles = 3 minutes si cycle=30s
+
+        self.exit_manager = ExitManager(
+            tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03
+        )
+
         self.signal_fusion_params = self.load_signal_fusion_params()
-        
+
         self.positions = {}  # Ajouté : gestion des positions spot par paire
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
 
@@ -865,7 +869,7 @@ class TradingBotM4:
             "sell_threshold": -0.2,
             "mm_risk": 0.05,
         }
-        
+
     def aggregate_timeframe_signals(self, pair, signals_per_tf):
         """
         Fusionne les signaux multi-timeframes pour une paire donnée.
@@ -894,7 +898,7 @@ class TradingBotM4:
             return "sell", abs(avg_score)
         else:
             return "neutral", abs(avg_score)
-       
+
     def sync_positions_with_binance(self):
         """
         Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
@@ -1369,7 +1373,9 @@ class TradingBotM4:
         pair_key = symbol.replace("/", "").upper()
         if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
             try:
-                sentiment_score = await self.news_analyzer.get_symbol_sentiment(pair_key)
+                sentiment_score = await self.news_analyzer.get_symbol_sentiment(
+                    pair_key
+                )
                 if sentiment_score == 0:
                     sentiment_score = self.news_analyzer.get_sentiment_summary().get(
                         "sentiment_global", 0.0
@@ -1396,12 +1402,12 @@ class TradingBotM4:
         else:
             # Sinon, legacy pondération selon TF
             tf_weights = {
-                "1m":    {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
-                "5m":    {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
-                "15m":   {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
-                "1h":    {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
-                "4h":    {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
-                "1d":    {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
+                "1m": {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
+                "5m": {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
+                "15m": {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
+                "1h": {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
+                "4h": {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
+                "1d": {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
             }
             w = tf_weights.get(tf, tf_weights["1h"])
             tech_w = w["tech"]
@@ -1784,7 +1790,11 @@ class TradingBotM4:
                 if hasattr(self, "ws_collector") and self.ws_collector is not None:
                     price = self.ws_collector.get_last_price(symbol_ws)
                 # Fallback sur market_data si rien via le collector
-                if price is None and symbol_ws in self.market_data and "1h" in self.market_data[symbol_ws]:
+                if (
+                    price is None
+                    and symbol_ws in self.market_data
+                    and "1h" in self.market_data[symbol_ws]
+                ):
                     closes = self.market_data[symbol_ws]["1h"].get("close", [])
                     if closes:
                         price = closes[-1]
@@ -1792,10 +1802,18 @@ class TradingBotM4:
                 self.logger.warning(
                     f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol} — source manquante (est-ce bien {symbol} ou {symbol_ws} ?)"
                 )
-                print("[STOPLOSS DEBUG] market_data keys:", list(self.market_data.keys()))
+                print(
+                    "[STOPLOSS DEBUG] market_data keys:", list(self.market_data.keys())
+                )
                 if hasattr(self, "ws_collector"):
-                    print("[STOPLOSS DEBUG] ws_collector.last_price:", self.ws_collector.get_last_price(symbol))
-                    print("[STOPLOSS DEBUG] ws_collector.last_price alt:", self.ws_collector.get_last_price(symbol_ws))
+                    print(
+                        "[STOPLOSS DEBUG] ws_collector.last_price:",
+                        self.ws_collector.get_last_price(symbol),
+                    )
+                    print(
+                        "[STOPLOSS DEBUG] ws_collector.last_price alt:",
+                        self.ws_collector.get_last_price(symbol_ws),
+                    )
                 return False
 
             # Calcul de la perte latente
@@ -3556,7 +3574,9 @@ class TradingBotM4:
             return
         pair_key = pair.replace("/", "").upper()
         print(f"Chargement du DataFrame live pour {pair_key} / {tf}")
-        print(f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}")
+        print(
+            f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}"
+        )
         df_live = self.ws_collector.get_dataframe(pair_key, tf)
         if df_live is not None and not df_live.empty:
             df_live = add_dl_features(df_live)
@@ -3586,7 +3606,9 @@ class TradingBotM4:
             pair_key = pair.replace("/", "").upper()
             for tf in self.config["TRADING"]["timeframes"]:
                 print(f"→ Entraînement IA sur {pair_key} / {tf}")
-                print(f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}")
+                print(
+                    f"[DEBUG] ws_collector.get_dataframe({pair_key}, {tf}) keys: {list(self.ws_collector.data.keys()) if hasattr(self.ws_collector, 'data') else 'no data attr'}"
+                )
                 df_live = self.ws_collector.get_dataframe(pair_key, tf)
                 if df_live is not None and not df_live.empty:
                     df_live = add_dl_features(df_live)
@@ -3604,6 +3626,7 @@ class TradingBotM4:
                     train_with_live_data(df_live)
                 else:
                     print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
+
 
 def filter_pairs(
     bot,
@@ -3638,6 +3661,7 @@ def filter_pairs(
             closes = bot.market_data[pair_key]["1h"]["close"]
             if len(closes) >= 20:
                 import numpy as np
+
                 returns = np.diff(np.log(closes[-20:]))
                 vol = float(np.std(returns))
             else:
@@ -3647,10 +3671,7 @@ def filter_pairs(
 
         # Récupère le signal technique/IA/sentiment (exemple: total_score du dernier cycle)
         signal = 0
-        if (
-            pair_key in bot.market_data
-            and "ai_prediction" in bot.market_data[pair_key]
-        ):
+        if pair_key in bot.market_data and "ai_prediction" in bot.market_data[pair_key]:
             signal = bot.market_data[pair_key]["ai_prediction"]
 
         # Nouveau: filtre volatilité/anomalie marché (optionnel)
@@ -3664,12 +3685,15 @@ def filter_pairs(
             )
         ):
             import pandas as pd
-            df_ohlcv = pd.DataFrame({
-                "close": bot.market_data[pair_key]["1h"]["close"],
-                "high": bot.market_data[pair_key]["1h"]["high"],
-                "low": bot.market_data[pair_key]["1h"]["low"],
-                "volume": bot.market_data[pair_key]["1h"]["volume"],
-            })
+
+            df_ohlcv = pd.DataFrame(
+                {
+                    "close": bot.market_data[pair_key]["1h"]["close"],
+                    "high": bot.market_data[pair_key]["1h"]["high"],
+                    "low": bot.market_data[pair_key]["1h"]["low"],
+                    "volume": bot.market_data[pair_key]["1h"]["volume"],
+                }
+            )
 
         is_clean = True
         if vol_anomaly_filter and df_ohlcv is not None and len(df_ohlcv) >= 50:
@@ -3688,10 +3712,16 @@ def filter_pairs(
     filtered_candidates = [c[0] for c in candidates]
     # Filtrage corrélation: sélectionne des paires peu corrélées entre elles
     filtered_uncorr = filter_uncorrelated_pairs(
-        bot.market_data, filtered_candidates, timeframe="1h", window=50, corr_threshold=0.85, top_n=top_n
+        bot.market_data,
+        filtered_candidates,
+        timeframe="1h",
+        window=50,
+        corr_threshold=0.85,
+        top_n=top_n,
     )
     return filtered_uncorr
-    
+
+
 def load_config():
     """Charge la configuration"""
     try:
@@ -3746,7 +3776,9 @@ async def run_clean_bot():
                     pair_key = pair.replace("/", "").upper()
                     for tf in bot.config["TRADING"]["timeframes"]:
                         df = bot.ws_collector.get_dataframe(pair_key, tf)
-                        print(f"{pair_key}-{tf}: {len(df) if df is not None else 0} lignes")
+                        print(
+                            f"{pair_key}-{tf}: {len(df) if df is not None else 0} lignes"
+                        )
                 print("=== FIN DIAGNOSTIC ===\n")
             # === FIN AJOUT ===
 
@@ -3820,7 +3852,9 @@ async def run_clean_bot():
                     return signal
             else:
                 # Appel standard
-                signal = await bot.analyze_signals(pair_key, ohlcv_df, indicators_data, tf=tf)
+                signal = await bot.analyze_signals(
+                    pair_key, ohlcv_df, indicators_data, tf=tf
+                )
                 signal["pair"] = pair
                 signal["tf"] = tf
                 return signal
@@ -3837,7 +3871,10 @@ async def run_clean_bot():
         try:
             # 0. Import avancé des indicateurs orderflow
             try:
-                from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+                from src.analysis.technical.advanced.advanced_indicators import (
+                    AdvancedIndicators,
+                )
+
                 orderflow_indicators = AdvancedIndicators()
             except Exception as e:
                 orderflow_indicators = None
@@ -3857,14 +3894,31 @@ async def run_clean_bot():
                             "low": df["low"].tolist(),
                             "close": df["close"].tolist(),
                             "volume": df["volume"].tolist(),
-                            "timestamp": [int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]],
+                            "timestamp": [
+                                int(pd.Timestamp(t).timestamp())
+                                for t in df["timestamp"]
+                            ],
                         }
                         # 1bis. Indicateurs orderflow
                         if orderflow_indicators is not None:
                             try:
-                                bid_ask = orderflow_indicators._bid_ask_ratio(df) if hasattr(orderflow_indicators, "_bid_ask_ratio") else None
-                                liquidity_wave = orderflow_indicators._liquidity_wave(df) if hasattr(orderflow_indicators, "_liquidity_wave") else None
-                                smart_money = orderflow_indicators._smart_money_index(df) if hasattr(orderflow_indicators, "_smart_money_index") else None
+                                bid_ask = (
+                                    orderflow_indicators._bid_ask_ratio(df)
+                                    if hasattr(orderflow_indicators, "_bid_ask_ratio")
+                                    else None
+                                )
+                                liquidity_wave = (
+                                    orderflow_indicators._liquidity_wave(df)
+                                    if hasattr(orderflow_indicators, "_liquidity_wave")
+                                    else None
+                                )
+                                smart_money = (
+                                    orderflow_indicators._smart_money_index(df)
+                                    if hasattr(
+                                        orderflow_indicators, "_smart_money_index"
+                                    )
+                                    else None
+                                )
                                 bot.market_data[pair_key][tf]["orderflow"] = {
                                     "bid_ask_ratio": bid_ask,
                                     "liquidity_wave": liquidity_wave,
@@ -3896,29 +3950,35 @@ async def run_clean_bot():
             except Exception:
                 min_vol, min_sig, n_top = 0.01, 0.3, 5
 
-            selected_pairs = filter_pairs(bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top)
-            
-            #Tu évites les marchés plats mais tu ne rates pas les signaux moyens.
-            #selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
-            
-            #Pour être très sélectif (seulement les gros mouvements et signaux très forts) :
-            #selected_pairs = filter_pairs(bot, min_volatility=0.02, min_signal=0.5, top_n=3)
-            
-            #Pour trader plus large (plus de paires, moins exigeant) :
-            #selected_pairs = filter_pairs(bot, min_volatility=0.005, min_signal=0.2, top_n=8)
-            
-            #Pour ne jamais trader plus de 2 paires à la fois, même si beaucoup sont "OK" :
-            #selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=2)
+            selected_pairs = filter_pairs(
+                bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top
+            )
+
+            # Tu évites les marchés plats mais tu ne rates pas les signaux moyens.
+            # selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
+
+            # Pour être très sélectif (seulement les gros mouvements et signaux très forts) :
+            # selected_pairs = filter_pairs(bot, min_volatility=0.02, min_signal=0.5, top_n=3)
+
+            # Pour trader plus large (plus de paires, moins exigeant) :
+            # selected_pairs = filter_pairs(bot, min_volatility=0.005, min_signal=0.2, top_n=8)
+
+            # Pour ne jamais trader plus de 2 paires à la fois, même si beaucoup sont "OK" :
+            # selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=2)
 
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
             if ignored_pairs:
-                print(f"[DYNAMIQUE] Paires ignorées (pas d'opportunité) : {ignored_pairs}")
+                print(
+                    f"[DYNAMIQUE] Paires ignorées (pas d'opportunité) : {ignored_pairs}"
+                )
 
             trade_decisions = []
             for pair in selected_pairs:
                 for tf in bot.config["TRADING"]["timeframes"]:
-                    decision = await market_analysis_cycle(bot, pair, bot.market_data, tf=tf)
+                    decision = await market_analysis_cycle(
+                        bot, pair, bot.market_data, tf=tf
+                    )
                     if decision:
                         decision["tf"] = tf
                         trade_decisions.append(decision)
@@ -3945,21 +4005,31 @@ async def run_clean_bot():
             final_trade_decisions = []
             for pair, tf_signals in signals_by_pair.items():
                 action, confidence = bot.aggregate_timeframe_signals(pair, tf_signals)
-                all_details = [(tf, d['action'], d['confidence']) for tf, d in tf_signals.items()]
-                log_dashboard(f"[FUSION] {pair}: {all_details} => FINAL: {action.upper()} ({confidence:.2f})")
+                all_details = [
+                    (tf, d["action"], d["confidence"]) for tf, d in tf_signals.items()
+                ]
+                log_dashboard(
+                    f"[FUSION] {pair}: {all_details} => FINAL: {action.upper()} ({confidence:.2f})"
+                )
                 # Prend le premier tf pour les signaux fusionnés, ou None
                 signals_example = next(iter(tf_signals.values()), {})
-                final_trade_decisions.append({
-                    "pair": pair,
-                    "action": action,
-                    "confidence": confidence,
-                    "signals": {
-                        "details": tf_signals,
-                        "technical": signals_example.get("signals", {}).get("technical", 0),
-                        "ai": signals_example.get("signals", {}).get("ai", 0),
-                        "sentiment": signals_example.get("signals", {}).get("sentiment", 0),
-                    },
-                })
+                final_trade_decisions.append(
+                    {
+                        "pair": pair,
+                        "action": action,
+                        "confidence": confidence,
+                        "signals": {
+                            "details": tf_signals,
+                            "technical": signals_example.get("signals", {}).get(
+                                "technical", 0
+                            ),
+                            "ai": signals_example.get("signals", {}).get("ai", 0),
+                            "sentiment": signals_example.get("signals", {}).get(
+                                "sentiment", 0
+                            ),
+                        },
+                    }
+                )
 
             # 6. Exécution des trades FUSIONNÉS (1 seul trade/pair/cycle)
             await execute_trade_decisions(bot, final_trade_decisions)
@@ -3971,6 +4041,7 @@ async def run_clean_bot():
             raise
 
         # Fonction principale
+
     async def main():
         try:
             # Initialisation
@@ -4039,7 +4110,11 @@ async def run_clean_bot():
                         last_price = None
                         if hasattr(bot, "ws_collector"):
                             last_price = bot.ws_collector.get_last_price(symbol)
-                        if last_price is None and symbol in bot.market_data and "1h" in bot.market_data[symbol]:
+                        if (
+                            last_price is None
+                            and symbol in bot.market_data
+                            and "1h" in bot.market_data[symbol]
+                        ):
                             closes = bot.market_data[symbol]["1h"].get("close", [])
                             if closes:
                                 last_price = closes[-1]
@@ -4064,7 +4139,9 @@ async def run_clean_bot():
 
                         # 2. Trailing stop sur le reste
                         should_exit, new_max = bot.exit_manager.check_trailing(
-                            pos["entry_price"], pos["price_history"], pos.get("max_price", pos["entry_price"])
+                            pos["entry_price"],
+                            pos["price_history"],
+                            pos.get("max_price", pos["entry_price"]),
                         )
                         pos["max_price"] = new_max
                         if should_exit and pos["amount"] > 0:
@@ -4182,6 +4259,7 @@ async def run_clean_bot():
 
     # Démarrage de la boucle principale
     await main()
+
 
 def prepare_ohlcv_data(ohlcv_data):
     """Prépare les données OHLCV pour l'analyse"""
@@ -4354,9 +4432,13 @@ async def execute_trade_decisions(bot, trade_decisions):
     # Vérification des champs "symbols" et "sentiment" dans les news
     for news in news_list:
         if "symbols" not in news or not news["symbols"]:
-            log_dashboard(f"[NEWS CHECK] ⚠️ News sans champ 'symbols': {news.get('title', '')[:80]}")
+            log_dashboard(
+                f"[NEWS CHECK] ⚠️ News sans champ 'symbols': {news.get('title', '')[:80]}"
+            )
         if "sentiment" not in news:
-            log_dashboard(f"[NEWS CHECK] ⚠️ News sans champ 'sentiment': {news.get('title', '')[:80]}")
+            log_dashboard(
+                f"[NEWS CHECK] ⚠️ News sans champ 'sentiment': {news.get('title', '')[:80]}"
+            )
 
     for decision in trade_decisions:
         pair = decision.get("pair")
@@ -4679,7 +4761,11 @@ def calculate_position_size(bot, decision):
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
-            equity_curve = [pt["balance"] for pt in data.get("equity_history", []) if "balance" in pt]
+            equity_curve = [
+                pt["balance"]
+                for pt in data.get("equity_history", [])
+                if "balance" in pt
+            ]
             drawdown = compute_drawdown(np.array(equity_curve)) if equity_curve else 0
         except Exception:
             drawdown = 0
@@ -4692,7 +4778,9 @@ def calculate_position_size(bot, decision):
             pass
 
         # 4. Sizing dynamique
-        risk_pct = dynamic_position_size(mm_risk, volatility, confidence, drawdown, perf_recent)
+        risk_pct = dynamic_position_size(
+            mm_risk, volatility, confidence, drawdown, perf_recent
+        )
         size = balance * risk_pct
 
         # 5. Min notional
@@ -4703,6 +4791,7 @@ def calculate_position_size(bot, decision):
 
     except Exception as e:
         import logging
+
         logging.error(f"Erreur calcul montant USDC: {e}")
         return 10
 
@@ -4915,15 +5004,27 @@ async def handle_shutdown(bot, message):
 
 def objective(trial):
     try:
-        # Hyperparamètres
+        # Hyperparamètres à optimiser
         lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
         batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
 
-        # Initialisation et entraînement
-        model = HybridAI()
-        acc = model.train_and_validate(lr, batch_size)
-
-        return acc
+        # Charge toutes les paires configurées dans le bot/config
+        pairs = load_config()  # ["BTC/USDC", "ETH/USDC", ...]
+        scores = []
+        for pair in pairs:
+            # Utilise le cache pour chaque paire
+            model = HybridAI(
+                pair=pair,
+                window=30,
+                interval="1h",
+                start_str="1 Jan, 2023",
+                end_str="now",
+                cache_dir="data_cache",
+            )
+            acc = model.train_and_validate(lr=lr, batch_size=batch_size)
+            scores.append(acc)
+        # Retourne la moyenne des scores sur toutes les paires
+        return np.mean(scores)
 
     except Exception as e:
         print(f"Erreur critique: {str(e)}")
@@ -4934,6 +5035,7 @@ if __name__ == "__main__":
 
     # --- 1. Argument parsing avancé
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
@@ -4993,6 +5095,7 @@ if __name__ == "__main__":
     elif args.optuna_signal_fusion:
         print("=== Lancement Optuna signal fusion (diagnostic print) ===")
         from src.optimization.signal_fusion_automl import optimize_signal_fusion_and_mm
+
         optimize_signal_fusion_and_mm(n_trials=100)
         exit(0)
 

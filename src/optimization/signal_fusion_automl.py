@@ -9,11 +9,12 @@ import functools
 from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
 from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
-from src.ai.deep_learning_model import DeepLearningModel  # <-- IMPORT DE TA VRAIE IA
+from src.ai.deep_learning_model import DeepLearningModel
 from binance.client import Client
 from dotenv import load_dotenv
 
 BEST_PARAMS_PATH = "config/best_signal_params.json"
+DATA_CACHE_DIR = "data_cache"
 
 load_dotenv()
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
@@ -25,17 +26,9 @@ BINANCE_INTERVAL_MAP = {
 
 
 class DummyBot:
-    def __init__(self, config):
+    def __init__(self, config, dl_model):
         self.config = config
-        # --- IA réelle branchée ici ---
-        self.dl_model = DeepLearningModel()
-        self.dl_model.initialize()
-        weights_path = "src/models/cnn_lstm_model.pth"
-        if os.path.exists(weights_path):
-            self.dl_model.load_weights(weights_path)
-            print(f"[DL] Modèle IA chargé depuis {weights_path}")
-        else:
-            print(f"[DL WARNING] Aucun modèle IA entraîné trouvé à {weights_path} !")
+        self.dl_model = dl_model
         self.news_analyzer = NewsSentimentAnalyzer(config)
 
     def add_indicators(self, df):
@@ -69,10 +62,7 @@ def get_enriched_sentiment(bot, pair_key, news_list):
     sentiment_global = summary.get("sentiment_global", 0.0)
     impact_score = summary.get("impact_score", 0.0)
     n_news = summary.get("n_news", 0)
-    if n_news > 15:
-        impact_factor = min(2.0, 1.0 + impact_score)
-    else:
-        impact_factor = 1.0
+    impact_factor = min(2.0, 1.0 + impact_score) if n_news > 15 else 1.0
     if sentiment_score == 0:
         sentiment_score = sentiment_global * impact_factor
     major_events = summary.get("major_events", "")
@@ -85,7 +75,7 @@ def get_enriched_sentiment(bot, pair_key, news_list):
     return sentiment_score
 
 
-def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
+def enrich_signals_with_real_values(bot, df, pair_key, news_list=None, window=20):
     indics = bot.add_indicators(df)
     rsi = indics.get("rsi_14", 50)
     df["signal_tech"] = (rsi - 50) / 50
@@ -105,38 +95,30 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
     df["volatility"] = df["volatility"].fillna(0.0)
     df["rsi"] = df["rsi"].fillna(50.0)
 
-    # --- Signal IA réel : utilise la prédiction du modèle ---
-    if hasattr(bot, "dl_model") and bot.dl_model:
+    def ia_predictor(row):
+        idx = row.name
+        if idx < window - 1:
+            return 0.0
+        window_df = df.iloc[max(0, idx - window + 1) : idx + 1].copy()
+        features = {
+            "close": np.array(window_df["close"]),
+            "high": np.array(window_df["high"]),
+            "low": np.array(window_df["low"]),
+            "volume": np.array(window_df["volume"]),
+            "rsi": window_df["rsi"].iloc[-1] if "rsi" in window_df else 50.0,
+            "macd": window_df["macd"].iloc[-1] if "macd" in window_df else 0.0,
+            "volatility": (
+                window_df["volatility"].iloc[-1] if "volatility" in window_df else 0.0
+            ),
+        }
+        try:
+            return float(bot.dl_model.predict(features))
+        except Exception as e:
+            print(f"Error in DL prediction: {e}")
+            return 0.0
 
-        def ia_predictor(row):
-            idx = row.name
-            window = df.loc[:idx].tail(20).copy()
-            # Calcul des features additionnelles
-            rsi = window["rsi"].iloc[-1] if "rsi" in window else 50.0
-            macd = window["macd"].iloc[-1] if "macd" in window else 0.0
-            volatility = (
-                window["volatility"].iloc[-1] if "volatility" in window else 0.0
-            )
-            features = {
-                "close": np.array(window["close"]),
-                "high": np.array(window["high"]),
-                "low": np.array(window["low"]),
-                "volume": np.array(window["volume"]),
-                "rsi": rsi,
-                "macd": macd,
-                "volatility": volatility,
-            }
-            try:
-                return float(bot.dl_model.predict(features))
-            except Exception as e:
-                print(f"Error in DL prediction: {e}")
-                return 0.0
+    df["signal_ia"] = df.apply(ia_predictor, axis=1)
 
-        df["signal_ia"] = df.apply(ia_predictor, axis=1)
-    else:
-        df["signal_ia"] = 0.0
-
-    # --- Signal sentiment : NLP sur news ---
     if hasattr(bot, "news_analyzer") and bot.news_analyzer:
         import asyncio
 
@@ -154,9 +136,17 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
 
 
 def fetch_binance_ohlcv(
-    symbol, interval, start_str, end_str, api_key, api_secret, retries=3, timeout=60
+    symbol, interval, start_str, end_str, api_key, api_secret, retries=5, timeout=30
 ):
     from time import sleep
+
+    os.makedirs(DATA_CACHE_DIR, exist_ok=True)
+    cache_file = f"{DATA_CACHE_DIR}/{symbol}_{interval}_{start_str}_{end_str}.csv"
+    if os.path.exists(cache_file):
+        print(f"[CACHE] Lecture depuis: {cache_file}")
+        df = pd.read_csv(cache_file)
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        return df
 
     client = Client(api_key, api_secret)
     client.session.request = functools.partial(client.session.request, timeout=timeout)
@@ -164,7 +154,8 @@ def fetch_binance_ohlcv(
     for attempt in range(retries):
         try:
             klines = client.get_historical_klines(symbol, interval, start_str, end_str)
-            break
+            if klines and len(klines) > 0:
+                break
         except Exception as e:
             print(
                 f"[FETCH] Attempt {attempt+1}/{retries} failed for {symbol} {interval} (error: {e})"
@@ -173,7 +164,7 @@ def fetch_binance_ohlcv(
             sleep(5)
     else:
         print(f"[FETCH] All retries failed for {symbol} {interval}")
-        raise last_exception
+        return None
     if not klines or len(klines) == 0:
         print(f"[FETCH] No data for {symbol} {interval}")
         return None
@@ -200,32 +191,58 @@ def fetch_binance_ohlcv(
         ["open", "high", "low", "close", "volume"]
     ].astype(float)
     df = df.sort_values("timestamp").reset_index(drop=True)
+    try:
+        df.to_csv(cache_file, index=False)
+    except Exception as e:
+        print(f"[CACHE SAVE ERROR] {e}")
     return df
 
 
 def fusion_signal_series(df, fusion_params):
-    def fusion(row):
-        score = np.clip(
+    print("Tech min/max:", df["signal_tech"].min(), df["signal_tech"].max())
+    print("IA min/max:", df["signal_ia"].min(), df["signal_ia"].max())
+    print(
+        "Sentiment min/max:", df["signal_sentiment"].min(), df["signal_sentiment"].max()
+    )
+    scale = fusion_params.get("scale", 2)
+    fusion_scores = df.apply(
+        lambda row: scale
+        * (
             fusion_params["tech_weight"] * row.get("signal_tech", 0)
             + fusion_params["ia_weight"] * row.get("signal_ia", 0)
-            + fusion_params["sentiment_weight"] * row.get("signal_sentiment", 0),
-            -10,
-            10,
+            + fusion_params["sentiment_weight"] * row.get("signal_sentiment", 0)
+        ),
+        axis=1,
+    )
+    print("Fusion min/max:", fusion_scores.min(), fusion_scores.max())
+    print("Fusion describe:", fusion_scores.describe())
+    buy_threshold = fusion_params.get("buy_threshold", 0.8)
+    sell_threshold = fusion_params.get("sell_threshold", -0.8)
+
+    def fusion(row):
+        score = scale * (
+            fusion_params["tech_weight"] * row.get("signal_tech", 0)
+            + fusion_params["ia_weight"] * row.get("signal_ia", 0)
+            + fusion_params["sentiment_weight"] * row.get("signal_sentiment", 0)
         )
-        if score > fusion_params["buy_threshold"]:
+        if score >= buy_threshold:
             return 1
-        elif score < fusion_params["sell_threshold"]:
+        elif score <= sell_threshold:
             return -1
         return 0
 
-    return df.apply(fusion, axis=1)
+    signals = df.apply(fusion, axis=1)
+    print("Signal counts:", pd.Series(signals).value_counts())
+    return signals
 
 
 def run_full_backtest(df, fusion_params, initial_capital=10000, verbose=False):
     signals = fusion_signal_series(df, fusion_params)
+    print("[DEBUG] Signals distribution:", pd.Series(signals).value_counts())
     results = BacktestEngine(initial_capital=initial_capital).run_backtest(
-        df, lambda *_args, **_kwargs: signals
+        df, lambda df, idx=None, **_kwargs: signals if idx is None else signals[idx]
     )
+    print("[DEBUG] Backtest results:", results)
     if verbose:
         print(f"[BACKTEST] Résultat: {results}")
     return results
@@ -282,33 +299,19 @@ def optimize_signal_fusion_and_mm(n_trials=50):
             },
         },
     }
-    bot = DummyBot(config)
-    print("=== [DIAG] Bot instantiated ===")
-    try:
-        fetch_result = bot.news_analyzer.fetch_all_news()
-        if hasattr(fetch_result, "__await__"):
-            import asyncio
-
-            asyncio.run(fetch_result)
-        print("=== [DIAG] News fetch done ===")
-    except Exception as e:
-        print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
+    window = 20
 
     def objective(trial):
         print(f"=== [DIAG] Optuna trial {trial.number} started ===")
-        fetch_result = bot.news_analyzer.fetch_all_news()
-        if hasattr(fetch_result, "__await__"):
-            import asyncio
-
-            asyncio.run(fetch_result)
-
+        lr = trial.suggest_float("lr", 1e-5, 2e-3, log=True)
+        batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
+        n_epochs = trial.suggest_int("n_epochs", 3, 10)
         tech_weight = trial.suggest_float("tech_weight", 0.0, 1.0)
         ia_weight = trial.suggest_float("ia_weight", 0.0, 1.0 - tech_weight)
         sentiment_weight = 1.0 - tech_weight - ia_weight
         buy_threshold = trial.suggest_float("buy_threshold", 0.1, 0.5)
         sell_threshold = trial.suggest_float("sell_threshold", -0.5, -0.1)
         mm_risk = trial.suggest_float("mm_risk", 0.01, 0.2)
-
         fusion_params = {
             "tech_weight": tech_weight,
             "ia_weight": ia_weight,
@@ -316,12 +319,71 @@ def optimize_signal_fusion_and_mm(n_trials=50):
             "buy_threshold": buy_threshold,
             "sell_threshold": sell_threshold,
             "mm_risk": mm_risk,
+            "lr": lr,
+            "batch_size": batch_size,
+            "n_epochs": n_epochs,
         }
 
+        dl_model = DeepLearningModel()
+        dl_model.initialize()
+        print("[DIAG] About to call dl_model.train()")
         pairs = config["TRADING"]["pairs"]
         timeframes = config["TRADING"]["timeframes"]
-        all_scores = []
+        train_dfs = []
+        for pair in pairs:
+            for tf in timeframes:
+                df = fetch_binance_ohlcv(
+                    symbol=pair.replace("/", ""),
+                    interval=BINANCE_INTERVAL_MAP[tf],
+                    start_str="1 Jan, 2023",
+                    end_str="now",
+                    api_key=BINANCE_API_KEY,
+                    api_secret=BINANCE_API_SECRET,
+                )
+                if df is not None and len(df) >= window + 10:
+                    df["target"] = (df["close"].shift(-5) > df["close"]).astype(float)
+                    import pandas_ta as pta
 
+                    df["rsi"] = pta.rsi(df["close"], length=14)
+                    macd = pta.macd(df["close"])
+                    if macd is not None and not macd.empty:
+                        df["macd"] = macd["MACD_12_26_9"]
+                    else:
+                        df["macd"] = 0.0
+                    returns = np.log(df["close"]).diff()
+                    df["volatility"] = returns.rolling(14).std()
+                    for col in ["rsi", "macd", "volatility"]:
+                        df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+                        df[col] = (
+                            df[col]
+                            .fillna(method="ffill")
+                            .fillna(method="bfill")
+                            .fillna(0)
+                        )
+                    train_dfs.append(df)
+        all_df = pd.concat(train_dfs) if train_dfs else None
+        if all_df is not None:
+            try:
+                dl_model.train(
+                    all_df,
+                    lr=lr,
+                    batch_size=batch_size,
+                    n_epochs=n_epochs,
+                    window=window,
+                )
+            except Exception as e:
+                print(f"[WARN TRAIN IA] {e}")
+        else:
+            print("[WARN] No training data for IA, using default weights.")
+
+        bot = DummyBot(config, dl_model)
+        fetch_result = bot.news_analyzer.fetch_all_news()
+        if hasattr(fetch_result, "__await__"):
+            import asyncio
+
+            asyncio.run(fetch_result)
+
+        all_scores = []
         for pair in pairs:
             for tf in timeframes:
                 print(f"[TRIAL] Fetching OHLCV for {pair} {tf}")
@@ -333,15 +395,26 @@ def optimize_signal_fusion_and_mm(n_trials=50):
                     api_key=BINANCE_API_KEY,
                     api_secret=BINANCE_API_SECRET,
                 )
-                if df is None or len(df) < 100:
+                if df is None or len(df) < window + 10:
                     print(f"[TRIAL] No data for {pair} {tf}")
                     continue
-                import asyncio
+                import pandas_ta as pta
 
-                news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-                print(f"[TRIAL] Enriching signals for {pair} {tf}")
+                df["rsi"] = pta.rsi(df["close"], length=14)
+                macd = pta.macd(df["close"])
+                if macd is not None and not macd.empty:
+                    df["macd"] = macd["MACD_12_26_9"]
+                else:
+                    df["macd"] = 0.0
+                returns = np.log(df["close"]).diff()
+                df["volatility"] = returns.rolling(14).std()
+                for col in ["rsi", "macd", "volatility"]:
+                    df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+                    df[col] = (
+                        df[col].fillna(method="ffill").fillna(method="bfill").fillna(0)
+                    )
                 df = enrich_signals_with_real_values(
-                    bot, df, pair_key=pair.replace("/", ""), news_list=news_list
+                    bot, df, pair_key=pair.replace("/", ""), window=window
                 )
                 print(
                     f"[TRIAL] Sentiment values for {pair} {tf}: {df['signal_sentiment'].iloc[0]}"
@@ -371,6 +444,8 @@ def optimize_signal_fusion_and_mm(n_trials=50):
 
 
 if __name__ == "__main__":
-    print("=== OPTIMISATION SIGNAL FUSION & MM (FinBERT NLP + IA réelle) ===")
+    print(
+        "=== OPTIMISATION SIGNAL FUSION & MM (FinBERT NLP + IA réelle + Optuna tuning IA) ==="
+    )
     best = optimize_signal_fusion_and_mm(n_trials=100)
     print("Meilleure configuration trouvée :", best)
