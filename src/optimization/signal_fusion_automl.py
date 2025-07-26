@@ -8,11 +8,10 @@ import functools
 
 from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
-from src.analysis.technical.advanced.advanced_indicators import AdvancedIndicators
+from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
+from src.ai.deep_learning_model import DeepLearningModel  # <-- IMPORT DE TA VRAIE IA
 from binance.client import Client
 from dotenv import load_dotenv
-from src.analysis.news.sentiment_analyzer import NewsSentimentAnalyzer
-from src.risk_tools.news_pause_manager import NewsPauseManager
 
 BEST_PARAMS_PATH = "config/best_signal_params.json"
 
@@ -25,10 +24,44 @@ BINANCE_INTERVAL_MAP = {
 }
 
 
+class DummyBot:
+    def __init__(self, config):
+        self.config = config
+        # --- IA réelle branchée ici ---
+        self.dl_model = DeepLearningModel()
+        self.dl_model.initialize()
+        weights_path = "src/models/cnn_lstm_model.pth"
+        if os.path.exists(weights_path):
+            self.dl_model.load_weights(weights_path)
+            print(f"[DL] Modèle IA chargé depuis {weights_path}")
+        else:
+            print(f"[DL WARNING] Aucun modèle IA entraîné trouvé à {weights_path} !")
+        self.news_analyzer = NewsSentimentAnalyzer(config)
+
+    def add_indicators(self, df):
+        try:
+            import pandas_ta as pta
+
+            df = df.copy()
+            df["rsi_14"] = pta.rsi(df["close"], length=14)
+            macd = pta.macd(df["close"])
+            if macd is not None and not macd.empty:
+                df["macd"] = macd["MACD_12_26_9"]
+            else:
+                df["macd"] = 0.0
+            indics = {
+                "rsi_14": df["rsi_14"].iloc[-1] if "rsi_14" in df else 50,
+                "macd": df["macd"].iloc[-1] if "macd" in df else 0.0,
+            }
+            return indics
+        except Exception:
+            return {"rsi_14": 50, "macd": 0.0}
+
+
 def get_enriched_sentiment(bot, pair_key, news_list):
     import asyncio
 
-    # Utilise le NewsSentimentAnalyzer complet (FinBERT)
+    news_list = bot.news_analyzer.analyze_sentiment_batch(news_list)
     sentiment_score = asyncio.run(
         bot.news_analyzer.get_symbol_sentiment(pair_key, news_list=news_list)
     )
@@ -46,6 +79,9 @@ def get_enriched_sentiment(bot, pair_key, news_list):
     if major_events and sentiment_score != 0:
         sentiment_score *= 1.2
     sentiment_score = np.clip(sentiment_score, -1, 1)
+    print(
+        f"[Sentiment] {pair_key}: {sentiment_score} (global={sentiment_global}, impact={impact_score}, n_news={n_news})"
+    )
     return sentiment_score
 
 
@@ -65,41 +101,30 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
         df["macd"] = 0.0
     df["macd"] = df["macd"].fillna(0.0)
     if "volatility" not in df.columns:
-        if "volatility" in indics and indics["volatility"] is not None:
-            df["volatility"] = indics["volatility"]
-        else:
-            df["volatility"] = 0.0
+        df["volatility"] = 0.0
     df["volatility"] = df["volatility"].fillna(0.0)
     df["rsi"] = df["rsi"].fillna(50.0)
 
+    # --- Signal IA réel : utilise la prédiction du modèle ---
     if hasattr(bot, "dl_model") and bot.dl_model:
-        from src.ai.deep_learning_model import features_to_array
 
         def ia_predictor(row):
             idx = row.name
-            window = df.loc[:idx].tail(63).copy()
-            for col, default in [
-                ("close", 0.0),
-                ("high", 0.0),
-                ("low", 0.0),
-                ("volume", 0.0),
-                ("rsi", 50.0),
-                ("macd", 0.0),
-                ("volatility", 0.0),
-            ]:
-                if col not in window.columns:
-                    window[col] = default
-                window[col] = window[col].fillna(default)
-            if len(window) < 10:
-                return 0.0
+            window = df.loc[:idx].tail(20).copy()
+            # Calcul des features additionnelles
+            rsi = window["rsi"].iloc[-1] if "rsi" in window else 50.0
+            macd = window["macd"].iloc[-1] if "macd" in window else 0.0
+            volatility = (
+                window["volatility"].iloc[-1] if "volatility" in window else 0.0
+            )
             features = {
                 "close": np.array(window["close"]),
                 "high": np.array(window["high"]),
                 "low": np.array(window["low"]),
                 "volume": np.array(window["volume"]),
-                "rsi": np.array(window["rsi"]),
-                "macd": np.array(window["macd"]),
-                "volatility": np.array(window["volatility"]),
+                "rsi": rsi,
+                "macd": macd,
+                "volatility": volatility,
             }
             try:
                 return float(bot.dl_model.predict(features))
@@ -111,15 +136,20 @@ def enrich_signals_with_real_values(bot, df, pair_key, news_list=None):
     else:
         df["signal_ia"] = 0.0
 
+    # --- Signal sentiment : NLP sur news ---
     if hasattr(bot, "news_analyzer") and bot.news_analyzer:
         import asyncio
 
         if news_list is None:
             news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
-        df["signal_sentiment"] = get_enriched_sentiment(bot, pair_key, news_list)
+        sentiment_score = get_enriched_sentiment(bot, pair_key, news_list)
+        df["signal_sentiment"] = sentiment_score
+        print(
+            f"[Signal Sentiment in DataFrame] {pair_key}: {df['signal_sentiment'].iloc[0]}"
+        )
     else:
         df["signal_sentiment"] = 0.0
-
+        print(f"[Signal Sentiment in DataFrame] {pair_key}: 0.0 (no analyzer)")
     return df
 
 
@@ -131,7 +161,6 @@ def fetch_binance_ohlcv(
     client = Client(api_key, api_secret)
     client.session.request = functools.partial(client.session.request, timeout=timeout)
     last_exception = None
-
     for attempt in range(retries):
         try:
             klines = client.get_historical_klines(symbol, interval, start_str, end_str)
@@ -145,11 +174,9 @@ def fetch_binance_ohlcv(
     else:
         print(f"[FETCH] All retries failed for {symbol} {interval}")
         raise last_exception
-
     if not klines or len(klines) == 0:
         print(f"[FETCH] No data for {symbol} {interval}")
         return None
-
     df = pd.DataFrame(
         klines,
         columns=[
@@ -177,19 +204,11 @@ def fetch_binance_ohlcv(
 
 
 def fusion_signal_series(df, fusion_params):
-    def getval(val):
-        if hasattr(val, "__await__"):
-            import asyncio
-
-            return asyncio.run(val)
-        return val
-
     def fusion(row):
         score = np.clip(
-            fusion_params["tech_weight"] * getval(row.get("signal_tech", 0))
-            + fusion_params["ia_weight"] * getval(row.get("signal_ia", 0))
-            + fusion_params["sentiment_weight"]
-            * getval(row.get("signal_sentiment", 0)),
+            fusion_params["tech_weight"] * row.get("signal_tech", 0)
+            + fusion_params["ia_weight"] * row.get("signal_ia", 0)
+            + fusion_params["sentiment_weight"] * row.get("signal_sentiment", 0),
             -10,
             10,
         )
@@ -234,44 +253,54 @@ def optuna_callback(study, trial):
 
 def optimize_signal_fusion_and_mm(n_trials=50):
     print("=== [DIAG] OPTIMIZATION FUNCTION CALLED ===")
-    bot = TradingBotM4()
+    config = {
+        "TRADING": {
+            "pairs": ["BTC/USDC", "ETH/USDC", "SOL/USDC"],
+            "timeframes": ["1h", "4h"],
+        },
+        "news": {
+            "sentiment_weight": 0.15,
+            "update_interval": 300,
+            "storage_path": "data/news_analysis.json",
+            "low_watermark_ratio": 0.2,
+            "symbol_mapping": {
+                "bitcoin": "BTC",
+                "ethereum": "ETH",
+                "cardano": "ADA",
+                "solana": "SOL",
+                "litecoin": "LTC",
+                "xrp": "XRP",
+                "dogecoin": "DOGE",
+                "binancecoin": "BNB",
+                "tron": "TRX",
+                "sui": "SUI",
+                "stablecoin": "USDT",
+                "ink": "INK",
+                "ena": "ENA",
+                "ledger": "BTC",
+                "tether": "USDT",
+            },
+        },
+    }
+    bot = DummyBot(config)
     print("=== [DIAG] Bot instantiated ===")
-    # Utilise le NewsSentimentAnalyzer complet (FinBERT NLP)
-    bot.news_analyzer = NewsSentimentAnalyzer(bot.config)
-    print("=== [DIAG] News analyzer instantiated ===")
     try:
-        if hasattr(bot.news_analyzer, "fetch_all_news"):
-            fetch_result = bot.news_analyzer.fetch_all_news()
-            if hasattr(fetch_result, "__await__"):
-                import asyncio
+        fetch_result = bot.news_analyzer.fetch_all_news()
+        if hasattr(fetch_result, "__await__"):
+            import asyncio
 
-                asyncio.run(fetch_result)
+            asyncio.run(fetch_result)
         print("=== [DIAG] News fetch done ===")
     except Exception as e:
         print(f"[WARN] Unable to fetch news for news_analyzer: {e}")
-    print("=== [DIAG] Pause manager about to be instantiated ===")
-
-    class NoPauseManager:
-        def scan_news(self, news_list):
-            return False
-
-        def should_pause(self):
-            return False
-
-        def on_cycle_end(self):
-            pass
-
-    pause_manager = NoPauseManager()
-    print("=== [DIAG] Pause manager (no pause) instantiated ===")
 
     def objective(trial):
         print(f"=== [DIAG] Optuna trial {trial.number} started ===")
-        if hasattr(bot, "news_analyzer"):
-            fetch_result = bot.news_analyzer.fetch_all_news()
-            if hasattr(fetch_result, "__await__"):
-                import asyncio
+        fetch_result = bot.news_analyzer.fetch_all_news()
+        if hasattr(fetch_result, "__await__"):
+            import asyncio
 
-                asyncio.run(fetch_result)
+            asyncio.run(fetch_result)
 
         tech_weight = trial.suggest_float("tech_weight", 0.0, 1.0)
         ia_weight = trial.suggest_float("ia_weight", 0.0, 1.0 - tech_weight)
@@ -289,12 +318,13 @@ def optimize_signal_fusion_and_mm(n_trials=50):
             "mm_risk": mm_risk,
         }
 
-        pairs = ["BTC/USDC", "ETH/USDC", "SOL/USDC"]
-        timeframes = ["1h", "4h"]
+        pairs = config["TRADING"]["pairs"]
+        timeframes = config["TRADING"]["timeframes"]
         all_scores = []
 
         for pair in pairs:
             for tf in timeframes:
+                print(f"[TRIAL] Fetching OHLCV for {pair} {tf}")
                 df = fetch_binance_ohlcv(
                     symbol=pair.replace("/", ""),
                     interval=BINANCE_INTERVAL_MAP[tf],
@@ -304,20 +334,25 @@ def optimize_signal_fusion_and_mm(n_trials=50):
                     api_secret=BINANCE_API_SECRET,
                 )
                 if df is None or len(df) < 100:
+                    print(f"[TRIAL] No data for {pair} {tf}")
                     continue
                 import asyncio
 
                 news_list = asyncio.run(bot.news_analyzer.fetch_all_news())
+                print(f"[TRIAL] Enriching signals for {pair} {tf}")
                 df = enrich_signals_with_real_values(
                     bot, df, pair_key=pair.replace("/", ""), news_list=news_list
                 )
+                print(
+                    f"[TRIAL] Sentiment values for {pair} {tf}: {df['signal_sentiment'].iloc[0]}"
+                )
+                print(f"[TRIAL] IA values for {pair} {tf}: {df['signal_ia'].iloc[-1]}")
                 results = run_full_backtest(df, fusion_params, initial_capital=10000)
                 profit = results.get("final_capital", 0) - 10000 if results else -9999
                 if profit is None or np.isnan(profit):
                     profit = -99999
                 all_scores.append(profit)
-                time.sleep(1)  # Limite la fréquence des appels API
-                pause_manager.on_cycle_end()
+                time.sleep(1)
 
         avg_profit = np.mean(all_scores) if all_scores else -99999
         print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
@@ -336,6 +371,6 @@ def optimize_signal_fusion_and_mm(n_trials=50):
 
 
 if __name__ == "__main__":
-    print("=== OPTIMISATION SIGNAL FUSION & MM (FinBERT NLP) ===")
+    print("=== OPTIMISATION SIGNAL FUSION & MM (FinBERT NLP + IA réelle) ===")
     best = optimize_signal_fusion_and_mm(n_trials=100)
     print("Meilleure configuration trouvée :", best)
