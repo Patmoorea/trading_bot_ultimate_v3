@@ -42,22 +42,13 @@ class HybridModel:
         config_path="config/trading_pairs.json",
         cache_dir="data_cache",
     ):
-        """
-        Modèle TensorFlow pro pour données crypto OHLCV.
-        Utilise les fichiers Excel/CSV du cache générés par le bot (data_cache/).
-        Si pair est None, utilise la première paire du fichier de config.
-        """
         self.window = window
-
-        # 1. Détection des paires configurées
         pairs = get_configured_pairs(config_path)
         if not pairs:
             raise ValueError("Aucune paire configurée !")
         if pair is None:
             pair = pairs[0]
         self.pair = pair
-
-        # 2. Chargement du fichier cache
         cache_path = get_cache_csv(
             pair, interval, start_str, end_str, cache_dir=cache_dir
         )
@@ -68,7 +59,6 @@ class HybridModel:
         print(f"[HybridModel] Chargement des données depuis : {cache_path}")
         df = pd.read_csv(cache_path)
         df.columns = [col.lower() for col in df.columns]
-
         feats = ["close", "high", "low", "volume"]
         required = set(feats)
         if not required.issubset(df.columns):
@@ -76,10 +66,8 @@ class HybridModel:
             raise ValueError(
                 f"[HybridModel] Colonnes manquantes dans le CSV: {missing}"
             )
-
         if "timestamp" in df.columns:
             df = df.sort_values("timestamp").reset_index(drop=True)
-
         if "rsi" not in df.columns:
             delta = df["close"].diff()
             gain = (delta > 0) * delta
@@ -89,7 +77,6 @@ class HybridModel:
             rs = avg_gain / (avg_loss + 1e-9)
             df["rsi"] = 100 - (100 / (1 + rs))
         feats.append("rsi")
-
         X, y = [], []
         for i in range(len(df) - window - 5):
             window_df = df.iloc[i : i + window]
@@ -101,22 +88,18 @@ class HybridModel:
             y.append(label)
         X = np.array(X, dtype=np.float32)
         y = np.array(y, dtype=np.float32)
-
         if len(X) == 0 or len(y) == 0:
             raise ValueError(
                 "[HybridModel] Pas assez de données pour constituer le dataset."
             )
-
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=0.20, random_state=42
         )
-
         print(
             f"[HybridModel] Nb samples train: {self.X_train.shape[0]} | Nb test: {self.X_test.shape[0]}"
         )
         unique, counts = np.unique(self.y_train, return_counts=True)
         print(f"[HybridModel] Train label distribution: {dict(zip(unique, counts))}")
-
         self.model = tf.keras.Sequential(
             [
                 tf.keras.layers.Input(shape=(window, len(feats))),
@@ -134,6 +117,7 @@ class HybridModel:
         )
 
     def train_and_validate(self, lr=0.001, batch_size=64, n_epochs=5):
+        batch_size = int(batch_size)
         tf.keras.backend.set_value(self.model.optimizer.learning_rate, lr)
         self.model.fit(
             self.X_train,
@@ -145,6 +129,10 @@ class HybridModel:
         loss, acc = self.model.evaluate(self.X_test, self.y_test, verbose=0)
         print(f"[HybridAI] Accuracy test: {acc:.3f} | Loss: {loss:.4f}")
         return acc
+
+    def validate(self, lr=0.001, batch_size=64, n_epochs=5):
+        batch_size = int(batch_size)
+        return self.train_and_validate(lr=lr, batch_size=batch_size, n_epochs=n_epochs)
 
 
 class HybridAI(HybridModel):

@@ -5003,35 +5003,31 @@ async def handle_shutdown(bot, message):
 
 
 def objective(trial):
-    try:
-        lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-        batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
-
-        pairs = load_config()
-        scores = []
-        for pair in pairs:
-            try:
-                print(f"[Optuna] Essayé sur {pair}…")
-                model = HybridAI(
-                    pair=pair,
-                    window=30,
-                    interval="1h",
-                    start_str="1 Jan, 2023",
-                    end_str="now",
-                    cache_dir="data_cache",
-                )
-                acc = model.train_and_validate(lr=lr, batch_size=batch_size)
-                print(f"[Optuna] {pair} | Accuracy={acc:.4f}")
-                scores.append(acc)
-            except Exception as e:
-                print(f"[Optuna] Erreur sur {pair}: {e}")
-        if not scores:
-            print("[Optuna] Aucune paire disponible pour ce trial !")
-        return np.mean(scores) if scores else 0.0
-
-    except Exception as e:
-        print(f"Erreur critique: {str(e)}")
-        return 0.0
+    lr = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
+    batch_size = trial.suggest_categorical("batch_size", [32, 64, 128])
+    batch_size = int(batch_size)  # <-- PATCH FONDAMENTAL
+    n_epochs = 5
+    pairs = load_config()
+    scores = []
+    for pair in pairs:
+        try:
+            print(f"[Optuna] TRAIN sur {pair}…")
+            model = HybridAI(
+                pair=pair,
+                window=30,
+                interval="1h",
+                start_str="1 Jan, 2023",
+                end_str="now",
+                cache_dir="data_cache",
+            )
+            acc = model.validate(lr=lr, batch_size=batch_size, n_epochs=n_epochs)
+            print(f"[Optuna] {pair} | Accuracy={acc:.4f}")
+            scores.append(acc)
+        except Exception as e:
+            print(f"[Optuna] Erreur sur {pair}: {e}")
+    if not scores:
+        print("[Optuna] Aucune paire dispo pour ce trial !")
+    return float(sum(scores)) / len(scores) if scores else 0.0
 
 
 if __name__ == "__main__":
