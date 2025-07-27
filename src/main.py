@@ -123,12 +123,15 @@ with st.sidebar:
 
     # == 2. Pauses trading actives (juste après alertes) ==
     st.header("⏸️ Pauses trading actives")
-    active_pauses = shared_data.get("active_pauses", [])
-    if active_pauses:
-        df_pauses = pd.DataFrame(active_pauses)
-        st.dataframe(df_pauses, use_container_width=True)
-    else:
-        st.info("Aucune pause trading active (news critique).")
+    active_pauses = bot.get_active_pauses()
+    try:
+        with open(bot.data_file, "r") as f:
+            shared_data = json.load(f)
+    except Exception:
+        shared_data = {}
+    shared_data["active_pauses"] = active_pauses
+    with open(bot.data_file, "w") as f:
+        json.dump(shared_data, f, indent=4)
 
     # == 3. Positions fermées ==
     st.header("⛔️ Positions fermées (auto)")
