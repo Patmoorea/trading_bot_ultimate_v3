@@ -470,3 +470,11 @@
 2025-07-27T22:19:22.369562 | [NEWS] Score sentiment global: 0.28 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-27T22:24:50.054574 | [NEWS] Score sentiment global: 0.28 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-27T22:30:17.328568 | [NEWS] Score sentiment global: 0.28 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T23:28:29.940072 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T23:28:29.940963 | Initialisation des modèles d'IA...
+2025-07-27T23:28:30.431836 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T23:28:31.988823 | ✅ PPO Strategy initialized successfully
+2025-07-27T23:28:31.989225 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T23:28:31.989297 | ✅ Trading en direct: True
+2025-07-27T23:28:31.989344 | ✅ IA activée: True
+2025-07-27T23:28:31.989399 | ✅ Analyse de news activée: True

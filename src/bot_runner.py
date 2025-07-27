@@ -948,7 +948,6 @@ class TradingBotM4:
                     entry_price = self.positions.get(symbol, {}).get(
                         "entry_price", None
                     )
-                    # Calcul gain/perte
                     if entry_price and current_price:
                         pnl_pct = (current_price - entry_price) / entry_price * 100
                         pnl_usd = (current_price - entry_price) * free
@@ -970,7 +969,15 @@ class TradingBotM4:
 
     # Ajoute cette méthode pour savoir si on est long
     def is_long(self, symbol):
-        return self.positions.get(symbol, {}).get("side") == "long"
+        # Retourne True si position ouverte par le bot
+        if self.positions.get(symbol, {}).get("side") == "long":
+            return True
+        # PATCH : retourne True si tu as l'asset spot sur Binance
+        if hasattr(self, "positions_binance"):
+            pos_spot = self.positions_binance.get(symbol)
+            if pos_spot and float(pos_spot.get("amount", 0)) > 0:
+                return True
+        return False
 
     def get_entry_price(self, symbol):
         return self.positions.get(symbol, {}).get("entry_price")
@@ -1916,9 +1923,23 @@ class TradingBotM4:
 
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
+                # PATCH : On vérifie le portefeuille spot Binance AVANT d'acheter
+                already_in_portfolio = False
+                # Vérifie dans self.positions (du bot)
                 if self.is_long(symbol):
-                    log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
+                    already_in_portfolio = True
+                # Vérifie dans le portefeuille spot Binance
+                if hasattr(self, "positions_binance"):
+                    pos_binance = self.positions_binance.get(symbol)
+                    if pos_binance and float(pos_binance.get("amount", 0)) > 0:
+                        already_in_portfolio = True
+
+                if already_in_portfolio:
+                    log_dashboard(
+                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (spot ou portefeuille Binance)."
+                    )
                     return {"status": "skipped", "reason": "already long"}
+
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
