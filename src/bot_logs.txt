@@ -82,3 +82,4 @@
 2025-07-27T19:47:43.658833 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
 2025-07-27T19:54:22.827560 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-27T19:59:50.342166 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T20:05:20.901887 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
