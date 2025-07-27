@@ -152,6 +152,15 @@ with st.sidebar:
     if st.sidebar.button("🔄 Rafraîchir"):
         st.rerun()
 
+        # --- Pauses actives (NEWS PAUSE) ---
+        st.header("⏸️ Pauses trading actives")
+        active_pauses = shared_data.get("active_pauses", [])
+        if active_pauses:
+            df_pauses = pd.DataFrame(active_pauses)
+            st.dataframe(df_pauses, use_container_width=True)
+        else:
+            st.info("Aucune pause trading active (news critique).")
+
     # --- AJOUT SLIDERS ET AFFICHAGE SEUILS ACTIFS ---
     st.sidebar.markdown("---")
     st.sidebar.header("🎛️ Sélection dynamique des paires")

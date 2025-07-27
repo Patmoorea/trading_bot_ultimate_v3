@@ -1603,3 +1603,714 @@
 2025-07-26T01:56:33.237102 | [ORDER] Déjà long sur SUI/USDC, achat ignoré.
 2025-07-26T02:03:39.001715 | [NEWS] Score sentiment global: 0.26 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-26T02:09:06.593828 | [NEWS] Score sentiment global: 0.26 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-26T23:06:28.281465 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-26T23:06:28.285673 | Initialisation des modèles d'IA...
+2025-07-26T23:06:28.575337 | ✅ Modèles d'IA initialisés avec succès
+2025-07-26T23:06:29.196798 | ✅ PPO Strategy initialized successfully
+2025-07-26T23:06:29.196972 | ✅ Bot initialisé avec Telegram: True
+2025-07-26T23:06:29.197013 | ✅ Trading en direct: True
+2025-07-26T23:06:29.197047 | ✅ IA activée: True
+2025-07-26T23:06:29.197086 | ✅ Analyse de news activée: True
+2025-07-26T23:12:04.689346 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-26T23:12:04.689881 | Initialisation des modèles d'IA...
+2025-07-26T23:12:04.828902 | ✅ Modèles d'IA initialisés avec succès
+2025-07-26T23:12:06.408949 | ✅ PPO Strategy initialized successfully
+2025-07-26T23:12:06.409123 | ✅ Bot initialisé avec Telegram: True
+2025-07-26T23:12:06.409241 | ✅ Trading en direct: True
+2025-07-26T23:12:06.409277 | ✅ IA activée: True
+2025-07-26T23:12:06.409314 | ✅ Analyse de news activée: True
+2025-07-26T23:12:54.344146 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-26T23:14:21.092057 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0207 | Tendance: 0.0018
+2025-07-26T23:14:21.092545 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-26T23:14:56.247712 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0207 | Tendance: 0.0018
+2025-07-26T23:14:56.248293 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:14:56.248341 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:15:08.699596 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:16:00.019825 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.020990 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.021292 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.021551 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.021836 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.022091 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.022290 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.022520 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.022728 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.022921 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:16:00.601223 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:00.601614 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:16:02.383982 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:02.384319 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:16:04.164117 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:04.164972 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:16:05.927602 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:05.927983 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:16:07.872006 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:07.872645 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:16:09.956322 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:09.956801 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:16:11.720090 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:11.720667 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:16:13.384371 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:13.384761 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:16:15.005165 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:15.005555 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:16:16.683957 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:16:16.684347 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:23:05.439430 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:23:48.766566 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0207 | Tendance: 0.0018
+2025-07-26T23:23:48.767322 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:23:48.767500 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:24:29.581812 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.583589 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.583719 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.583813 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.583898 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.583979 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.584058 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.584134 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.584209 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:29.584283 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:24:30.148964 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:30.150424 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:24:32.276876 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:32.277781 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:24:33.960153 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:33.961032 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:24:35.617083 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:35.617941 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:24:37.302647 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:37.303620 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:24:39.140142 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:39.141213 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:24:40.817023 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:40.818062 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:24:42.581284 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:42.582283 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:24:44.419135 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:44.420020 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:24:46.264912 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:24:46.266271 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:26:03.721075 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-26T23:26:03.721836 | Initialisation des modèles d'IA...
+2025-07-26T23:26:03.879949 | ✅ Modèles d'IA initialisés avec succès
+2025-07-26T23:26:05.350795 | ✅ PPO Strategy initialized successfully
+2025-07-26T23:26:05.351143 | ✅ Bot initialisé avec Telegram: True
+2025-07-26T23:26:05.351190 | ✅ Trading en direct: True
+2025-07-26T23:26:05.351228 | ✅ IA activée: True
+2025-07-26T23:26:05.351262 | ✅ Analyse de news activée: True
+2025-07-26T23:29:34.032717 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:30:15.271981 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0209 | Tendance: 0.0017
+2025-07-26T23:30:15.273530 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:30:15.273574 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:31:00.142335 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.143964 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144020 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144074 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144127 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144173 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144215 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144272 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144319 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.144356 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:31:00.745028 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:00.745374 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:31:03.051638 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:03.051919 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:31:04.900106 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:04.900360 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:31:06.747539 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:06.747802 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:31:08.571213 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:08.571527 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:31:10.407071 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:10.407337 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:31:12.247030 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:12.247280 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:31:14.067232 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:14.067909 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:31:15.886983 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:15.887259 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:31:17.747074 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:31:17.747397 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:34:31.190757 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0211 | Tendance: 0.0017
+2025-07-26T23:34:31.191403 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:34:31.191485 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:35:06.509309 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:35:16.975037 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.975972 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976072 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976153 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976227 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976298 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976370 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976437 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976499 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:16.976609 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:35:17.569931 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:17.570760 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:35:19.267582 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:19.268378 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:35:20.951776 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:20.952676 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:35:22.658759 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:22.659797 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:35:24.362077 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:24.363095 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:35:26.065152 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:26.066266 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:35:27.828571 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:27.829747 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:35:29.593141 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:29.594186 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:35:31.359052 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:31.360201 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:35:33.156801 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:35:33.157793 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:42:25.620615 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:43:09.685354 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0209 | Tendance: 0.0017
+2025-07-26T23:43:09.686903 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:43:09.687032 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:43:52.848453 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849603 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849702 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849773 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849833 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849889 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.849940 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.850057 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.850119 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:52.850179 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:43:53.427041 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:43:53.427563 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:43:55.458743 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:43:55.459179 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:43:57.182483 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:43:57.183537 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:43:59.241619 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:43:59.242188 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:44:01.283265 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:01.283843 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:44:03.361524 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:03.362288 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:44:05.521178 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:05.521873 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:44:07.577534 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:07.578337 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:44:09.660144 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:09.661970 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:44:11.725326 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:44:11.726167 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:51:05.958072 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-26T23:51:48.284363 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0212 | Tendance: 0.0017
+2025-07-26T23:51:48.285355 | 🎯 Stratégie active: Range/Scalping
+2025-07-26T23:51:48.285470 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-26T23:52:32.024660 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.025465 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.025742 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.025864 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.025962 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.026067 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.026171 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.026260 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.026337 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.026414 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-26T23:52:32.597772 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:32.599118 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-26T23:52:34.711105 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:34.711901 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-26T23:52:36.415058 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:36.415759 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-26T23:52:38.125083 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:38.126104 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-26T23:52:39.808139 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:39.809205 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-26T23:52:41.501660 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:41.502723 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-26T23:52:43.202149 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:43.203220 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-26T23:52:44.885650 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:44.886964 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-26T23:52:46.552826 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:46.555407 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-26T23:52:48.209521 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-26T23:52:48.210187 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-26T23:59:40.062745 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:00:23.930077 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0210 | Tendance: 0.0017
+2025-07-27T00:00:23.930299 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:00:23.930335 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:01:09.636426 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637167 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637289 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637386 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637475 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637566 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637659 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637751 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637835 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:09.637925 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:01:10.251806 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:10.252574 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:01:12.491932 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:12.493202 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:01:14.259995 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:14.261475 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:01:16.020866 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:16.021989 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:01:17.773728 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:17.774994 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:01:19.517750 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:19.518955 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:01:21.262588 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:21.263631 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:01:23.000091 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:23.001718 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:01:24.759183 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:24.760099 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:01:26.531871 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:01:26.532171 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:10:13.214545 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:10:58.267199 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0211 | Tendance: 0.0014
+2025-07-27T00:10:58.268181 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:10:58.268334 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:11:42.506423 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.506771 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.506820 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.506860 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.506908 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.506957 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.507008 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.507053 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.507101 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:42.507136 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:11:43.100932 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:43.101180 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:11:45.262813 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:45.262937 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:11:47.045332 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:47.045483 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:11:48.817980 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:48.818337 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:11:50.591867 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:50.592159 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:11:52.369451 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:52.369703 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:11:54.150054 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:54.150274 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:11:55.929964 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:55.930087 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:11:58.221719 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:11:58.221993 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:12:00.045409 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:12:00.045609 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:20:46.045013 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:21:27.800421 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0209 | Tendance: 0.0014
+2025-07-27T00:21:27.800961 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:21:27.801013 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:22:11.594252 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594609 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594659 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594705 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594742 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594809 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594835 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594859 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594883 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:11.594914 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:22:12.187094 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:12.187569 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:22:14.264956 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:14.265261 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:22:16.001246 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:16.001800 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:22:17.710693 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:17.711207 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:22:19.426713 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:19.427032 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:22:21.149817 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:21.150358 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:22:22.884345 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:22.884988 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:22:24.622785 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:24.623267 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:22:26.376052 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:26.376571 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:22:28.059595 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:22:28.060118 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:29:23.897434 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:30:08.786726 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0210 | Tendance: 0.0014
+2025-07-27T00:30:08.787624 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:30:08.787968 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:30:52.656988 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.657813 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658151 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658241 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658309 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658381 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658445 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658512 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658572 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:52.658636 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:30:53.235396 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:30:53.236202 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:30:55.376509 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:30:55.377659 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:30:57.085466 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:30:57.086454 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:30:58.789584 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:30:58.790633 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:31:00.531047 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:00.532156 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:31:02.224113 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:02.225212 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:31:03.952510 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:03.953365 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:31:05.668120 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:05.668911 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:31:07.419197 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:07.420339 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:31:09.099266 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:31:09.100284 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:37:57.682290 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:38:39.413671 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0210 | Tendance: 0.0014
+2025-07-27T00:38:39.414494 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:38:39.414604 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:39:19.788941 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.789860 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790150 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790240 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790312 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790382 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790457 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790533 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790602 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:19.790678 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:39:20.383203 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:20.384119 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:39:22.435112 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:22.436130 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:39:24.115216 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:24.116246 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:39:25.793746 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:25.794963 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:39:27.485493 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:27.486511 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:39:29.175428 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:29.176466 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:39:30.875703 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:30.876905 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:39:32.577587 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:32.578720 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:39:34.261542 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:34.262536 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:39:35.939503 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:39:35.940420 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:46:25.421950 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:47:06.736749 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0210 | Tendance: 0.0014
+2025-07-27T00:47:06.737708 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:47:06.737998 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:47:51.332350 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.333293 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.333541 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.333672 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.333789 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.333897 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.334002 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.334092 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.334184 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.334285 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:47:51.933377 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:47:51.934166 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:47:54.222478 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:47:54.223868 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:47:56.455325 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:47:56.456556 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:47:58.230066 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:47:58.231160 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:47:59.959406 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:47:59.960482 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:48:01.683538 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:48:01.684795 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:48:03.405456 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:48:03.406596 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:48:05.123606 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:48:05.124743 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:48:06.986869 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:48:06.987935 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:48:08.710580 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:48:08.711600 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T00:55:02.348966 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T00:55:43.921188 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0209 | Tendance: 0.0014
+2025-07-27T00:55:43.922604 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T00:55:43.923175 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T00:56:28.048332 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049278 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049431 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049634 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049749 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049862 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.049977 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.050094 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.050203 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.050312 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T00:56:28.631660 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:28.632576 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T00:56:30.967299 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:30.968443 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T00:56:32.743858 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:32.744956 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T00:56:34.503962 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:34.504923 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T00:56:36.318219 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:36.319267 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T00:56:38.114150 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:38.115117 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T00:56:39.879684 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:39.880631 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T00:56:41.690800 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:41.692047 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T00:56:43.509111 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:43.510306 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T00:56:45.323340 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T00:56:45.324456 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T03:08:02.614419 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T03:08:02.616503 | Initialisation des modèles d'IA...
+2025-07-27T03:08:02.778832 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T03:08:03.309709 | ✅ PPO Strategy initialized successfully
+2025-07-27T03:08:03.310088 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T03:08:03.310222 | ✅ Trading en direct: True
+2025-07-27T03:08:03.310325 | ✅ IA activée: True
+2025-07-27T03:08:03.310426 | ✅ Analyse de news activée: True
+2025-07-27T03:08:22.686451 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T03:08:22.686762 | Initialisation des modèles d'IA...
+2025-07-27T03:08:22.818291 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T03:08:24.457678 | ✅ PPO Strategy initialized successfully
+2025-07-27T03:08:24.457908 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T03:08:24.458108 | ✅ Trading en direct: True
+2025-07-27T03:08:24.458165 | ✅ IA activée: True
+2025-07-27T03:08:24.458220 | ✅ Analyse de news activée: True
+2025-07-27T03:09:15.628243 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-27T03:10:38.940824 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0221 | Tendance: 0.0006
+2025-07-27T03:10:38.940927 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-27T03:11:15.028424 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0217 | Tendance: 0.0006
+2025-07-27T03:11:15.028787 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T03:11:15.028948 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T03:11:27.208687 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T03:12:30.938003 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938351 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938531 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938669 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938784 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938891 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.938989 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.939084 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.939172 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:30.939262 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:12:31.503826 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:31.504134 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T03:12:33.471439 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:33.471748 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T03:12:35.151122 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:35.151542 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T03:12:36.849097 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:36.849449 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T03:12:38.529074 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:38.529544 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T03:12:40.208917 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:40.209270 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T03:12:41.871961 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:41.872363 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T03:12:43.507668 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:43.507950 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T03:12:45.135224 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:45.135745 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T03:12:46.776801 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:12:46.777206 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T03:19:41.484202 | [NEWS] Score sentiment global: 0.00 | Impact: 0.00 | Événements: Aucun
+2025-07-27T03:20:23.987100 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0216 | Tendance: 0.0007
+2025-07-27T03:20:23.987687 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T03:20:23.987783 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T03:21:08.367682 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368051 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368136 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368204 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368268 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368331 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368394 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368457 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368518 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.368581 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T03:21:08.968588 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:08.968836 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T03:21:11.160565 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:11.160867 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T03:21:12.971365 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:12.971685 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T03:21:14.736916 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:14.737345 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T03:21:16.506941 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:16.507251 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T03:21:18.269978 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:18.270358 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T03:21:20.266876 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:20.267307 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T03:21:22.019904 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:22.020264 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T03:21:23.780369 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:23.780784 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T03:21:25.541455 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T03:21:25.541829 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-27T04:03:51.278081 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T04:03:51.279222 | Initialisation des modèles d'IA...
+2025-07-27T04:03:51.444476 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T04:03:53.016624 | ✅ PPO Strategy initialized successfully
+2025-07-27T04:03:53.017092 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T04:03:53.017141 | ✅ Trading en direct: True
+2025-07-27T04:03:53.017182 | ✅ IA activée: True
+2025-07-27T04:03:53.017224 | ✅ Analyse de news activée: True
+2025-07-27T04:04:46.104444 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-27T04:27:51.897340 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T04:27:51.898296 | Initialisation des modèles d'IA...
+2025-07-27T04:27:52.062961 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T04:27:53.598868 | ✅ PPO Strategy initialized successfully
+2025-07-27T04:27:53.599333 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T04:27:53.599384 | ✅ Trading en direct: True
+2025-07-27T04:27:53.599426 | ✅ IA activée: True
+2025-07-27T04:27:53.599473 | ✅ Analyse de news activée: True
+2025-07-27T04:28:43.429051 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-27T18:01:08.942094 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T18:01:08.943481 | Initialisation des modèles d'IA...
+2025-07-27T18:01:09.386212 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T18:01:10.003914 | ✅ PPO Strategy initialized successfully
+2025-07-27T18:01:10.004100 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T18:01:10.004214 | ✅ Trading en direct: True
+2025-07-27T18:01:10.004251 | ✅ IA activée: True
+2025-07-27T18:01:10.004288 | ✅ Analyse de news activée: True
+2025-07-27T18:01:36.436918 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T18:01:36.437198 | Initialisation des modèles d'IA...
+2025-07-27T18:01:36.844795 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T18:01:38.555525 | ✅ PPO Strategy initialized successfully
+2025-07-27T18:01:38.555779 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T18:01:38.555970 | ✅ Trading en direct: True
+2025-07-27T18:01:38.556016 | ✅ IA activée: True
+2025-07-27T18:01:38.556068 | ✅ Analyse de news activée: True
+2025-07-27T18:02:34.479753 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-27T18:04:01.039419 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0208 | Tendance: 0.0016
+2025-07-27T18:04:01.039769 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-27T18:04:39.178652 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0208 | Tendance: 0.0016
+2025-07-27T18:04:39.179483 | 🎯 Stratégie active: Range/Scalping
+2025-07-27T18:04:39.179554 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-27T18:04:55.633524 | [NEWS] Score sentiment global: 0.30 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:05:48.853106 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:48.853411 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:48.855639 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565146 | news_enabled=True
+2025-07-27T18:05:48.855683 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1m | Tech: -0.100 | AI: 0.540 | Sentiment: 0.624 | Total: 0.100 | Action: NEUTRAL | Confidence: 0.100
+2025-07-27T18:05:48.906921 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:48.907048 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:48.908791 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565145 | news_enabled=True
+2025-07-27T18:05:48.908837 | [ANALYZE_SIGNALS] SUIUSDC | TF: 5m | Tech: 0.451 | AI: 0.540 | Sentiment: 0.624 | Total: 0.343 | Action: BUY | Confidence: 0.343
+2025-07-27T18:05:48.960042 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:48.960148 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:48.961810 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565147 | news_enabled=True
+2025-07-27T18:05:48.961858 | [ANALYZE_SIGNALS] SUIUSDC | TF: 15m | Tech: 0.572 | AI: 0.540 | Sentiment: 0.624 | Total: 0.396 | Action: BUY | Confidence: 0.396
+2025-07-27T18:05:49.013086 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:49.013190 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:49.014799 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565146 | news_enabled=True
+2025-07-27T18:05:49.014838 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1h | Tech: 0.520 | AI: 0.540 | Sentiment: 0.624 | Total: 0.374 | Action: BUY | Confidence: 0.374
+2025-07-27T18:05:49.067212 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:49.067328 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:49.068944 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565145 | news_enabled=True
+2025-07-27T18:05:49.068988 | [ANALYZE_SIGNALS] SUIUSDC | TF: 4h | Tech: 0.695 | AI: 0.540 | Sentiment: 0.624 | Total: 0.451 | Action: BUY | Confidence: 0.451
+2025-07-27T18:05:49.099800 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-27T18:05:49.099897 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-27T18:05:49.101461 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.6242763255565145 | news_enabled=True
+2025-07-27T18:05:49.101501 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1d | Tech: 0.660 | AI: 0.540 | Sentiment: 0.624 | Total: 0.435 | Action: BUY | Confidence: 0.435
+2025-07-27T18:05:49.101542 | [TRADE DECISION] SUI/USDC | TF: 1m | Action: NEUTRAL | Confiance: 0.10 | Tech: -0.10 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101574 | [TRADE DECISION] SUI/USDC | TF: 5m | Action: BUY | Confiance: 0.34 | Tech: 0.45 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101606 | [TRADE DECISION] SUI/USDC | TF: 15m | Action: BUY | Confiance: 0.40 | Tech: 0.57 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101637 | [TRADE DECISION] SUI/USDC | TF: 1h | Action: BUY | Confiance: 0.37 | Tech: 0.52 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101668 | [TRADE DECISION] SUI/USDC | TF: 4h | Action: BUY | Confiance: 0.45 | Tech: 0.69 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101698 | [TRADE DECISION] SUI/USDC | TF: 1d | Action: BUY | Confiance: 0.44 | Tech: 0.66 | IA: 0.54 | Sentiment: 0.62
+2025-07-27T18:05:49.101735 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101768 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101794 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101819 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101844 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101869 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101894 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101919 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101942 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-27T18:05:49.101984 | [FUSION] SUI/USDC: [('1m', 'neutral', 0.09986214423591751), ('5m', 'buy', 0.34327382788437366), ('15m', 'buy', 0.39645111860586496), ('1h', 'buy', 0.3735536150765808), ('4h', 'buy', 0.45071510441362994), ('1d', 'buy', 0.4353856730486787)] => FINAL: BUY (0.38)
+2025-07-27T18:05:49.102733 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-27T18:05:49.102767 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-27T18:05:49.102793 | [NEWS CHECK] ⚠️ News sans champ 'symbols': LVMH chute en bourse, la société se tourne vers les États-Unis pour rebondir
+2025-07-27T18:05:49.102817 | [NEWS CHECK] ⚠️ News sans champ 'symbols': X-Ray, l’arme ultime contre les arnaques crypto : Anatomie d’un scam par Kryll³
+2025-07-27T18:05:49.102842 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Donald Trump affirme finalement qu'il ne licenciera pas Jerome Powell, le présid
+2025-07-27T18:05:49.102866 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Les deux hommes accusés d’enlèvement et de torture à New York libérés s
+2025-07-27T18:05:49.102890 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'une des plus grandes sociétés de courtage américaines se lance dans l'immobili
+2025-07-27T18:05:49.102913 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier de Luxe : Christie’s International Real Estate ouvre une division cry
+2025-07-27T18:05:49.102937 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Gold (XAUT) : près de 8 tonnes d’or pour garantir ce stablecoin du métal 
+2025-07-27T18:05:49.102961 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies aux USA : Le premier stablecoin conforme au GENIUS Act arrive
+2025-07-27T18:05:49.102986 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Les stablecoins sont « la prochaine évolution de l’argent » sel
+2025-07-27T18:05:49.103009 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tether Gold rides bullion boom as central banks, ETFs rush to accumulate 
+2025-07-27T18:05:49.103033 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto isn’t crashing the American dream; it’s renovating it 
+2025-07-27T18:05:49.103058 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  GENIUS Act to spark wave of ‘killer apps’ and new payment services: Sygnum 
+2025-07-27T18:05:49.103083 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Divine Research issues unbacked crypto loans using Sam Altman’s World ID 
+2025-07-27T18:05:49.103107 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Pudgy Penguins denies OpenSea acquisition rumors, focuses on partnerships 
+2025-07-27T18:05:49.103131 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Wrench attacks drive crypto investors to centralized custodians 
+2025-07-27T18:05:49.103154 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Japan’s ‘slow’ approval culture stifles crypto adoption: Expert 
+2025-07-27T18:05:49.103177 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tyler Winklevoss claims JPMorgan blocked Gemini over public criticism 
+2025-07-27T18:05:49.103200 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Spot Ether ETFs log $453M in inflows, extend streak to 16 days 
+2025-07-27T18:05:49.103225 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Ether’s ‘extreme euphoria’ on social media could trigger a price plunge 
+2025-07-27T18:05:49.103246 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Real-time crypto laundering exposes CEX vulnerabilities — Report 
+2025-07-27T18:05:49.103266 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-27T18:05:49.103287 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-27T18:05:49.103307 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-27T18:05:49.103326 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-27T18:05:49.103346 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-27T18:05:49.103366 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-27T18:05:49.103385 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-27T18:05:49.103405 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elizabeth Warren: American People Will ‘Pay the Price’ for GENIUS Act
+2025-07-27T18:05:49.103425 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-27T18:05:49.103444 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-27T18:05:49.103464 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-27T18:05:49.103484 | [NEWS CHECK] ⚠️ News sans champ 'symbols': New ChatGPT Agent Can Book, Browse, and Fill Forms—Just Don't Trust It Yet
+2025-07-27T18:05:49.103504 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cognition’s AI Developer ‘Devin’ Eyes $10 Billion Valuation—Even If It’s Not Min
+2025-07-27T18:05:49.103523 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Senate Will End Up Passing House Version of Crypto Market Structure, Says Tom Em
+2025-07-27T18:05:49.103543 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Will Hyperliquid Hit $69.69 Before September? The Odds Don’t Favor Bulls
+2025-07-27T18:05:49.103562 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena to Bring $1.5 Billion USDtb Stablecoin to US with Anchorage Digital
+2025-07-27T18:05:49.103581 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Future of Prediction Markets Is Content-Native
+2025-07-27T18:05:49.103602 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Dragonfly exec says US government is considering charges against the venture fir
+2025-07-27T18:05:49.103622 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ark Invest sells $12M in Coinbase stock, $9.8M in Block Inc. shares amid crypto 
+2025-07-27T18:05:49.103642 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Group secures $300 million in equity funding to fuel global expa
+2025-07-27T18:05:49.103661 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 250,000 Tether Gold tokens in circulation are backed by 7.66 tons of gold, Tethe
+2025-07-27T18:05:49.103681 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Christie’s offers $1 billion in luxury real estate to buyers paying with crypto:
+2025-07-27T18:05:49.103701 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elon Musk’s Grok AI integrates with Kalshi, Paradigm-backed prediction market
+2025-07-27T18:05:49.103721 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Polychain sells remaining $62.5 million TIA stake to Celestia Foundation ahead o
+2025-07-27T18:05:49.700829 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:49.701048 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-27T18:05:51.576430 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:51.576781 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-27T18:05:53.355792 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:53.356213 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-27T18:05:55.154502 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:55.154819 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-27T18:05:57.313212 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:57.313558 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-27T18:05:59.061885 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:05:59.062203 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-27T18:06:00.810144 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:06:00.810491 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-27T18:06:03.043792 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:06:03.045095 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-27T18:06:05.066006 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-27T18:06:05.066367 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-27T18:06:06.941323 | [EXECUTE TRADE] SUI/USDC | Action: BUY | Amount: 5 | Confidence: 0.37748828533653667
+2025-07-27T18:06:06.941733 | [ORDER] Tentative d'exécution: buy 5 SUI/USDC (iceberg: False)
+2025-07-27T18:06:06.941965 | [ORDER] Déjà long sur SUI/USDC, achat ignoré.
+2025-07-27T18:12:48.747857 | [NEWS] Score sentiment global: 0.30 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:18:16.273422 | [NEWS] Score sentiment global: 0.30 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:23:46.468918 | [NEWS] Score sentiment global: 0.30 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:29:17.040230 | [NEWS] Score sentiment global: 0.30 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:34:44.616503 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:40:13.602584 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T18:45:40.216749 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC

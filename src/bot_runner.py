@@ -853,6 +853,25 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def enrich_news_symbols(self, news_list):
+        """
+        Ajoute automatiquement le champ 'symbols' à chaque news si manquant,
+        en utilisant le mapping présent dans la config.
+        """
+        symbol_mapping = self.config["news"]["symbol_mapping"]
+        for news in news_list:
+            if "symbols" not in news or not news["symbols"]:
+                found_symbols = []
+                title = news.get("title", "").lower()
+                for k, v in symbol_mapping.items():
+                    if k in title:
+                        found_symbols.append(v)
+                if found_symbols:
+                    news["symbols"] = found_symbols
+                else:
+                    news["symbols"] = []
+        return news_list
+
     def load_signal_fusion_params(self):
         path = "config/best_signal_params.json"
         if os.path.exists(path):
@@ -1207,6 +1226,7 @@ class TradingBotM4:
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
+                news_data = self.enrich_news_symbols(news_data)  # <-- AJOUT PATCH
 
                 sentiment_analysis = {}
                 try:

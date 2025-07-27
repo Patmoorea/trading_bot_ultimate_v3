@@ -118,6 +118,9 @@ class HybridModel:
 
     def train_and_validate(self, lr=0.001, batch_size=64, n_epochs=5):
         batch_size = int(batch_size)
+        print(f"[DEBUG] type(batch_size): {type(batch_size)}, batch_size: {batch_size}")
+        assert isinstance(batch_size, int), f"batch_size is not int: {type(batch_size)}"
+        print(f"[DEBUG] optimizer type: {type(self.model.optimizer)}, lr: {lr}")
         tf.keras.backend.set_value(self.model.optimizer.learning_rate, lr)
         self.model.fit(
             self.X_train,
