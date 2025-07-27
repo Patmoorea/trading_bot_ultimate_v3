@@ -930,7 +930,6 @@ class TradingBotM4:
             return "neutral", abs(avg_score)
 
     def sync_positions_with_binance(self):
-        """Synchronise toutes les positions SPOT Binance, pas seulement celles du bot"""
         if self.is_live_trading and self.binance_client:
             account = self.binance_client.get_account()
             positions = {}
@@ -938,8 +937,7 @@ class TradingBotM4:
                 asset = bal["asset"]
                 free = float(bal["free"])
                 if free > 0:
-                    symbol = f"{asset}/USDC"  # Ou USDT selon le marché
-                    # Récupère le prix actuel
+                    symbol = f"{asset}/USDC"
                     try:
                         ticker = self.binance_client.get_symbol_ticker(
                             symbol=symbol.replace("/", "")
@@ -947,7 +945,6 @@ class TradingBotM4:
                         current_price = float(ticker["price"])
                     except Exception:
                         current_price = None
-                    # Récupère prix d'entrée si connu, sinon N/A
                     entry_price = self.positions.get(symbol, {}).get(
                         "entry_price", None
                     )
@@ -4138,6 +4135,18 @@ async def run_clean_bot():
                     print("🚨 Pause trading à cause d'une news critique !")
                 if bot.news_pause_manager.should_pause():
                     print("Trading en pause, on skip ce cycle.")
+
+                    # PATCH: Sauvegarde des pauses actives même en pause
+                    active_pauses = bot.get_active_pauses()
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data["active_pauses"] = active_pauses
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
+
                     await asyncio.sleep(30)
                     bot.news_pause_manager.on_cycle_end()
                     continue

@@ -334,3 +334,13 @@
 2025-07-27T20:57:06.398337 | [ORDER] Exécuté avec succès: buy 1.10000000 SUI/USDC @ 4.3227
 2025-07-27T20:57:11.867998 | [NEWS PAUSE ACTIVE] Aucune pause active
 2025-07-27T21:03:49.114246 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T21:09:16.502657 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T21:14:46.577699 | [NEWS] Score sentiment global: 0.29 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-27T21:18:33.369837 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-27T21:18:33.370505 | Initialisation des modèles d'IA...
+2025-07-27T21:18:33.826652 | ✅ Modèles d'IA initialisés avec succès
+2025-07-27T21:18:35.492461 | ✅ PPO Strategy initialized successfully
+2025-07-27T21:18:35.493006 | ✅ Bot initialisé avec Telegram: True
+2025-07-27T21:18:35.493119 | ✅ Trading en direct: True
+2025-07-27T21:18:35.493179 | ✅ IA activée: True
+2025-07-27T21:18:35.493238 | ✅ Analyse de news activée: True
