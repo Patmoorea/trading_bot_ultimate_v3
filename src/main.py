@@ -109,7 +109,8 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    # Alertes actives
+
+    # == 1. Alertes actives ==
     st.markdown("### 🚨 Alertes actives")
     alerts = shared_data.get("alerts", [])
     for alert in alerts:
@@ -119,7 +120,17 @@ with st.sidebar:
             st.warning(f"{alert['message']} ({alert['timestamp']})")
         else:
             st.info(f"{alert['message']} ({alert['timestamp']})")
-    # Positions fermées (auto)
+
+    # == 2. Pauses trading actives (juste après alertes) ==
+    st.header("⏸️ Pauses trading actives")
+    active_pauses = shared_data.get("active_pauses", [])
+    if active_pauses:
+        df_pauses = pd.DataFrame(active_pauses)
+        st.dataframe(df_pauses, use_container_width=True)
+    else:
+        st.info("Aucune pause trading active (news critique).")
+
+    # == 3. Positions fermées ==
     st.header("⛔️ Positions fermées (auto)")
     closed = shared_data.get("closed_positions", [])
     if closed:
@@ -127,7 +138,10 @@ with st.sidebar:
         st.dataframe(df_closed, use_container_width=True)
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
+
     st.sidebar.divider()
+
+    # == 4. Informations système & connectivité ==
     st.sidebar.markdown(
         f"""
 ### 📊 Informations système
@@ -149,14 +163,6 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    # --- Pauses actives (NEWS PAUSE) ---
-    st.header("⏸️ Pauses trading actives")
-    active_pauses = shared_data.get("active_pauses", [])
-    if active_pauses:
-        df_pauses = pd.DataFrame(active_pauses)
-        st.dataframe(df_pauses, use_container_width=True)
-    else:
-        st.info("Aucune pause trading active (news critique).")
 
     if st.sidebar.button("🔄 Rafraîchir"):
         st.rerun()
