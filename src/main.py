@@ -149,17 +149,17 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
+    # --- Pauses actives (NEWS PAUSE) ---
+    st.header("⏸️ Pauses trading actives")
+    active_pauses = shared_data.get("active_pauses", [])
+    if active_pauses:
+        df_pauses = pd.DataFrame(active_pauses)
+        st.dataframe(df_pauses, use_container_width=True)
+    else:
+        st.info("Aucune pause trading active (news critique).")
+
     if st.sidebar.button("🔄 Rafraîchir"):
         st.rerun()
-
-        # --- Pauses actives (NEWS PAUSE) ---
-        st.header("⏸️ Pauses trading actives")
-        active_pauses = shared_data.get("active_pauses", [])
-        if active_pauses:
-            df_pauses = pd.DataFrame(active_pauses)
-            st.dataframe(df_pauses, use_container_width=True)
-        else:
-            st.info("Aucune pause trading active (news critique).")
 
     # --- AJOUT SLIDERS ET AFFICHAGE SEUILS ACTIFS ---
     st.sidebar.markdown("---")
@@ -250,10 +250,16 @@ with tab2:
     st.subheader("Analyse graphique avancée")
     pairs = list(shared_data.get("market_data", {}).keys()) or ["BTCUSDT", "ETHUSDT"]
     pair = st.selectbox("Sélectionner une paire", pairs)
-    market_data = shared_data.get("market_data", {}).get(pair, {})
-    if market_data:
-        closes = market_data.get("close", [])
-        timestamps = market_data.get("timestamp", [])
+
+    # Ajoute le choix du timeframe
+    available_tfs = list(shared_data.get("market_data", {}).get(pair, {}).keys())
+    tf = st.selectbox("Timeframe", available_tfs if available_tfs else ["1m"])
+
+    market_data = shared_data.get("market_data", {}).get(pair, {}).get(tf, {})
+
+    if market_data and market_data.get("close") and market_data.get("timestamp"):
+        closes = market_data["close"]
+        timestamps = market_data["timestamp"]
         ema20 = pd.Series(closes).ewm(span=20).mean()
         ema50 = pd.Series(closes).ewm(span=50).mean()
         fig = go.Figure()
@@ -273,26 +279,15 @@ with tab2:
         fig.add_trace(
             go.Scatter(x=timestamps, y=ema50, name="EMA 50", line=dict(color="orange"))
         )
-        # Visualisation du trailing stop si dispo
-        max_price = market_data.get("max_price", None)
-        if max_price:
-            fig.add_trace(
-                go.Scatter(
-                    x=timestamps,
-                    y=[max_price] * len(timestamps),
-                    name="Max Price (Trailing)",
-                    line=dict(color="yellow", dash="dot"),
-                )
-            )
         fig.update_layout(
-            title=f"Graphique {pair}",
+            title=f"Graphique {pair} ({tf})",
             yaxis_title="Prix USDT",
             template="plotly_dark",
             xaxis_rangeslider_visible=False,
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Pas de données live pour cette paire.")
+        st.info("Pas de données live pour cette paire et ce timeframe.")
 
 # --- TAB3 ANALYSE ---
 with tab3:
@@ -323,15 +318,21 @@ with tab4:
     if positions_binance:
         pos_data = []
         for symbol, pos in positions_binance.items():
+            entry_price = pos.get("entry_price")
+            current_price = pos.get("current_price")
+            pnl_pct = pos.get("pnl_pct")
+            pnl_usd = pos.get("pnl_usd")
             pos_data.append(
                 {
                     "Symbole": symbol,
                     "Side": pos.get("side", ""),
                     "Quantité": pos.get("amount", 0),
-                    "Prix d'entrée": f"{pos.get('entry_price', 0):.4f}",
-                    "Prix actuel": f"{pos.get('current_price', 0):.4f}",
-                    "% Gain/Perte": f"{pos.get('pnl_pct', 0):.2f}%",
-                    "Gain/Perte ($)": f"{pos.get('pnl_usd', 0):.2f}",
+                    "Prix d'entrée": f"{entry_price:.4f}" if entry_price else "N/A",
+                    "Prix actuel": f"{current_price:.4f}" if current_price else "N/A",
+                    "% Gain/Perte": f"{pnl_pct:.2f}%" if pnl_pct is not None else "N/A",
+                    "Gain/Perte ($)": (
+                        f"{pnl_usd:.2f}" if pnl_usd is not None else "N/A"
+                    ),
                 }
             )
         df_pos = pd.DataFrame(pos_data)

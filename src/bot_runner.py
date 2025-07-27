@@ -930,34 +930,43 @@ class TradingBotM4:
             return "neutral", abs(avg_score)
 
     def sync_positions_with_binance(self):
-        """
-        Synchronise self.positions avec le solde réel Binance pour chaque asset, au démarrage.
-        """
+        """Synchronise toutes les positions SPOT Binance, pas seulement celles du bot"""
         if self.is_live_trading and self.binance_client:
-            assets = [
-                "DOGE",
-                "BTC",
-                "ETH",
-                "LTC",
-                "XRP",
-                "BNB",
-                "ADA",
-                "SOL",
-                "TRX",
-                "SUI",
-            ]
-            for asset in assets:
-                try:
-                    balance = self.binance_client.get_asset_balance(asset=asset)
-                    if balance and float(balance.get("free", 0)) > 0:
-                        symbol = f"{asset}/USDC"
-                        self.positions[symbol] = {
-                            "side": "long",
-                            "entry_price": 0,  # Remplace 0 si tu as le vrai prix d'achat
-                            "amount": float(balance.get("free", 0)),
-                        }
-                except Exception as e:
-                    print(f"[SYNC POSITIONS] Erreur pour {asset}: {e}")
+            account = self.binance_client.get_account()
+            positions = {}
+            for bal in account["balances"]:
+                asset = bal["asset"]
+                free = float(bal["free"])
+                if free > 0:
+                    symbol = f"{asset}/USDC"  # Ou USDT selon le marché
+                    # Récupère le prix actuel
+                    try:
+                        ticker = self.binance_client.get_symbol_ticker(
+                            symbol=symbol.replace("/", "")
+                        )
+                        current_price = float(ticker["price"])
+                    except Exception:
+                        current_price = None
+                    # Récupère prix d'entrée si connu, sinon N/A
+                    entry_price = self.positions.get(symbol, {}).get(
+                        "entry_price", None
+                    )
+                    # Calcul gain/perte
+                    if entry_price and current_price:
+                        pnl_pct = (current_price - entry_price) / entry_price * 100
+                        pnl_usd = (current_price - entry_price) * free
+                    else:
+                        pnl_pct = None
+                        pnl_usd = None
+                    positions[symbol] = {
+                        "side": self.positions.get(symbol, {}).get("side", "long"),
+                        "amount": free,
+                        "entry_price": entry_price if entry_price else None,
+                        "current_price": current_price if current_price else None,
+                        "pnl_pct": pnl_pct,
+                        "pnl_usd": pnl_usd,
+                    }
+            self.positions_binance = positions
 
     def is_short(self, symbol):
         return self.positions.get(symbol, {}).get("side") == "short"
@@ -3198,9 +3207,7 @@ class TradingBotM4:
             json.dump(data, f, indent=4)
 
     def save_shared_data(self):
-        """Met à jour les données partagées sans effacer la clé 'sentiment'"""
         try:
-            # Charger les données existantes pour préserver 'sentiment'
             if os.path.exists(self.data_file):
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
@@ -3237,8 +3244,8 @@ class TradingBotM4:
                         ]
                 data["ai_predictions"] = ai_predictions
 
-            # NE PAS EFFACER 'sentiment' si déjà présent
-            # (on ne touche pas à data["sentiment"])
+            # PATCH : Ajoute les positions SPOT Binance pour le dashboard
+            data["positions_binance"] = self.positions
 
             with open(self.data_file, "w") as f:
                 json.dump(data, f, indent=4)
@@ -3940,6 +3947,10 @@ async def run_clean_bot():
                     bot.market_data[pair_key] = {}
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
+                    # DEBUG: Ajout log sur la taille du DataFrame
+                    print(
+                        f"[DEBUG] DataFrame {pair_key}-{tf}: {len(df) if df is not None else 'None'} lignes"
+                    )
                     if df is not None and not df.empty:
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
@@ -3991,7 +4002,6 @@ async def run_clean_bot():
             await handle_arbitrage_opportunities(bot)
 
             # 4. Analyse des paires pour CHAQUE timeframe (génère signaux bruts multi-tf)
-            # === Filtering dynamique des paires ===
             SHARED_DATA_PATH = "src/shared_data.json"
             try:
                 with open(SHARED_DATA_PATH, "r") as f:
@@ -4007,18 +4017,6 @@ async def run_clean_bot():
                 bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top
             )
 
-            # Tu évites les marchés plats mais tu ne rates pas les signaux moyens.
-            # selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=5)
-
-            # Pour être très sélectif (seulement les gros mouvements et signaux très forts) :
-            # selected_pairs = filter_pairs(bot, min_volatility=0.02, min_signal=0.5, top_n=3)
-
-            # Pour trader plus large (plus de paires, moins exigeant) :
-            # selected_pairs = filter_pairs(bot, min_volatility=0.005, min_signal=0.2, top_n=8)
-
-            # Pour ne jamais trader plus de 2 paires à la fois, même si beaucoup sont "OK" :
-            # selected_pairs = filter_pairs(bot, min_volatility=0.01, min_signal=0.3, top_n=2)
-
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
             if ignored_pairs:
@@ -4029,9 +4027,22 @@ async def run_clean_bot():
             trade_decisions = []
             for pair in selected_pairs:
                 for tf in bot.config["TRADING"]["timeframes"]:
+                    df = bot.ws_collector.get_dataframe(
+                        pair.replace("/", "").upper(), tf
+                    )
+                    print(
+                        f"[DEBUG] Analyse {pair}-{tf} : {len(df) if df is not None else 'None'} lignes"
+                    )
+                    indicators_data = (
+                        bot.add_indicators(df)
+                        if df is not None and not df.empty
+                        else {}
+                    )
+                    print(f"[DEBUG] Indicateurs {pair}-{tf} : {indicators_data}")
                     decision = await market_analysis_cycle(
                         bot, pair, bot.market_data, tf=tf
                     )
+                    print(f"[DEBUG] Signal {pair}-{tf} : {decision}")
                     if decision:
                         decision["tf"] = tf
                         trade_decisions.append(decision)
@@ -4064,7 +4075,6 @@ async def run_clean_bot():
                 log_dashboard(
                     f"[FUSION] {pair}: {all_details} => FINAL: {action.upper()} ({confidence:.2f})"
                 )
-                # Prend le premier tf pour les signaux fusionnés, ou None
                 signals_example = next(iter(tf_signals.values()), {})
                 final_trade_decisions.append(
                     {
@@ -4093,8 +4103,7 @@ async def run_clean_bot():
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
-        # Fonction principale
-
+    # Fonction principale
     async def main():
         try:
             # Initialisation
@@ -4272,6 +4281,13 @@ async def run_clean_bot():
 
                     # --- Sauvegarde des pauses actives dans shared_data.json ---
                     active_pauses = bot.get_active_pauses()
+                    # Log chaque pause active
+                    if active_pauses:
+                        for pause in active_pauses:
+                            log_dashboard(f"[NEWS PAUSE ACTIVE] {pause}")
+                    else:
+                        log_dashboard("[NEWS PAUSE ACTIVE] Aucune pause active")
+
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
