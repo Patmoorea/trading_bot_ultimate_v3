@@ -155,3 +155,33 @@ class NewsPauseManager:
         self.last_event_news = None
         self.last_event_time = None
         self.last_triggered_title = None
+
+    def get_active_pauses(self):
+        """
+        Retourne la liste des pauses actives sous forme de dicts.
+        Exemple : [{"asset": "ETH", "action": "BUY", "cycles_left": 8, "type": "FULL"}, ...]
+        """
+        pauses = []
+        # Pauses par paire (ciblées)
+        for pair, cycles_left in self.pair_pauses.items():
+            if cycles_left > 0:
+                pause_type = "BUY" if pair in self.buy_paused_pairs else "FULL"
+                pauses.append(
+                    {
+                        "asset": pair,
+                        "action": pause_type,
+                        "cycles_left": cycles_left,
+                        "type": pause_type,
+                    }
+                )
+        # Pause globale
+        if self.global_cycles_remaining > 0:
+            pauses.append(
+                {
+                    "asset": "GLOBAL",
+                    "action": "ALL",
+                    "cycles_left": self.global_cycles_remaining,
+                    "type": "GLOBAL",
+                }
+            )
+        return pauses

@@ -1,8 +1,13 @@
+import warnings
+
+# Supprimer TOUS les warnings Python
+warnings.filterwarnings("ignore")
+warnings.simplefilter("ignore")
+
 import os
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import sys
-import warnings
 import logging
 import json
 import asyncio
@@ -350,10 +355,6 @@ if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
 os.environ["PYTHONWARNINGS"] = "ignore"
 os.environ["STREAMLIT_HIDE_WARNINGS"] = "1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-# Supprimer TOUS les warnings Python
-warnings.filterwarnings("ignore")
-warnings.simplefilter("ignore")
 
 # Configuration logging pour ne montrer que nos messages
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -852,6 +853,16 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
+
+    def get_active_pauses(self):
+        """
+        Retourne la liste des pauses actives : [{"asset": ..., "action": ..., "cycles_left": ..., "type": ...}, ...]
+        """
+        pauses = []
+        # Recupère les pauses du NewsPauseManager
+        for item in self.news_pause_manager.get_active_pauses():
+            pauses.append(item)
+        return pauses
 
     def enrich_news_symbols(self, news_list):
         """
@@ -3347,9 +3358,14 @@ class TradingBotM4:
         Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
         Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
         (Version enrichie avec indicateurs avancés)
+        Corrige définitivement le warning VWAP/VWMA not datetime ordered de pandas-ta !
         """
+        import pandas as pd
+        import numpy as np
+
         try:
-            # Gestion entrée : DataFrame, liste de dicts, liste de listes
+            # --- Conversion stricte et tri ---
+            # Si df est une liste, transforme-le en DataFrame
             if isinstance(df, list):
                 if len(df) == 0:
                     self.logger.error("add_indicators: Liste reçue vide")
@@ -3359,15 +3375,39 @@ class TradingBotM4:
                 elif isinstance(df[0], (list, tuple)):
                     columns = ["timestamp", "open", "high", "low", "close", "volume"]
                     df = pd.DataFrame(df, columns=columns)
-                    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
                 else:
                     self.logger.error(
                         "add_indicators: Format de liste non pris en charge"
                     )
                     return None
+
             if not isinstance(df, pd.DataFrame):
                 self.logger.error("add_indicators: df n'est pas un DataFrame")
                 return None
+
+            # --- Vérification et correction colonne timestamp ---
+            if "timestamp" not in df.columns:
+                self.logger.error("add_indicators: colonne 'timestamp' manquante")
+                return None
+
+            # --- Conversion stricte timestamp ---
+            try:
+                # Si timestamp n'est pas datetime, convertis-le
+                if not np.issubdtype(df["timestamp"].dtype, np.datetime64):
+                    # Si c'est en ms, convertis-le
+                    # Heuristique: timestamp > 1e12 => probablement en ms
+                    if df["timestamp"].max() > 1e12:
+                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                    else:
+                        df["timestamp"] = pd.to_datetime(df["timestamp"])
+            except Exception as e:
+                self.logger.error(f"add_indicators: Erreur conversion timestamp: {e}")
+                return None
+
+            # --- Tri strict ---
+            df = df.drop_duplicates(subset="timestamp", keep="last")
+            df = df.sort_values("timestamp")
+            df = df.reset_index(drop=True)
 
             required_cols = {"open", "high", "low", "close", "volume"}
             if not required_cols.issubset(df.columns):
@@ -3383,13 +3423,6 @@ class TradingBotM4:
                 )
                 return None
 
-            # Tri et conversion du timestamp pour tous les indicateurs ET VWAP
-            if "timestamp" in df.columns:
-                df["timestamp"] = pd.to_datetime(df["timestamp"])
-                df = df.drop_duplicates(subset="timestamp", keep="last")
-                df = df.sort_values("timestamp")
-                df = df.reset_index(drop=True)
-
             if df.empty:
                 self.logger.warning(
                     "DataFrame vide, impossible de calculer les indicateurs"
@@ -3400,7 +3433,15 @@ class TradingBotM4:
             try:
                 df_ta = df.copy()
 
-                # Calcul des indicateurs classiques
+                # Tri STRICT + SET INDEX avant CHAQUE calcul d'indicateur avancé (VWMA, VWAP, OBV, etc.)
+                def strict_sort_and_index(df):
+                    if "timestamp" in df.columns:
+                        df = df.drop_duplicates(subset="timestamp", keep="last")
+                        df = df.sort_values("timestamp")
+                        df = df.set_index("timestamp")
+                    return df
+
+                # Calcul des indicateurs classiques (index classique)
                 sma_20 = df_ta.ta.sma(length=20, append=False)
                 if sma_20 is not None and not sma_20.empty:
                     if isinstance(sma_20, pd.Series):
@@ -3464,32 +3505,24 @@ class TradingBotM4:
                     df_ta["close"] - df_ta["close"].rolling(20).mean()
                 ) / df_ta["close"].rolling(20).std()
 
-                # Indicateurs avancés supplémentaires
+                # Indicateurs avancés supplémentaires : TRI + SET INDEX obligatoire pour pandas-ta VWAP/VWMA/OBV
                 try:
-                    # PATCH : on reforce ici le tri strict et datetime juste avant VWMA/VWAP
-                    if "timestamp" in df_ta.columns:
-                        df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
-                        df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
-                        df_ta = df_ta.sort_values("timestamp")
-                        df_ta = df_ta.reset_index(drop=True)
-                    vwma = df_ta.ta.vwma(length=20)
-                    df_ta["vwma_20"] = vwma
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    vwma = df_ta_idx.ta.vwma(length=20)
+                    # On remet l'index timestamp dans la colonne pour rester compatible
+                    df_ta["vwma_20"] = vwma.values
                 except Exception:
                     df_ta["vwma_20"] = np.nan
                 try:
-                    obv = df_ta.ta.obv()
-                    df_ta["obv"] = obv
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    obv = df_ta_idx.ta.obv()
+                    df_ta["obv"] = obv.values
                 except Exception:
                     df_ta["obv"] = np.nan
                 try:
-                    # PATCH : reforce tri juste avant VWAP !
-                    if "timestamp" in df_ta.columns:
-                        df_ta["timestamp"] = pd.to_datetime(df_ta["timestamp"])
-                        df_ta = df_ta.drop_duplicates(subset="timestamp", keep="last")
-                        df_ta = df_ta.sort_values("timestamp")
-                        df_ta = df_ta.reset_index(drop=True)
-                    vwap = df_ta.ta.vwap()
-                    df_ta["vwap"] = vwap
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    vwap = df_ta_idx.ta.vwap()
+                    df_ta["vwap"] = vwap.values
                 except Exception:
                     df_ta["vwap"] = np.nan
                 try:
@@ -4236,6 +4269,17 @@ async def run_clean_bot():
                                     "dominant_signal": dominant_signal,
                                     "ta": indics if indics else {},
                                 }
+
+                    # --- Sauvegarde des pauses actives dans shared_data.json ---
+                    active_pauses = bot.get_active_pauses()
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data["active_pauses"] = active_pauses
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
 
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
