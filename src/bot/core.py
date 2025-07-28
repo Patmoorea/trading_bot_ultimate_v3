@@ -1809,19 +1809,31 @@ class TradingBotM4:
             for asset_balance in balance["balances"]:
                 try:
                     asset = asset_balance["asset"]
-                    free = float(asset_balance["free"])
-                    locked = float(asset_balance["locked"])
+                    free = float(asset_balance.get("free", 0))
+                    locked = float(asset_balance.get("locked", 0))
 
+                    # On ignore les assets à zéro
                     if free > 0 or locked > 0:
-                        # Traitement spécial pour USDC
+                        # Cas particulier USDC (pas besoin de conversion)
                         if asset == "USDC":
                             portfolio["free"] += free
                             portfolio["used"] += locked
                             portfolio["total_value"] += free + locked
+                            portfolio["positions"].append(
+                                {
+                                    "symbol": "USDC/USDC",
+                                    "size": free + locked,
+                                    "value": free + locked,
+                                    "price": 1.0,
+                                    "free": free,
+                                    "locked": locked,
+                                    "timestamp": portfolio["timestamp"],
+                                }
+                            )
                         else:
-                            # Conversion en USDC pour les autres assets
+                            # Conversion des autres assets (BTC, ETH, etc.) en USDC
                             symbol = f"{asset}USDC"
-                            # --- PATCH: vérifier que la paire existe sur Binance ---
+                            # Vérifie que la paire existe sur Binance
                             if hasattr(self.exchange, "_exchange") and hasattr(
                                 self.exchange._exchange, "symbols"
                             ):
@@ -1832,14 +1844,13 @@ class TradingBotM4:
                                 try:
                                     price = self.get_latest_price(symbol)
                                     value = (free + locked) * price
-
                                     if value > 0:
                                         portfolio["total_value"] += value
                                         portfolio["positions"].append(
                                             {
                                                 "symbol": f"{asset}/USDC",
                                                 "size": free + locked,
-                                                "value": value,
+                                                "value": value,  # <-- C’EST CETTE VALEUR À AFFICHER
                                                 "price": price,
                                                 "free": free,
                                                 "locked": locked,
@@ -1858,7 +1869,9 @@ class TradingBotM4:
                                 continue
 
                 except Exception as asset_error:
-                    self.logger.warning(f"⚠️ Error processing {asset}: {asset_error}")
+                    self.logger.warning(
+                        f"⚠️ Error processing {asset_balance.get('asset', '???')}: {asset_error}"
+                    )
                     continue
 
             # Récupération des ordres ouverts

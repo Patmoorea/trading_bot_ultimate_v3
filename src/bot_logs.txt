@@ -1012,3 +1012,5 @@
 2025-07-28T18:20:26.494892 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-07-28T18:20:26.495932 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
 2025-07-28T18:28:16.306626 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T18:34:50.859433 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T18:41:32.541263 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
