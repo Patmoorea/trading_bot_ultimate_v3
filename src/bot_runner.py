@@ -4422,6 +4422,7 @@ async def run_clean_bot():
                     for td in trade_decisions:
                         # On récupère directement les vrais signaux calculés par analyze_signals
                         signals = td.get("signals", {})
+                        print(f"[DEBUG SIGNALS DASHBOARD] {td['pair']} {signals}")
                         td_dict[td["pair"]] = {
                             "confidence": td.get("confidence"),
                             "action": td.get("action"),
