@@ -123,15 +123,12 @@ with st.sidebar:
 
     # == 2. Pauses trading actives (juste après alertes) ==
     st.header("⏸️ Pauses trading actives")
-    active_pauses = bot.get_active_pauses()
-    try:
-        with open(bot.data_file, "r") as f:
-            shared_data = json.load(f)
-    except Exception:
-        shared_data = {}
-    shared_data["active_pauses"] = active_pauses
-    with open(bot.data_file, "w") as f:
-        json.dump(shared_data, f, indent=4)
+    active_pauses = shared_data.get("active_pauses", [])
+    if active_pauses:
+        df_pauses = pd.DataFrame(active_pauses)
+        st.dataframe(df_pauses, use_container_width=True)
+    else:
+        st.info("Aucune pause trading active (news critique).")
 
     # == 3. Positions fermées ==
     st.header("⛔️ Positions fermées (auto)")
@@ -306,7 +303,6 @@ with tab3:
     news_sentiment = shared_data.get("sentiment", None)
     trade_decisions = shared_data.get("trade_decisions", {})
     # Rapport global
-
     report = _generate_analysis_report(
         indicators, regime, news_sentiment, trade_decisions
     )
@@ -509,7 +505,7 @@ with tab6:
         if max_dd is not None and max_dd < -0.15:
             st.error(f"🚨 Max drawdown dépassé : {max_dd:.2%} ! Pause conseillée.")
         if var95 is not None and var95 < -0.05:
-            st.error(f"🛑 VaR(95%) critique : {var95:.2%}")
+            st.error(f"🛑 VaR(95%) critique : {var95:.2f}")
 
 # --- TAB LOGS ---
 with tab_logs:

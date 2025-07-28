@@ -4121,7 +4121,6 @@ async def run_clean_bot():
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
-    # Fonction principale
     async def main():
         try:
             # Initialisation
@@ -4142,7 +4141,7 @@ async def run_clean_bot():
                 cycle += 1
                 start = datetime.utcnow()
 
-                # === [NEWS PAUSE MANAGER] : PAUSE AUTO SUR NEWS CRITIQUE ===
+                # === Gestion news pause manager ===
                 try:
                     with open(bot.data_file, "r") as f:
                         shared_data = json.load(f)
@@ -4151,25 +4150,28 @@ async def run_clean_bot():
                 except Exception:
                     news_list = []
 
-                # --- Correction : utilise scan_news et should_pause
+                # Scan news et pause si besoin
                 if bot.news_pause_manager.scan_news(news_list):
                     print("🚨 Pause trading à cause d'une news critique !")
                 if bot.news_pause_manager.should_pause():
                     print("Trading en pause, on skip ce cycle.")
 
-                    # PATCH: Sauvegarde des pauses actives même en pause
+                    # PATCH: Sauvegarde des pauses actives et portefeuille à chaque cycle, même en pause
+                    bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
+                    bot.sync_positions_with_binance()
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
                     except Exception:
                         shared_data = {}
                     shared_data["active_pauses"] = active_pauses
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
-
                     await asyncio.sleep(30)
-                    bot.news_pause_manager.on_cycle_end()
                     continue
 
                 try:
@@ -4177,7 +4179,7 @@ async def run_clean_bot():
                     # Hot reload IA
                     bot.check_reload_dl_model()
 
-                    # === PATCH : Déclenchement automatique du stop-loss SPOT ===
+                    # Déclenchement stop-loss SPOT
                     for symbol, pos in list(bot.positions.items()):
                         if bot.is_long(symbol) and bot.check_stop_loss(symbol):
                             print(
@@ -4185,20 +4187,18 @@ async def run_clean_bot():
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
 
-                    # === PATCH : TP partiels et Trailing TP sur toutes les positions longues ===
+                    # TP partiels et trailing TP sur toutes les positions longues
                     for symbol, pos in list(bot.positions.items()):
                         if pos.get("side") != "long":
                             continue
-
-                        # --- Initialisation des champs si première fois ---
+                        # Init champs si absent
                         if "filled_tp_targets" not in pos:
-                            pos["filled_tp_targets"] = [False, False]  # 2 niveaux de TP
+                            pos["filled_tp_targets"] = [False, False]
                         if "price_history" not in pos:
                             pos["price_history"] = [pos["entry_price"]]
                         if "max_price" not in pos:
                             pos["max_price"] = pos["entry_price"]
-
-                        # --- Ajoute le dernier prix à price_history ---
+                        # Ajout du dernier prix
                         last_price = None
                         if hasattr(bot, "ws_collector"):
                             last_price = bot.ws_collector.get_last_price(symbol)
@@ -4211,11 +4211,9 @@ async def run_clean_bot():
                             if closes:
                                 last_price = closes[-1]
                         if last_price is None:
-                            continue  # On ne peut rien faire sans prix
-
+                            continue
                         pos["price_history"].append(last_price)
-
-                        # 1. TP partiels
+                        # TP partiels
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
                             pos["entry_price"], last_price, pos["filled_tp_targets"]
                         )
@@ -4224,12 +4222,10 @@ async def run_clean_bot():
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
                             pos["amount"] -= amount_to_sell
                             pos["filled_tp_targets"] = new_filled
-                            # Si tout vendu, retire la position
                             if pos["amount"] <= 0:
                                 bot.positions.pop(symbol)
                                 continue
-
-                        # 2. Trailing stop sur le reste
+                        # Trailing stop
                         should_exit, new_max = bot.exit_manager.check_trailing(
                             pos["entry_price"],
                             pos["price_history"],
@@ -4240,7 +4236,7 @@ async def run_clean_bot():
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
                             bot.positions.pop(symbol)
 
-                    # === PATCH : Déclenchement du stop-loss ET trailing stop SHORT BingX ===
+                    # Déclenchement stop-loss et trailing stop SHORT BingX
                     for symbol, pos in list(bot.positions.items()):
                         if bot.is_short(symbol):
                             try:
@@ -4293,7 +4289,6 @@ async def run_clean_bot():
                                     bot.market_data[pair_key][tf]
                                 )
                                 dominant_signal = bot.get_dominant_signal(pair, tf)
-                                # Ajoute les indicateurs techniques bruts
                                 df = bot.ws_collector.get_dataframe(pair_key, tf)
                                 indics = (
                                     bot.add_indicators(df)
@@ -4309,40 +4304,52 @@ async def run_clean_bot():
                                     "ta": indics if indics else {},
                                 }
 
-                    # --- Sauvegarde des pauses actives dans shared_data.json ---
+                    # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
+                    bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
-                    # Log chaque pause active
-                    if active_pauses:
-                        for pause in active_pauses:
-                            log_dashboard(f"[NEWS PAUSE ACTIVE] {pause}")
-                    else:
-                        log_dashboard("[NEWS PAUSE ACTIVE] Aucune pause active")
-
+                    bot.sync_positions_with_binance()
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
                     except Exception:
                         shared_data = {}
                     shared_data["active_pauses"] = active_pauses
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
+
+                    # Ajout des scores de décision
+                    td_dict = {}
+                    for td in trade_decisions:
+                        td_dict[td["pair"]] = {
+                            "confidence": td.get("confidence"),
+                            "action": td.get("action"),
+                            "tech": td.get("signals", {}).get("technical"),
+                            "ai": td.get("signals", {}).get("ai"),
+                            "sentiment": td.get("signals", {}).get("sentiment"),
+                        }
+                    shared_data["trade_decisions"] = td_dict
+
+                    # Ajout complet des positions Binance (avec entry_price, pnl % et $)
+                    # La méthode sync_positions_with_binance doit calculer ces champs !
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
 
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
 
-                    # === Entraînement automatique IA toutes les 50 itérations ===
+                    # Entraînement IA automatique
                     if cycle % 50 == 0:
                         print(
                             "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
                         )
                         bot.train_cnn_lstm_on_all_live()
 
-                    # === Fin entraînement IA auto ===
+                    # Entraînement IA manuel (optionnel)
                     bot.train_cnn_lstm_on_all_live()
                     print(
                         "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
                     )
-                    # Calcul de la durée du cycle et affichage
                     duration = (datetime.utcnow() - start).total_seconds()
                     print(f"✅ Cycle terminé en {duration:.1f}s")
 
@@ -4357,7 +4364,7 @@ async def run_clean_bot():
                     await bot.telegram.send_message(error_msg)
 
                 # Fin du cycle : décrémente la pause si active
-                bot.news_pause_manager.on_cycle_end()
+                # (déjà fait juste avant la sauvegarde !)
 
                 # Attente avant le prochain cycle
                 await asyncio.sleep(30)
