@@ -945,7 +945,7 @@ class TradingBotM4:
                         current_price = float(ticker["price"])
                     except Exception:
                         current_price = None
-                    # PATCH: fallback sur current_price si entry_price absent
+                    # PATCH: fallback entry_price
                     entry_price = self.positions.get(symbol, {}).get(
                         "entry_price", None
                     )
@@ -955,13 +955,13 @@ class TradingBotM4:
                         pnl_pct = (current_price - entry_price) / entry_price * 100
                         pnl_usd = (current_price - entry_price) * free
                     else:
-                        pnl_pct = None
-                        pnl_usd = None
+                        pnl_pct = 0.0
+                        pnl_usd = 0.0
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
                         "amount": free,
-                        "entry_price": entry_price if entry_price else None,
-                        "current_price": current_price if current_price else None,
+                        "entry_price": entry_price,
+                        "current_price": current_price,
                         "pnl_pct": pnl_pct,
                         "pnl_usd": pnl_usd,
                     }
@@ -1240,6 +1240,7 @@ class TradingBotM4:
             mtime = os.path.getmtime(path)
             if self.dl_model_last_mtime is None or mtime > self.dl_model_last_mtime:
                 self.dl_model.load_weights(path)
+                self.ai_enabled = self.dl_model is not None
                 self.dl_model_last_mtime = mtime
                 print(f"♻️ Nouveau modèle IA chargé automatiquement ({path})")
 
@@ -4172,6 +4173,10 @@ async def run_clean_bot():
                     shared_data["positions_binance"] = getattr(
                         bot, "positions_binance", {}
                     )
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
+                    shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
                     await asyncio.sleep(30)
@@ -4335,6 +4340,10 @@ async def run_clean_bot():
 
                     # Ajout complet des positions Binance (avec entry_price, pnl % et $)
                     # La méthode sync_positions_with_binance doit calculer ces champs !
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
+                    shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
 
@@ -5047,6 +5056,8 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                 equity_history = equity_history[-1000:]
             data["equity_history"] = equity_history
 
+            shared_data["positions_binance"] = getattr(bot, "positions_binance", {})
+            shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
             with open(bot.data_file, "w") as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
