@@ -4160,23 +4160,29 @@ async def run_clean_bot():
                 if bot.news_pause_manager.should_pause():
                     print("Trading en pause, on skip ce cycle.")
 
-                    # PATCH: Sauvegarde des pauses actives et portefeuille à chaque cycle, même en pause
-                    bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
+                    # 1. Décrémentation des pauses
+                    bot.news_pause_manager.on_cycle_end()
                     active_pauses = bot.get_active_pauses()
                     bot.sync_positions_with_binance()
+
+                    # 2. Recharge l'état partagé JUSTE AVANT d'écrire
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
                     except Exception:
                         shared_data = {}
+
                     shared_data["active_pauses"] = active_pauses
                     shared_data["positions_binance"] = getattr(
                         bot, "positions_binance", {}
                     )
-                    shared_data["positions_binance"] = getattr(
-                        bot, "positions_binance", {}
-                    )
-                    shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
+
+                    # === NE PAS ÉCRASER trade_decisions si déjà présent ===
+                    if hasattr(bot, "trade_decisions"):
+                        shared_data["trade_decisions"] = bot.trade_decisions
+                    elif "trade_decisions" not in shared_data:
+                        shared_data["trade_decisions"] = {}
+
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
                     await asyncio.sleep(30)
@@ -4316,15 +4322,6 @@ async def run_clean_bot():
                     bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
                     bot.sync_positions_with_binance()
-                    try:
-                        with open(bot.data_file, "r") as f:
-                            shared_data = json.load(f)
-                    except Exception:
-                        shared_data = {}
-                    shared_data["active_pauses"] = active_pauses
-                    shared_data["positions_binance"] = getattr(
-                        bot, "positions_binance", {}
-                    )
 
                     # Ajout des scores de décision
                     td_dict = {}
@@ -4336,14 +4333,23 @@ async def run_clean_bot():
                             "ai": td.get("signals", {}).get("ai"),
                             "sentiment": td.get("signals", {}).get("sentiment"),
                         }
-                    shared_data["trade_decisions"] = td_dict
 
-                    # Ajout complet des positions Binance (avec entry_price, pnl % et $)
-                    # La méthode sync_positions_with_binance doit calculer ces champs !
+                    # Garde la dernière valeur connue des décisions de trade
+                    bot.trade_decisions = td_dict
+
+                    # Puis sauvegarde tout dans le shared_data
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+
+                    shared_data["active_pauses"] = active_pauses
                     shared_data["positions_binance"] = getattr(
                         bot, "positions_binance", {}
                     )
-                    shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
+                    shared_data["trade_decisions"] = bot.trade_decisions
+
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
 
