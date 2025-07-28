@@ -872,12 +872,11 @@ class TradingBotM4:
                     except Exception:
                         current_price = None
 
-                    # PATCH: calcule le vrai prix d'achat moyen spot si absent
+                    # Nouveau: calcule le vrai prix d'achat moyen spot même pour positions manuelles
                     entry_price = self.positions.get(symbol, {}).get(
                         "entry_price", None
                     )
                     if entry_price is None:
-                        # Appel du helper pour le prix d'achat moyen réel
                         entry_price = get_avg_entry_price_binance_spot(
                             self.binance_client, asset, quote="USDC"
                         )
