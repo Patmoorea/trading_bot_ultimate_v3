@@ -4341,19 +4341,23 @@ async def run_clean_bot():
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
 
-                    # Ajout des scores de décision
+                    # Ajout des scores de décision - PATCH pour vrai mapping
                     td_dict = {}
                     for td in trade_decisions:
+                        # On récupère directement les vrais signaux calculés par analyze_signals
+                        signals = td.get("signals", {})
                         td_dict[td["pair"]] = {
                             "confidence": td.get("confidence"),
                             "action": td.get("action"),
-                            "tech": td.get("signals", {}).get("technical"),
-                            "ai": td.get("signals", {}).get("ai"),
-                            "sentiment": td.get("signals", {}).get("sentiment"),
+                            "tech": signals.get(
+                                "technical"
+                            ),  # PAS de fallback à 0 ! (sinon tu caches un bug)
+                            "ai": signals.get("ai"),
+                            "sentiment": signals.get("sentiment"),
+                            # tu peux ajouter "tf": td.get("tf") si besoin
                         }
-
-                    # Garde la dernière valeur connue des décisions de trade
                     bot.trade_decisions = td_dict
+                    print("[DEBUG DASHBOARD EXPORT]", json.dumps(td_dict, indent=2))
 
                     # Puis sauvegarde tout dans le shared_data
                     try:

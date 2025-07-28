@@ -231,9 +231,18 @@ with tab1:
     trade_decisions = shared_data.get("trade_decisions", {})
     if trade_decisions:
         df_signals = pd.DataFrame(trade_decisions).T
+
+        # Filtrer dynamiquement les colonnes où tout est None ou NaN
+        # Conserve uniquement les colonnes où il existe au moins une valeur non nulle
+        keep_cols = [
+            col for col in df_signals.columns if not df_signals[col].isna().all()
+        ]
+        df_signals = df_signals[keep_cols]
+
         st.dataframe(df_signals, use_container_width=True)
     else:
         st.info("Aucun signal de trading ce cycle.")
+
     st.divider()
     st.markdown("#### 📜 Historique des trades exécutés")
     trades = shared_data.get("trade_history", [])
