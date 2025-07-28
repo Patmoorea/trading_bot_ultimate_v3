@@ -1530,7 +1530,7 @@ class TradingBotM4:
         opportunities = []
         pairs_to_check = [pair] if pair else self.pairs_valid
         MIN_PROFIT_THRESHOLD = 0.15
-        MIN_VOLUME_USD = 10000
+        MIN_VOLUME_USD = 0
         MAX_SPREAD = 0.5
 
         try:
@@ -4154,9 +4154,23 @@ async def run_clean_bot():
                 except Exception:
                     news_list = []
 
-                # Scan news et pause si besoin
-                if bot.news_pause_manager.scan_news(news_list):
+                # Filtre les news non déjà traitées
+                unprocessed_news = [n for n in news_list if not n.get("processed")]
+                if bot.news_pause_manager.scan_news(unprocessed_news):
                     print("🚨 Pause trading à cause d'une news critique !")
+                    # Marque ces news comme traitées
+                    for n in unprocessed_news:
+                        n["processed"] = True
+                    # Puis sauvegarde news_sentiment dans shared_data
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data.get("sentiment", {})["scores"] = news_list
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
+
                 if bot.news_pause_manager.should_pause():
                     print("Trading en pause, on skip ce cycle.")
 
@@ -4886,7 +4900,7 @@ def calculate_position_size(bot, decision):
         try:
             balance = bot.get_performance_metrics().get("balance", 10000)
         except Exception:
-            balance = 10000
+            balance = 0
 
         # 3. Paramètres dynamiques
         confidence = decision.get("confidence", 0.5)

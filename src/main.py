@@ -397,7 +397,7 @@ with tab5:
         st.markdown("### Configuration de base")
         period = st.selectbox("Période de test", ["7j", "30j", "90j", "180j", "365j"])
         initial_capital = st.number_input(
-            "Capital initial (USDT)", min_value=100, value=10000
+            "Capital initial (USDT)", min_value=0, value=0
         )
         leverage = st.slider("Levier", min_value=1, max_value=10, value=1)
     with col2:
