@@ -859,37 +859,46 @@ class TradingBotM4:
         if self.is_live_trading and self.binance_client:
             account = self.binance_client.get_account()
             positions = {}
+            supported_quotes = ["USDC", "USDT", "BUSD"]
             for bal in account["balances"]:
                 asset = bal["asset"]
                 free = float(bal["free"])
-                if free > 0 and asset not in ("USDC", "USDT"):
-                    symbol = f"{asset}/USDC"
-                    try:
-                        ticker = self.binance_client.get_symbol_ticker(
-                            symbol=symbol.replace("/", "")
-                        )
-                        current_price = float(ticker["price"])
-                    except Exception:
-                        current_price = None
-
-                    # Nouveau: calcule le vrai prix d'achat moyen spot même pour positions manuelles
-                    entry_price = self.positions.get(symbol, {}).get(
-                        "entry_price", None
-                    )
-                    if entry_price is None:
-                        entry_price = get_avg_entry_price_binance_spot(
-                            self.binance_client, asset, quote="USDC"
-                        )
-                    if entry_price is None and current_price:
-                        entry_price = current_price
-
+                if free > 0 and asset not in supported_quotes:
+                    entry_price = None
+                    symbol = None
+                    current_price = None
+                    quote_found = None
+                    # Essaye toutes les quotes possibles
+                    for quote in supported_quotes:
+                        try:
+                            test_symbol = f"{asset}{quote}"
+                            ticker = self.binance_client.get_symbol_ticker(
+                                symbol=test_symbol
+                            )
+                            current_price = float(ticker["price"])
+                            # Va chercher le vrai prix d'achat moyen spot
+                            entry_price = get_avg_entry_price_binance_spot(
+                                self.binance_client, asset, quote=quote
+                            )
+                            if entry_price is not None:
+                                quote_found = quote
+                                symbol = f"{asset}/{quote}"
+                                break
+                        except Exception:
+                            continue
+                    if symbol is None or entry_price is None:
+                        # fallback: dernière quote testée, ou skip si rien trouvé
+                        if current_price is not None:
+                            symbol = f"{asset}/{quote_found or 'USDC'}"
+                            entry_price = current_price
+                        else:
+                            continue
                     if entry_price and current_price:
                         pnl_pct = (current_price - entry_price) / entry_price * 100
                         pnl_usd = (current_price - entry_price) * free
                     else:
                         pnl_pct = 0.0
                         pnl_usd = 0.0
-
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
                         "amount": free,
@@ -982,7 +991,7 @@ class TradingBotM4:
             for bal in account["balances"]:
                 asset = bal["asset"]
                 free = float(bal["free"])
-                if free > 0:
+                if free > 0 and asset not in ("USDC", "USDT"):
                     symbol = f"{asset}/USDC"
                     try:
                         ticker = self.binance_client.get_symbol_ticker(
@@ -991,18 +1000,29 @@ class TradingBotM4:
                         current_price = float(ticker["price"])
                     except Exception:
                         current_price = None
-                    # PATCH: fallback entry_price
-                    entry_price = self.positions.get(symbol, {}).get(
-                        "entry_price", None
+
+                    # Utilise uniquement USDC pour entry_price
+                    entry_price = get_avg_entry_price_binance_spot(
+                        self.binance_client, asset, quote="USDC"
                     )
-                    if entry_price is None and current_price:
-                        entry_price = current_price
-                    if entry_price and current_price:
-                        pnl_pct = (current_price - entry_price) / entry_price * 100
-                        pnl_usd = (current_price - entry_price) * free
-                    else:
-                        pnl_pct = 0.0
-                        pnl_usd = 0.0
+
+                    # NE PAS fallback sur current_price !
+                    if entry_price is None:
+                        entry_price = None
+                        pnl_pct = None
+                        pnl_usd = None
+
+                    pnl_pct = (
+                        (current_price - entry_price) / entry_price * 100
+                        if entry_price and current_price
+                        else 0.0
+                    )
+                    pnl_usd = (
+                        (current_price - entry_price) * free
+                        if entry_price and current_price
+                        else 0.0
+                    )
+
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
                         "amount": free,
@@ -1532,6 +1552,10 @@ class TradingBotM4:
             decision["action"] = "buy"
         elif total_score < sell_thr:
             decision["action"] = "sell"
+
+        print(
+            f"[DEBUG] tech_score={tech_score}, ai_score={ai_score}, sentiment_score={sentiment_score}, total={total_score}"
+        )
 
         log_dashboard(
             f"[ANALYZE_SIGNALS] {symbol} | TF: {tf} | "
@@ -3767,15 +3791,6 @@ def filter_pairs(
     vol_threshold=0.12,
     anomaly_threshold=4.0,
 ):
-    """
-    Retourne la liste des paires à trader ce cycle, classées par opportunité.
-    - min_volatility: volatilité min (ex: 0.01)
-    - min_signal: valeur absolue du signal min (ex: 0.3)
-    - top_n: nombre max de paires retenues
-    - vol_anomaly_filter: active le filtre de volatilité/anomalie
-    - vol_threshold: seuil max de volatilité autorisée (filtre)
-    - anomaly_threshold: seuil max d'anomalie prix (z-score)
-    """
     from src.analysis.filters.volatility_anomaly_filter import filter_market
     from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
 
@@ -3833,9 +3848,17 @@ def filter_pairs(
                 anomaly_threshold=anomaly_threshold,
                 price_col="close",
             )
+        # === AJOUT LOG DEBUG ===
+        print(
+            f"[FILTER DEBUG] {pair_key}: vol={vol:.4f}, sig={signal:.4f}, clean={is_clean}"
+        )
         # Filtrage
         if vol > min_volatility and abs(signal) > min_signal and is_clean:
             candidates.append((pair, vol, abs(signal)))
+        else:
+            print(
+                f"[FILTER OUT] {pair_key} (vol={vol:.4f}, sig={signal:.4f}, clean={is_clean})"
+            )
 
     # Classe par volatilité x signal décroissant
     candidates.sort(key=lambda x: x[1] * x[2], reverse=True)
