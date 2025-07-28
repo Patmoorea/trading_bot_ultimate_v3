@@ -341,7 +341,9 @@ with tab4:
                     "Symbole": symbol,
                     "Side": pos.get("side", ""),
                     "Quantité": pos.get("amount", 0),
-                    "Prix d'entrée": f"{entry_price:.4f}" if entry_price else "N/A",
+                    "Prix d'entrée": (
+                        f"{entry_price:.4f}" if entry_price not in (None, 0) else "N/A"
+                    ),
                     "Prix actuel": f"{current_price:.4f}" if current_price else "N/A",
                     "% Gain/Perte": f"{pnl_pct:.2f}%" if pnl_pct is not None else "N/A",
                     "Gain/Perte ($)": (

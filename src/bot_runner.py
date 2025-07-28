@@ -92,6 +92,7 @@ from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
 
 from src.risk_tools.news_pause_manager import NewsPauseManager
 
+from src.portfolio.binance_utils import get_avg_entry_price_binance_spot
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -853,6 +854,51 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
+
+    def sync_positions_with_binance(self):
+        if self.is_live_trading and self.binance_client:
+            account = self.binance_client.get_account()
+            positions = {}
+            for bal in account["balances"]:
+                asset = bal["asset"]
+                free = float(bal["free"])
+                if free > 0 and asset not in ("USDC", "USDT"):
+                    symbol = f"{asset}/USDC"
+                    try:
+                        ticker = self.binance_client.get_symbol_ticker(
+                            symbol=symbol.replace("/", "")
+                        )
+                        current_price = float(ticker["price"])
+                    except Exception:
+                        current_price = None
+
+                    # PATCH: calcule le vrai prix d'achat moyen spot si absent
+                    entry_price = self.positions.get(symbol, {}).get(
+                        "entry_price", None
+                    )
+                    if entry_price is None:
+                        entry_price = get_avg_entry_price_binance_spot(
+                            self.binance_client, asset, quote="USDC"
+                        )
+                    if entry_price is None and current_price:
+                        entry_price = current_price
+
+                    if entry_price and current_price:
+                        pnl_pct = (current_price - entry_price) / entry_price * 100
+                        pnl_usd = (current_price - entry_price) * free
+                    else:
+                        pnl_pct = 0.0
+                        pnl_usd = 0.0
+
+                    positions[symbol] = {
+                        "side": self.positions.get(symbol, {}).get("side", "long"),
+                        "amount": free,
+                        "entry_price": entry_price,
+                        "current_price": current_price,
+                        "pnl_pct": pnl_pct,
+                        "pnl_usd": pnl_usd,
+                    }
+            self.positions_binance = positions
 
     def get_active_pauses(self):
         """
