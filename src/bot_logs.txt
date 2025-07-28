@@ -314,3 +314,4 @@
 2025-07-28T02:32:17.951309 | [EXECUTE TRADE] SUI/USDC | Action: BUY | Amount: 5 | Confidence: 0.2679073038334135
 2025-07-28T02:32:17.951792 | [ORDER] Tentative d'exécution: buy 5 SUI/USDC (iceberg: False)
 2025-07-28T02:32:17.951927 | [ORDER] Déjà long sur SUI/USDC, achat ignoré (spot ou portefeuille Binance).
+2025-07-28T02:39:47.667546 | [NEWS] Score sentiment global: 0.28 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC

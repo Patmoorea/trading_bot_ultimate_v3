@@ -1478,7 +1478,9 @@ class TradingBotM4:
                 "technical": tech_score,
                 "ai": ai_score,
                 "sentiment": sentiment_score,
+                # ... autres champs si besoin
             },
+            # ... autres champs utiles pour tes logs ou le dashboard, comme "tf": tf, etc.
         }
         if total_score > buy_thr:
             decision["action"] = "buy"
