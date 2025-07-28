@@ -794,3 +794,18 @@
 2025-07-28T03:28:39.304799 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-07-28T03:28:39.305319 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
 2025-07-28T03:35:51.005738 | [NEWS] Score sentiment global: 0.28 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T03:47:36.567496 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T03:47:36.568002 | Initialisation des modèles d'IA...
+2025-07-28T03:47:37.043277 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T03:47:38.603514 | ✅ PPO Strategy initialized successfully
+2025-07-28T03:47:38.604566 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T03:47:38.604675 | ✅ Trading en direct: True
+2025-07-28T03:47:38.604720 | ✅ IA activée: True
+2025-07-28T03:47:38.604763 | ✅ Analyse de news activée: True
+2025-07-28T03:48:59.889252 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T03:50:27.282591 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0301 | Tendance: 0.0034
+2025-07-28T03:50:27.282961 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T03:51:01.644888 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0303 | Tendance: 0.0034
+2025-07-28T03:51:01.646318 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T03:51:01.646460 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T03:51:19.033080 | [NEWS] Score sentiment global: 0.28 | Impact: 0.58 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC

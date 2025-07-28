@@ -290,7 +290,7 @@ def main():
         default="data/historical/BTCUSDT_1h.csv",
         help="Chemin du CSV market data",
     )
-    parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
+    parser.add_argument("--capital", type=float, default=0, help="Capital initial")
     parser.add_argument(
         "--strategy",
         type=str,
@@ -820,7 +820,7 @@ class TradingBotM4:
         # Configuration de l'arbitrage
         self.arbitrage_config = {
             "min_profit": 0.5,
-            "max_exposure": 10000,
+            "max_exposure": 1000,
             "enabled_exchanges": ["binance", "kucoin", "huobi"],
         }
         # Sécurité avancée: gestion de clé cold wallet
@@ -877,6 +877,7 @@ class TradingBotM4:
                         "entry_price", None
                     )
                     if entry_price is None:
+                        # Appel du helper pour le prix d'achat moyen réel
                         entry_price = get_avg_entry_price_binance_spot(
                             self.binance_client, asset, quote="USDC"
                         )
@@ -3265,7 +3266,7 @@ class TradingBotM4:
                     "total_trades": 0,
                     "win_rate": 0,
                     "profit_factor": 0,
-                    "balance": 10000,
+                    "balance": 0,
                     "wins": 0,
                     "losses": 0,
                     "total_profit": 0,
@@ -3340,7 +3341,7 @@ class TradingBotM4:
                 "total_trades": self.current_cycle * 2,
                 "win_rate": 0.62 + (self.current_cycle * 0.001),
                 "profit_factor": 1.85 + (self.current_cycle * 0.01),
-                "balance": 10000 + (self.current_cycle * 100),
+                "balance": 0 + (self.current_cycle * 100),
                 "wins": int(self.current_cycle * 1.2),
                 "losses": self.current_cycle - int(self.current_cycle * 1.2),
                 "total_profit": self.current_cycle * 150,
@@ -4950,7 +4951,7 @@ def calculate_position_size(bot, decision):
 
         # 2. Balance du bot (réelle ou simulée)
         try:
-            balance = bot.get_performance_metrics().get("balance", 10000)
+            balance = bot.get_performance_metrics().get("balance", 0)
         except Exception:
             balance = 0
 
@@ -5247,7 +5248,7 @@ if __name__ == "__main__":
         default="data/historical/BTCUSDT_1h.csv",
         help="Chemin du CSV market data",
     )
-    parser.add_argument("--capital", type=float, default=10000, help="Capital initial")
+    parser.add_argument("--capital", type=float, default=0, help="Capital initial")
     parser.add_argument(
         "--strategy",
         type=str,

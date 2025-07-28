@@ -435,7 +435,7 @@ class TradingBotM4:
 
         # Gestionnaires de trading
         self.position_manager = PositionManager(
-            account_balance=10000,
+            account_balance=0,
             max_positions=5,
             max_leverage=3.0,
             min_position_size=0.001,
