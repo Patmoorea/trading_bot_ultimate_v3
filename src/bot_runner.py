@@ -945,9 +945,12 @@ class TradingBotM4:
                         current_price = float(ticker["price"])
                     except Exception:
                         current_price = None
+                    # PATCH: fallback sur current_price si entry_price absent
                     entry_price = self.positions.get(symbol, {}).get(
                         "entry_price", None
                     )
+                    if entry_price is None and current_price:
+                        entry_price = current_price
                     if entry_price and current_price:
                         pnl_pct = (current_price - entry_price) / entry_price * 100
                         pnl_usd = (current_price - entry_price) * free
