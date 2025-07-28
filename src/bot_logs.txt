@@ -742,3 +742,273 @@
 2025-07-28T14:34:09.332098 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
 2025-07-28T14:42:04.409395 | [NEWS] Score sentiment global: 0.24 | Impact: 0.57 | Événements:  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High; Ethereum products hit $7.8 billion in year-to-date inflows, surpassing 2024 total: CoinShares
 2025-07-28T14:48:39.197508 | [NEWS] Score sentiment global: 0.24 | Impact: 0.57 | Événements:  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High; Ethereum products hit $7.8 billion in year-to-date inflows, surpassing 2024 total: CoinShares
+2025-07-28T14:55:22.620678 | [NEWS] Score sentiment global: 0.24 | Impact: 0.57 | Événements:  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High; Ethereum products hit $7.8 billion in year-to-date inflows, surpassing 2024 total: CoinShares
+2025-07-28T14:56:46.999959 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T14:56:47.000628 | Initialisation des modèles d'IA...
+2025-07-28T14:56:47.495815 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T14:56:49.097817 | ✅ PPO Strategy initialized successfully
+2025-07-28T14:56:49.098085 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T14:56:49.098126 | ✅ Trading en direct: True
+2025-07-28T14:56:49.098164 | ✅ IA activée: True
+2025-07-28T14:56:49.098201 | ✅ Analyse de news activée: True
+2025-07-28T14:58:46.536602 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T15:00:16.084639 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0373 | Tendance: -0.0015
+2025-07-28T15:00:16.086200 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T15:00:51.188171 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0366 | Tendance: -0.0024
+2025-07-28T15:00:51.188647 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T15:00:51.188742 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T15:01:15.936284 | [NEWS] Score sentiment global: 0.24 | Impact: 0.57 | Événements:  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High; Ethereum products hit $7.8 billion in year-to-date inflows, surpassing 2024 total: CoinShares
+2025-07-28T15:02:11.613720 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.614596 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.614810 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.614939 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615070 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615190 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615297 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615387 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615472 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.615553 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T15:02:11.619213 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-28T15:02:11.619362 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-28T15:02:11.619448 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-28T15:02:11.619522 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-28T15:02:11.619592 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-28T15:02:11.619657 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-28T15:02:11.619724 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-28T15:02:11.619788 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-28T15:02:11.619851 | [NEWS CHECK] ⚠️ News sans champ 'symbols': LVMH chute en bourse, la société se tourne vers les États-Unis pour rebondir
+2025-07-28T15:02:11.619914 | [NEWS CHECK] ⚠️ News sans champ 'symbols': X-Ray, l’arme ultime contre les arnaques crypto : Anatomie d’un scam par Kryll³
+2025-07-28T15:02:11.620031 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Donald Trump affirme finalement qu'il ne licenciera pas Jerome Powell, le présid
+2025-07-28T15:02:11.620102 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Les deux hommes accusés d’enlèvement et de torture à New York libérés s
+2025-07-28T15:02:11.620163 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-28T15:02:11.620220 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-28T15:02:11.620277 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-28T15:02:11.620333 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-28T15:02:11.620390 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-28T15:02:11.620447 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Coinbase sues man using a Coinbase-like URL to make money 
+2025-07-28T15:02:11.620503 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Roman Storm asks for $1.5M lifeline as Tornado Cash trial presses on 
+2025-07-28T15:02:11.620558 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tether Gold rides bullion boom as central banks, ETFs rush to accumulate 
+2025-07-28T15:02:11.620614 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto isn’t crashing the American dream; it’s renovating it 
+2025-07-28T15:02:11.620670 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  GENIUS Act to spark wave of ‘killer apps’ and new payment services: Sygnum 
+2025-07-28T15:02:11.620725 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Divine Research issues unbacked crypto loans using Sam Altman’s World ID 
+2025-07-28T15:02:11.620780 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Pudgy Penguins denies OpenSea acquisition rumors, focuses on partnerships 
+2025-07-28T15:02:11.620842 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-28T15:02:11.620897 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-28T15:02:11.620951 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-28T15:02:11.621008 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-28T15:02:11.621062 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-28T15:02:11.621116 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-28T15:02:11.621171 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-28T15:02:11.621225 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-28T15:02:11.621279 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-28T15:02:11.621333 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elizabeth Warren: American People Will ‘Pay the Price’ for GENIUS Act
+2025-07-28T15:02:11.621387 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-28T15:02:11.621441 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-28T15:02:11.621494 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-28T15:02:11.621553 | [NEWS CHECK] ⚠️ News sans champ 'symbols': New ChatGPT Agent Can Book, Browse, and Fill Forms—Just Don't Trust It Yet
+2025-07-28T15:02:11.621599 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Snaky Way ($AKE) Presale: Slither Your Way to the Top and Earn Prizes
+2025-07-28T15:02:11.621643 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-28T15:02:11.621686 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-28T15:02:11.621729 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-28T15:02:11.621772 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Funding: Why crypto liquid funds are underperforming in a bullish market
+2025-07-28T15:02:11.621815 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Dragonfly exec says US government is considering charges against the venture fir
+2025-07-28T15:02:11.621859 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ark Invest sells $12M in Coinbase stock, $9.8M in Block Inc. shares amid crypto 
+2025-07-28T15:02:12.180230 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:12.181077 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-28T15:02:13.872975 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:13.873780 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-28T15:02:15.594209 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:15.594741 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-28T15:02:17.878550 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:17.879079 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-28T15:02:19.686763 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:19.687536 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-28T15:02:21.401141 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:21.401963 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-28T15:02:23.137055 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:23.137854 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-28T15:02:24.876306 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:24.877137 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-28T15:02:26.569759 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:26.570417 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-28T15:02:28.206294 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T15:02:28.206760 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-28T17:00:58.217671 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T17:00:58.218407 | Initialisation des modèles d'IA...
+2025-07-28T17:00:58.662706 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T17:01:00.228438 | ✅ PPO Strategy initialized successfully
+2025-07-28T17:01:00.228880 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T17:01:00.228988 | ✅ Trading en direct: True
+2025-07-28T17:01:00.229039 | ✅ IA activée: True
+2025-07-28T17:01:00.229089 | ✅ Analyse de news activée: True
+2025-07-28T17:02:59.010654 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T17:04:25.243776 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0318 | Tendance: -0.0034
+2025-07-28T17:04:25.244049 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T17:05:03.196794 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0319 | Tendance: -0.0034
+2025-07-28T17:05:03.198046 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T17:05:03.198145 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T17:05:22.532875 | [NEWS] Score sentiment global: 0.22 | Impact: 0.55 | Événements:  Ethereum price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T17:06:19.703897 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704468 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704572 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704658 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704740 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704835 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704912 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.704995 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.705075 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.705158 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T17:06:19.707221 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-28T17:06:19.707371 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-28T17:06:19.707454 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-28T17:06:19.707520 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-28T17:06:19.707584 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-28T17:06:19.707646 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-28T17:06:19.707708 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-28T17:06:19.707771 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-28T17:06:19.707834 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-28T17:06:19.707897 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-28T17:06:19.707960 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-28T17:06:19.708021 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-28T17:06:19.708083 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-28T17:06:19.708144 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-28T17:06:19.708204 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-28T17:06:19.708267 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-28T17:06:19.708326 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Coinbase sues man using a Coinbase-like URL to make money 
+2025-07-28T17:06:19.708386 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Roman Storm asks for $1.5M lifeline as Tornado Cash trial presses on 
+2025-07-28T17:06:19.708448 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tether Gold rides bullion boom as central banks, ETFs rush to accumulate 
+2025-07-28T17:06:19.708509 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto isn’t crashing the American dream; it’s renovating it 
+2025-07-28T17:06:19.708638 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  GENIUS Act to spark wave of ‘killer apps’ and new payment services: Sygnum 
+2025-07-28T17:06:19.708707 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Divine Research issues unbacked crypto loans using Sam Altman’s World ID 
+2025-07-28T17:06:19.708778 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Pudgy Penguins denies OpenSea acquisition rumors, focuses on partnerships 
+2025-07-28T17:06:19.708845 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-28T17:06:19.708910 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-28T17:06:19.708979 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-28T17:06:19.709046 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-28T17:06:19.709112 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-28T17:06:19.709178 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-28T17:06:19.709243 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-28T17:06:19.709307 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-28T17:06:19.709373 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-28T17:06:19.709439 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-28T17:06:19.709503 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elizabeth Warren: American People Will ‘Pay the Price’ for GENIUS Act
+2025-07-28T17:06:19.709569 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-28T17:06:19.709637 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-28T17:06:19.709702 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-28T17:06:19.709777 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Snaky Way ($AKE) Presale: Slither Your Way to the Top and Earn Prizes
+2025-07-28T17:06:19.709842 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-28T17:06:19.709906 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-28T17:06:19.709971 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-28T17:06:19.710037 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Funding: Why crypto liquid funds are underperforming in a bullish market
+2025-07-28T17:06:19.710099 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Dragonfly exec says US government is considering charges against the venture fir
+2025-07-28T17:06:20.321027 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:20.322043 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-28T17:06:22.522384 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:22.523440 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-28T17:06:24.358479 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:24.359487 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-28T17:06:26.181435 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:26.182174 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-28T17:06:28.102643 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:28.103622 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-28T17:06:29.979400 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:29.980162 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-28T17:06:31.887640 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:31.888387 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-28T17:06:34.127319 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:34.128331 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-28T17:06:35.959085 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:35.960088 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-28T17:06:37.820027 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T17:06:37.821132 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-28T17:14:30.995060 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T17:21:05.636006 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T17:27:38.879156 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T17:34:15.904873 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T17:42:05.990465 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T18:14:57.991427 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T18:14:57.993117 | Initialisation des modèles d'IA...
+2025-07-28T18:14:58.451165 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T18:15:00.205599 | ✅ PPO Strategy initialized successfully
+2025-07-28T18:15:00.206194 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T18:15:00.206268 | ✅ Trading en direct: True
+2025-07-28T18:15:00.206328 | ✅ IA activée: True
+2025-07-28T18:15:00.206390 | ✅ Analyse de news activée: True
+2025-07-28T18:16:59.911895 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T18:18:25.234602 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0329 | Tendance: -0.0040
+2025-07-28T18:18:25.235010 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T18:19:01.402404 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0330 | Tendance: -0.0039
+2025-07-28T18:19:01.404220 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T18:19:01.404375 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T18:19:18.184213 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High
+2025-07-28T18:20:09.499253 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.499904 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500045 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500154 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500251 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500337 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500420 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500499 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500575 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.500661 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T18:20:09.502529 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-28T18:20:09.502686 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-28T18:20:09.502800 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-28T18:20:09.502889 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-28T18:20:09.502967 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-28T18:20:09.503043 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-28T18:20:09.503115 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-28T18:20:09.503181 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-28T18:20:09.503247 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-28T18:20:09.503313 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-28T18:20:09.503377 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-28T18:20:09.503434 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-28T18:20:09.503494 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-28T18:20:09.503553 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-28T18:20:09.503618 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-28T18:20:09.503684 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-28T18:20:09.503745 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Coinbase sues man using a Coinbase-like URL to make money 
+2025-07-28T18:20:09.503808 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Roman Storm asks for $1.5M lifeline as Tornado Cash trial presses on 
+2025-07-28T18:20:09.503868 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tether Gold rides bullion boom as central banks, ETFs rush to accumulate 
+2025-07-28T18:20:09.503929 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto isn’t crashing the American dream; it’s renovating it 
+2025-07-28T18:20:09.503989 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  GENIUS Act to spark wave of ‘killer apps’ and new payment services: Sygnum 
+2025-07-28T18:20:09.504178 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-28T18:20:09.504258 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-28T18:20:09.504335 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-28T18:20:09.504418 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-28T18:20:09.504498 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-28T18:20:09.504580 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-28T18:20:09.504663 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-28T18:20:09.504733 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-28T18:20:09.504794 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-28T18:20:09.504857 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-28T18:20:09.504921 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-28T18:20:09.504983 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elizabeth Warren: American People Will ‘Pay the Price’ for GENIUS Act
+2025-07-28T18:20:09.505051 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-28T18:20:09.505138 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Snaky Way ($AKE) Presale: Slither Your Way to the Top and Earn Prizes
+2025-07-28T18:20:09.505212 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-28T18:20:09.505281 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-28T18:20:09.505348 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-28T18:20:09.505407 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-28T18:20:09.505468 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Funding: Why crypto liquid funds are underperforming in a bullish market
+2025-07-28T18:20:10.099894 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:10.100839 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-28T18:20:11.987603 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:11.988436 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-28T18:20:13.761859 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:13.762503 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-28T18:20:15.511599 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:15.512540 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-28T18:20:17.242663 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:17.243537 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-28T18:20:19.446490 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:19.447232 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-28T18:20:21.231275 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:21.232375 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-28T18:20:22.959233 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:22.960110 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-28T18:20:24.706057 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:24.706912 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-28T18:20:26.494892 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T18:20:26.495932 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-28T18:28:16.306626 | [NEWS] Score sentiment global: 0.21 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst ; Altcoins AVAX, OP, and WLD Climb As BNB Sets New All-time High

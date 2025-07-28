@@ -906,6 +906,9 @@ class TradingBotM4:
                         "current_price": current_price,
                         "pnl_pct": pnl_pct,
                         "pnl_usd": pnl_usd,
+                        "value_usd": (
+                            free * current_price if free and current_price else 0.0
+                        ),
                     }
             self.positions_binance = positions
 
@@ -1030,6 +1033,9 @@ class TradingBotM4:
                         "current_price": current_price,
                         "pnl_pct": pnl_pct,
                         "pnl_usd": pnl_usd,
+                        "value_usd": (
+                            free * current_price if free and current_price else 0.0
+                        ),
                     }
             self.positions_binance = positions
 
@@ -1554,8 +1560,9 @@ class TradingBotM4:
             decision["action"] = "sell"
 
         print(
-            f"[DEBUG] tech_score={tech_score}, ai_score={ai_score}, sentiment_score={sentiment_score}, total={total_score}"
+            f"[DEBUG SIGNALS] {symbol} | TF: {tf} | tech_score={tech_score} | ai_score={ai_score} | sentiment_score={sentiment_score} | total={total_score}"
         )
+        print(f"[DEBUG DECISION] {decision}")
 
         log_dashboard(
             f"[ANALYZE_SIGNALS] {symbol} | TF: {tf} | "

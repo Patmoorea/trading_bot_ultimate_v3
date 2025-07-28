@@ -44,18 +44,25 @@ class NewsAnalyzer:
             "beincrypto.com": "https://beincrypto.com/feed/",
         }
 
-    async def fetch_news(self) -> List[Dict[str, Any]]:
-        """Récupère les news de toutes les sources"""
-        async with aiohttp.ClientSession() as session:
+    async def fetch_news(self) -> list:
+        # Timeout global pour la session (8s, mais chaque requête aura son propre timeout)
+        timeout = aiohttp.ClientTimeout(total=8)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            # Crée une tâche par source (fetch_source doit gérer son propre timeout)
             tasks = [self._fetch_source(session, source) for source in self.sources]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-        news_items = []
-        for result in results:
-            if isinstance(result, Exception):
-                self.logger.error(f"Erreur récupération news: {str(result)}")
-            else:
-                news_items.extend(result)
-        return news_items
+            # Attend au max 10s pour toutes les tâches, puis annule les trop lentes
+            done, pending = await asyncio.wait(tasks, timeout=10)
+            news_items = []
+            for task in done:
+                try:
+                    result = task.result()
+                    news_items.extend(result)
+                except Exception as e:
+                    self.logger.error(f"Erreur récupération news: {str(e)}")
+            for task in pending:
+                task.cancel()
+                self.logger.warning(f"Requête news annulée (trop longue)")
+            return news_items
 
     async def _fetch_source(
         self, session: aiohttp.ClientSession, source: str
@@ -113,41 +120,32 @@ class NewsAnalyzer:
 
     async def _fetch_rss(self, session, source_key):
         url = self.rss_feeds[source_key]
-        # Feedparser accepte une string XML ou un byte string : on télécharge puis on parse
         try:
-            async with session.get(url) as resp:
+            # Timeout individuel ici : 6 secondes max
+            async with session.get(url, timeout=6) as resp:
                 if resp.status != 200:
                     self.logger.error(f"Erreur RSS {source_key}: code={resp.status}")
                     return []
                 content = await resp.read()
-                feed = feedparser.parse(content)
-                news = []
-                for entry in feed.entries:
-                    news.append(
-                        {
-                            "source": source_key,
-                            "title": entry.get("title", ""),
-                            "description": entry.get("summary", ""),
-                            "url": entry.get("link", ""),
-                            "published": entry.get("published", ""),
-                        }
-                    )
-                return news
+                ...
+        except asyncio.TimeoutError:
+            self.logger.warning(f"[{source_key}] Timeout après 6s")
+            return []
         except Exception as e:
             self.logger.error(f"Erreur parsing RSS {source_key}: {e}")
             return []
 
-    async def _fetch_cryptopanic(self, session):
-        """
-        Récupère les news via l'API Cryptopanic avec la clé dans .env (CRYPTOPANIC_API_KEY).
-        """
-        # Charge la clé API depuis .env (pense à: from dotenv import load_dotenv; load_dotenv() au démarrage)
-        api_key = os.getenv("CRYPTOPANIC_API_KEY")
-        if not api_key:
-            self.logger.error(
-                "Clé API Cryptopanic manquante dans .env (CRYPTOPANIC_API_KEY)"
-            )
-            return []
+        async def _fetch_cryptopanic(self, session):
+            """
+            Récupère les news via l'API Cryptopanic avec la clé dans .env (CRYPTOPANIC_API_KEY).
+            """
+            # Charge la clé API depuis .env (pense à: from dotenv import load_dotenv; load_dotenv() au démarrage)
+            api_key = os.getenv("CRYPTOPANIC_API_KEY")
+            if not api_key:
+                self.logger.error(
+                    "Clé API Cryptopanic manquante dans .env (CRYPTOPANIC_API_KEY)"
+                )
+                return []
 
         url = f"https://cryptopanic.com/api/v1/posts/?auth_token={api_key}&public=true"
         try:
