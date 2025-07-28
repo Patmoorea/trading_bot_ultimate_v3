@@ -95,3 +95,145 @@
 2025-07-28T00:50:10.062280 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-28T00:56:23.458013 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
 2025-07-28T01:02:21.728101 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:07:37.375246 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T01:07:37.376134 | Initialisation des modèles d'IA...
+2025-07-28T01:07:37.840943 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T01:07:39.382846 | ✅ PPO Strategy initialized successfully
+2025-07-28T01:07:39.383349 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T01:07:39.383425 | ✅ Trading en direct: True
+2025-07-28T01:07:39.383487 | ✅ IA activée: True
+2025-07-28T01:07:39.383549 | ✅ Analyse de news activée: True
+2025-07-28T01:09:02.442766 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T01:10:25.971550 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0281 | Tendance: 0.0041
+2025-07-28T01:10:25.972054 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T01:11:02.679050 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0281 | Tendance: 0.0041
+2025-07-28T01:11:02.680245 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T01:11:02.680467 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T01:11:20.173260 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:11:47.834679 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-28T01:11:47.835169 | Initialisation des modèles d'IA...
+2025-07-28T01:11:48.312867 | ✅ Modèles d'IA initialisés avec succès
+2025-07-28T01:11:49.908974 | ✅ PPO Strategy initialized successfully
+2025-07-28T01:11:49.909251 | ✅ Bot initialisé avec Telegram: True
+2025-07-28T01:11:49.909345 | ✅ Trading en direct: True
+2025-07-28T01:11:49.909385 | ✅ IA activée: True
+2025-07-28T01:11:49.909425 | ✅ Analyse de news activée: True
+2025-07-28T01:13:11.582421 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-28T01:14:40.824423 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0282 | Tendance: 0.0041
+2025-07-28T01:14:40.826944 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-28T01:15:15.596940 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0283 | Tendance: 0.0041
+2025-07-28T01:15:15.597463 | 🎯 Stratégie active: Range/Scalping
+2025-07-28T01:15:15.597785 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-28T01:15:32.051720 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:16:22.693179 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:22.694751 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:22.696783 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052213 | news_enabled=True
+2025-07-28T01:16:22.696834 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1m | Tech: -0.600 | AI: 0.781 | Sentiment: 0.525 | Total: -0.095 | Action: NEUTRAL | Confidence: 0.095
+2025-07-28T01:16:22.806228 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:22.806381 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:22.808015 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052213 | news_enabled=True
+2025-07-28T01:16:22.808066 | [ANALYZE_SIGNALS] SUIUSDC | TF: 5m | Tech: -0.490 | AI: 0.781 | Sentiment: 0.525 | Total: -0.046 | Action: NEUTRAL | Confidence: 0.046
+2025-07-28T01:16:22.918840 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:22.918959 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:22.920466 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052209 | news_enabled=True
+2025-07-28T01:16:22.920500 | [ANALYZE_SIGNALS] SUIUSDC | TF: 15m | Tech: 0.136 | AI: 0.781 | Sentiment: 0.525 | Total: 0.230 | Action: BUY | Confidence: 0.230
+2025-07-28T01:16:23.031605 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:23.031864 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:23.033509 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052213 | news_enabled=True
+2025-07-28T01:16:23.033565 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1h | Tech: 0.574 | AI: 0.781 | Sentiment: 0.525 | Total: 0.424 | Action: BUY | Confidence: 0.424
+2025-07-28T01:16:23.144797 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:23.144949 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:23.146543 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052213 | news_enabled=True
+2025-07-28T01:16:23.146590 | [ANALYZE_SIGNALS] SUIUSDC | TF: 4h | Tech: 0.672 | AI: 0.781 | Sentiment: 0.525 | Total: 0.467 | Action: BUY | Confidence: 0.467
+2025-07-28T01:16:23.213914 | [STRATEGY] Stratégie STANDARD appliquée
+2025-07-28T01:16:23.214030 | [AI] Prédiction IA sollicitée pour SUIUSDC
+2025-07-28T01:16:23.215557 | [DEBUG SENTIMENT] symbol=SUIUSDC | sentiment_score=0.5245568518052212 | news_enabled=True
+2025-07-28T01:16:23.215594 | [ANALYZE_SIGNALS] SUIUSDC | TF: 1d | Tech: 0.692 | AI: 0.781 | Sentiment: 0.525 | Total: 0.476 | Action: BUY | Confidence: 0.476
+2025-07-28T01:16:23.215635 | [TRADE DECISION] SUI/USDC | TF: 1m | Action: NEUTRAL | Confiance: 0.09 | Tech: -0.60 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215660 | [TRADE DECISION] SUI/USDC | TF: 5m | Action: NEUTRAL | Confiance: 0.05 | Tech: -0.49 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215684 | [TRADE DECISION] SUI/USDC | TF: 15m | Action: BUY | Confiance: 0.23 | Tech: 0.14 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215708 | [TRADE DECISION] SUI/USDC | TF: 1h | Action: BUY | Confiance: 0.42 | Tech: 0.57 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215729 | [TRADE DECISION] SUI/USDC | TF: 4h | Action: BUY | Confiance: 0.47 | Tech: 0.67 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215750 | [TRADE DECISION] SUI/USDC | TF: 1d | Action: BUY | Confiance: 0.48 | Tech: 0.69 | IA: 0.78 | Sentiment: 0.52
+2025-07-28T01:16:23.215779 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215808 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215835 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215857 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215878 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215901 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215926 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215954 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.215975 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-28T01:16:23.216002 | [FUSION] SUI/USDC: [('1m', 'neutral', 0.09468132217615008), ('5m', 'neutral', 0.046061413759489356), ('15m', 'buy', 0.23030956228140764), ('1h', 'buy', 0.42384345984728544), ('4h', 'buy', 0.4672080139894059), ('1d', 'buy', 0.4757653280377805)] => FINAL: BUY (0.33)
+2025-07-28T01:16:23.216733 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-28T01:16:23.216766 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-28T01:16:23.216788 | [NEWS CHECK] ⚠️ News sans champ 'symbols': LVMH chute en bourse, la société se tourne vers les États-Unis pour rebondir
+2025-07-28T01:16:23.216808 | [NEWS CHECK] ⚠️ News sans champ 'symbols': X-Ray, l’arme ultime contre les arnaques crypto : Anatomie d’un scam par Kryll³
+2025-07-28T01:16:23.216860 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Donald Trump affirme finalement qu'il ne licenciera pas Jerome Powell, le présid
+2025-07-28T01:16:23.216884 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Les deux hommes accusés d’enlèvement et de torture à New York libérés s
+2025-07-28T01:16:23.216909 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'une des plus grandes sociétés de courtage américaines se lance dans l'immobili
+2025-07-28T01:16:23.216933 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Immobilier de Luxe : Christie’s International Real Estate ouvre une division cry
+2025-07-28T01:16:23.216957 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Gold (XAUT) : près de 8 tonnes d’or pour garantir ce stablecoin du métal 
+2025-07-28T01:16:23.216979 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies aux USA : Le premier stablecoin conforme au GENIUS Act arrive
+2025-07-28T01:16:23.217001 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Les stablecoins sont « la prochaine évolution de l’argent » sel
+2025-07-28T01:16:23.217024 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tether Gold rides bullion boom as central banks, ETFs rush to accumulate 
+2025-07-28T01:16:23.217046 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto isn’t crashing the American dream; it’s renovating it 
+2025-07-28T01:16:23.217069 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  GENIUS Act to spark wave of ‘killer apps’ and new payment services: Sygnum 
+2025-07-28T01:16:23.217090 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Divine Research issues unbacked crypto loans using Sam Altman’s World ID 
+2025-07-28T01:16:23.217112 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Pudgy Penguins denies OpenSea acquisition rumors, focuses on partnerships 
+2025-07-28T01:16:23.217135 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Wrench attacks drive crypto investors to centralized custodians 
+2025-07-28T01:16:23.217157 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Japan’s ‘slow’ approval culture stifles crypto adoption: Expert 
+2025-07-28T01:16:23.217179 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Tyler Winklevoss claims JPMorgan blocked Gemini over public criticism 
+2025-07-28T01:16:23.217200 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Spot Ether ETFs log $453M in inflows, extend streak to 16 days 
+2025-07-28T01:16:23.217222 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Ether’s ‘extreme euphoria’ on social media could trigger a price plunge 
+2025-07-28T01:16:23.217243 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Real-time crypto laundering exposes CEX vulnerabilities — Report 
+2025-07-28T01:16:23.217265 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-28T01:16:23.217287 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-28T01:16:23.217308 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-28T01:16:23.217329 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-28T01:16:23.217351 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-28T01:16:23.217372 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-28T01:16:23.217394 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-28T01:16:23.217415 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elizabeth Warren: American People Will ‘Pay the Price’ for GENIUS Act
+2025-07-28T01:16:23.217451 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Raises $300M to Bring ‘Trusted Access’ to Crypto Ahead of Stable
+2025-07-28T01:16:23.217475 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto Market Retreats Amid Record Liquidity and Signs of Froth
+2025-07-28T01:16:23.217499 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arizona TikToker Sentenced for Aiding $17M North Korean IT Worker Scheme
+2025-07-28T01:16:23.217523 | [NEWS CHECK] ⚠️ News sans champ 'symbols': New ChatGPT Agent Can Book, Browse, and Fill Forms—Just Don't Trust It Yet
+2025-07-28T01:16:23.217546 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cognition’s AI Developer ‘Devin’ Eyes $10 Billion Valuation—Even If It’s Not Min
+2025-07-28T01:16:23.217570 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Senate Will End Up Passing House Version of Crypto Market Structure, Says Tom Em
+2025-07-28T01:16:23.217594 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Will Hyperliquid Hit $69.69 Before September? The Odds Don’t Favor Bulls
+2025-07-28T01:16:23.217618 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ethena to Bring $1.5 Billion USDtb Stablecoin to US with Anchorage Digital
+2025-07-28T01:16:23.217642 | [NEWS CHECK] ⚠️ News sans champ 'symbols': The Funding: Why crypto liquid funds are underperforming in a bullish market
+2025-07-28T01:16:23.217665 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Dragonfly exec says US government is considering charges against the venture fir
+2025-07-28T01:16:23.217689 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Ark Invest sells $12M in Coinbase stock, $9.8M in Block Inc. shares amid crypto 
+2025-07-28T01:16:23.217713 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong’s OSL Group secures $300 million in equity funding to fuel global expa
+2025-07-28T01:16:23.217736 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 250,000 Tether Gold tokens in circulation are backed by 7.66 tons of gold, Tethe
+2025-07-28T01:16:23.217760 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Christie’s offers $1 billion in luxury real estate to buyers paying with crypto:
+2025-07-28T01:16:23.217783 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Elon Musk’s Grok AI integrates with Kalshi, Paradigm-backed prediction market
+2025-07-28T01:16:23.217807 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Polychain sells remaining $62.5 million TIA stake to Celestia Foundation ahead o
+2025-07-28T01:16:23.767277 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:23.768044 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-28T01:16:25.430758 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:25.431398 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-28T01:16:27.089954 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:27.090656 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-28T01:16:28.759809 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:28.760486 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-28T01:16:30.401540 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:30.402369 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-28T01:16:32.807239 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:32.807794 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-28T01:16:34.839195 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:34.839746 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-28T01:16:36.530199 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:36.530735 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-28T01:16:38.176765 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-28T01:16:38.177314 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-28T01:16:39.868540 | [EXECUTE TRADE] SUI/USDC | Action: BUY | Amount: 5 | Confidence: 0.33120639400669616
+2025-07-28T01:16:39.869373 | [ORDER] Tentative d'exécution: buy 5 SUI/USDC (iceberg: False)
+2025-07-28T01:16:39.869648 | [ORDER] Déjà long sur SUI/USDC, achat ignoré (spot ou portefeuille Binance).
+2025-07-28T01:23:52.162601 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:29:31.857138 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:35:48.513855 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:41:49.080488 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC
+2025-07-28T01:47:30.023011 | [NEWS] Score sentiment global: 0.29 | Impact: 0.59 | Événements:  ETH bulls target $9K: Does the data support the lofty price target? ;  Here’s what happened in crypto today ; The Smarter Web Company adds $26 million in bitcoin, boosting holdings to 1,825 BTC

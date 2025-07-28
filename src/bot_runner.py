@@ -4160,12 +4160,11 @@ async def run_clean_bot():
                 if bot.news_pause_manager.should_pause():
                     print("Trading en pause, on skip ce cycle.")
 
-                    # 1. Décrémentation des pauses
                     bot.news_pause_manager.on_cycle_end()
                     active_pauses = bot.get_active_pauses()
+                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
 
-                    # 2. Recharge l'état partagé JUSTE AVANT d'écrire
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
@@ -4173,11 +4172,13 @@ async def run_clean_bot():
                         shared_data = {}
 
                     shared_data["active_pauses"] = active_pauses
+                    shared_data["bot_status"] = shared_data.get("bot_status", {})
+                    shared_data["bot_status"]["cycle"] = cycle
+                    shared_data["bot_status"]["last_update"] = get_current_time()
                     shared_data["positions_binance"] = getattr(
                         bot, "positions_binance", {}
                     )
 
-                    # === NE PAS ÉCRASER trade_decisions si déjà présent ===
                     if hasattr(bot, "trade_decisions"):
                         shared_data["trade_decisions"] = bot.trade_decisions
                     elif "trade_decisions" not in shared_data:
@@ -4321,6 +4322,7 @@ async def run_clean_bot():
                     # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
                     bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
+                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
 
                     # Ajout des scores de décision
@@ -4380,9 +4382,6 @@ async def run_clean_bot():
                     error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
                     logger.error(error_msg)
                     await bot.telegram.send_message(error_msg)
-
-                # Fin du cycle : décrémente la pause si active
-                # (déjà fait juste avant la sauvegarde !)
 
                 # Attente avant le prochain cycle
                 await asyncio.sleep(30)
