@@ -121,15 +121,6 @@ with st.sidebar:
         else:
             st.info(f"{alert['message']} ({alert['timestamp']})")
 
-    # == 2. Pauses trading actives (juste après alertes) ==
-    st.header("⏸️ Pauses trading actives")
-    active_pauses = shared_data.get("active_pauses", [])
-    if active_pauses:
-        df_pauses = pd.DataFrame(active_pauses)
-        st.dataframe(df_pauses, use_container_width=True)
-    else:
-        st.info("Aucune pause trading active (news critique).")
-
     # == 3. Positions fermées ==
     st.header("⛔️ Positions fermées (auto)")
     closed = shared_data.get("closed_positions", [])
@@ -226,9 +217,24 @@ with tab1:
         f"${perf.get('balance',0):,.2f}",
         f"+{perf.get('win_rate',0)*100:.1f}%",
     )
+
+    # --- BANDEAU PAUSE TRADING AVEC COMPTEUR ET TABLEAU DÉTAILLÉ ---
+    active_pauses = shared_data.get("active_pauses", [])
+    if active_pauses:
+        pause_cycles_left = max([p.get("cycles_left", 0) for p in active_pauses])
+        st.warning(
+            f"🚨 Trading bloqué (pause active) — Déblocage dans {pause_cycles_left} cycle(s) !",
+            icon="⏸️",
+        )
+        st.markdown("#### ⏸️ Pauses actives détaillées")
+        df_pauses = pd.DataFrame(active_pauses)
+        st.dataframe(df_pauses, use_container_width=True)
+
     st.divider()
     st.markdown("#### Scores de décision et signaux")
     trade_decisions = shared_data.get("trade_decisions", {})
+    print("=== DEBUG TRADE_DECISIONS ===")
+    print(trade_decisions)
     if trade_decisions:
         df_signals = pd.DataFrame(trade_decisions).T
 
@@ -251,6 +257,7 @@ with tab1:
         st.dataframe(df_trades, use_container_width=True)
     else:
         st.info("Aucun trade exécuté ce cycle.")
+
     st.divider()
     st.markdown("#### Arbitrage")
     arbitrage_ops = shared_data.get("arbitrage_opportunities", [])
