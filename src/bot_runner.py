@@ -5395,9 +5395,10 @@ def objective(trial):
 
 
 if __name__ == "__main__":
-
-    # --- 1. Argument parsing avancé
     import argparse
+    import asyncio
+    import sys
+    from datetime import datetime, timedelta
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -5465,6 +5466,8 @@ if __name__ == "__main__":
     # --- 3. Mode auto-strategy (AUTO-ML stratégies)
     elif "auto-strategy" in sys.argv:
         # Paramètres pour Binance
+        import os
+
         api_key = os.getenv("BINANCE_API_KEY")
         api_secret = os.getenv("BINANCE_API_SECRET")
 
@@ -5500,6 +5503,8 @@ if __name__ == "__main__":
         if not os.path.exists("config"):
             os.makedirs("config", exist_ok=True)
         with open("config/auto_strategy.json", "w") as f:
+            import json
+
             json.dump(
                 {
                     "pair": symbol,
@@ -5517,7 +5522,6 @@ if __name__ == "__main__":
         TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
         if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
             from src.bot_runner import TelegramNotifier, get_current_time, CURRENT_USER
-            import asyncio
 
             notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
             rapport = (
@@ -5528,7 +5532,15 @@ if __name__ == "__main__":
                 f"Date: {get_current_time()}\n"
                 f"Utilisateur: {CURRENT_USER}"
             )
-            asyncio.run(notifier.send_message(rapport))
+            # Gestion boucle event pour Telegram
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    loop.create_task(notifier.send_message(rapport))
+                else:
+                    asyncio.run(notifier.send_message(rapport))
+            except RuntimeError:
+                asyncio.run(notifier.send_message(rapport))
 
         sys.exit(0)
 
@@ -5537,6 +5549,8 @@ if __name__ == "__main__":
         print("=== Lancement du backtesting quantitatif ===")
         # 1. Charge les paires depuis la config
         config_path = "config/trading_pairs.json"
+        import json
+
         try:
             with open(config_path, "r") as f:
                 config = json.load(f)
@@ -5546,6 +5560,8 @@ if __name__ == "__main__":
             pairs = ["BTC/USDT"]
 
         # 2. Définis la période à backtester
+        import pandas as pd
+
         nb_days = 30
         end_dt = pd.Timestamp.utcnow()
         start_dt = end_dt - pd.Timedelta(days=nb_days)
@@ -5603,6 +5619,15 @@ if __name__ == "__main__":
         bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 
-    # --- 6. Lancement du bot de trading en mode normal
+    # --- 6. Lancement du bot de trading en mode normal (avec protection event loop)
     else:
-        asyncio.run(run_clean_bot())
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                # Dans Jupyter/Streamlit/serveur asynchrone
+                loop.create_task(run_clean_bot())
+            else:
+                asyncio.run(run_clean_bot())
+        except RuntimeError:
+            # Pas de boucle active, run normalement
+            asyncio.run(run_clean_bot())
