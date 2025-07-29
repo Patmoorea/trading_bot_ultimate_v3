@@ -408,9 +408,18 @@ with tab3:
 # --- TAB4 PORTEFEUILLE / POSITIONS ---
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
-    positions_binance = shared_data.get("positions_binance", {})
-    # ... (affichage des positions ouvertes inchangé)
 
+    # 1. Affichage du portefeuille spot Binance
+    positions_binance = shared_data.get("positions_binance", {})
+    st.markdown("#### Positions ouvertes Binance (Spot)")
+    if positions_binance:
+        df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
+        df_pos_binance.index.name = "Paire"
+        st.dataframe(df_pos_binance, use_container_width=True)
+    else:
+        st.info("Aucune position ouverte sur Binance spot.")
+
+    # 2. Historique des positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])
     if closed:
@@ -425,7 +434,7 @@ with tab4:
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
 
-    # --- NOUVEAU : ALERTES DE VENTE ---
+    # 3. Alertes de ventes à venir
     st.markdown("#### Alertes de ventes à venir")
     pending_sales = shared_data.get("pending_sales", [])
     if pending_sales:
@@ -434,6 +443,7 @@ with tab4:
     else:
         st.info("Aucune vente imminente détectée.")
 
+    # 4. Historique des trades
     st.markdown("#### Historique des trades")
     trades = shared_data.get("trade_history", [])
     if trades:
