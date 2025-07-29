@@ -4538,6 +4538,10 @@ async def run_clean_bot():
                     except Exception:
                         shared_data = {}
                     shared_data["active_pauses"] = active_pauses
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
+                    shared_data["trade_decisions"] = bot.trade_decisions
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
@@ -4575,7 +4579,7 @@ async def run_clean_bot():
                         json.dump(shared_data, f, indent=4)
 
                     bot.get_pending_sales()
-                    bot.save_shared_data()
+
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
 
