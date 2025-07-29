@@ -415,6 +415,12 @@ with tab4:
     closed = shared_data.get("closed_positions", [])
     if closed:
         df_closed = pd.DataFrame(closed)
+        reasons = df_closed["reason"].unique().tolist()
+        reason_selected = st.selectbox(
+            "Filtrer par raison de vente", ["Toutes"] + reasons
+        )
+        if reason_selected != "Toutes":
+            df_closed = df_closed[df_closed["reason"] == reason_selected]
         st.dataframe(df_closed, use_container_width=True)
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
@@ -427,15 +433,6 @@ with tab4:
         st.dataframe(df_pending, use_container_width=True)
     else:
         st.info("Aucune vente imminente détectée.")
-
-    # Historique des positions fermées
-    st.markdown("#### Historique des positions fermées")
-    closed = shared_data.get("closed_positions", [])
-    if closed:
-        df_closed = pd.DataFrame(closed)
-        st.dataframe(df_closed, use_container_width=True)
-    else:
-        st.info("Aucune position fermée ce cycle.")
 
     st.markdown("#### Historique des trades")
     trades = shared_data.get("trade_history", [])

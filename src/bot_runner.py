@@ -1264,7 +1264,8 @@ class TradingBotM4:
 
     async def execute_arbitrage_cross_exchange(self, opportunity, amount):
         """
-        Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs et notifications Telegram.
+        Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs, notifications Telegram,
+        et enregistrement de la position fermée dans closed_positions.
         Args:
             opportunity (dict): dict contenant buy_exchange, sell_exchange, symbol, buy_price, sell_price, etc.
             amount (float): montant à investir (en devise quote, ex USDC)
@@ -1380,6 +1381,21 @@ class TradingBotM4:
             msg = f"💰 Arbitrage terminé sur {symbol}: Profit net {profit:.2f} {quote_currency}"
             log_dashboard(msg)
             await self.telegram.send_message(msg)
+
+            # 7. Enregistrement dans closed_positions
+            # On enregistre la position fermée pour le dashboard/track
+            pos = {
+                "side": "arbitrage",
+                "amount": transfer_amount,
+                "entry_price": opportunity["buy_price"],
+                "exit_price": opportunity["sell_price"],
+            }
+            self.log_closed_position(
+                symbol,
+                pos,
+                opportunity["sell_price"],
+                f"Arbitrage {opportunity['buy_exchange']}->{opportunity['sell_exchange']}",
+            )
 
             return {
                 "status": "success",
