@@ -4467,7 +4467,9 @@ async def run_clean_bot():
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
-
+                            bot.log_closed_position(
+                                symbol, pos, last_price, "Stop-loss"
+                            )
                     # TP partiels et trailing TP sur toutes les positions longues
                     for symbol, pos in list(bot.positions.items()):
                         if pos.get("side") != "long":
@@ -4513,6 +4515,7 @@ async def run_clean_bot():
                         pos["max_price"] = new_max
                         if should_exit and pos["amount"] > 0:
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            bot.log_closed_position(symbol, pos, last_price, "TP +x%")
                             bot.positions.pop(symbol)
 
                     # Déclenchement stop-loss et trailing stop SHORT BingX
