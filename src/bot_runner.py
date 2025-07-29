@@ -1445,16 +1445,14 @@ class TradingBotM4:
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                news_data = self.enrich_news_symbols(news_data)  # <-- AJOUT PATCH
+                news_data = self.enrich_news_symbols(news_data)  # Enrichit les symboles
 
                 sentiment_analysis = {}
                 try:
                     sentiment_analysis = await self.news_analyzer.update_analysis()
                 except Exception:
                     self.logger.error("Erreur update_analysis", exc_info=True)
-                    # sentiment_analysis reste {}
 
-                # Extract the items list from the analysis result
                 sentiment_scores = (
                     sentiment_analysis.get("items", [])
                     if isinstance(sentiment_analysis, dict)
@@ -2623,69 +2621,6 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"ERREUR dans _merge_signals: {str(e)}", exc_info=True)
             return default_signals.copy()
-
-    async def _news_analysis_loop(self):
-        log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
-        """Boucle d'analyse des news (version propre sans print/debug)"""
-        while True:
-            try:
-                if not self.news_enabled or not self.news_analyzer:
-                    await asyncio.sleep(self.news_update_interval)
-                    continue
-
-                self.logger.info("Fetching latest news for sentiment analysis")
-                news_data = await self.news_analyzer.fetch_all_news()
-
-                sentiment_analysis = {}
-                try:
-                    sentiment_analysis = await self.news_analyzer.update_analysis()
-                except Exception:
-                    self.logger.error("Erreur update_analysis", exc_info=True)
-                    # sentiment_analysis reste {}
-
-                # Extract the items list from the analysis result
-                sentiment_scores = (
-                    sentiment_analysis.get("items", [])
-                    if isinstance(sentiment_analysis, dict)
-                    else []
-                )
-
-                try:
-                    await self._update_sentiment_data(sentiment_scores)
-                except Exception:
-                    pass
-
-                try:
-                    await self._save_sentiment_data(sentiment_scores, news_data)
-                except Exception as e:
-                    self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
-
-                try:
-                    await self.telegram.send_news_summary(news_data[:5])
-                except Exception:
-                    pass
-
-                # === LOG SENTIMENT GLOBAL ===
-                try:
-                    with open(self.data_file, "r") as f:
-                        shared_data = json.load(f)
-                    sentiment_data = shared_data.get("sentiment", {})
-                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
-                    impact_score = sentiment_data.get("impact_score", 0)
-                    major_events = sentiment_data.get("major_events", "")
-
-                    log_dashboard(
-                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
-                    )
-                except Exception as e:
-                    print(
-                        f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
-                    )
-
-            except Exception as e:
-                self.logger.error(f"News analysis error: {e}")
-
-            await asyncio.sleep(self.news_update_interval)
 
     async def _update_sentiment_data(self, sentiment_scores):
         """
