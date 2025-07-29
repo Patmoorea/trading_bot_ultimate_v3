@@ -5622,21 +5622,18 @@ if __name__ == "__main__":
     # --- 6. Lancement du bot de trading en mode normal (avec protection event loop)
     else:
         try:
-            loop = asyncio.get_running_loop()
+            loop = asyncio.get_event_loop()
             if loop.is_running():
-                print("[INFO] Boucle asyncio déjà en cours, lancement via create_task.")
+                print("[INFO] Event loop déjà actif, lancement via create_task.")
                 task = loop.create_task(run_clean_bot())
-                # Vérifie si on est en terminal classique (pas interactif, pas notebook)
+                # Si on est dans un terminal classique (pas interactif, pas notebook), on bloque sur la tâche :
                 if not hasattr(sys, "ps1") and not sys.flags.interactive:
-                    # On attend la fin de la tâche (le bot tourne vraiment)
                     try:
                         loop.run_until_complete(task)
                     except Exception as e:
                         print(f"[ERROR] run_until_complete: {e}")
-                else:
-                    # En notebook/IPython, on laisse tourner en tâche de fond
-                    pass
+                # En notebook/IPython, la tâche tourne en arrière-plan
             else:
-                asyncio.run(run_clean_bot())
+                loop.run_until_complete(run_clean_bot())
         except RuntimeError:
             asyncio.run(run_clean_bot())
