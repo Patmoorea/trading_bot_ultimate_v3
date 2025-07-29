@@ -3599,9 +3599,6 @@ class TradingBotM4:
         (Version enrichie avec indicateurs avancés)
         Corrige définitivement le warning VWAP/VWMA not datetime ordered de pandas-ta !
         """
-        import pandas as pd
-        import numpy as np
-
         try:
             # --- Conversion stricte et tri ---
             # Si df est une liste, transforme-le en DataFrame
@@ -3844,6 +3841,8 @@ class TradingBotM4:
             self.logger.info(
                 f"✅ {n_valid} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
             )
+            print(f"[DEBUG INDICS] {df[['close','high','low','volume']].tail(3)}")
+            print(f"[DEBUG INDICS RESULT] {indicators}")
             print(
                 f"[DEBUG add_indicators] {n_valid} indicateurs extraits: {list(indicators.keys())[:5]}"
             )
@@ -3940,6 +3939,15 @@ def filter_pairs(
     candidates = []
     for pair in bot.pairs_valid:
         pair_key = pair.replace("/", "").upper()
+        for tf in bot.config["TRADING"]["timeframes"]:
+            df = bot.ws_collector.get_dataframe(pair_key, tf)
+            print(
+                f"[DEBUG DATA] {pair_key}-{tf} df shape: {df.shape if df is not None else 'None'}"
+            )
+            if df is not None and not df.empty:
+                print(f"[DEBUG DATA SAMPLE] {pair_key}-{tf} head:\n{df.head()}")
+            else:
+                print(f"[DEBUG DATA WARNING] {pair_key}-{tf} DataFrame vide !")
         # Récupère la volatilité sur 1h
         if (
             pair_key in bot.market_data
