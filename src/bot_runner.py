@@ -3828,6 +3828,11 @@ def filter_pairs(
     vol_threshold=0.12,
     anomaly_threshold=4.0,
 ):
+    """
+    Filtre dynamiquement les paires selon la volatilité, le score signal et la propreté du marché.
+    Ajoute un log DEBUG pour chaque filtre appliqué.
+    Le filtre est trop strict = plus de signaux. Sois permissif si tu veux voir tout passer !
+    """
     from src.analysis.filters.volatility_anomaly_filter import filter_market
     from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
 

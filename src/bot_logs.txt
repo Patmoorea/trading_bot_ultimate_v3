@@ -1890,3 +1890,364 @@
 2025-07-29T00:33:10.052015 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
 2025-07-29T00:33:11.757110 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-07-29T00:33:11.757894 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-29T00:39:47.314037 | [NEWS] Score sentiment global: 0.19 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ; Sui Spotlighted as Nasdaq-Listed Lender Raises $450 Million for Crypto Treasury;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst 
+2025-07-29T00:40:28.632291 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0316 | Tendance: -0.0039
+2025-07-29T00:40:28.633656 | 🎯 Stratégie active: Range/Scalping
+2025-07-29T00:40:28.633741 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-29T00:41:13.585145 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586310 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586469 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586578 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586672 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586758 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586840 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586919 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.586994 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.587072 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:41:13.596122 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-29T00:41:13.596251 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-29T00:41:13.596327 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-29T00:41:13.596474 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-29T00:41:13.596545 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-29T00:41:13.596608 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-29T00:41:13.596672 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-29T00:41:13.596731 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-29T00:41:13.596792 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-29T00:41:13.596853 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-29T00:41:13.596918 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto on deck? Interactive Brokers explores stablecoin launch 
+2025-07-29T00:41:13.596980 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Anti-CBDC bill could curb Fed’s power over digital dollar, sponsor says 
+2025-07-29T00:41:13.597038 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  PayPal launches crypto checkout tool, adds support for over 100 tokens 
+2025-07-29T00:41:13.597103 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-29T00:41:13.597171 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-29T00:41:13.597229 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-29T00:41:13.597285 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-29T00:41:13.597340 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-29T00:41:13.597395 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-29T00:41:13.597451 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-29T00:41:13.597506 | [NEWS CHECK] ⚠️ News sans champ 'symbols': China’s Z.ai Scoffs at US Sanctions, Launches Supercharged AI With $1.5B War Che
+2025-07-29T00:41:13.597564 | [NEWS CHECK] ⚠️ News sans champ 'symbols': You Can Now Buy NBA Top Shot NFTs From Vending Machines in Japan
+2025-07-29T00:41:13.597619 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-29T00:41:13.597672 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-29T00:41:13.597773 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-29T00:41:13.597840 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-29T00:41:13.597901 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-29T00:41:13.597972 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-29T00:41:13.598045 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-29T00:41:13.598113 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-29T00:41:13.598187 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-29T00:41:13.598249 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-29T00:41:13.598302 | [NEWS CHECK] ⚠️ News sans champ 'symbols': CryptoPunks NFTs see highest weekly trading volume since March 2024
+2025-07-29T00:41:13.598348 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cboe equities exchange takes the next step and files for Canary’s staked INJ fun
+2025-07-29T00:41:13.598391 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Qubic’s bid for 51% of Monero’s hashrate sparks controversy
+2025-07-29T00:41:13.598435 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-29T00:41:13.598482 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-29T00:41:13.598528 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-29T00:41:13.598575 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-29T00:41:14.183817 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:14.184387 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:16.344294 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:16.345138 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:18.078603 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:18.079626 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:20.180385 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:20.181082 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:21.898493 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:21.899578 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:23.656854 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:23.657808 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:25.408791 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:25.409576 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:27.177340 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:27.178143 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:28.878674 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:28.879387 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:41:30.591170 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:41:30.592063 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:49:16.111186 | [NEWS] Score sentiment global: 0.19 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ; Sui Spotlighted as Nasdaq-Listed Lender Raises $450 Million for Crypto Treasury;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst 
+2025-07-29T00:49:55.913899 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0315 | Tendance: -0.0039
+2025-07-29T00:49:55.914447 | 🎯 Stratégie active: Range/Scalping
+2025-07-29T00:49:55.914642 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-29T00:50:38.053692 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.054392 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.054623 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.054738 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.054834 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.054920 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.055002 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.055081 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.055158 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.055232 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:50:38.064489 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-29T00:50:38.064685 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-29T00:50:38.064761 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-29T00:50:38.064826 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-29T00:50:38.064884 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-29T00:50:38.064941 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-29T00:50:38.064996 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-29T00:50:38.065049 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-29T00:50:38.065104 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-29T00:50:38.065171 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-29T00:50:38.065224 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto on deck? Interactive Brokers explores stablecoin launch 
+2025-07-29T00:50:38.065275 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Anti-CBDC bill could curb Fed’s power over digital dollar, sponsor says 
+2025-07-29T00:50:38.065325 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  PayPal launches crypto checkout tool, adds support for over 100 tokens 
+2025-07-29T00:50:38.065395 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-29T00:50:38.065449 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-29T00:50:38.065507 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-29T00:50:38.065577 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-29T00:50:38.065634 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-29T00:50:38.065685 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-29T00:50:38.065736 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-29T00:50:38.065793 | [NEWS CHECK] ⚠️ News sans champ 'symbols': China’s Z.ai Scoffs at US Sanctions, Launches Supercharged AI With $1.5B War Che
+2025-07-29T00:50:38.065842 | [NEWS CHECK] ⚠️ News sans champ 'symbols': You Can Now Buy NBA Top Shot NFTs From Vending Machines in Japan
+2025-07-29T00:50:38.065889 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-29T00:50:38.065937 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-29T00:50:38.065985 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-29T00:50:38.066031 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-29T00:50:38.066079 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-29T00:50:38.066129 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-29T00:50:38.066187 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-29T00:50:38.066257 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-29T00:50:38.066318 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-29T00:50:38.066379 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-29T00:50:38.066456 | [NEWS CHECK] ⚠️ News sans champ 'symbols': CryptoPunks NFTs see highest weekly trading volume since March 2024
+2025-07-29T00:50:38.066516 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cboe equities exchange takes the next step and files for Canary’s staked INJ fun
+2025-07-29T00:50:38.066584 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Qubic’s bid for 51% of Monero’s hashrate sparks controversy
+2025-07-29T00:50:38.066647 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-29T00:50:38.066705 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-29T00:50:38.066757 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-29T00:50:38.066805 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-29T00:50:38.629947 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:38.630886 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:40.692535 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:40.693604 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:42.542865 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:42.543695 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:44.269512 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:44.270420 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:45.903987 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:45.904928 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:47.583623 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:47.584730 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:49.263690 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:49.264776 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:50.893848 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:50.894577 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:54.804298 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:54.805295 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:50:56.454628 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:50:56.455590 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-07-29T00:52:00.460694 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-29T00:52:00.461444 | Initialisation des modèles d'IA...
+2025-07-29T00:52:00.904672 | ✅ Modèles d'IA initialisés avec succès
+2025-07-29T00:52:02.441429 | ✅ PPO Strategy initialized successfully
+2025-07-29T00:52:02.442018 | ✅ Bot initialisé avec Telegram: True
+2025-07-29T00:52:02.442085 | ✅ Trading en direct: True
+2025-07-29T00:52:02.442137 | ✅ IA activée: True
+2025-07-29T00:52:02.442189 | ✅ Analyse de news activée: True
+2025-07-29T00:53:59.827552 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-29T00:55:23.564661 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0315 | Tendance: -0.0039
+2025-07-29T00:55:23.565185 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-29T00:55:58.894646 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0315 | Tendance: -0.0039
+2025-07-29T00:55:58.895830 | 🎯 Stratégie active: Range/Scalping
+2025-07-29T00:55:58.895909 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-29T00:56:15.539626 | [NEWS] Score sentiment global: 0.19 | Impact: 0.55 | Événements:  Ether price headed for $4K showdown: Is this time different? ; Sui Spotlighted as Nasdaq-Listed Lender Raises $450 Million for Crypto Treasury;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst 
+2025-07-29T00:57:05.667429 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668428 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668539 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668629 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668710 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668785 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668867 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.668949 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.669019 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.669097 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T00:57:05.670641 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-29T00:57:05.670772 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-29T00:57:05.670923 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-29T00:57:05.671048 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-29T00:57:05.671151 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-29T00:57:05.671277 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-29T00:57:05.671437 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-29T00:57:05.671588 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-29T00:57:05.671739 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-29T00:57:05.671829 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-29T00:57:05.672014 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto on deck? Interactive Brokers explores stablecoin launch 
+2025-07-29T00:57:05.672081 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Anti-CBDC bill could curb Fed’s power over digital dollar, sponsor says 
+2025-07-29T00:57:05.672140 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  PayPal launches crypto checkout tool, adds support for over 100 tokens 
+2025-07-29T00:57:05.672203 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-29T00:57:05.672255 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-29T00:57:05.672306 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-29T00:57:05.672359 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-29T00:57:05.672420 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-29T00:57:05.672476 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-29T00:57:05.672532 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-29T00:57:05.672587 | [NEWS CHECK] ⚠️ News sans champ 'symbols': China’s Z.ai Scoffs at US Sanctions, Launches Supercharged AI With $1.5B War Che
+2025-07-29T00:57:05.672646 | [NEWS CHECK] ⚠️ News sans champ 'symbols': You Can Now Buy NBA Top Shot NFTs From Vending Machines in Japan
+2025-07-29T00:57:05.672712 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-29T00:57:05.672767 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-29T00:57:05.672821 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-29T00:57:05.672873 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-29T00:57:05.672925 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-29T00:57:05.672982 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-29T00:57:05.673034 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-29T00:57:05.673082 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-29T00:57:05.673131 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-29T00:57:05.673181 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-29T00:57:05.673241 | [NEWS CHECK] ⚠️ News sans champ 'symbols': CryptoPunks NFTs see highest weekly trading volume since March 2024
+2025-07-29T00:57:05.673295 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cboe equities exchange takes the next step and files for Canary’s staked INJ fun
+2025-07-29T00:57:05.673349 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Qubic’s bid for 51% of Monero’s hashrate sparks controversy
+2025-07-29T00:57:05.673402 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-29T00:57:05.673458 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-29T00:57:05.673514 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-29T00:57:05.673588 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-29T00:57:06.226792 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:06.227301 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-29T00:57:07.900553 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:07.901774 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-29T00:57:09.589425 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:09.590245 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-29T00:57:11.246068 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:11.247058 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-29T00:57:12.909526 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:12.910606 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-29T00:57:14.529977 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:14.531127 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-29T00:57:16.487102 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:16.488755 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-29T00:57:18.431092 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:18.432463 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-29T00:57:20.097733 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:20.098337 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-29T00:57:21.729760 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:57:21.730458 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-29T00:58:33.145707 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-29T00:58:33.146417 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-29T00:58:33.146460 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-29T00:58:33.146499 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-29T00:58:33.146535 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-29T00:58:33.146570 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-29T00:58:33.146604 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-29T00:58:33.146641 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-29T00:58:33.146674 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-29T00:58:33.146707 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-29T00:58:33.146740 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto on deck? Interactive Brokers explores stablecoin launch 
+2025-07-29T00:58:33.146772 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Anti-CBDC bill could curb Fed’s power over digital dollar, sponsor says 
+2025-07-29T00:58:33.146802 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  PayPal launches crypto checkout tool, adds support for over 100 tokens 
+2025-07-29T00:58:33.146864 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-29T00:58:33.146902 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-29T00:58:33.146938 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-29T00:58:33.146973 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-29T00:58:33.147009 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-29T00:58:33.147043 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  What you share with ChatGPT could be used against you 
+2025-07-29T00:58:33.147085 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-29T00:58:33.147116 | [NEWS CHECK] ⚠️ News sans champ 'symbols': China’s Z.ai Scoffs at US Sanctions, Launches Supercharged AI With $1.5B War Che
+2025-07-29T00:58:33.147148 | [NEWS CHECK] ⚠️ News sans champ 'symbols': You Can Now Buy NBA Top Shot NFTs From Vending Machines in Japan
+2025-07-29T00:58:33.147182 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-29T00:58:33.147215 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-29T00:58:33.147249 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-29T00:58:33.147281 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-29T00:58:33.147313 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-29T00:58:33.147345 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-29T00:58:33.147378 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-29T00:58:33.147410 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-29T00:58:33.147442 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-29T00:58:33.147475 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-29T00:58:33.147509 | [NEWS CHECK] ⚠️ News sans champ 'symbols': CryptoPunks NFTs see highest weekly trading volume since March 2024
+2025-07-29T00:58:33.147540 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cboe equities exchange takes the next step and files for Canary’s staked INJ fun
+2025-07-29T00:58:33.147572 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Qubic’s bid for 51% of Monero’s hashrate sparks controversy
+2025-07-29T00:58:33.147604 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-29T00:58:33.147636 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-29T00:58:33.147669 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-29T00:58:33.147701 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-29T00:58:33.713721 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:33.714312 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-07-29T00:58:35.709493 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:35.710332 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-07-29T00:58:37.377615 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:37.378666 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-07-29T00:58:39.037892 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:39.038889 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-07-29T00:58:40.667241 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:40.668322 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-07-29T00:58:42.735466 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:42.736195 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-07-29T00:58:44.413127 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:44.414239 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-07-29T00:58:46.089559 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:46.090246 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-07-29T00:58:47.764374 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:47.765453 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-07-29T00:58:49.467272 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T00:58:49.467824 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-07-29T01:05:24.815257 | [NEWS] Score sentiment global: 0.20 | Impact: 0.56 | Événements:  Ether price headed for $4K showdown: Is this time different? ; Sui Spotlighted as Nasdaq-Listed Lender Raises $450 Million for Crypto Treasury;  XRP price to $4 next? ‘Most profitable phase’ likely here, says analyst 
+2025-07-29T01:06:05.047545 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0315 | Tendance: -0.0033
+2025-07-29T01:06:05.048045 | 🎯 Stratégie active: Range/Scalping
+2025-07-29T01:06:05.048095 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-07-29T01:06:45.471006 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.471616 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.471703 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.471796 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.471881 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.471954 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.472035 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.472120 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.472198 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.472270 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-07-29T01:06:45.479453 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers veut lancer son propre stablecoin et accepter les dépôts cry
+2025-07-29T01:06:45.479552 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tous les professionnels américains peuvent recevoir des paiements en crypto grâc
+2025-07-29T01:06:45.479617 | [NEWS CHECK] ⚠️ News sans champ 'symbols': RealT remet en cause la procédure de la ville de Détroit - Les dernières évoluti
+2025-07-29T01:06:45.479681 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane : face à Trump, l’Europe a choisi la soumission plutôt que l’af
+2025-07-29T01:06:45.479740 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether annonce le lancement d’un stablecoin destiné aux particuliers américains
+2025-07-29T01:06:45.479792 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto : Le GENIUS Act est une « erreur » selon Elizabeth Warren
+2025-07-29T01:06:45.479904 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cryptomonnaies : Le Kirghizistan est-il la plaque tournante du secteur crypto ru
+2025-07-29T01:06:45.479952 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Le gouvernement américain accepte vos virements PayPal et Venmo pour l'aider à r
+2025-07-29T01:06:45.479995 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Blockchain et IA : l’éducation en pleine révolution tech d’après l’OCDE
+2025-07-29T01:06:45.480037 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L'ENA d'Ethena grimpe de 50 % en une semaine
+2025-07-29T01:06:45.480078 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto on deck? Interactive Brokers explores stablecoin launch 
+2025-07-29T01:06:45.480122 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Anti-CBDC bill could curb Fed’s power over digital dollar, sponsor says 
+2025-07-29T01:06:45.480162 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  PayPal launches crypto checkout tool, adds support for over 100 tokens 
+2025-07-29T01:06:45.480205 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big brands are sleepwalking when it comes to stablecoins 
+2025-07-29T01:06:45.480242 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ECB adviser doubts digital euro can match US dollar stablecoins 
+2025-07-29T01:06:45.480276 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Monero ‘economic attack’ receives strong community response 
+2025-07-29T01:06:45.480309 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Influencer who coined ‘memecoin supercycle’ sits on $68M profit, data suggests 
+2025-07-29T01:06:45.480349 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Democrats probe housing regulator over considering crypto in mortgages 
+2025-07-29T01:06:45.480384 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-07-29T01:06:45.480422 | [NEWS CHECK] ⚠️ News sans champ 'symbols': China’s Z.ai Scoffs at US Sanctions, Launches Supercharged AI With $1.5B War Che
+2025-07-29T01:06:45.480456 | [NEWS CHECK] ⚠️ News sans champ 'symbols': You Can Now Buy NBA Top Shot NFTs From Vending Machines in Japan
+2025-07-29T01:06:45.480494 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Steam Game Loaded With Malware That Targets Crypto Wallets, Harvests Personal In
+2025-07-29T01:06:45.480528 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pump.fun Revenue Plummets as Meme Coin Traders Tap Other Launchpads
+2025-07-29T01:06:45.480562 | [NEWS CHECK] ⚠️ News sans champ 'symbols': On-Chain Games Don’t Have a ‘Secret Sauce,’ YGG’s New Advisor Says
+2025-07-29T01:06:45.480596 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ASIC Issues Warning Over Bitget's 'Unlicensed' Crypto Futures Products in Austra
+2025-07-29T01:06:45.480629 | [NEWS CHECK] ⚠️ News sans champ 'symbols': AI Avatars Are Pushing Mega-Dose Magnesium—Doctors Say It’s a Health Risk
+2025-07-29T01:06:45.480661 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Russian Entities Using Kyrgyzstan’s Crypto Industry to Evade Sanctions: Report
+2025-07-29T01:06:45.480694 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Wyoming's Stablecoin Billed as Yield-Bearing Alternative to CBDC Control
+2025-07-29T01:06:45.480727 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tea App That Claimed to Protect Women Exposes 72,000 IDs in Epic Security Fail
+2025-07-29T01:06:45.480761 | [NEWS CHECK] ⚠️ News sans champ 'symbols': DOJ Is Considering Charging Crypto VC Firm Dragonfly in Connection With Tornado 
+2025-07-29T01:06:45.480795 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Won’t PUMP Stop Dumping? Bears Are in Complete Control: Analysis
+2025-07-29T01:06:45.480830 | [NEWS CHECK] ⚠️ News sans champ 'symbols': CryptoPunks NFTs see highest weekly trading volume since March 2024
+2025-07-29T01:06:45.480862 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Cboe equities exchange takes the next step and files for Canary’s staked INJ fun
+2025-07-29T01:06:45.480897 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Qubic’s bid for 51% of Monero’s hashrate sparks controversy
+2025-07-29T01:06:45.480929 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bitfinex-backed Layer 1 Plasma raises $373 million in 10-day token sale
+2025-07-29T01:06:45.480962 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Interactive Brokers mulls stablecoin launch: Reuters
+2025-07-29T01:06:45.480995 | [NEWS CHECK] ⚠️ News sans champ 'symbols': PayPal uses PYUSD stablecoin to enable payments in over 100 cryptocurrencies
+2025-07-29T01:06:45.481030 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Arbitrum Foundation plans to allocate $14 million in ARB to subsidize security a
+2025-07-29T01:06:46.093459 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:46.094087 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:48.261572 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:48.262577 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:50.000713 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:50.001551 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:51.716808 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:51.717503 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:53.481673 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:53.482421 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:55.237046 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:55.237896 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:56.959196 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:56.959684 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:06:58.694538 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:06:58.695312 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:07:00.411029 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:07:00.411801 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-07-29T01:07:02.162751 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-07-29T01:07:02.163537 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
