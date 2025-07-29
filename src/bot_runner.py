@@ -5626,13 +5626,16 @@ if __name__ == "__main__":
             if loop.is_running():
                 print("[INFO] Boucle asyncio déjà en cours, lancement via create_task.")
                 task = loop.create_task(run_clean_bot())
-                # Si tu es dans un terminal classique, bloque sur la tâche principale
+                # Vérifie si on est en terminal classique (pas interactif, pas notebook)
                 if not hasattr(sys, "ps1") and not sys.flags.interactive:
-                    # Attente bloquante : le bot tourne tant que la tâche n'est pas terminée
+                    # On attend la fin de la tâche (le bot tourne vraiment)
                     try:
                         loop.run_until_complete(task)
                     except Exception as e:
-                        print(f"[ERROR] Problème avec run_until_complete : {e}")
+                        print(f"[ERROR] run_until_complete: {e}")
+                else:
+                    # En notebook/IPython, on laisse tourner en tâche de fond
+                    pass
             else:
                 asyncio.run(run_clean_bot())
         except RuntimeError:
