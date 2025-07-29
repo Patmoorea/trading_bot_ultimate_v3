@@ -613,7 +613,7 @@ with tab_logs:
 
 # --- Auto-refresh ---
 def auto_refresh():
-    time.sleep(30)
+    time.sleep(10)
     st.rerun()
 
 

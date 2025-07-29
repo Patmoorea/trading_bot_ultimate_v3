@@ -3415,28 +3415,30 @@ class TradingBotM4:
             return []
 
     def initialize_shared_data(self):
-        """Initialise le fichier de données partagées"""
-        data = {
-            "timestamp": get_current_time(),
-            "user": CURRENT_USER,
-            "bot_status": {
-                "regime": self.regime,
-                "cycle": self.current_cycle,
-                "last_update": get_current_time(),
-                "performance": {
-                    "total_trades": 0,
-                    "win_rate": 0,
-                    "profit_factor": 0,
-                    "balance": 0,
-                    "wins": 0,
-                    "losses": 0,
-                    "total_profit": 0,
-                    "total_loss": 0,
+        """Initialise le fichier de données partagées SI ABSENT"""
+        if not os.path.exists(self.data_file):
+            data = {
+                "timestamp": get_current_time(),
+                "user": CURRENT_USER,
+                "bot_status": {
+                    "regime": self.regime,
+                    "cycle": self.current_cycle,
+                    "last_update": get_current_time(),
+                    "performance": {
+                        "total_trades": 0,
+                        "win_rate": 0,
+                        "profit_factor": 0,
+                        "balance": 0,
+                        "wins": 0,
+                        "losses": 0,
+                        "total_profit": 0,
+                        "total_loss": 0,
+                    },
                 },
-            },
-        }
-        with open(self.data_file, "w") as f:
-            json.dump(data, f, indent=4)
+            }
+            with open(self.data_file, "w") as f:
+                json.dump(data, f, indent=4)
+        # Sinon, NE RIEN FAIRE (on garde l’existant)
 
     def save_shared_data(self):
         try:

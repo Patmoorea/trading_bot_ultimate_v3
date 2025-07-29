@@ -127,21 +127,27 @@ class NewsPauseManager:
         return False
 
     def on_cycle_end(self):
-        """À appeler en fin de chaque cycle pour décrémenter toutes les pauses"""
+        print(
+            "[NEWSPAUSE] Avant decrement:",
+            self.global_cycles_remaining,
+            self.pair_pauses,
+        )
         if self.global_cycles_remaining > 0:
             self.global_cycles_remaining -= 1
-
-        # On décrémente toutes les pauses par paire
         to_remove = []
         for pair, cycles in self.pair_pauses.items():
             if cycles > 0:
                 self.pair_pauses[pair] -= 1
             if self.pair_pauses[pair] <= 0:
                 to_remove.append(pair)
-        # Nettoyage des pauses terminées
         for pair in to_remove:
             self.pair_pauses.pop(pair, None)
             self.buy_paused_pairs.discard(pair)
+        print(
+            "[NEWSPAUSE] Après decrement:",
+            self.global_cycles_remaining,
+            self.pair_pauses,
+        )
 
     def get_last_event(self):
         """Retourne la dernière news critique détectée"""
