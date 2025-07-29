@@ -1383,7 +1383,6 @@ class TradingBotM4:
             await self.telegram.send_message(msg)
 
             # 7. Enregistrement dans closed_positions
-            # On enregistre la position fermée pour le dashboard/track
             pos = {
                 "side": "arbitrage",
                 "amount": transfer_amount,
@@ -2111,11 +2110,13 @@ class TradingBotM4:
         """
         Exécute un ordre de trading avec logs détaillés.
         - BUY sur Binance spot (quoteOrderQty)
-        - SELL sur Binance spot (revente, si déjà long)
+        - SELL sur Binance spot (revente, si déjà long OU si solde réel suffisant)
         - SHORT sur BingX (futures)
+        - BUY sur BingX pour rachat short
         - Gère le suivi de position SPOT et le stop-loss automatique
         - Enregistre les positions fermées dans closed_positions
         """
+
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -2141,12 +2142,36 @@ class TradingBotM4:
                         f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                     )
                     return {"status": "skipped", "reason": "not in position"}
-                # Enregistrement de la position fermée simulée
                 pos = self.positions.get(symbol)
                 last_price = price or 0
                 if pos:
                     self.log_closed_position(
                         symbol, pos, last_price, "SELL (simulation)"
+                    )
+                self.positions.pop(symbol, None)
+            elif side.upper() == "SHORT":
+                if self.is_short(symbol):
+                    log_dashboard(
+                        f"[ORDER] Déjà short sur {symbol}, short ignoré (simu)"
+                    )
+                    return {"status": "skipped", "reason": "already short"}
+                self.positions[symbol] = {
+                    "side": "short",
+                    "entry_price": price or 0,
+                    "amount": amount,
+                    "min_price": price or 0,
+                }
+            elif side.upper() == "BUY" and self.is_short(symbol):
+                if not self.is_short(symbol):
+                    log_dashboard(
+                        f"[ORDER] Pas en position short sur {symbol}, rachat ignoré (simu)"
+                    )
+                    return {"status": "skipped", "reason": "not in short"}
+                pos = self.positions.get(symbol)
+                last_price = price or 0
+                if pos:
+                    self.log_closed_position(
+                        symbol, pos, last_price, "Close short (simulation)"
                     )
                 self.positions.pop(symbol, None)
             return {
@@ -2162,25 +2187,15 @@ class TradingBotM4:
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
             )
 
+            result = None
+            pos = self.positions.get(symbol)
+            last_price = price
+
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
-                # PATCH : On vérifie le portefeuille spot Binance AVANT d'acheter
-                already_in_portfolio = False
-                # Vérifie dans self.positions (du bot)
                 if self.is_long(symbol):
-                    already_in_portfolio = True
-                # Vérifie dans le portefeuille spot Binance
-                if hasattr(self, "positions_binance"):
-                    pos_binance = self.positions_binance.get(symbol)
-                    if pos_binance and float(pos_binance.get("amount", 0)) > 0:
-                        already_in_portfolio = True
-
-                if already_in_portfolio:
-                    log_dashboard(
-                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (spot ou portefeuille Binance)."
-                    )
+                    log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
                     return {"status": "skipped", "reason": "already long"}
-
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
@@ -2217,13 +2232,11 @@ class TradingBotM4:
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
                 allow_sell = False
                 use_amount = None
-                # 1. Vente si position "virtuelle" long
                 if self.is_long(symbol):
                     allow_sell = True
                     use_amount = self.positions[symbol]["amount"]
                 else:
-                    # 2. Vente autorisée si solde réel Binance dispo
-                    asset = symbol.replace("/USDC", "").replace("USDC", "")
+                    asset = symbol.replace("USDC", "")
                     balance = None
                     try:
                         balance = self.binance_client.get_asset_balance(asset=asset)
@@ -2235,7 +2248,7 @@ class TradingBotM4:
                         allow_sell = True
                         use_amount = amount
                         log_dashboard(
-                            f"[ORDER] Vente autorisée sur solde réel {asset}: {balance.get('free', 0)}"
+                            f"[ORDER] Vente autorisée sur solde réel {asset}: {balance['free']}"
                         )
                     else:
                         log_dashboard(
@@ -2270,7 +2283,6 @@ class TradingBotM4:
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
-                # Retire la position virtuelle si elle existait et enregistre la position fermée
                 if result.get("status") == "completed" and self.is_long(symbol):
                     pos = self.positions.get(symbol)
                     last_price = result.get("avg_price", None)
@@ -2278,8 +2290,11 @@ class TradingBotM4:
                         self.log_closed_position(symbol, pos, last_price, "SELL")
                     self.positions.pop(symbol, None)
 
-            # ----- SHORT BINGX -----
+            # ----- OUVERTURE SHORT BINGX -----
             elif side.upper() == "SHORT":
+                if self.is_short(symbol):
+                    log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré.")
+                    return {"status": "skipped", "reason": "already short"}
                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
                 ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
                 price_bingx = float(ticker["last"])
@@ -2287,12 +2302,31 @@ class TradingBotM4:
                 result = await self.bingx_executor.short_order(
                     symbol_bingx, qty, leverage=3
                 )
+                if result.get("status") == "completed":
+                    self.positions[symbol] = {
+                        "side": "short",
+                        "entry_price": price_bingx,
+                        "amount": qty,
+                        "min_price": price_bingx,
+                    }
+
+            # ----- FERMETURE SHORT BINGX -----
+            elif side.upper() == "BUY" and self.is_short(symbol):
+                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                pos = self.positions[symbol]
+                qty = pos["amount"]
+                result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
+                if result.get("status") == "completed":
+                    last_price = result.get("avg_price", None)
+                    if pos and last_price is not None:
+                        self.log_closed_position(symbol, pos, last_price, "Close short")
+                    self.positions.pop(symbol, None)
 
             else:
                 return {"status": "rejected", "reason": "unsupported side"}
 
             # ----- LOGS & NOTIF -----
-            if result["status"] == "completed":
+            if result and result.get("status") == "completed":
                 log_dashboard(
                     f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
                 )
