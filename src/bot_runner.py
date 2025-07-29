@@ -4249,6 +4249,7 @@ async def run_clean_bot():
 
             # Boucle principale
             cycle = 0
+            # ==== BOUCLE PRINCIPALE PATCHÉE POUR PAUSE ====
             while True:
                 cycle += 1
                 start = datetime.utcnow()
@@ -4266,10 +4267,8 @@ async def run_clean_bot():
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
                 if bot.news_pause_manager.scan_news(unprocessed_news):
                     print("🚨 Pause trading à cause d'une news critique !")
-                    # Marque ces news comme traitées
                     for n in unprocessed_news:
                         n["processed"] = True
-                    # Puis sauvegarde news_sentiment dans shared_data
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
