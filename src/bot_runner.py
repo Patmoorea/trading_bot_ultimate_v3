@@ -4570,6 +4570,8 @@ async def run_clean_bot():
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
 
+                    bot.get_pending_sales()
+                    bot.save_shared_data()
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
 
