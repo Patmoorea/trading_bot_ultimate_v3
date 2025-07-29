@@ -415,6 +415,11 @@ with tab4:
     if positions_binance:
         df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
         df_pos_binance.index.name = "Paire"
+        # Ajout formatage % plus-value si dispo
+        if "pnl_pct" in df_pos_binance.columns:
+            df_pos_binance["% Plus-Value"] = df_pos_binance["pnl_pct"].map(
+                lambda x: f"{x:.2f}%" if x is not None else "N/A"
+            )
         st.dataframe(df_pos_binance, use_container_width=True)
     else:
         st.info("Aucune position ouverte sur Binance spot.")
