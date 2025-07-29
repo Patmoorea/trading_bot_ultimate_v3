@@ -50,6 +50,37 @@ def load_json_file(path):
             return {}
     return {}
 
+def get_pending_sales(self):
+    """Retourne la liste des positions qui vont être vendues au prochain cycle (signal SELL, TP, SL en approche)"""
+    pending = []
+    for symbol, pos in self.positions.items():
+        # 1. Signal SELL actif
+        td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
+        if td.get("action") == "SELL" and pos.get("side") == "long":
+            pending.append({
+                "symbol": symbol,
+                "reason": "Signal SELL",
+                "confidence": td.get("confidence"),
+                "entry_price": pos.get("entry_price"),
+                "current_price": pos.get("current_price"),
+                "amount": pos.get("amount"),
+                "pnl_pct": (pos.get("current_price") - pos.get("entry_price")) / pos.get("entry_price") * 100 if pos.get("entry_price") else 0,
+            })
+        # 2. TP ou SL en approche
+        if self.exit_manager.is_tp_near(pos):
+            pending.append({"symbol": symbol, "reason": "TP proche", ...})
+        if self.check_stop_loss(symbol):
+            pending.append({"symbol": symbol, "reason": "Stop-loss imminent", ...})
+    # Sauvegarde dans shared_data.json
+    try:
+        with open(self.data_file, "r") as f:
+            shared_data = json.load(f)
+    except Exception:
+        shared_data = {}
+    shared_data["pending_sales"] = pending
+    with open(self.data_file, "w") as f:
+        json.dump(shared_data, f, indent=4)
+    return pending
 
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
@@ -233,8 +264,8 @@ with tab1:
     st.divider()
     st.markdown("#### Scores de décision et signaux")
     trade_decisions = shared_data.get("trade_decisions", {})
-    print("=== DEBUG TRADE_DECISIONS ===")
-    print(trade_decisions)
+    # print("=== DEBUG TRADE_DECISIONS ===")
+    # print(trade_decisions)
     if trade_decisions:
         df_signals = pd.DataFrame(trade_decisions).T
 
@@ -336,32 +367,32 @@ with tab3:
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
     positions_binance = shared_data.get("positions_binance", {})
-    if positions_binance:
-        pos_data = []
-        for symbol, pos in positions_binance.items():
-            entry_price = pos.get("entry_price")
-            current_price = pos.get("current_price")
-            pnl_pct = pos.get("pnl_pct")
-            pnl_usd = pos.get("pnl_usd")
-            pos_data.append(
-                {
-                    "Symbole": symbol,
-                    "Side": pos.get("side", ""),
-                    "Quantité": pos.get("amount", 0),
-                    "Prix d'entrée": (
-                        f"{entry_price:.4f}" if entry_price not in (None, 0) else "N/A"
-                    ),
-                    "Prix actuel": f"{current_price:.4f}" if current_price else "N/A",
-                    "% Gain/Perte": f"{pnl_pct:.2f}%" if pnl_pct is not None else "N/A",
-                    "Gain/Perte ($)": (
-                        f"{pnl_usd:.2f}" if pnl_usd is not None else "N/A"
-                    ),
-                }
-            )
-        df_pos = pd.DataFrame(pos_data)
-        st.dataframe(df_pos, use_container_width=True)
+    # ... (affichage des positions ouvertes inchangé)
+
+    st.markdown("#### Historique des positions fermées")
+    closed = shared_data.get("closed_positions", [])
+    if closed:
+        df_closed = pd.DataFrame(closed)
+        st.dataframe(df_closed, use_container_width=True)
     else:
-        st.info("Aucune position SPOT ouverte sur Binance.")
+        st.info("Aucune position fermée automatiquement ce cycle.")
+
+    # --- NOUVEAU : ALERTES DE VENTE ---
+    st.markdown("#### Alertes de ventes à venir")
+    pending_sales = shared_data.get("pending_sales", [])
+    if pending_sales:
+        df_pending = pd.DataFrame(pending_sales)
+        st.dataframe(df_pending, use_container_width=True)
+    else:
+        st.info("Aucune vente imminente détectée.")
+
+    st.markdown("#### Historique des trades")
+    trades = shared_data.get("trade_history", [])
+    if trades:
+        df_trades = pd.DataFrame(trades)
+        st.dataframe(df_trades, use_container_width=True)
+    else:
+        st.info("Aucun trade exécuté ce cycle.")
 
     # Historique des positions fermées
     st.markdown("#### Historique des positions fermées")

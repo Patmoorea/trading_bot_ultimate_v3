@@ -855,6 +855,70 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def log_closed_position(self, symbol, pos, exit_price, reason):
+        closed_position = {
+            "symbol": symbol,
+            "side": pos.get("side", ""),
+            "amount": pos.get("amount", 0),
+            "entry_price": pos.get("entry_price"),
+            "exit_price": exit_price,
+            "pnl_pct": (
+                (exit_price - pos.get("entry_price")) / pos.get("entry_price") * 100
+                if pos.get("entry_price")
+                else 0
+            ),
+            "pnl_usd": (
+                (exit_price - pos.get("entry_price")) * pos.get("amount")
+                if pos.get("entry_price")
+                else 0
+            ),
+            "date": datetime.utcnow().isoformat(),
+            "reason": reason,
+        }
+        # Ajoute à closed_positions dans shared_data.json
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            shared_data = {}
+        closed = shared_data.get("closed_positions", [])
+        closed.append(closed_position)
+        shared_data["closed_positions"] = closed
+        with open(self.data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
+
+    def get_pending_sales(self):
+        """Retourne la liste des positions qui vont être vendues au prochain cycle (signal SELL, TP, SL en approche)"""
+        pending = []
+        for symbol, pos in self.positions.items():
+            # 1. Signal SELL actif
+            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
+            if td.get("action") == "SELL" and pos.get("side") == "long":
+                pending.append({
+                    "symbol": symbol,
+                    "reason": "Signal SELL",
+                    "confidence": td.get("confidence"),
+                    "entry_price": pos.get("entry_price"),
+                    "current_price": pos.get("current_price"),
+                    "amount": pos.get("amount"),
+                    "pnl_pct": (pos.get("current_price") - pos.get("entry_price")) / pos.get("entry_price") * 100 if pos.get("entry_price") else 0,
+                })
+            # 2. TP ou SL en approche
+            if self.exit_manager.is_tp_near(pos):
+                pending.append({"symbol": symbol, "reason": "TP proche", ...})
+            if self.check_stop_loss(symbol):
+                pending.append({"symbol": symbol, "reason": "Stop-loss imminent", ...})
+        # Sauvegarde dans shared_data.json
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            shared_data = {}
+        shared_data["pending_sales"] = pending
+        with open(self.data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
+        return pending
+
     def sync_positions_with_binance(self):
         if self.is_live_trading and self.binance_client:
             account = self.binance_client.get_account()
@@ -3895,7 +3959,7 @@ def filter_pairs(
             f"[FILTER DEBUG] {pair_key}: vol={vol:.4f}, sig={signal:.4f}, clean={is_clean}"
         )
         # Filtrage
-        if vol > min_volatility and abs(signal) > min_signal and is_clean:
+        if is_clean:
             candidates.append((pair, vol, abs(signal)))
         else:
             print(
@@ -4149,7 +4213,7 @@ async def run_clean_bot():
                 min_vol, min_sig, n_top = 0.01, 0.3, 5
 
             selected_pairs = filter_pairs(
-                bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top
+                bot, min_volatility=0.0, min_signal=0.0, top_n=10
             )
             print(selected_pairs)
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
