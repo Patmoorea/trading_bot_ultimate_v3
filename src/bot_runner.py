@@ -5624,10 +5624,16 @@ if __name__ == "__main__":
         try:
             loop = asyncio.get_running_loop()
             if loop.is_running():
-                # Dans Jupyter/Streamlit/serveur asynchrone
-                loop.create_task(run_clean_bot())
+                print("[INFO] Boucle asyncio déjà en cours, lancement via create_task.")
+                task = loop.create_task(run_clean_bot())
+                # Si tu es dans un terminal classique, bloque sur la tâche principale
+                if not hasattr(sys, "ps1") and not sys.flags.interactive:
+                    # Attente bloquante : le bot tourne tant que la tâche n'est pas terminée
+                    try:
+                        loop.run_until_complete(task)
+                    except Exception as e:
+                        print(f"[ERROR] Problème avec run_until_complete : {e}")
             else:
                 asyncio.run(run_clean_bot())
         except RuntimeError:
-            # Pas de boucle active, run normalement
             asyncio.run(run_clean_bot())
