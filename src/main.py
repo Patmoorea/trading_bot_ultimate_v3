@@ -50,6 +50,7 @@ def load_json_file(path):
             return {}
     return {}
 
+
 def get_pending_sales(self):
     """Retourne la liste des positions qui vont être vendues au prochain cycle (signal SELL, TP, SL en approche)"""
     pending = []
@@ -57,20 +58,60 @@ def get_pending_sales(self):
         # 1. Signal SELL actif
         td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
         if td.get("action") == "SELL" and pos.get("side") == "long":
-            pending.append({
-                "symbol": symbol,
-                "reason": "Signal SELL",
-                "confidence": td.get("confidence"),
-                "entry_price": pos.get("entry_price"),
-                "current_price": pos.get("current_price"),
-                "amount": pos.get("amount"),
-                "pnl_pct": (pos.get("current_price") - pos.get("entry_price")) / pos.get("entry_price") * 100 if pos.get("entry_price") else 0,
-            })
+            pending.append(
+                {
+                    "symbol": symbol,
+                    "reason": "Signal SELL",
+                    "confidence": td.get("confidence"),
+                    "entry_price": pos.get("entry_price"),
+                    "current_price": pos.get("current_price"),
+                    "amount": pos.get("amount"),
+                    "pnl_pct": (
+                        (pos.get("current_price") - pos.get("entry_price"))
+                        / pos.get("entry_price")
+                        * 100
+                        if pos.get("entry_price")
+                        else 0
+                    ),
+                }
+            )
         # 2. TP ou SL en approche
         if self.exit_manager.is_tp_near(pos):
-            pending.append({"symbol": symbol, "reason": "TP proche", ...})
+            pending.append(
+                {
+                    "symbol": symbol,
+                    "reason": "TP proche",
+                    "confidence": None,
+                    "entry_price": pos.get("entry_price"),
+                    "current_price": pos.get("current_price"),
+                    "amount": pos.get("amount"),
+                    "pnl_pct": (
+                        (pos.get("current_price") - pos.get("entry_price"))
+                        / pos.get("entry_price")
+                        * 100
+                        if pos.get("entry_price")
+                        else 0
+                    ),
+                }
+            )
         if self.check_stop_loss(symbol):
-            pending.append({"symbol": symbol, "reason": "Stop-loss imminent", ...})
+            pending.append(
+                {
+                    "symbol": symbol,
+                    "reason": "Stop-loss imminent",
+                    "confidence": None,
+                    "entry_price": pos.get("entry_price"),
+                    "current_price": pos.get("current_price"),
+                    "amount": pos.get("amount"),
+                    "pnl_pct": (
+                        (pos.get("current_price") - pos.get("entry_price"))
+                        / pos.get("entry_price")
+                        * 100
+                        if pos.get("entry_price")
+                        else 0
+                    ),
+                }
+            )
     # Sauvegarde dans shared_data.json
     try:
         with open(self.data_file, "r") as f:
@@ -81,6 +122,7 @@ def get_pending_sales(self):
     with open(self.data_file, "w") as f:
         json.dump(shared_data, f, indent=4)
     return pending
+
 
 def fetch_binance_ohlcv(
     symbol, interval, start_str, end_str=None, api_key=None, api_secret=None
