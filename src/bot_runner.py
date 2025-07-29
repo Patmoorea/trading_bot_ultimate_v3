@@ -4532,6 +4532,14 @@ async def run_clean_bot():
                     # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
                     bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data["active_pauses"] = active_pauses
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
 
