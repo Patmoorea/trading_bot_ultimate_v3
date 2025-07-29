@@ -428,14 +428,6 @@ with tab4:
     else:
         st.info("Aucune vente imminente détectée.")
 
-    st.markdown("#### Historique des trades")
-    trades = shared_data.get("trade_history", [])
-    if trades:
-        df_trades = pd.DataFrame(trades)
-        st.dataframe(df_trades, use_container_width=True)
-    else:
-        st.info("Aucun trade exécuté ce cycle.")
-
     # Historique des positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])

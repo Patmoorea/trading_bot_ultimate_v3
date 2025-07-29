@@ -2098,6 +2098,7 @@ class TradingBotM4:
         - SELL sur Binance spot (revente, si déjà long)
         - SHORT sur BingX (futures)
         - Gère le suivi de position SPOT et le stop-loss automatique
+        - Enregistre les positions fermées dans closed_positions
         """
         if not self.is_live_trading:
             log_dashboard(
@@ -2124,6 +2125,13 @@ class TradingBotM4:
                         f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                     )
                     return {"status": "skipped", "reason": "not in position"}
+                # Enregistrement de la position fermée simulée
+                pos = self.positions.get(symbol)
+                last_price = price or 0
+                if pos:
+                    self.log_closed_position(
+                        symbol, pos, last_price, "SELL (simulation)"
+                    )
                 self.positions.pop(symbol, None)
             return {
                 "status": "simulated",
@@ -2246,8 +2254,12 @@ class TradingBotM4:
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
-                # Retire la position virtuelle si elle existait
+                # Retire la position virtuelle si elle existait et enregistre la position fermée
                 if result.get("status") == "completed" and self.is_long(symbol):
+                    pos = self.positions.get(symbol)
+                    last_price = result.get("avg_price", None)
+                    if pos and last_price is not None:
+                        self.log_closed_position(symbol, pos, last_price, "SELL")
                     self.positions.pop(symbol, None)
 
             # ----- SHORT BINGX -----
