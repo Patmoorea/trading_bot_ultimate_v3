@@ -4146,7 +4146,7 @@ async def run_clean_bot():
             selected_pairs = filter_pairs(
                 bot, min_volatility=min_vol, min_signal=min_sig, top_n=n_top
             )
-
+            print(selected_pairs)
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
             if ignored_pairs:
