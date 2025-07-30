@@ -1264,8 +1264,7 @@ class TradingBotM4:
 
     async def execute_arbitrage_cross_exchange(self, opportunity, amount):
         """
-        Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs, notifications Telegram,
-        et enregistrement de la position fermée dans closed_positions.
+        Exécute un arbitrage spot cross-exchange réel avec gestion des erreurs, logs et notifications Telegram.
         Args:
             opportunity (dict): dict contenant buy_exchange, sell_exchange, symbol, buy_price, sell_price, etc.
             amount (float): montant à investir (en devise quote, ex USDC)
@@ -1382,20 +1381,6 @@ class TradingBotM4:
             log_dashboard(msg)
             await self.telegram.send_message(msg)
 
-            # 7. Enregistrement dans closed_positions
-            pos = {
-                "side": "arbitrage",
-                "amount": transfer_amount,
-                "entry_price": opportunity["buy_price"],
-                "exit_price": opportunity["sell_price"],
-            }
-            self.log_closed_position(
-                symbol,
-                pos,
-                opportunity["sell_price"],
-                f"Arbitrage {opportunity['buy_exchange']}->{opportunity['sell_exchange']}",
-            )
-
             return {
                 "status": "success",
                 "profit": profit,
@@ -1445,14 +1430,16 @@ class TradingBotM4:
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                news_data = self.enrich_news_symbols(news_data)  # Enrichit les symboles
+                news_data = self.enrich_news_symbols(news_data)  # <-- AJOUT PATCH
 
                 sentiment_analysis = {}
                 try:
                     sentiment_analysis = await self.news_analyzer.update_analysis()
                 except Exception:
                     self.logger.error("Erreur update_analysis", exc_info=True)
+                    # sentiment_analysis reste {}
 
+                # Extract the items list from the analysis result
                 sentiment_scores = (
                     sentiment_analysis.get("items", [])
                     if isinstance(sentiment_analysis, dict)
@@ -2108,13 +2095,11 @@ class TradingBotM4:
         """
         Exécute un ordre de trading avec logs détaillés.
         - BUY sur Binance spot (quoteOrderQty)
-        - SELL sur Binance spot (revente, si déjà long OU si solde réel suffisant)
+        - SELL sur Binance spot (revente, si déjà long)
         - SHORT sur BingX (futures)
-        - BUY sur BingX pour rachat short
         - Gère le suivi de position SPOT et le stop-loss automatique
         - Enregistre les positions fermées dans closed_positions
         """
-
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -2140,36 +2125,12 @@ class TradingBotM4:
                         f"[ORDER] Pas en position long sur {symbol}, vente ignorée (simu)"
                     )
                     return {"status": "skipped", "reason": "not in position"}
+                # Enregistrement de la position fermée simulée
                 pos = self.positions.get(symbol)
                 last_price = price or 0
                 if pos:
                     self.log_closed_position(
                         symbol, pos, last_price, "SELL (simulation)"
-                    )
-                self.positions.pop(symbol, None)
-            elif side.upper() == "SHORT":
-                if self.is_short(symbol):
-                    log_dashboard(
-                        f"[ORDER] Déjà short sur {symbol}, short ignoré (simu)"
-                    )
-                    return {"status": "skipped", "reason": "already short"}
-                self.positions[symbol] = {
-                    "side": "short",
-                    "entry_price": price or 0,
-                    "amount": amount,
-                    "min_price": price or 0,
-                }
-            elif side.upper() == "BUY" and self.is_short(symbol):
-                if not self.is_short(symbol):
-                    log_dashboard(
-                        f"[ORDER] Pas en position short sur {symbol}, rachat ignoré (simu)"
-                    )
-                    return {"status": "skipped", "reason": "not in short"}
-                pos = self.positions.get(symbol)
-                last_price = price or 0
-                if pos:
-                    self.log_closed_position(
-                        symbol, pos, last_price, "Close short (simulation)"
                     )
                 self.positions.pop(symbol, None)
             return {
@@ -2185,15 +2146,25 @@ class TradingBotM4:
                 f"[ORDER] Tentative d'exécution: {side} {amount} {symbol} (iceberg: {iceberg})"
             )
 
-            result = None
-            pos = self.positions.get(symbol)
-            last_price = price
-
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
+                # PATCH : On vérifie le portefeuille spot Binance AVANT d'acheter
+                already_in_portfolio = False
+                # Vérifie dans self.positions (du bot)
                 if self.is_long(symbol):
-                    log_dashboard(f"[ORDER] Déjà long sur {symbol}, achat ignoré.")
+                    already_in_portfolio = True
+                # Vérifie dans le portefeuille spot Binance
+                if hasattr(self, "positions_binance"):
+                    pos_binance = self.positions_binance.get(symbol)
+                    if pos_binance and float(pos_binance.get("amount", 0)) > 0:
+                        already_in_portfolio = True
+
+                if already_in_portfolio:
+                    log_dashboard(
+                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (spot ou portefeuille Binance)."
+                    )
                     return {"status": "skipped", "reason": "already long"}
+
                 bid, ask = self.get_ws_orderbook(symbol)
                 if bid is None or ask is None:
                     log_dashboard(
@@ -2230,11 +2201,13 @@ class TradingBotM4:
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
                 allow_sell = False
                 use_amount = None
+                # 1. Vente si position "virtuelle" long
                 if self.is_long(symbol):
                     allow_sell = True
                     use_amount = self.positions[symbol]["amount"]
                 else:
-                    asset = symbol.replace("USDC", "")
+                    # 2. Vente autorisée si solde réel Binance dispo
+                    asset = symbol.replace("/USDC", "").replace("USDC", "")
                     balance = None
                     try:
                         balance = self.binance_client.get_asset_balance(asset=asset)
@@ -2246,7 +2219,7 @@ class TradingBotM4:
                         allow_sell = True
                         use_amount = amount
                         log_dashboard(
-                            f"[ORDER] Vente autorisée sur solde réel {asset}: {balance['free']}"
+                            f"[ORDER] Vente autorisée sur solde réel {asset}: {balance.get('free', 0)}"
                         )
                     else:
                         log_dashboard(
@@ -2281,6 +2254,7 @@ class TradingBotM4:
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
+                # Retire la position virtuelle si elle existait et enregistre la position fermée
                 if result.get("status") == "completed" and self.is_long(symbol):
                     pos = self.positions.get(symbol)
                     last_price = result.get("avg_price", None)
@@ -2288,11 +2262,8 @@ class TradingBotM4:
                         self.log_closed_position(symbol, pos, last_price, "SELL")
                     self.positions.pop(symbol, None)
 
-            # ----- OUVERTURE SHORT BINGX -----
+            # ----- SHORT BINGX -----
             elif side.upper() == "SHORT":
-                if self.is_short(symbol):
-                    log_dashboard(f"[ORDER] Déjà short sur {symbol}, short ignoré.")
-                    return {"status": "skipped", "reason": "already short"}
                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
                 ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
                 price_bingx = float(ticker["last"])
@@ -2300,31 +2271,12 @@ class TradingBotM4:
                 result = await self.bingx_executor.short_order(
                     symbol_bingx, qty, leverage=3
                 )
-                if result.get("status") == "completed":
-                    self.positions[symbol] = {
-                        "side": "short",
-                        "entry_price": price_bingx,
-                        "amount": qty,
-                        "min_price": price_bingx,
-                    }
-
-            # ----- FERMETURE SHORT BINGX -----
-            elif side.upper() == "BUY" and self.is_short(symbol):
-                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
-                pos = self.positions[symbol]
-                qty = pos["amount"]
-                result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
-                if result.get("status") == "completed":
-                    last_price = result.get("avg_price", None)
-                    if pos and last_price is not None:
-                        self.log_closed_position(symbol, pos, last_price, "Close short")
-                    self.positions.pop(symbol, None)
 
             else:
                 return {"status": "rejected", "reason": "unsupported side"}
 
             # ----- LOGS & NOTIF -----
-            if result and result.get("status") == "completed":
+            if result["status"] == "completed":
                 log_dashboard(
                     f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
                 )
@@ -2622,6 +2574,69 @@ class TradingBotM4:
             self.logger.error(f"ERREUR dans _merge_signals: {str(e)}", exc_info=True)
             return default_signals.copy()
 
+    async def _news_analysis_loop(self):
+        log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
+        """Boucle d'analyse des news (version propre sans print/debug)"""
+        while True:
+            try:
+                if not self.news_enabled or not self.news_analyzer:
+                    await asyncio.sleep(self.news_update_interval)
+                    continue
+
+                self.logger.info("Fetching latest news for sentiment analysis")
+                news_data = await self.news_analyzer.fetch_all_news()
+
+                sentiment_analysis = {}
+                try:
+                    sentiment_analysis = await self.news_analyzer.update_analysis()
+                except Exception:
+                    self.logger.error("Erreur update_analysis", exc_info=True)
+                    # sentiment_analysis reste {}
+
+                # Extract the items list from the analysis result
+                sentiment_scores = (
+                    sentiment_analysis.get("items", [])
+                    if isinstance(sentiment_analysis, dict)
+                    else []
+                )
+
+                try:
+                    await self._update_sentiment_data(sentiment_scores)
+                except Exception:
+                    pass
+
+                try:
+                    await self._save_sentiment_data(sentiment_scores, news_data)
+                except Exception as e:
+                    self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
+
+                try:
+                    await self.telegram.send_news_summary(news_data[:5])
+                except Exception:
+                    pass
+
+                # === LOG SENTIMENT GLOBAL ===
+                try:
+                    with open(self.data_file, "r") as f:
+                        shared_data = json.load(f)
+                    sentiment_data = shared_data.get("sentiment", {})
+                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
+                    impact_score = sentiment_data.get("impact_score", 0)
+                    major_events = sentiment_data.get("major_events", "")
+
+                    log_dashboard(
+                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
+                    )
+                except Exception as e:
+                    print(
+                        f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
+                    )
+
+            except Exception as e:
+                self.logger.error(f"News analysis error: {e}")
+
+            await asyncio.sleep(self.news_update_interval)
+
     async def _update_sentiment_data(self, sentiment_scores):
         """
         Met à jour les données de marché avec le sentiment :
@@ -2719,7 +2734,8 @@ class TradingBotM4:
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
-        Corrige le bug d'écrasement du champ "processed" sur les news.
+        Correction : le score global est calculé sur les scores déjà assignés à chaque paire,
+        et sinon fallback sur sentiment_scores si jamais.
         """
         headlines = []
         if news_data is None:
@@ -2773,24 +2789,6 @@ class TradingBotM4:
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
         )
-
-        # === PATCH : FUSIONNE "processed" des anciennes news ===
-        try:
-            with open(self.data_file, "r") as f:
-                shared_data_old = json.load(f)
-            old_scores = shared_data_old.get("sentiment", {}).get("scores", [])
-
-            # Index par titre ou id si dispo
-            def news_key(news):
-                return news.get("title", "")  # ou autre identifiant unique
-
-            processed_map = {news_key(n): n.get("processed", False) for n in old_scores}
-            for n in sentiment_scores:
-                k = news_key(n)
-                if processed_map.get(k, False):
-                    n["processed"] = True
-        except Exception:
-            pass
 
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
@@ -3432,30 +3430,28 @@ class TradingBotM4:
             return []
 
     def initialize_shared_data(self):
-        """Initialise le fichier de données partagées SI ABSENT"""
-        if not os.path.exists(self.data_file):
-            data = {
-                "timestamp": get_current_time(),
-                "user": CURRENT_USER,
-                "bot_status": {
-                    "regime": self.regime,
-                    "cycle": self.current_cycle,
-                    "last_update": get_current_time(),
-                    "performance": {
-                        "total_trades": 0,
-                        "win_rate": 0,
-                        "profit_factor": 0,
-                        "balance": 0,
-                        "wins": 0,
-                        "losses": 0,
-                        "total_profit": 0,
-                        "total_loss": 0,
-                    },
+        """Initialise le fichier de données partagées"""
+        data = {
+            "timestamp": get_current_time(),
+            "user": CURRENT_USER,
+            "bot_status": {
+                "regime": self.regime,
+                "cycle": self.current_cycle,
+                "last_update": get_current_time(),
+                "performance": {
+                    "total_trades": 0,
+                    "win_rate": 0,
+                    "profit_factor": 0,
+                    "balance": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "total_profit": 0,
+                    "total_loss": 0,
                 },
-            }
-            with open(self.data_file, "w") as f:
-                json.dump(data, f, indent=4)
-        # Sinon, NE RIEN FAIRE (on garde l’existant)
+            },
+        }
+        with open(self.data_file, "w") as f:
+            json.dump(data, f, indent=4)
 
     def save_shared_data(self):
         try:
@@ -3618,6 +3614,9 @@ class TradingBotM4:
         (Version enrichie avec indicateurs avancés)
         Corrige définitivement le warning VWAP/VWMA not datetime ordered de pandas-ta !
         """
+        import pandas as pd
+        import numpy as np
+
         try:
             # --- Conversion stricte et tri ---
             # Si df est une liste, transforme-le en DataFrame
@@ -3860,8 +3859,6 @@ class TradingBotM4:
             self.logger.info(
                 f"✅ {n_valid} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
             )
-            print(f"[DEBUG INDICS] {df[['close','high','low','volume']].tail(3)}")
-            print(f"[DEBUG INDICS RESULT] {indicators}")
             print(
                 f"[DEBUG add_indicators] {n_valid} indicateurs extraits: {list(indicators.keys())[:5]}"
             )
@@ -3958,15 +3955,6 @@ def filter_pairs(
     candidates = []
     for pair in bot.pairs_valid:
         pair_key = pair.replace("/", "").upper()
-        for tf in bot.config["TRADING"]["timeframes"]:
-            df = bot.ws_collector.get_dataframe(pair_key, tf)
-            print(
-                f"[DEBUG DATA] {pair_key}-{tf} df shape: {df.shape if df is not None else 'None'}"
-            )
-            if df is not None and not df.empty:
-                print(f"[DEBUG DATA SAMPLE] {pair_key}-{tf} head:\n{df.head()}")
-            else:
-                print(f"[DEBUG DATA WARNING] {pair_key}-{tf} DataFrame vide !")
         # Récupère la volatilité sur 1h
         if (
             pair_key in bot.market_data
@@ -4276,7 +4264,9 @@ async def run_clean_bot():
             except Exception:
                 min_vol, min_sig, n_top = 0.01, 0.3, 5
 
-            selected_pairs = bot.pairs_valid
+            selected_pairs = filter_pairs(
+                bot, min_volatility=0.0, min_signal=0.0, top_n=10
+            )
             print(selected_pairs)
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
@@ -4378,10 +4368,9 @@ async def run_clean_bot():
             regime, _, _ = await bot.study_market("7d")
             log_dashboard(f"🔈 Régime de marché détecté: {regime}")
 
-            # === PATCH OPTION 1 : Cycle = 0 à chaque démarrage ===
-            cycle = 0  # Cycle repart à zéro à chaque démarrage !
-
             # Boucle principale
+            cycle = 0
+            # ==== BOUCLE PRINCIPALE PATCHÉE POUR PAUSE ====
             while True:
                 cycle += 1
                 start = datetime.utcnow()
@@ -4397,52 +4386,24 @@ async def run_clean_bot():
 
                 # Filtre les news non déjà traitées
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
-                if unprocessed_news:
-                    if bot.news_pause_manager.scan_news(unprocessed_news):
-                        print("🚨 Pause trading à cause d'une news critique !")
-                        # Marque TOUTES les news traitées comme processed = True
-                        for n in unprocessed_news:
-                            n["processed"] = True
-                        # Sauvegarde la liste news_list (avec processed=True) dans le fichier partagé
-                        try:
-                            with open(bot.data_file, "r") as f:
-                                shared_data = json.load(f)
-                        except Exception:
-                            shared_data = {}
-                        # PATCH : mets bien à jour le champ 'scores' dans le bloc 'sentiment'
-                        if "sentiment" not in shared_data:
-                            shared_data["sentiment"] = {}
-                        shared_data["sentiment"]["scores"] = news_list
-                        with open(bot.data_file, "w") as f:
-                            json.dump(shared_data, f, indent=4)
+                if bot.news_pause_manager.scan_news(unprocessed_news):
+                    print("🚨 Pause trading à cause d'une news critique !")
+                    for n in unprocessed_news:
+                        n["processed"] = True
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data.get("sentiment", {})["scores"] = news_list
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
 
                 trading_paused = bot.news_pause_manager.should_pause()
                 if trading_paused:
                     print(
                         "Trading en pause: calculs et signaux mis à jour, EXÉCUTION DES TRADES BLOQUÉE."
                     )
-
-                # === AJOUT DEBUG DECREMENT PAUSES ===
-                print(
-                    "[DEBUG NEWS PAUSES] AVANT DECREMENT :",
-                    bot.news_pause_manager.get_active_pauses(),
-                )
-                # Après la décrémentation
-                pauses = bot.news_pause_manager.get_active_pauses()
-                try:
-                    with open(bot.data_file, "r") as f:
-                        shared_data = json.load(f)
-                except Exception:
-                    shared_data = {}
-
-                shared_data["active_pauses"] = pauses
-
-                with open(bot.data_file, "w") as f:
-                    json.dump(shared_data, f, indent=4)
-                print(
-                    "[DEBUG NEWS PAUSES] APRÈS DECREMENT :",
-                    bot.news_pause_manager.get_active_pauses(),
-                )
 
                 try:
                     print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
@@ -4456,9 +4417,7 @@ async def run_clean_bot():
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
-                            bot.log_closed_position(
-                                symbol, pos, pos.get("current_price", 0), "Stop-loss"
-                            )
+
                     # TP partiels et trailing TP sur toutes les positions longues
                     for symbol, pos in list(bot.positions.items()):
                         if pos.get("side") != "long":
@@ -4504,7 +4463,6 @@ async def run_clean_bot():
                         pos["max_price"] = new_max
                         if should_exit and pos["amount"] > 0:
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
-                            bot.log_closed_position(symbol, pos, last_price, "TP +x%")
                             bot.positions.pop(symbol)
 
                     # Déclenchement stop-loss et trailing stop SHORT BingX
@@ -4575,11 +4533,28 @@ async def run_clean_bot():
                                     "ta": indics if indics else {},
                                 }
 
-                    # ====== BLOC UNIQUE DE SAUVEGARDE DES ÉTATS POUR LE DASHBOARD ======
+                    # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
+                    bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
+                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
-                    pending_sales = bot.get_pending_sales()
 
+                    # Ajout des scores de décision - PATCH pour vrai mapping
+                    td_dict = {}
+                    for td in trade_decisions:
+                        signals = td.get("signals", {})
+                        print(f"[DEBUG SIGNALS DASHBOARD] {td['pair']} {signals}")
+                        td_dict[td["pair"]] = {
+                            "confidence": td.get("confidence"),
+                            "action": td.get("action"),
+                            "tech": signals.get("technical"),
+                            "ai": signals.get("ai"),
+                            "sentiment": signals.get("sentiment"),
+                        }
+                    bot.trade_decisions = td_dict
+                    print("[DEBUG DASHBOARD EXPORT]", json.dumps(td_dict, indent=2))
+
+                    # Puis sauvegarde tout dans le shared_data
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
@@ -4591,16 +4566,12 @@ async def run_clean_bot():
                         bot, "positions_binance", {}
                     )
                     shared_data["trade_decisions"] = bot.trade_decisions
-                    shared_data["pending_sales"] = pending_sales
-                    shared_data["cycle"] = bot.current_cycle
-                    shared_data["regime"] = bot.regime
-                    shared_data["indicators"] = bot.indicators
-                    shared_data["market_data"] = bot.market_data
 
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
-                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
-                    # FIN PATCH
+
+                    # Sauvegarde de l'état du bot à chaque cycle
+                    bot.save_shared_data()
 
                     # --- EXÉCUTION DES TRADES UNIQUEMENT SI PAS DE PAUSE ---
                     if not trading_paused:
@@ -5420,7 +5391,9 @@ def objective(trial):
 
 if __name__ == "__main__":
 
-    # Argument parsing
+    # --- 1. Argument parsing avancé
+    import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
@@ -5472,7 +5445,7 @@ if __name__ == "__main__":
     )
     args, unknown = parser.parse_known_args()
 
-    # --- 2. Mode AutoML/Tuning
+    # --- 2. Mode AutoML/Tuning (prioritaire sur tout le reste)
     if "automl" in sys.argv or "tune" in sys.argv:
         asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
 
@@ -5486,6 +5459,7 @@ if __name__ == "__main__":
 
     # --- 3. Mode auto-strategy (AUTO-ML stratégies)
     elif "auto-strategy" in sys.argv:
+        # Paramètres pour Binance
         api_key = os.getenv("BINANCE_API_KEY")
         api_secret = os.getenv("BINANCE_API_SECRET")
 
@@ -5499,6 +5473,7 @@ if __name__ == "__main__":
         start_str = start_dt.strftime("%d %b %Y")
         end_str = end_dt.strftime("%d %b %Y")
 
+        # Récupère les données Binance
         df = fetch_binance_ohlcv(
             symbol,
             interval,
@@ -5511,7 +5486,7 @@ if __name__ == "__main__":
             print("Aucune donnée récupérée sur Binance, impossible d’auto-stratégie.")
             sys.exit(1)
 
-        df.columns = [col.lower() for col in df.columns]
+        df.columns = [col.lower() for col in df.columns]  # Sécurité
         best_config, best_score = auto_generate_and_backtest(df, n_strats=args.auto_n)
         print("Meilleure stratégie trouvée :", best_config)
         print("Score (profit brut sur l'historique):", best_score)
@@ -5537,6 +5512,7 @@ if __name__ == "__main__":
         TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
         if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
             from src.bot_runner import TelegramNotifier, get_current_time, CURRENT_USER
+            import asyncio
 
             notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
             rapport = (
@@ -5548,11 +5524,13 @@ if __name__ == "__main__":
                 f"Utilisateur: {CURRENT_USER}"
             )
             asyncio.run(notifier.send_message(rapport))
+
         sys.exit(0)
 
     # --- 4. Mode backtest CLI
     elif args.backtest:
         print("=== Lancement du backtesting quantitatif ===")
+        # 1. Charge les paires depuis la config
         config_path = "config/trading_pairs.json"
         try:
             with open(config_path, "r") as f:
@@ -5562,11 +5540,13 @@ if __name__ == "__main__":
             print("Impossible de charger la config, on utilise BTC/USDT.")
             pairs = ["BTC/USDT"]
 
+        # 2. Définis la période à backtester
         nb_days = 30
         end_dt = pd.Timestamp.utcnow()
         start_dt = end_dt - pd.Timedelta(days=nb_days)
         interval = Client.KLINE_INTERVAL_1HOUR
 
+        # 3. Stratégies
         strategy_map = {
             "sma": sma_strategy,
             "breakout": breakout_strategy,
@@ -5602,6 +5582,7 @@ if __name__ == "__main__":
     # --- 5. Entraînement IA live
     elif "train-cnn-lstm" in sys.argv:
         bot = TradingBotM4()
+        # Préchargement historique pour chaque paire/timeframe avant entraînement IA
         if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
             for symbol in bot.pairs_valid:
                 symbol_binance = symbol.replace("/", "").upper()
@@ -5613,16 +5594,10 @@ if __name__ == "__main__":
                         print(f"Préchargement {symbol_binance} {tf} OK")
                     except Exception as e:
                         print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
+        # Lancement de l'entraînement IA sur les données chargées
         bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 
     # --- 6. Lancement du bot de trading en mode normal
     else:
-        try:
-            loop = asyncio.get_running_loop()
-            if loop.is_running():
-                loop.create_task(run_clean_bot())
-            else:
-                asyncio.run(run_clean_bot())
-        except RuntimeError:
-            asyncio.run(run_clean_bot())
+        asyncio.run(run_clean_bot())
