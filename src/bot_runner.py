@@ -5379,6 +5379,7 @@ def objective(trial):
 
 if __name__ == "__main__":
 
+    # Argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
@@ -5430,7 +5431,7 @@ if __name__ == "__main__":
     )
     args, unknown = parser.parse_known_args()
 
-    # --- 2. Mode AutoML/Tuning (prioritaire sur tout le reste)
+    # --- 2. Mode AutoML/Tuning
     if "automl" in sys.argv or "tune" in sys.argv:
         asyncio.run(run_automl_tuning(None, mode="cnn_lstm"))
 
@@ -5444,7 +5445,6 @@ if __name__ == "__main__":
 
     # --- 3. Mode auto-strategy (AUTO-ML stratégies)
     elif "auto-strategy" in sys.argv:
-        # Paramètres pour Binance
         api_key = os.getenv("BINANCE_API_KEY")
         api_secret = os.getenv("BINANCE_API_SECRET")
 
@@ -5458,7 +5458,6 @@ if __name__ == "__main__":
         start_str = start_dt.strftime("%d %b %Y")
         end_str = end_dt.strftime("%d %b %Y")
 
-        # Récupère les données Binance
         df = fetch_binance_ohlcv(
             symbol,
             interval,
@@ -5471,7 +5470,7 @@ if __name__ == "__main__":
             print("Aucune donnée récupérée sur Binance, impossible d’auto-stratégie.")
             sys.exit(1)
 
-        df.columns = [col.lower() for col in df.columns]  # Sécurité
+        df.columns = [col.lower() for col in df.columns]
         best_config, best_score = auto_generate_and_backtest(df, n_strats=args.auto_n)
         print("Meilleure stratégie trouvée :", best_config)
         print("Score (profit brut sur l'historique):", best_score)
@@ -5508,13 +5507,11 @@ if __name__ == "__main__":
                 f"Utilisateur: {CURRENT_USER}"
             )
             asyncio.run(notifier.send_message(rapport))
-
         sys.exit(0)
 
     # --- 4. Mode backtest CLI
     elif args.backtest:
         print("=== Lancement du backtesting quantitatif ===")
-        # 1. Charge les paires depuis la config
         config_path = "config/trading_pairs.json"
         try:
             with open(config_path, "r") as f:
@@ -5524,13 +5521,11 @@ if __name__ == "__main__":
             print("Impossible de charger la config, on utilise BTC/USDT.")
             pairs = ["BTC/USDT"]
 
-        # 2. Définis la période à backtester
         nb_days = 30
         end_dt = pd.Timestamp.utcnow()
         start_dt = end_dt - pd.Timedelta(days=nb_days)
         interval = Client.KLINE_INTERVAL_1HOUR
 
-        # 3. Stratégies
         strategy_map = {
             "sma": sma_strategy,
             "breakout": breakout_strategy,
@@ -5566,7 +5561,6 @@ if __name__ == "__main__":
     # --- 5. Entraînement IA live
     elif "train-cnn-lstm" in sys.argv:
         bot = TradingBotM4()
-        # Préchargement historique pour chaque paire/timeframe avant entraînement IA
         if hasattr(bot, "ws_collector") and hasattr(bot, "binance_client"):
             for symbol in bot.pairs_valid:
                 symbol_binance = symbol.replace("/", "").upper()
@@ -5578,7 +5572,6 @@ if __name__ == "__main__":
                         print(f"Préchargement {symbol_binance} {tf} OK")
                     except Exception as e:
                         print(f"Erreur préchargement {symbol_binance} {tf} : {e}")
-        # Lancement de l'entraînement IA sur les données chargées
         bot.train_cnn_lstm_on_all_live()
         sys.exit(0)
 
