@@ -4531,7 +4531,7 @@ async def run_clean_bot():
                                 }
 
                     # ====== BLOC UNIQUE DE SAUVEGARDE DES ÉTATS POUR LE DASHBOARD ======
-                    bot.news_pause_manager.on_cycle_end()
+                    bot.news_pause_manager.on_cycle_end()  # décrémente toutes les pauses
                     active_pauses = bot.get_active_pauses()
                     bot.sync_positions_with_binance()
                     pending_sales = bot.get_pending_sales()
@@ -4600,7 +4600,10 @@ async def run_clean_bot():
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
     # Démarrage de la boucle principale
-    await main()
+    if __name__ == "__main__":
+        import asyncio
+
+        asyncio.run(main())
 
 
 def prepare_ohlcv_data(ohlcv_data):
@@ -5585,4 +5588,14 @@ if __name__ == "__main__":
 
     # --- 6. Lancement du bot de trading en mode normal
     else:
+        asyncio.run(run_clean_bot())
+# --- 6. Lancement du bot de trading en mode normal
+else:
+    try:
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            loop.create_task(run_clean_bot())
+        else:
+            asyncio.run(run_clean_bot())
+    except RuntimeError:
         asyncio.run(run_clean_bot())
