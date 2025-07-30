@@ -4347,257 +4347,246 @@ async def run_clean_bot():
             logger.error(f"Erreur cycle trading: {e}")
             raise
 
-    async def main():
-        try:
-            # Initialisation
-            bot, valid_pairs = await initialize_bot()
-            if bot is None:
-                print("Erreur critique à l'initialisation du bot. Arrêt.")
-                return
+    await main()
 
-            await bot.test_news_sentiment()
 
-            # Analyse initiale du marché
-            regime, _, _ = await bot.study_market("7d")
-            log_dashboard(f"🔈 Régime de marché détecté: {regime}")
+async def main():
+    try:
+        # Initialisation
+        bot, valid_pairs = await initialize_bot()
+        if bot is None:
+            print("Erreur critique à l'initialisation du bot. Arrêt.")
+            return
 
-            # === PATCH OPTION 1 : Cycle = 0 à chaque démarrage ===
-            cycle = 0  # Cycle repart à zéro à chaque démarrage !
+        await bot.test_news_sentiment()
 
-            # Boucle principale
-            while True:
-                cycle += 1
-                start = datetime.utcnow()
+        # Analyse initiale du marché
+        regime, _, _ = await bot.study_market("7d")
+        log_dashboard(f"🔈 Régime de marché détecté: {regime}")
 
-                # === Gestion news pause manager ===
+        # === PATCH OPTION 1 : Cycle = 0 à chaque démarrage ===
+        cycle = 0  # Cycle repart à zéro à chaque démarrage !
+
+        # Boucle principale
+        while True:
+            cycle += 1
+            start = datetime.utcnow()
+
+            # === Gestion news pause manager ===
+            try:
+                with open(bot.data_file, "r") as f:
+                    shared_data = json.load(f)
+                news_sentiment = shared_data.get("sentiment", {})
+                news_list = news_sentiment.get("scores", [])
+            except Exception:
+                news_list = []
+
+            # Filtre les news non déjà traitées
+            unprocessed_news = [n for n in news_list if not n.get("processed")]
+            if bot.news_pause_manager.scan_news(unprocessed_news):
+                print("🚨 Pause trading à cause d'une news critique !")
+                for n in unprocessed_news:
+                    n["processed"] = True
                 try:
                     with open(bot.data_file, "r") as f:
                         shared_data = json.load(f)
-                    news_sentiment = shared_data.get("sentiment", {})
-                    news_list = news_sentiment.get("scores", [])
                 except Exception:
-                    news_list = []
+                    shared_data = {}
+                shared_data.get("sentiment", {})["scores"] = news_list
+                with open(bot.data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
 
-                # Filtre les news non déjà traitées
-                unprocessed_news = [n for n in news_list if not n.get("processed")]
-                if bot.news_pause_manager.scan_news(unprocessed_news):
-                    print("🚨 Pause trading à cause d'une news critique !")
-                    for n in unprocessed_news:
-                        n["processed"] = True
-                    try:
-                        with open(bot.data_file, "r") as f:
-                            shared_data = json.load(f)
-                    except Exception:
-                        shared_data = {}
-                    shared_data.get("sentiment", {})["scores"] = news_list
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
+            trading_paused = bot.news_pause_manager.should_pause()
+            if trading_paused:
+                print(
+                    "Trading en pause: calculs et signaux mis à jour, EXÉCUTION DES TRADES BLOQUÉE."
+                )
 
-                trading_paused = bot.news_pause_manager.should_pause()
-                if trading_paused:
-                    print(
-                        "Trading en pause: calculs et signaux mis à jour, EXÉCUTION DES TRADES BLOQUÉE."
+            try:
+                print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
+                # Hot reload IA
+                bot.check_reload_dl_model()
+
+                # Déclenchement stop-loss SPOT
+                for symbol, pos in list(bot.positions.items()):
+                    if bot.is_long(symbol) and bot.check_stop_loss(symbol):
+                        print(
+                            f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
+                        )
+                        await bot.execute_trade(symbol, "SELL", pos["amount"])
+                        bot.log_closed_position(
+                            symbol, pos, pos.get("current_price", 0), "Stop-loss"
+                        )
+                # TP partiels et trailing TP sur toutes les positions longues
+                for symbol, pos in list(bot.positions.items()):
+                    if pos.get("side") != "long":
+                        continue
+                    if "filled_tp_targets" not in pos:
+                        pos["filled_tp_targets"] = [False, False]
+                    if "price_history" not in pos:
+                        pos["price_history"] = [pos["entry_price"]]
+                    if "max_price" not in pos:
+                        pos["max_price"] = pos["entry_price"]
+                    last_price = None
+                    if hasattr(bot, "ws_collector"):
+                        last_price = bot.ws_collector.get_last_price(symbol)
+                    if (
+                        last_price is None
+                        and symbol in bot.market_data
+                        and "1h" in bot.market_data[symbol]
+                    ):
+                        closes = bot.market_data[symbol]["1h"].get("close", [])
+                        if closes:
+                            last_price = closes[-1]
+                    if last_price is None:
+                        continue
+                    pos["price_history"].append(last_price)
+                    # TP partiels
+                    to_exit, new_filled = bot.exit_manager.check_tp_partial(
+                        pos["entry_price"], last_price, pos["filled_tp_targets"]
                     )
+                    if to_exit > 0 and pos["amount"] > 0:
+                        amount_to_sell = pos["amount"] * to_exit
+                        await bot.execute_trade(symbol, "SELL", amount_to_sell)
+                        pos["amount"] -= amount_to_sell
+                        pos["filled_tp_targets"] = new_filled
+                        if pos["amount"] <= 0:
+                            bot.positions.pop(symbol)
+                            continue
+                    # Trailing stop
+                    should_exit, new_max = bot.exit_manager.check_trailing(
+                        pos["entry_price"],
+                        pos["price_history"],
+                        pos.get("max_price", pos["entry_price"]),
+                    )
+                    pos["max_price"] = new_max
+                    if should_exit and pos["amount"] > 0:
+                        await bot.execute_trade(symbol, "SELL", pos["amount"])
+                        bot.log_closed_position(symbol, pos, last_price, "TP +x%")
+                        bot.positions.pop(symbol)
+
+                # Déclenchement stop-loss et trailing stop SHORT BingX
+                for symbol, pos in list(bot.positions.items()):
+                    if bot.is_short(symbol):
+                        try:
+                            symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                            ticker = await bot.bingx_client.fetch_ticker(symbol_bingx)
+                            price = float(ticker["last"])
+                        except Exception:
+                            continue
+                        if bot.check_short_stop(symbol, price=price, trailing_pct=0.03):
+                            print(
+                                f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
+                            )
+                            await bot.telegram.send_message(
+                                f"🔴 <b>STOP SHORT déclenché</b>\n"
+                                f"Pair: {symbol}\n"
+                                f"Prix actuel: {price}\n"
+                                f"Position couverte automatiquement (stop/trailing stop)"
+                            )
+                            await bot.execute_trade(symbol, "BUY", pos["amount"])
+
+                # --- Analyse de marché et signaux, TOUJOURS exécuté ---
+                trade_decisions, regime = await execute_trading_cycle(bot, valid_pairs)
+
+                # Mise à jour des données du bot
+                bot.current_cycle = cycle
+                bot.regime = regime
+
+                # Calcul et stockage des indicateurs pour chaque paire/timeframe
+                bot.indicators = {}
+                for pair in bot.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    for tf in bot.config["TRADING"]["timeframes"]:
+                        if (
+                            pair_key in bot.market_data
+                            and tf in bot.market_data[pair_key]
+                        ):
+                            trend = bot.calculate_trend(bot.market_data[pair_key][tf])
+                            volatility = bot.calculate_volatility(
+                                bot.market_data[pair_key][tf]
+                            )
+                            volume_profile = bot.calculate_volume_profile(
+                                bot.market_data[pair_key][tf]
+                            )
+                            dominant_signal = bot.get_dominant_signal(pair, tf)
+                            df = bot.ws_collector.get_dataframe(pair_key, tf)
+                            indics = (
+                                bot.add_indicators(df)
+                                if df is not None and not df.empty
+                                else {}
+                            )
+                            tf_key = f"{tf} | {pair}"
+                            bot.indicators[tf_key] = {
+                                "trend": {"trend_strength": trend},
+                                "volatility": {"current_volatility": volatility},
+                                "volume": {"volume_profile": volume_profile},
+                                "dominant_signal": dominant_signal,
+                                "ta": indics if indics else {},
+                            }
+
+                # ====== BLOC UNIQUE DE SAUVEGARDE DES ÉTATS POUR LE DASHBOARD ======
+                bot.news_pause_manager.on_cycle_end()  # décrémente toutes les pauses
+                active_pauses = bot.get_active_pauses()
+                bot.sync_positions_with_binance()
+                pending_sales = bot.get_pending_sales()
 
                 try:
-                    print(f"\n🔄 Cycle {cycle} - {start.strftime('%H:%M:%S')}")
-                    # Hot reload IA
-                    bot.check_reload_dl_model()
+                    with open(bot.data_file, "r") as f:
+                        shared_data = json.load(f)
+                except Exception:
+                    shared_data = {}
 
-                    # Déclenchement stop-loss SPOT
-                    for symbol, pos in list(bot.positions.items()):
-                        if bot.is_long(symbol) and bot.check_stop_loss(symbol):
-                            print(
-                                f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
-                            )
-                            await bot.execute_trade(symbol, "SELL", pos["amount"])
-                            bot.log_closed_position(
-                                symbol, pos, pos.get("current_price", 0), "Stop-loss"
-                            )
-                    # TP partiels et trailing TP sur toutes les positions longues
-                    for symbol, pos in list(bot.positions.items()):
-                        if pos.get("side") != "long":
-                            continue
-                        if "filled_tp_targets" not in pos:
-                            pos["filled_tp_targets"] = [False, False]
-                        if "price_history" not in pos:
-                            pos["price_history"] = [pos["entry_price"]]
-                        if "max_price" not in pos:
-                            pos["max_price"] = pos["entry_price"]
-                        last_price = None
-                        if hasattr(bot, "ws_collector"):
-                            last_price = bot.ws_collector.get_last_price(symbol)
-                        if (
-                            last_price is None
-                            and symbol in bot.market_data
-                            and "1h" in bot.market_data[symbol]
-                        ):
-                            closes = bot.market_data[symbol]["1h"].get("close", [])
-                            if closes:
-                                last_price = closes[-1]
-                        if last_price is None:
-                            continue
-                        pos["price_history"].append(last_price)
-                        # TP partiels
-                        to_exit, new_filled = bot.exit_manager.check_tp_partial(
-                            pos["entry_price"], last_price, pos["filled_tp_targets"]
-                        )
-                        if to_exit > 0 and pos["amount"] > 0:
-                            amount_to_sell = pos["amount"] * to_exit
-                            await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            pos["amount"] -= amount_to_sell
-                            pos["filled_tp_targets"] = new_filled
-                            if pos["amount"] <= 0:
-                                bot.positions.pop(symbol)
-                                continue
-                        # Trailing stop
-                        should_exit, new_max = bot.exit_manager.check_trailing(
-                            pos["entry_price"],
-                            pos["price_history"],
-                            pos.get("max_price", pos["entry_price"]),
-                        )
-                        pos["max_price"] = new_max
-                        if should_exit and pos["amount"] > 0:
-                            await bot.execute_trade(symbol, "SELL", pos["amount"])
-                            bot.log_closed_position(symbol, pos, last_price, "TP +x%")
-                            bot.positions.pop(symbol)
+                shared_data["active_pauses"] = active_pauses
+                shared_data["positions_binance"] = getattr(bot, "positions_binance", {})
+                shared_data["trade_decisions"] = bot.trade_decisions
+                shared_data["pending_sales"] = pending_sales
+                shared_data["cycle"] = bot.current_cycle
+                shared_data["regime"] = bot.regime
+                shared_data["indicators"] = bot.indicators
+                shared_data["market_data"] = bot.market_data
 
-                    # Déclenchement stop-loss et trailing stop SHORT BingX
-                    for symbol, pos in list(bot.positions.items()):
-                        if bot.is_short(symbol):
-                            try:
-                                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
-                                ticker = await bot.bingx_client.fetch_ticker(
-                                    symbol_bingx
-                                )
-                                price = float(ticker["last"])
-                            except Exception:
-                                continue
-                            if bot.check_short_stop(
-                                symbol, price=price, trailing_pct=0.03
-                            ):
-                                print(
-                                    f"[SHORT STOP] Fermeture short {symbol} (prix: {price})"
-                                )
-                                await bot.telegram.send_message(
-                                    f"🔴 <b>STOP SHORT déclenché</b>\n"
-                                    f"Pair: {symbol}\n"
-                                    f"Prix actuel: {price}\n"
-                                    f"Position couverte automatiquement (stop/trailing stop)"
-                                )
-                                await bot.execute_trade(symbol, "BUY", pos["amount"])
+                with open(bot.data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
+                print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
+                # FIN PATCH
 
-                    # --- Analyse de marché et signaux, TOUJOURS exécuté ---
-                    trade_decisions, regime = await execute_trading_cycle(
-                        bot, valid_pairs
-                    )
-
-                    # Mise à jour des données du bot
-                    bot.current_cycle = cycle
-                    bot.regime = regime
-
-                    # Calcul et stockage des indicateurs pour chaque paire/timeframe
-                    bot.indicators = {}
-                    for pair in bot.pairs_valid:
-                        pair_key = pair.replace("/", "").upper()
-                        for tf in bot.config["TRADING"]["timeframes"]:
-                            if (
-                                pair_key in bot.market_data
-                                and tf in bot.market_data[pair_key]
-                            ):
-                                trend = bot.calculate_trend(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                volatility = bot.calculate_volatility(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                volume_profile = bot.calculate_volume_profile(
-                                    bot.market_data[pair_key][tf]
-                                )
-                                dominant_signal = bot.get_dominant_signal(pair, tf)
-                                df = bot.ws_collector.get_dataframe(pair_key, tf)
-                                indics = (
-                                    bot.add_indicators(df)
-                                    if df is not None and not df.empty
-                                    else {}
-                                )
-                                tf_key = f"{tf} | {pair}"
-                                bot.indicators[tf_key] = {
-                                    "trend": {"trend_strength": trend},
-                                    "volatility": {"current_volatility": volatility},
-                                    "volume": {"volume_profile": volume_profile},
-                                    "dominant_signal": dominant_signal,
-                                    "ta": indics if indics else {},
-                                }
-
-                    # ====== BLOC UNIQUE DE SAUVEGARDE DES ÉTATS POUR LE DASHBOARD ======
-                    bot.news_pause_manager.on_cycle_end()  # décrémente toutes les pauses
-                    active_pauses = bot.get_active_pauses()
-                    bot.sync_positions_with_binance()
-                    pending_sales = bot.get_pending_sales()
-
-                    try:
-                        with open(bot.data_file, "r") as f:
-                            shared_data = json.load(f)
-                    except Exception:
-                        shared_data = {}
-
-                    shared_data["active_pauses"] = active_pauses
-                    shared_data["positions_binance"] = getattr(
-                        bot, "positions_binance", {}
-                    )
-                    shared_data["trade_decisions"] = bot.trade_decisions
-                    shared_data["pending_sales"] = pending_sales
-                    shared_data["cycle"] = bot.current_cycle
-                    shared_data["regime"] = bot.regime
-                    shared_data["indicators"] = bot.indicators
-                    shared_data["market_data"] = bot.market_data
-
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
-                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
-                    # FIN PATCH
-
-                    # --- EXÉCUTION DES TRADES UNIQUEMENT SI PAS DE PAUSE ---
-                    if not trading_paused:
-                        await execute_trade_decisions(bot, trade_decisions)
-                    else:
-                        print(
-                            "🚫 [PAUSE] Exécution des trades bloquée, signaux et IA à jour."
-                        )
-
-                    # Entraînement IA automatique
-                    if cycle % 50 == 0:
-                        print(
-                            "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
-                        )
-                        bot.train_cnn_lstm_on_all_live()
-
-                    # Entraînement IA manuel (optionnel)
-                    bot.train_cnn_lstm_on_all_live()
+                # --- EXÉCUTION DES TRADES UNIQUEMENT SI PAS DE PAUSE ---
+                if not trading_paused:
+                    await execute_trade_decisions(bot, trade_decisions)
+                else:
                     print(
-                        "=== Entraînement MANUEL IA sur toutes les paires/timeframes ==="
-                    )
-                    duration = (datetime.utcnow() - start).total_seconds()
-                    print(f"✅ Cycle terminé en {duration:.1f}s")
-
-                    # Envoi des mises à jour et rapports Telegram
-                    await send_cycle_reports(
-                        bot, trade_decisions, cycle, regime, duration
+                        "🚫 [PAUSE] Exécution des trades bloquée, signaux et IA à jour."
                     )
 
-                except Exception as e:
-                    error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
-                    logger.error(error_msg)
-                    await bot.telegram.send_message(error_msg)
+                # Entraînement IA automatique
+                if cycle % 50 == 0:
+                    print(
+                        "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
+                    )
+                    bot.train_cnn_lstm_on_all_live()
 
-                # Attente avant le prochain cycle
-                await asyncio.sleep(30)
+                # Entraînement IA manuel (optionnel)
+                bot.train_cnn_lstm_on_all_live()
+                print("=== Entraînement MANUEL IA sur toutes les paires/timeframes ===")
+                duration = (datetime.utcnow() - start).total_seconds()
+                print(f"✅ Cycle terminé en {duration:.1f}s")
 
-        except KeyboardInterrupt:
-            await handle_shutdown(bot, "👋 Bot arrêté proprement")
-        except Exception as e:
-            await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+                # Envoi des mises à jour et rapports Telegram
+                await send_cycle_reports(bot, trade_decisions, cycle, regime, duration)
+
+            except Exception as e:
+                error_msg = f"⚠️ Erreur cycle {cycle}: {e}"
+                logger.error(error_msg)
+                await bot.telegram.send_message(error_msg)
+
+            # Attente avant le prochain cycle
+            await asyncio.sleep(30)
+
+    except KeyboardInterrupt:
+        await handle_shutdown(bot, "👋 Bot arrêté proprement")
+    except Exception as e:
+        await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
 
 def prepare_ohlcv_data(ohlcv_data):
