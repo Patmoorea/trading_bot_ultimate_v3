@@ -4411,7 +4411,7 @@ async def run_clean_bot():
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
                             bot.log_closed_position(
-                                symbol, pos, pos.get("current_price", 0), "Stop-loss"
+                                symbol, pos, last_price, "Stop-loss"
                             )
                     # TP partiels et trailing TP sur toutes les positions longues
                     for symbol, pos in list(bot.positions.items()):
@@ -4529,13 +4529,25 @@ async def run_clean_bot():
                                     "ta": indics if indics else {},
                                 }
 
-                    # --- PATCH: décrémente les pauses et synchronise portefeuille ---
+                    # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
                     bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
                     active_pauses = bot.get_active_pauses()
+                    try:
+                        with open(bot.data_file, "r") as f:
+                            shared_data = json.load(f)
+                    except Exception:
+                        shared_data = {}
+                    shared_data["active_pauses"] = active_pauses
+                    shared_data["positions_binance"] = getattr(
+                        bot, "positions_binance", {}
+                    )
+                    shared_data["trade_decisions"] = bot.trade_decisions
+                    with open(bot.data_file, "w") as f:
+                        json.dump(shared_data, f, indent=4)
+                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
                     bot.sync_positions_with_binance()
-                    pending_sales = bot.get_pending_sales()
 
-                    # --- PATCH: Ajout des scores de décision ---
+                    # Ajout des scores de décision - PATCH pour vrai mapping
                     td_dict = {}
                     for td in trade_decisions:
                         signals = td.get("signals", {})
@@ -4550,7 +4562,7 @@ async def run_clean_bot():
                     bot.trade_decisions = td_dict
                     print("[DEBUG DASHBOARD EXPORT]", json.dumps(td_dict, indent=2))
 
-                    # --- UN SEUL BLOC DE SAUVEGARDE TOTALE ---
+                    # Puis sauvegarde tout dans le shared_data
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
@@ -4562,19 +4574,14 @@ async def run_clean_bot():
                         bot, "positions_binance", {}
                     )
                     shared_data["trade_decisions"] = bot.trade_decisions
-                    shared_data["pending_sales"] = pending_sales
-                    shared_data["bot_status"] = {
-                        "regime": bot.regime,
-                        "cycle": bot.current_cycle,
-                        "last_update": datetime.utcnow().isoformat(),
-                        "performance": bot.get_performance_metrics(),
-                    }
-                    shared_data["market_data"] = bot.market_data
-                    shared_data["indicators"] = bot.indicators
 
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
-                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
+
+                    bot.get_pending_sales()
+
+                    # Sauvegarde de l'état du bot à chaque cycle
+                    bot.save_shared_data()
 
                     # --- EXÉCUTION DES TRADES UNIQUEMENT SI PAS DE PAUSE ---
                     if not trading_paused:
@@ -4616,6 +4623,9 @@ async def run_clean_bot():
             await handle_shutdown(bot, "👋 Bot arrêté proprement")
         except Exception as e:
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
+
+    # Démarrage de la boucle principale
+    await main()
 
 
 def prepare_ohlcv_data(ohlcv_data):

@@ -11848,3 +11848,12 @@
 2025-07-30T00:45:20.257541 | ✅ Trading en direct: True
 2025-07-30T00:45:20.257604 | ✅ IA activée: True
 2025-07-30T00:45:20.257676 | ✅ Analyse de news activée: True
+2025-07-30T00:53:29.581981 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-30T00:53:29.583258 | Initialisation des modèles d'IA...
+2025-07-30T00:53:30.036217 | ✅ Modèles d'IA initialisés avec succès
+2025-07-30T00:53:31.611045 | ✅ PPO Strategy initialized successfully
+2025-07-30T00:53:31.611988 | ✅ Bot initialisé avec Telegram: True
+2025-07-30T00:53:31.612048 | ✅ Trading en direct: True
+2025-07-30T00:53:31.612087 | ✅ IA activée: True
+2025-07-30T00:53:31.612127 | ✅ Analyse de news activée: True
+2025-07-30T00:55:31.364585 | [NEWS] Lancement boucle d'analyse des news…
