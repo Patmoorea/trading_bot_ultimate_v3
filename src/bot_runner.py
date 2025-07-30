@@ -4599,12 +4599,6 @@ async def run_clean_bot():
         except Exception as e:
             await handle_shutdown(bot, f"💥 Erreur fatale: {e}")
 
-    # Démarrage de la boucle principale
-    if __name__ == "__main__":
-        import asyncio
-
-        asyncio.run(main())
-
 
 def prepare_ohlcv_data(ohlcv_data):
     """Prépare les données OHLCV pour l'analyse"""
