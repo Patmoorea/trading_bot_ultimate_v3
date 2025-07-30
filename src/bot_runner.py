@@ -4361,8 +4361,10 @@ async def run_clean_bot():
             regime, _, _ = await bot.study_market("7d")
             log_dashboard(f"🔈 Régime de marché détecté: {regime}")
 
+            # === PATCH OPTION 1 : Cycle = 0 à chaque démarrage ===
+            cycle = 0  # Cycle repart à zéro à chaque démarrage !
+
             # Boucle principale
-            cycle = 0
             while True:
                 cycle += 1
                 start = datetime.utcnow()

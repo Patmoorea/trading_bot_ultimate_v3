@@ -71,6 +71,9 @@ class NewsPauseManager:
                     elif sentiment is not None and abs(sentiment) < 0.3:
                         cycles = int(max(2, cycles * 0.5))
 
+                    # PATCH FONDAMENTAL : Marquer la news comme traitée DÈS le déclenchement
+                    news["processed"] = True
+
                     # Pause ciblée si symboles détectés, sinon globale
                     if symbols:
                         for sym in symbols:
@@ -127,15 +130,23 @@ class NewsPauseManager:
         return False
 
     def on_cycle_end(self):
+        """
+        Doit être appelée à chaque tick/cycle.
+        Décrémente les compteurs de pause (globale et par paire).
+        Nettoie les pauses terminées.
+        """
         print(
             "[NEWSPAUSE] Avant decrement:",
             self.global_cycles_remaining,
             self.pair_pauses,
         )
+        # Décrémentation pause globale
         if self.global_cycles_remaining > 0:
             self.global_cycles_remaining -= 1
+
+        # Décrémentation des pauses par paire
         to_remove = []
-        for pair, cycles in self.pair_pauses.items():
+        for pair, cycles in list(self.pair_pauses.items()):
             if cycles > 0:
                 self.pair_pauses[pair] -= 1
             if self.pair_pauses[pair] <= 0:
