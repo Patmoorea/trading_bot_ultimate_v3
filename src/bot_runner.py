@@ -2719,8 +2719,7 @@ class TradingBotM4:
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
-        Correction : le score global est calculé sur les scores déjà assignés à chaque paire,
-        et sinon fallback sur sentiment_scores si jamais.
+        Corrige le bug d'écrasement du champ "processed" sur les news.
         """
         headlines = []
         if news_data is None:
@@ -2774,6 +2773,24 @@ class TradingBotM4:
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
         )
+
+        # === PATCH : FUSIONNE "processed" des anciennes news ===
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data_old = json.load(f)
+            old_scores = shared_data_old.get("sentiment", {}).get("scores", [])
+
+            # Index par titre ou id si dispo
+            def news_key(news):
+                return news.get("title", "")  # ou autre identifiant unique
+
+            processed_map = {news_key(n): n.get("processed", False) for n in old_scores}
+            for n in sentiment_scores:
+                k = news_key(n)
+                if processed_map.get(k, False):
+                    n["processed"] = True
+        except Exception:
+            pass
 
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
