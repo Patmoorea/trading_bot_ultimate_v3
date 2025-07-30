@@ -4363,7 +4363,6 @@ async def run_clean_bot():
 
             # Boucle principale
             cycle = 0
-            # ==== BOUCLE PRINCIPALE PATCHÉE POUR PAUSE ====
             while True:
                 cycle += 1
                 start = datetime.utcnow()
@@ -4411,7 +4410,7 @@ async def run_clean_bot():
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
                             bot.log_closed_position(
-                                symbol, pos, last_price, "Stop-loss"
+                                symbol, pos, pos.get("current_price", 0), "Stop-loss"
                             )
                     # TP partiels et trailing TP sur toutes les positions longues
                     for symbol, pos in list(bot.positions.items()):
@@ -4529,59 +4528,33 @@ async def run_clean_bot():
                                     "ta": indics if indics else {},
                                 }
 
-                    # --- PATCH: Sauvegarde des pauses actives, portefeuille et scores de décision ---
-                    bot.news_pause_manager.on_cycle_end()  # décrémente les cycles_left
+                    # ====== BLOC UNIQUE DE SAUVEGARDE DES ÉTATS POUR LE DASHBOARD ======
+                    bot.news_pause_manager.on_cycle_end()
                     active_pauses = bot.get_active_pauses()
+                    bot.sync_positions_with_binance()
+                    pending_sales = bot.get_pending_sales()
+
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
                     except Exception:
                         shared_data = {}
+
                     shared_data["active_pauses"] = active_pauses
                     shared_data["positions_binance"] = getattr(
                         bot, "positions_binance", {}
                     )
                     shared_data["trade_decisions"] = bot.trade_decisions
+                    shared_data["pending_sales"] = pending_sales
+                    shared_data["cycle"] = bot.current_cycle
+                    shared_data["regime"] = bot.regime
+                    shared_data["indicators"] = bot.indicators
+                    shared_data["market_data"] = bot.market_data
+
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
-                    bot.sync_positions_with_binance()
-
-                    # Ajout des scores de décision - PATCH pour vrai mapping
-                    td_dict = {}
-                    for td in trade_decisions:
-                        signals = td.get("signals", {})
-                        print(f"[DEBUG SIGNALS DASHBOARD] {td['pair']} {signals}")
-                        td_dict[td["pair"]] = {
-                            "confidence": td.get("confidence"),
-                            "action": td.get("action"),
-                            "tech": signals.get("technical"),
-                            "ai": signals.get("ai"),
-                            "sentiment": signals.get("sentiment"),
-                        }
-                    bot.trade_decisions = td_dict
-                    print("[DEBUG DASHBOARD EXPORT]", json.dumps(td_dict, indent=2))
-
-                    # Puis sauvegarde tout dans le shared_data
-                    try:
-                        with open(bot.data_file, "r") as f:
-                            shared_data = json.load(f)
-                    except Exception:
-                        shared_data = {}
-
-                    shared_data["active_pauses"] = active_pauses
-                    shared_data["positions_binance"] = getattr(
-                        bot, "positions_binance", {}
-                    )
-                    shared_data["trade_decisions"] = bot.trade_decisions
-
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
-
-                    bot.get_pending_sales()
-
-                    # Sauvegarde de l'état du bot à chaque cycle
-                    bot.save_shared_data()
+                    # FIN PATCH
 
                     # --- EXÉCUTION DES TRADES UNIQUEMENT SI PAS DE PAUSE ---
                     if not trading_paused:

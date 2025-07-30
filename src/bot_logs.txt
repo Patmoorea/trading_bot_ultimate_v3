@@ -11857,3 +11857,8 @@
 2025-07-30T00:53:31.612087 | ✅ IA activée: True
 2025-07-30T00:53:31.612127 | ✅ Analyse de news activée: True
 2025-07-30T00:55:31.364585 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-30T00:57:02.168082 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0382 | Tendance: -0.0042
+2025-07-30T00:57:02.170980 | 🔈 Régime de marché détecté: Range/Scalping
+2025-07-30T00:57:38.833065 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0381 | Tendance: -0.0042
+2025-07-30T00:57:38.836343 | 🎯 Stratégie active: Range/Scalping
+2025-07-30T00:57:38.836439 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
