@@ -21904,3 +21904,11 @@
 2025-07-30T14:48:09.967090 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.15187657899423812
 2025-07-30T14:48:09.970758 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
 2025-07-30T14:49:20.342090 | [NEWS] Score sentiment global: 0.32 | Impact: 0.58 | Événements: NYM Privacy Token Pumps as UK Demand for VPNs Spikes;  MARA Holdings posts Q2 revenue beat with 64% year-on-year jump ; BlackRock Analysts Predict Major Bitcoin Surge As US Legislation Strengthens Stablecoins
+2025-07-30T18:03:03.363392 | ✅ ArbitrageEngine initialisé avec succès
+2025-07-30T18:03:03.365762 | Initialisation des modèles d'IA...
+2025-07-30T18:03:03.856310 | ✅ Modèles d'IA initialisés avec succès
+2025-07-30T18:03:05.382362 | ✅ PPO Strategy initialized successfully
+2025-07-30T18:03:05.383584 | ✅ Bot initialisé avec Telegram: True
+2025-07-30T18:03:05.383702 | ✅ Trading en direct: True
+2025-07-30T18:03:05.383745 | ✅ IA activée: True
+2025-07-30T18:03:05.383782 | ✅ Analyse de news activée: True
