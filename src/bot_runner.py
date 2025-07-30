@@ -4410,7 +4410,18 @@ async def run_clean_bot():
                     "[DEBUG NEWS PAUSES] AVANT DECREMENT :",
                     bot.news_pause_manager.get_active_pauses(),
                 )
-                bot.news_pause_manager.on_cycle_end()
+                # Après la décrémentation
+                pauses = bot.news_pause_manager.get_active_pauses()
+                try:
+                    with open(bot.data_file, "r") as f:
+                        shared_data = json.load(f)
+                except Exception:
+                    shared_data = {}
+
+                shared_data["active_pauses"] = pauses
+
+                with open(bot.data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
                 print(
                     "[DEBUG NEWS PAUSES] APRÈS DECREMENT :",
                     bot.news_pause_manager.get_active_pauses(),
