@@ -4379,7 +4379,6 @@ async def run_clean_bot():
                     news_list = []
 
                 # Filtre les news non déjà traitées
-                # Filtre les news non déjà traitées
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
                 if unprocessed_news:
                     if bot.news_pause_manager.scan_news(unprocessed_news):
