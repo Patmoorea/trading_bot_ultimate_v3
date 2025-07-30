@@ -5379,9 +5379,6 @@ def objective(trial):
 
 if __name__ == "__main__":
 
-    # --- 1. Argument parsing avancé
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backtest", action="store_true", help="Lancer un backtest quantitatif"
@@ -5500,7 +5497,6 @@ if __name__ == "__main__":
         TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
         if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
             from src.bot_runner import TelegramNotifier, get_current_time, CURRENT_USER
-            import asyncio
 
             notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
             rapport = (
@@ -5588,14 +5584,11 @@ if __name__ == "__main__":
 
     # --- 6. Lancement du bot de trading en mode normal
     else:
-        asyncio.run(run_clean_bot())
-# --- 6. Lancement du bot de trading en mode normal
-else:
-    try:
-        loop = asyncio.get_running_loop()
-        if loop.is_running():
-            loop.create_task(run_clean_bot())
-        else:
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                loop.create_task(run_clean_bot())
+            else:
+                asyncio.run(run_clean_bot())
+        except RuntimeError:
             asyncio.run(run_clean_bot())
-    except RuntimeError:
-        asyncio.run(run_clean_bot())
