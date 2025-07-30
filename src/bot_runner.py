@@ -4379,19 +4379,26 @@ async def run_clean_bot():
                     news_list = []
 
                 # Filtre les news non déjà traitées
+                # Filtre les news non déjà traitées
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
-                if bot.news_pause_manager.scan_news(unprocessed_news):
-                    print("🚨 Pause trading à cause d'une news critique !")
-                    for n in unprocessed_news:
-                        n["processed"] = True
-                    try:
-                        with open(bot.data_file, "r") as f:
-                            shared_data = json.load(f)
-                    except Exception:
-                        shared_data = {}
-                    shared_data.get("sentiment", {})["scores"] = news_list
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
+                if unprocessed_news:
+                    if bot.news_pause_manager.scan_news(unprocessed_news):
+                        print("🚨 Pause trading à cause d'une news critique !")
+                        # Marque TOUTES les news traitées comme processed = True
+                        for n in unprocessed_news:
+                            n["processed"] = True
+                        # Sauvegarde la liste news_list (avec processed=True) dans le fichier partagé
+                        try:
+                            with open(bot.data_file, "r") as f:
+                                shared_data = json.load(f)
+                        except Exception:
+                            shared_data = {}
+                        # PATCH : mets bien à jour le champ 'scores' dans le bloc 'sentiment'
+                        if "sentiment" not in shared_data:
+                            shared_data["sentiment"] = {}
+                        shared_data["sentiment"]["scores"] = news_list
+                        with open(bot.data_file, "w") as f:
+                            json.dump(shared_data, f, indent=4)
 
                 trading_paused = bot.news_pause_manager.should_pause()
                 if trading_paused:
