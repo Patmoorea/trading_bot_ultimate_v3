@@ -543,6 +543,22 @@ with tab4:
     pending_sales = shared_data.get("pending_sales", [])
     if pending_sales:
         df_pending = pd.DataFrame(pending_sales)
+        # ---- PATCH: Ajoute les colonnes manquantes si besoin pour éviter KeyError ---
+        required_cols = [
+            "symbol",
+            "reason",
+            "decision",
+            "entry_price",
+            "current_price",
+            "amount",
+            "% Gain/Perte",
+            "temps_en_position_h",
+            "pause_blocage",
+            "note",
+        ]
+        for col in required_cols:
+            if col not in df_pending.columns:
+                df_pending[col] = ""
         # Formatage visuel des colonnes
         if "pnl_pct" in df_pending.columns:
             df_pending["% Gain/Perte"] = df_pending["pnl_pct"].map(
@@ -550,7 +566,7 @@ with tab4:
             )
         if "temps_en_position_h" in df_pending.columns:
             df_pending["Durée position (h)"] = df_pending["temps_en_position_h"].map(
-                lambda x: f"{x:.1f}h" if x is not None else "N/A"
+                lambda x: f"{x}h" if x not in ["", "N/A", None] else "N/A"
             )
         # Trie d'abord par urgence (Signal SELL > SL > TP > perte > gain), puis par %PnL
         order = [
@@ -564,24 +580,12 @@ with tab4:
             lambda r: order.index(r) if r in order else 99
         )
         df_pending = df_pending.sort_values(
-            ["prio", "pnl_pct"], ascending=[True, False]
+            ["prio", "pnl_pct"] if "pnl_pct" in df_pending.columns else ["prio"],
+            ascending=[True, False] if "pnl_pct" in df_pending.columns else [True],
         )
         # Affichage
         st.dataframe(
-            df_pending[
-                [
-                    "symbol",
-                    "reason",  # Raison détaillée
-                    "decision",  # Décision attendue / Situation
-                    "entry_price",
-                    "current_price",
-                    "amount",
-                    "% Gain/Perte",
-                    "temps_en_position_h",  # Depuis (h)
-                    "pause_blocage",
-                    "note",
-                ]
-            ],
+            df_pending[required_cols],
             use_container_width=True,
         )
     else:
