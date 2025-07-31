@@ -900,49 +900,50 @@ class TradingBotM4:
 
     def get_pending_sales(self):
         """
-        Retourne la liste des positions qui risquent d'être vendues prochainement (signal SELL, TP proche, SL imminent, gain/perte latente élevée).
-        Ce tableau est ultra-visuel et utile. Il contient pour chaque position : symbol, raison, confiance, prix d'achat, prix actuel, montant, %PnL, date d'achat, temps en position.
+        Affiche TOUTES les positions spot Binance avec leur état actuel, raison, action du signal, etc.
+        Permet d'avoir un état des lieux complet, même si le signal n'est pas SELL.
         """
         pending = []
-        # Seuils configurables
-        GAIN_ALERT_PCT = 0.07  # 7% de gain latent
-        LOSS_ALERT_PCT = -0.05  # -5% de perte latente
-
         now = datetime.utcnow()
 
-        print("DEBUG positions bot:", self.positions)
+        # Ajoute toutes les positions spot Binance (ou bot)
         if hasattr(self, "positions_binance"):
-            print("DEBUG positions_binance:", self.positions_binance)
-
-        for symbol, pos in self.positions.items():
-            # Sécurise la récupération des valeurs
-            entry_price = pos.get("entry_price")
-            current_price = pos.get("current_price")
-            amount = pos.get("amount")
-            pnl_pct = (
-                (current_price - entry_price) / entry_price * 100
-                if entry_price and current_price
-                else 0
-            )
-            # Date d'achat (si dispo)
-            date_achat = pos.get("date", pos.get("entry_time")) or None
-            if date_achat:
-                try:
-                    date_achat_dt = datetime.fromisoformat(date_achat)
-                    temps_en_position = (now - date_achat_dt).total_seconds() / 3600
-                except Exception:
-                    temps_en_position = None
-            else:
+            for symbol, pos in self.positions_binance.items():
+                entry_price = pos.get("entry_price")
+                current_price = pos.get("current_price")
+                amount = pos.get("amount")
+                pnl_pct = (
+                    (current_price - entry_price) / entry_price * 100
+                    if entry_price and current_price
+                    else 0
+                )
+                date_achat = None
                 temps_en_position = None
 
-            # 1. Signal SELL actif
-            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
-            if td.get("action") == "SELL" and pos.get("side") == "long":
+                # Récupère le signal du tableau "Scores de décision et signaux"
+                td = self.trade_decisions.get(symbol, {})
+                action = td.get("action", "neutral")
+                confidence = td.get("confidence", None)
+
+                # Raison
+                if action == "SELL":
+                    reason = "🔴 Signal SELL"
+                elif pnl_pct < -5:
+                    reason = (
+                        f"🔴 Perte latente {pnl_pct:.1f}%, signal: {action.upper()}"
+                    )
+                elif pnl_pct > 7:
+                    reason = f"🟢 Gain latent {pnl_pct:.1f}%, signal: {action.upper()}"
+                else:
+                    reason = f"Signal actuel: {action.upper()}"
+
+                # Ajoute la ligne QUEL QUE SOIT LE SIGNAL
                 pending.append(
                     {
                         "symbol": symbol,
-                        "reason": "🔴 Signal SELL",
-                        "confidence": td.get("confidence"),
+                        "reason": reason,
+                        "action": action,
+                        "confidence": confidence,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
@@ -951,66 +952,8 @@ class TradingBotM4:
                         "temps_en_position_h": temps_en_position,
                     }
                 )
-            # 2. TP proche
-            if self.exit_manager.is_tp_near(pos):
-                pending.append(
-                    {
-                        "symbol": symbol,
-                        "reason": "🟠 TP proche",
-                        "confidence": None,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "amount": amount,
-                        "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
-                    }
-                )
-            # 3. Stop-loss imminent
-            if self.check_stop_loss(symbol):
-                pending.append(
-                    {
-                        "symbol": symbol,
-                        "reason": "🔴 Stop-loss imminent",
-                        "confidence": None,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "amount": amount,
-                        "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
-                    }
-                )
-            # 4. Gain latent élevé (gain > 7%)
-            if pnl_pct > GAIN_ALERT_PCT * 100:
-                pending.append(
-                    {
-                        "symbol": symbol,
-                        "reason": f"🟢 Gain latent > {GAIN_ALERT_PCT*100:.1f}%",
-                        "confidence": None,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "amount": amount,
-                        "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
-                    }
-                )
-            # 5. Perte latente élevée (perte < -5%)
-            if pnl_pct < LOSS_ALERT_PCT * 100:
-                pending.append(
-                    {
-                        "symbol": symbol,
-                        "reason": f"🔴 Perte latente > {abs(LOSS_ALERT_PCT*100):.1f}%",
-                        "confidence": None,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "amount": amount,
-                        "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
-                    }
-                )
+
+        print("DEBUG pending_sales tableau:", pending)
         # Sauvegarde dans shared_data.json
         try:
             with open(self.data_file, "r") as f:
