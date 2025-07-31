@@ -64,6 +64,10 @@ def get_pending_sales(self):
 
     now = datetime.utcnow()
 
+    print("DEBUG positions bot:", self.positions)
+    if hasattr(self, "positions_binance"):
+        print("DEBUG positions_binance:", self.positions_binance)
+
     # 1. Positions gérées par le bot (virtuel)
     for symbol, pos in self.positions.items():
         entry_price = pos.get("entry_price")
@@ -246,7 +250,7 @@ def get_pending_sales(self):
                         "temps_en_position_h": temps_en_position,
                     }
                 )
-
+    print("DEBUG pending_sales tableau:", pending)
     # Sauvegarde dans shared_data.json
     try:
         with open(self.data_file, "r") as f:
