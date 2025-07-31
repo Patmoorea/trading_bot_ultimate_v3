@@ -855,6 +855,18 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def merge_news_processed(old_scores, new_scores):
+        """Merge les news existantes (ayant 'processed') avec les nouvelles, en préservant ce flag par titre."""
+        old_map = {
+            n.get("title"): n.get("processed", False)
+            for n in old_scores
+            if "title" in n
+        }
+        for n in new_scores:
+            if n.get("title") in old_map:
+                n["processed"] = old_map[n.get("title")]
+        return new_scores
+
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
             "symbol": symbol,
@@ -2731,11 +2743,11 @@ class TradingBotM4:
         except Exception as e:
             print(f"[SENTIMENT SAVE ERROR] {e}")
 
+    # Remplace la méthode async def _save_sentiment_data(...) par la version patchée ci-dessous :
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
-        Correction : le score global est calculé sur les scores déjà assignés à chaque paire,
-        et sinon fallback sur sentiment_scores si jamais.
+        Correction : merge les news pour préserver le champ 'processed' à chaque sauvegarde.
         """
         headlines = []
         if news_data is None:
@@ -2800,6 +2812,18 @@ class TradingBotM4:
             "top_symbols": summary["top_symbols"],
             "n_news": summary["n_news"],
         }
+
+        # === PATCH : Merge des news pour préserver "processed" ===
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data_prev = json.load(f)
+            old_scores = shared_data_prev.get("sentiment", {}).get("scores", [])
+        except Exception:
+            old_scores = []
+
+        sentiment_data["scores"] = merge_news_processed(
+            old_scores, sentiment_data["scores"]
+        )
 
         try:
             with open(self.data_file, "r") as f:
