@@ -910,6 +910,10 @@ class TradingBotM4:
 
         now = datetime.utcnow()
 
+        print("DEBUG positions bot:", self.positions)
+        if hasattr(self, "positions_binance"):
+            print("DEBUG positions_binance:", self.positions_binance)
+
         for symbol, pos in self.positions.items():
             # Sécurise la récupération des valeurs
             entry_price = pos.get("entry_price")
