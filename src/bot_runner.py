@@ -3430,26 +3430,46 @@ class TradingBotM4:
             return []
 
     def initialize_shared_data(self):
-        """Initialise le fichier de données partagées"""
-        data = {
-            "timestamp": get_current_time(),
-            "user": CURRENT_USER,
-            "bot_status": {
-                "regime": self.regime,
-                "cycle": self.current_cycle,
-                "last_update": get_current_time(),
-                "performance": {
-                    "total_trades": 0,
-                    "win_rate": 0,
-                    "profit_factor": 0,
-                    "balance": 0,
-                    "wins": 0,
-                    "losses": 0,
-                    "total_profit": 0,
-                    "total_loss": 0,
-                },
+        """
+        Initialise le fichier partagé SANS écraser l'historique :
+        - Conserve l'existant (news, positions, historiques…)
+        - Réinitialise uniquement certains champs (cycle, régime, performance…)
+        """
+        # Charge l'existant si présent
+        if os.path.exists(self.data_file):
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
+
+        # Réinitialise uniquement les champs nécessaires
+        data["timestamp"] = get_current_time()
+        data["user"] = CURRENT_USER
+
+        # PATCH : Réinit de bot_status
+        data["bot_status"] = {
+            "regime": self.regime,
+            "cycle": 0,  # Cycle remis à zéro !
+            "last_update": get_current_time(),
+            "performance": {
+                "total_trades": 0,
+                "win_rate": 0,
+                "profit_factor": 0,
+                "balance": 0,
+                "wins": 0,
+                "losses": 0,
+                "total_profit": 0,
+                "total_loss": 0,
             },
         }
+
+        # Optionnel : tu peux ajouter ici d'autres champs à réinitialiser si besoin
+        # Exemple :
+        # data["active_pauses"] = []
+        # data["equity_history"] = []
+
+        # NE PAS TOUCHER aux autres champs : news, positions, historiques, etc.
+
         with open(self.data_file, "w") as f:
             json.dump(data, f, indent=4)
 
@@ -4395,7 +4415,16 @@ async def run_clean_bot():
                             shared_data = json.load(f)
                     except Exception:
                         shared_data = {}
-                    shared_data.get("sentiment", {})["scores"] = news_list
+                    # PATCH: Sauvegarde fiable des news marquées comme traitées (processed: True)
+                    if "sentiment" not in shared_data or not isinstance(
+                        shared_data["sentiment"], dict
+                    ):
+                        shared_data["sentiment"] = {}
+                    shared_data["sentiment"]["scores"] = news_list
+                    print(
+                        "[DEBUG PATCH] News traitées:",
+                        [n.get("title") for n in news_list if n.get("processed")],
+                    )
                     with open(bot.data_file, "w") as f:
                         json.dump(shared_data, f, indent=4)
 
