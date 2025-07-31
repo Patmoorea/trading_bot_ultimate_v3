@@ -941,12 +941,15 @@ class TradingBotM4:
                 pending.append(
                     {
                         "symbol": symbol,
-                        "reason": reason,
-                        "action": action,
+                        "reason": reason,  # ex: "Signal SELL détecté"
+                        "decision": decision,  # ex: "Vente prévue au prochain cycle", "Attente", etc.
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
-                        "pnl_pct": pnl_pct,
+                        "% Gain/Perte": f"{pnl_pct:.2f}%",
+                        "temps_en_position_h": temps_en_position,
+                        "pause_blocage": pause_status,  # "Oui" si pause, "Non" sinon
+                        "note": note,  # ex: "Gain latent, pas de blocage", "Vente bloquée temporairement", etc.
                     }
                 )
 
