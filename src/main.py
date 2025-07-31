@@ -444,18 +444,48 @@ with tab4:
     pending_sales = shared_data.get("pending_sales", [])
     if pending_sales:
         df_pending = pd.DataFrame(pending_sales)
-        st.dataframe(df_pending, use_container_width=True)
+        # Formatage visuel des colonnes
+        if "pnl_pct" in df_pending.columns:
+            df_pending["% Gain/Perte"] = df_pending["pnl_pct"].map(
+                lambda x: f"{x:.2f}%" if x is not None else "N/A"
+            )
+        if "temps_en_position_h" in df_pending.columns:
+            df_pending["Durée position (h)"] = df_pending["temps_en_position_h"].map(
+                lambda x: f"{x:.1f}h" if x is not None else "N/A"
+            )
+        # Trie d'abord par urgence (Signal SELL > SL > TP > perte > gain), puis par %PnL
+        order = [
+            "🔴 Signal SELL",
+            "🔴 Stop-loss imminent",
+            "🟠 TP proche",
+            "🔴 Perte latente > 5.0%",
+            "🟢 Gain latent > 7.0%",
+        ]
+        df_pending["prio"] = df_pending["reason"].map(
+            lambda r: order.index(r) if r in order else 99
+        )
+        df_pending = df_pending.sort_values(
+            ["prio", "pnl_pct"], ascending=[True, False]
+        )
+        # Affichage
+        st.dataframe(
+            df_pending[
+                [
+                    "symbol",
+                    "reason",
+                    "amount",
+                    "entry_price",
+                    "current_price",
+                    "% Gain/Perte",
+                    "confidence",
+                    "date_achat",
+                    "Durée position (h)",
+                ]
+            ],
+            use_container_width=True,
+        )
     else:
         st.info("Aucune vente imminente détectée.")
-
-    # 4. Historique des trades
-    st.markdown("#### Historique des trades")
-    trades = shared_data.get("trade_history", [])
-    if trades:
-        df_trades = pd.DataFrame(trades)
-        st.dataframe(df_trades, use_container_width=True)
-    else:
-        st.info("Aucun trade exécuté ce cycle.")
 
 # --- TAB5 BACKTEST ---
 with tab5:
