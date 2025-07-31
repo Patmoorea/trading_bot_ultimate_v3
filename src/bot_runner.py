@@ -748,6 +748,8 @@ class TradingBotM4:
             tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03
         )
 
+        self.trade_decisions = {}
+
         self.signal_fusion_params = self.load_signal_fusion_params()
 
         self.positions = {}  # Ajouté : gestion des positions spot par paire
