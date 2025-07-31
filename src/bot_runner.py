@@ -4467,6 +4467,8 @@ async def run_clean_bot():
                 cycle += 1
                 start = datetime.utcnow()
 
+                bot.get_pending_sales()
+
                 # === Gestion news pause manager ===
                 try:
                     with open(bot.data_file, "r") as f:
