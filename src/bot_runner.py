@@ -4603,6 +4603,16 @@ async def run_clean_bot():
                             "ai": signals.get("ai"),
                             "sentiment": signals.get("sentiment"),
                         }
+                    # PATCH: Ajoute toutes les paires manquantes avec valeurs nulles
+                    for pair in bot.pairs_valid:
+                        if pair not in td_dict:
+                            td_dict[pair] = {
+                                "confidence": 0,
+                                "action": "neutral",
+                                "tech": 0,
+                                "ai": 0,
+                                "sentiment": 0,
+                            }
                     bot.trade_decisions = td_dict
                     print("[DEBUG DASHBOARD EXPORT]", json.dumps(td_dict, indent=2))
 
