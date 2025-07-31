@@ -110,13 +110,10 @@ def get_pending_sales(self):
                 {
                     "symbol": symbol,
                     "reason": "🟠 TP proche",
-                    "confidence": None,
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
                     "pnl_pct": pnl_pct,
-                    "date_achat": date_achat,
-                    "temps_en_position_h": temps_en_position,
                 }
             )
         # 3. Stop-loss imminent
@@ -125,13 +122,10 @@ def get_pending_sales(self):
                 {
                     "symbol": symbol,
                     "reason": "🔴 Stop-loss imminent",
-                    "confidence": None,
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
                     "pnl_pct": pnl_pct,
-                    "date_achat": date_achat,
-                    "temps_en_position_h": temps_en_position,
                 }
             )
         # 4. Gain latent élevé (gain > 7%)
@@ -140,13 +134,10 @@ def get_pending_sales(self):
                 {
                     "symbol": symbol,
                     "reason": f"🟢 Gain latent > {GAIN_ALERT_PCT*100:.1f}%",
-                    "confidence": None,
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
                     "pnl_pct": pnl_pct,
-                    "date_achat": date_achat,
-                    "temps_en_position_h": temps_en_position,
                 }
             )
         # 5. Perte latente élevée (perte < -5%)
@@ -155,13 +146,10 @@ def get_pending_sales(self):
                 {
                     "symbol": symbol,
                     "reason": f"🔴 Perte latente > {abs(LOSS_ALERT_PCT*100):.1f}%",
-                    "confidence": None,
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
                     "pnl_pct": pnl_pct,
-                    "date_achat": date_achat,
-                    "temps_en_position_h": temps_en_position,
                 }
             )
 
@@ -185,13 +173,10 @@ def get_pending_sales(self):
                     {
                         "symbol": symbol,
                         "reason": "🔴 Signal SELL",
-                        "confidence": td.get("confidence"),
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
             if hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
@@ -199,13 +184,10 @@ def get_pending_sales(self):
                     {
                         "symbol": symbol,
                         "reason": "🟠 TP proche",
-                        "confidence": None,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
             if self.check_stop_loss(symbol):
@@ -213,13 +195,10 @@ def get_pending_sales(self):
                     {
                         "symbol": symbol,
                         "reason": "🔴 Stop-loss imminent",
-                        "confidence": None,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
             if pnl_pct > GAIN_ALERT_PCT * 100:
@@ -227,13 +206,10 @@ def get_pending_sales(self):
                     {
                         "symbol": symbol,
                         "reason": f"🟢 Gain latent > {GAIN_ALERT_PCT*100:.1f}%",
-                        "confidence": None,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
             if pnl_pct < LOSS_ALERT_PCT * 100:
@@ -241,13 +217,10 @@ def get_pending_sales(self):
                     {
                         "symbol": symbol,
                         "reason": f"🔴 Perte latente > {abs(LOSS_ALERT_PCT*100):.1f}%",
-                        "confidence": None,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
     print("DEBUG pending_sales tableau:", pending)

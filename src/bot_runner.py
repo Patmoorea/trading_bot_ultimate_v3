@@ -945,13 +945,10 @@ class TradingBotM4:
                         "symbol": symbol,
                         "reason": reason,
                         "action": action,
-                        "confidence": confidence,
                         "entry_price": entry_price,
                         "current_price": current_price,
                         "amount": amount,
                         "pnl_pct": pnl_pct,
-                        "date_achat": date_achat,
-                        "temps_en_position_h": temps_en_position,
                     }
                 )
 
