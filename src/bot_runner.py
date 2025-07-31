@@ -676,6 +676,17 @@ def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
     }
 
 
+def merge_news_processed(old_scores, new_scores):
+    """Merge les news existantes (ayant 'processed') avec les nouvelles, en préservant ce flag par titre."""
+    old_map = {
+        n.get("title"): n.get("processed", False) for n in old_scores if "title" in n
+    }
+    for n in new_scores:
+        if n.get("title") in old_map:
+            n["processed"] = old_map[n.get("title")]
+    return new_scores
+
+
 class TradingBotM4:
     def __init__(self):
         # Configuration de base existante...
@@ -854,18 +865,6 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
-
-    def merge_news_processed(old_scores, new_scores):
-        """Merge les news existantes (ayant 'processed') avec les nouvelles, en préservant ce flag par titre."""
-        old_map = {
-            n.get("title"): n.get("processed", False)
-            for n in old_scores
-            if "title" in n
-        }
-        for n in new_scores:
-            if n.get("title") in old_map:
-                n["processed"] = old_map[n.get("title")]
-        return new_scores
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
