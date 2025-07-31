@@ -944,11 +944,11 @@ class TradingBotM4:
                         "reason": reason,  # ex: "Signal SELL détecté"
                         "decision": decision,  # ex: "Vente prévue au prochain cycle", "Attente", etc.
                         "entry_price": entry_price,
-                        "current_price": current_price,
+                        "cur_prix": current_price,
                         "amount": amount,
                         "% Gain/Perte": f"{pnl_pct:.2f}%",
-                        "temps_en_position_h": temps_en_position,
-                        "pause_blocage": pause_status,  # "Oui" si pause, "Non" sinon
+                        "tps_position": temps_en_position,
+                        "pause_bloc": pause_status,  # "Oui" si pause, "Non" sinon
                         "note": note,  # ex: "Gain latent, pas de blocage", "Vente bloquée temporairement", etc.
                     }
                 )
