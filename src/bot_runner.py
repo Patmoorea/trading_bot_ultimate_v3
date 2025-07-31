@@ -908,7 +908,6 @@ class TradingBotM4:
         pending = []
         now = datetime.utcnow()
 
-        # Ajoute toutes les positions spot Binance (ou bot)
         if hasattr(self, "positions_binance"):
             for symbol, pos in self.positions_binance.items():
                 entry_price = pos.get("entry_price")
@@ -939,7 +938,6 @@ class TradingBotM4:
                 else:
                     reason = f"Signal actuel: {action.upper()}"
 
-                # Ajoute la ligne QUEL QUE SOIT LE SIGNAL
                 pending.append(
                     {
                         "symbol": symbol,
