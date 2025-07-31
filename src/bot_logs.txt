@@ -62499,3 +62499,6 @@
 2025-07-31T23:31:20.292902 | ✅ Trading en direct: True
 2025-07-31T23:31:20.292946 | ✅ IA activée: True
 2025-07-31T23:31:20.292986 | ✅ Analyse de news activée: True
+2025-07-31T23:33:23.832336 | [NEWS] Lancement boucle d'analyse des news…
+2025-07-31T23:34:53.051990 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0463 | Tendance: -0.0057
+2025-07-31T23:34:53.054489 | 🔈 Régime de marché détecté: Range/Scalping
