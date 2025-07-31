@@ -95,13 +95,10 @@ def get_pending_sales(self):
                 {
                     "symbol": symbol,
                     "reason": "🔴 Signal SELL",
-                    "confidence": td.get("confidence"),
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
                     "pnl_pct": pnl_pct,
-                    "date_achat": date_achat,
-                    "temps_en_position_h": temps_en_position,
                 }
             )
         # 2. TP proche
@@ -589,9 +586,6 @@ with tab4:
                     "entry_price",
                     "current_price",
                     "% Gain/Perte",
-                    "confidence",
-                    "date_achat",
-                    "Durée position (h)",
                 ]
             ],
             use_container_width=True,
