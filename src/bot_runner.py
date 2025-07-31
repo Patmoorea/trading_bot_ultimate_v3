@@ -4307,9 +4307,10 @@ async def run_clean_bot():
             except Exception:
                 min_vol, min_sig, n_top = 0.01, 0.3, 5
 
-            selected_pairs = filter_pairs(
-                bot, min_volatility=0.0, min_signal=0.0, top_n=10
-            )
+            selected_pairs = bot.pairs_valid
+            # selected_pairs = filter_pairs(
+            # bot, min_volatility=0.0, min_signal=0.0, top_n=10
+            # )
             print(selected_pairs)
             print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
             ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
