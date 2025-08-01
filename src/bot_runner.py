@@ -687,6 +687,195 @@ def merge_news_processed(old_scores, new_scores):
     return new_scores
 
 
+# --- MULTI-EXCHANGE ABSTRACTION ---
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Any
+
+class ExchangeConnector(ABC):
+    """
+    Abstraction pour la connexion et l'exécution d'ordres sur différents exchanges.
+    """
+    
+    @abstractmethod
+    def execute_order(self, symbol: str, side: str, order_type: str, 
+                     quantity: float, price: Optional[float] = None) -> Dict[str, Any]:
+        """
+        Exécute un ordre sur l'exchange.
+        
+        Args:
+            symbol: Symbole de trading (ex: BTCUSDT)
+            side: BUY ou SELL
+            order_type: MARKET, LIMIT, etc.
+            quantity: Quantité à acheter/vendre
+            price: Prix pour les ordres LIMIT
+            
+        Returns:
+            Dict avec les détails de l'ordre exécuté
+        """
+        pass
+    
+    @abstractmethod
+    def get_portfolio(self) -> Dict[str, Dict[str, float]]:
+        """
+        Récupère le portefeuille/balances de l'exchange.
+        
+        Returns:
+            Dict avec les balances par asset
+        """
+        pass
+    
+    @abstractmethod
+    def get_market_data(self, symbol: str, interval: str, limit: int = 500) -> List[Dict]:
+        """
+        Récupère les données de marché (klines/candlesticks).
+        """
+        pass
+    
+    @abstractmethod
+    def get_current_price(self, symbol: str) -> float:
+        """
+        Récupère le prix actuel d'un symbole.
+        """
+        pass
+    
+    @abstractmethod
+    def get_order_book(self, symbol: str, limit: int = 100) -> Dict[str, Any]:
+        """
+        Récupère le carnet d'ordres.
+        """
+        pass
+
+
+class BinanceExchangeConnector(ExchangeConnector):
+    """
+    Implémentation pour Binance.
+    """
+    
+    def __init__(self, api_key: str, api_secret: str):
+        from binance.client import Client
+        self.client = Client(api_key, api_secret)
+        self.exchange_name = "binance"
+    
+    def execute_order(self, symbol: str, side: str, order_type: str, 
+                     quantity: float, price: Optional[float] = None) -> Dict[str, Any]:
+        try:
+            if order_type.upper() == "MARKET":
+                if side.upper() == "BUY":
+                    result = self.client.order_market_buy(symbol=symbol, quantity=quantity)
+                else:
+                    result = self.client.order_market_sell(symbol=symbol, quantity=quantity)
+            elif order_type.upper() == "LIMIT":
+                result = self.client.order_limit(
+                    symbol=symbol, side=side.upper(), 
+                    quantity=quantity, price=str(price)
+                )
+            else:
+                raise ValueError(f"Type d'ordre non supporté: {order_type}")
+            return result
+        except Exception as e:
+            return {"error": str(e), "success": False}
+    
+    def get_portfolio(self) -> Dict[str, Dict[str, float]]:
+        try:
+            account = self.client.get_account()
+            portfolio = {}
+            for balance in account['balances']:
+                asset = balance['asset']
+                free = float(balance['free'])
+                locked = float(balance['locked'])
+                if free > 0 or locked > 0:
+                    portfolio[asset] = {
+                        'free': free,
+                        'locked': locked,
+                        'total': free + locked
+                    }
+            return portfolio
+        except Exception as e:
+            print(f"Erreur récupération portfolio Binance: {e}")
+            return {}
+    
+    def get_market_data(self, symbol: str, interval: str, limit: int = 500) -> List[Dict]:
+        try:
+            klines = self.client.get_klines(symbol=symbol, interval=interval, limit=limit)
+            return klines
+        except Exception as e:
+            print(f"Erreur récupération données marché: {e}")
+            return []
+    
+    def get_current_price(self, symbol: str) -> float:
+        try:
+            ticker = self.client.get_symbol_ticker(symbol=symbol)
+            return float(ticker['price'])
+        except Exception as e:
+            print(f"Erreur récupération prix: {e}")
+            return 0.0
+    
+    def get_order_book(self, symbol: str, limit: int = 100) -> Dict[str, Any]:
+        try:
+            return self.client.get_order_book(symbol=symbol, limit=limit)
+        except Exception as e:
+            print(f"Erreur récupération order book: {e}")
+            return {}
+
+
+class KucoinExchangeConnector(ExchangeConnector):
+    """
+    Placeholder pour Kucoin - à implémenter plus tard.
+    """
+    
+    def __init__(self, api_key: str, api_secret: str, passphrase: str):
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.passphrase = passphrase
+        self.exchange_name = "kucoin"
+        print("KucoinExchangeConnector initialisé (placeholder)")
+    
+    def execute_order(self, symbol: str, side: str, order_type: str, 
+                     quantity: float, price: Optional[float] = None) -> Dict[str, Any]:
+        return {"error": "Kucoin non implémenté", "success": False}
+    
+    def get_portfolio(self) -> Dict[str, Dict[str, float]]:
+        return {}
+    
+    def get_market_data(self, symbol: str, interval: str, limit: int = 500) -> List[Dict]:
+        return []
+    
+    def get_current_price(self, symbol: str) -> float:
+        return 0.0
+    
+    def get_order_book(self, symbol: str, limit: int = 100) -> Dict[str, Any]:
+        return {}
+
+
+class OKXExchangeConnector(ExchangeConnector):
+    """
+    Placeholder pour OKX - à implémenter plus tard.
+    """
+    
+    def __init__(self, api_key: str, api_secret: str, passphrase: str):
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.passphrase = passphrase
+        self.exchange_name = "okx"
+        print("OKXExchangeConnector initialisé (placeholder)")
+    
+    def execute_order(self, symbol: str, side: str, order_type: str, 
+                     quantity: float, price: Optional[float] = None) -> Dict[str, Any]:
+        return {"error": "OKX non implémenté", "success": False}
+    
+    def get_portfolio(self) -> Dict[str, Dict[str, float]]:
+        return {}
+    
+    def get_market_data(self, symbol: str, interval: str, limit: int = 500) -> List[Dict]:
+        return []
+    
+    def get_current_price(self, symbol: str) -> float:
+        return 0.0
+    
+    def get_order_book(self, symbol: str, limit: int = 100) -> Dict[str, Any]:
+        return {}
+
+
 class TradingBotM4:
     def __init__(self):
         # Configuration de base existante...
@@ -991,62 +1180,140 @@ class TradingBotM4:
             json.dump(shared_data, f, indent=4)
         return pending
 
-    def sync_positions_with_binance(self):
-        if self.is_live_trading and self.binance_client:
-            account = self.binance_client.get_account()
-            positions = {}
-            supported_quotes = ["USDC", "USDT", "BUSD"]
-            for bal in account["balances"]:
-                asset = bal["asset"]
-                free = float(bal["free"])
-                if free > 0 and asset not in supported_quotes:
-                    entry_price = None
-                    symbol = None
-                    current_price = None
-                    quote_found = None
-                    # Essaye toutes les quotes possibles
-                    for quote in supported_quotes:
-                        try:
-                            test_symbol = f"{asset}{quote}"
-                            ticker = self.binance_client.get_symbol_ticker(
-                                symbol=test_symbol
-                            )
-                            current_price = float(ticker["price"])
-                            # Va chercher le vrai prix d'achat moyen spot
+    def sync_positions_with_exchange(self, exchange_name: str = "binance"):
+        """
+        Synchronise les positions avec l'exchange spécifié via l'abstraction ExchangeConnector.
+        """
+        if not self.is_live_trading or exchange_name not in self.exchange_connectors:
+            return
+            
+        exchange = self.exchange_connectors[exchange_name]
+        portfolio = exchange.get_portfolio()
+        positions = {}
+        supported_quotes = ["USDC", "USDT", "BUSD"]
+        
+        for asset, balance_info in portfolio.items():
+            free = balance_info.get('free', 0)
+            if free > 0 and asset not in supported_quotes:
+                entry_price = None
+                symbol = None
+                current_price = None
+                quote_found = None
+                
+                # Essaye toutes les quotes possibles
+                for quote in supported_quotes:
+                    try:
+                        test_symbol = f"{asset}{quote}"
+                        current_price = exchange.get_current_price(test_symbol)
+                        
+                        # Va chercher le vrai prix d'achat moyen spot (garde la logique existante)
+                        if hasattr(self, 'binance_client') and self.binance_client and exchange_name == "binance":
                             entry_price = get_avg_entry_price_binance_spot(
                                 self.binance_client, asset, quote=quote
                             )
-                            if entry_price is not None:
-                                quote_found = quote
-                                symbol = f"{asset}/{quote}"
-                                break
-                        except Exception:
-                            continue
-                    if symbol is None or entry_price is None:
-                        # fallback: dernière quote testée, ou skip si rien trouvé
-                        if current_price is not None:
-                            symbol = f"{asset}/{quote_found or 'USDC'}"
-                            entry_price = current_price
-                        else:
-                            continue
-                    if entry_price and current_price:
-                        pnl_pct = (current_price - entry_price) / entry_price * 100
-                        pnl_usd = (current_price - entry_price) * free
+                        
+                        if entry_price is not None and current_price > 0:
+                            quote_found = quote
+                            symbol = f"{asset}/{quote}"
+                            break
+                    except Exception:
+                        continue
+                
+                # Fallback logic (comme dans l'original)
+                if symbol is None or entry_price is None:
+                    if current_price is not None:
+                        symbol = f"{asset}/{quote_found or 'USDC'}"
+                        entry_price = current_price
                     else:
-                        pnl_pct = 0.0
-                        pnl_usd = 0.0
-                    positions[symbol] = {
-                        "side": self.positions.get(symbol, {}).get("side", "long"),
-                        "amount": free,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "pnl_pct": pnl_pct,
-                        "pnl_usd": pnl_usd,
-                        "value_usd": (
-                            free * current_price if free and current_price else 0.0
-                        ),
-                    }
+                        continue
+                
+                if entry_price and current_price:
+                    pnl_pct = (current_price - entry_price) / entry_price * 100
+                    pnl_usd = (current_price - entry_price) * free
+                else:
+                    pnl_pct = 0.0
+                    pnl_usd = 0.0
+                    
+                positions[symbol] = {
+                    "side": self.positions.get(symbol, {}).get("side", "long"),
+                    "amount": free,
+                    "entry_price": entry_price,
+                    "current_price": current_price,
+                    "pnl_pct": pnl_pct,
+                    "pnl_usd": pnl_usd,
+                    "value_usd": (
+                        free * current_price if free and current_price else 0.0
+                    ),
+                    "exchange": exchange_name,
+                }
+        
+        # Garde la compatibilité avec l'ancien nom
+        if exchange_name == "binance":
             self.positions_binance = positions
+        else:
+            setattr(self, f"positions_{exchange_name}", positions)
+
+    def sync_positions_with_binance(self):
+        """Méthode de compatibilité - utilise la nouvelle abstraction."""
+        self.sync_positions_with_exchange("binance")
+
+    def execute_trade_order(self, symbol: str, side: str, order_type: str, 
+                           quantity: float, price: Optional[float] = None, 
+                           exchange_name: str = "binance") -> Dict[str, Any]:
+        """
+        Exécute un ordre via l'abstraction ExchangeConnector.
+        
+        Args:
+            symbol: Symbole de trading (ex: BTCUSDT)
+            side: BUY ou SELL
+            order_type: MARKET, LIMIT, etc.
+            quantity: Quantité à acheter/vendre
+            price: Prix pour les ordres LIMIT
+            exchange_name: Exchange à utiliser
+            
+        Returns:
+            Dict avec les détails de l'ordre exécuté
+        """
+        if not self.is_live_trading:
+            return {"error": "Mode simulation - ordre non exécuté", "success": False}
+            
+        if exchange_name not in self.exchange_connectors:
+            return {"error": f"Exchange {exchange_name} non configuré", "success": False}
+            
+        exchange = self.exchange_connectors[exchange_name]
+        
+        try:
+            result = exchange.execute_order(symbol, side, order_type, quantity, price)
+            
+            # Log l'ordre pour le suivi
+            log_message = f"Ordre {side} {quantity} {symbol} sur {exchange_name}: {result.get('orderId', 'N/A')}"
+            if hasattr(self, 'logger'):
+                self.logger.info(log_message)
+            else:
+                print(f"[TRADE] {log_message}")
+                
+            return result
+            
+        except Exception as e:
+            error_msg = f"Erreur exécution ordre sur {exchange_name}: {str(e)}"
+            if hasattr(self, 'logger'):
+                self.logger.error(error_msg)
+            else:
+                print(f"[ERROR] {error_msg}")
+            return {"error": error_msg, "success": False}
+
+    def get_exchange_portfolio(self, exchange_name: str = "binance") -> Dict[str, Dict[str, float]]:
+        """
+        Récupère le portefeuille d'un exchange via l'abstraction.
+        
+        Returns:
+            Dict avec les balances par asset
+        """
+        if not self.is_live_trading or exchange_name not in self.exchange_connectors:
+            return {}
+            
+        exchange = self.exchange_connectors[exchange_name]
+        return exchange.get_portfolio()
 
     def get_active_pauses(self):
         """
@@ -1980,22 +2247,38 @@ class TradingBotM4:
         self.last_telegram_update = datetime.utcnow()
         self.logger = logger
 
-        # 6. Initialisation de l'API Binance (live/simu)
+        # 6. Initialisation des connecteurs d'exchange (live/simu)
         self.api_key = os.getenv("BINANCE_API_KEY")
         self.api_secret = os.getenv("BINANCE_API_SECRET")
+        
+        # Configuration multi-exchange
+        self.exchange_connectors = {}
+        self.primary_exchange = None
+        
         if self.api_key and self.api_secret:
+            # Initialisation Binance
             self.binance_client = Client(self.api_key, self.api_secret)
+            self.exchange_connectors["binance"] = BinanceExchangeConnector(self.api_key, self.api_secret)
+            self.primary_exchange = self.exchange_connectors["binance"]
+            
             self.binance_connector = BinanceConnector()
             self.executor = SmartOrderExecutor()
             self.is_live_trading = True
             self.logger.info("Binance API initialized for live trading")
+            
+            # Placeholder pour autres exchanges (à configurer plus tard)
+            # self.exchange_connectors["kucoin"] = KucoinExchangeConnector(kucoin_key, kucoin_secret, kucoin_passphrase)
+            # self.exchange_connectors["okx"] = OKXExchangeConnector(okx_key, okx_secret, okx_passphrase)
+            
         else:
             self.is_live_trading = False
             self.binance_client = None
+            self.exchange_connectors = {}
+            self.primary_exchange = None
             self.binance_connector = None
             self.executor = None
             self.logger.warning(
-                "Binance API credentials not found, running in simulation mode"
+                "Exchange API credentials not found, running in simulation mode"
             )
         print("Vérification des clés API:")
         print(f"API Key présente: {'Oui' if self.api_key else 'Non'}")

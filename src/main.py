@@ -369,6 +369,34 @@ with st.sidebar:
     except Exception as e:
         st.sidebar.warning(f"Erreur sauvegarde filtres dynamiques: {e}")
 
+    # --- HISTORIQUE DES PAUSES ---
+    st.sidebar.markdown("---")
+    st.sidebar.header("⏸️ Historique des pauses")
+    
+    # Afficher l'historique des pauses avec leur statut
+    pause_history = shared_data.get("pause_history", [])
+    if pause_history:
+        st.sidebar.markdown("**Dernières pauses déclenchées:**")
+        # Afficher les 5 dernières pauses
+        for i, pause in enumerate(pause_history[-5:]):
+            status_icon = "🟢" if pause.get("cycles_left", 0) == 0 else "🔴"
+            st.sidebar.text(f"{status_icon} {pause.get('asset', 'GLOBAL')}: {pause.get('type', 'PAUSE')}")
+            if pause.get("triggered_title"):
+                st.sidebar.caption(pause["triggered_title"][:50] + "...")
+    else:
+        st.sidebar.info("Aucune pause enregistrée")
+
+    # Bouton pour vider l'historique
+    if st.sidebar.button("🗑️ Vider historique"):
+        try:
+            shared_data["pause_history"] = []
+            with open(SHARED_DATA_PATH, "w") as f:
+                json.dump(shared_data, f, indent=2)
+            st.sidebar.success("Historique vidé!")
+            st.rerun()
+        except Exception as e:
+            st.sidebar.error(f"Erreur: {e}")
+
 # --- TABS ---
 tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
     [
@@ -405,7 +433,37 @@ with tab1:
             f"🚨 Trading bloqué (pause active) — Déblocage dans {pause_cycles_left} cycle(s) !",
             icon="⏸️",
         )
-        st.markdown("#### ⏸️ Pauses actives détaillées")
+        
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            st.markdown("#### ⏸️ Pauses actives détaillées")
+        with col2:
+            if st.button("🔄 Reprendre trading", type="primary"):
+                try:
+                    # Force la reprise en mettant tous les cycles_left à 0
+                    for pause in active_pauses:
+                        pause["cycles_left"] = 0
+                    shared_data["active_pauses"] = active_pauses
+                    with open(SHARED_DATA_PATH, "w") as f:
+                        json.dump(shared_data, f, indent=2)
+                    st.success("✅ Trading repris avec succès!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erreur lors de la reprise: {e}")
+        with col3:
+            if st.button("⏳ Prolonger pause"):
+                try:
+                    # Prolonge toutes les pauses de 5 cycles supplémentaires
+                    for pause in active_pauses:
+                        pause["cycles_left"] = pause.get("cycles_left", 0) + 5
+                    shared_data["active_pauses"] = active_pauses
+                    with open(SHARED_DATA_PATH, "w") as f:
+                        json.dump(shared_data, f, indent=2)
+                    st.success("✅ Pause prolongée de 5 cycles!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erreur lors de la prolongation: {e}")
+        
         df_pauses = pd.DataFrame(active_pauses)
         st.dataframe(df_pauses, use_container_width=True)
 
