@@ -2132,6 +2132,10 @@ class TradingBotM4:
         - Gère le suivi de position SPOT et le stop-loss automatique
         - Enregistre les positions fermées dans closed_positions
         """
+        symbol_binance = symbol.replace(
+            "/", ""
+        )  # PATCH: format sans slash pour API Binance
+
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -2180,12 +2184,9 @@ class TradingBotM4:
 
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
-                # PATCH : On vérifie le portefeuille spot Binance AVANT d'acheter
                 already_in_portfolio = False
-                # Vérifie dans self.positions (du bot)
                 if self.is_long(symbol):
                     already_in_portfolio = True
-                # Vérifie dans le portefeuille spot Binance
                 if hasattr(self, "positions_binance"):
                     pos_binance = self.positions_binance.get(symbol)
                     if pos_binance and float(pos_binance.get("amount", 0)) > 0:
@@ -2197,7 +2198,7 @@ class TradingBotM4:
                     )
                     return {"status": "skipped", "reason": "already long"}
 
-                bid, ask = self.get_ws_orderbook(symbol)
+                bid, ask = self.get_ws_orderbook(symbol_binance)
                 if bid is None or ask is None:
                     log_dashboard(
                         f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
@@ -2208,13 +2209,13 @@ class TradingBotM4:
                 market_data = {
                     "recent_trades": recent_trades,
                     "volatility": self.calculate_volatility(
-                        self.market_data.get(symbol, {}).get("1h", {})
+                        self.market_data.get(symbol_binance, {}).get("1h", {})
                     ),
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
                 result = await self.executor.execute_order(
-                    symbol=symbol,
+                    symbol=symbol_binance,
                     side=side,
                     quoteOrderQty=amount,
                     orderbook=orderbook,
@@ -2233,12 +2234,10 @@ class TradingBotM4:
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
                 allow_sell = False
                 use_amount = None
-                # 1. Vente si position "virtuelle" long
                 if self.is_long(symbol):
                     allow_sell = True
                     use_amount = self.positions[symbol]["amount"]
                 else:
-                    # 2. Vente autorisée si solde réel Binance dispo
                     asset = symbol.replace("/USDC", "").replace("USDC", "")
                     balance = None
                     try:
@@ -2262,7 +2261,7 @@ class TradingBotM4:
                             "reason": "not in position or insufficient balance",
                         }
 
-                bid, ask = self.get_ws_orderbook(symbol)
+                bid, ask = self.get_ws_orderbook(symbol_binance)
                 if bid is None or ask is None:
                     log_dashboard(
                         f"[ORDER] Orderbook WS non dispo pour {symbol}, annulation de l'ordre."
@@ -2272,13 +2271,13 @@ class TradingBotM4:
                 market_data = {
                     "recent_trades": [],
                     "volatility": self.calculate_volatility(
-                        self.market_data.get(symbol, {}).get("1h", {})
+                        self.market_data.get(symbol_binance, {}).get("1h", {})
                     ),
                     "regime": self.regime,
                     "binance_client": self.binance_client,
                 }
                 result = await self.executor.execute_order(
-                    symbol=symbol,
+                    symbol=symbol_binance,
                     side=side,
                     quoteOrderQty=use_amount,
                     orderbook=orderbook,
@@ -2296,7 +2295,7 @@ class TradingBotM4:
 
             # ----- SHORT BINGX -----
             elif side.upper() == "SHORT":
-                symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
+                symbol_bingx = symbol_binance.replace("USDC", "USDT") + ":USDT"
                 ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
                 price_bingx = float(ticker["last"])
                 qty = amount / price_bingx
