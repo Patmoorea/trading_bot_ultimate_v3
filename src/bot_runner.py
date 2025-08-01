@@ -100,6 +100,47 @@ load_dotenv()
 LOG_FILE = "src/bot_logs.txt"
 
 
+class ExchangeConnector:
+    """
+    Abstraction pour gérer plusieurs exchanges facilement.
+    Chaque exchange doit avoir un client Python (Binance, Kucoin, OKX...).
+    Tu utilises cette classe pour faire les ordres et récupérer le portefeuille.
+    """
+
+    def __init__(self, name, client=None):
+        self.name = name
+        self.client = client
+
+    def execute_order(self, symbol, side, amount, **kwargs):
+        if self.name == "binance":
+            # Exemple simplifié, adapte à ton SDK
+            return self.client.create_order(
+                symbol=symbol, side=side, quantity=amount, **kwargs
+            )
+        elif self.name == "kucoin":
+            # Placeholder, à implémenter
+            pass
+        elif self.name == "okx":
+            # Placeholder, à implémenter
+            pass
+
+    def get_portfolio(self):
+        if self.name == "binance":
+            return self.client.get_account()
+        elif self.name == "kucoin":
+            pass
+        elif self.name == "okx":
+            pass
+
+    def get_orderbook(self, symbol):
+        if self.name == "binance":
+            return self.client.get_order_book(symbol=symbol)
+        elif self.name == "kucoin":
+            pass
+        elif self.name == "okx":
+            pass
+
+
 def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
@@ -740,6 +781,7 @@ class TradingBotM4:
                 },
             },
         }
+
         self.news_pause_manager = NewsPauseManager(
             default_pause_cycles=6
         )  # 6 cycles = 3 minutes si cycle=30s
@@ -5187,7 +5229,10 @@ def calculate_position_size(bot, decision):
     Calcule le montant en USDC à investir (et non la quantité de BTC).
     Utilise le money management dynamique avancé.
     Réduit le sizing en mode 'safe' si plusieurs pertes consécutives.
+    Met à jour le flag safe_mode pour le dashboard.
     """
+    import json
+
     try:
         mm_risk = 0.05
         if hasattr(bot, "signal_fusion_params") and bot.signal_fusion_params:
@@ -5196,18 +5241,17 @@ def calculate_position_size(bot, decision):
         confidence = decision.get("confidence", 0.5)
         volatility = abs(decision.get("signals", {}).get("volatility", 0.5))
 
-        # Nouveau : mode safe si plusieurs pertes consécutives
+        # Mode safe si plusieurs pertes consécutives
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
-            perf = data.get("bot_status", {}).get("performance", {})
-            losses = perf.get("losses", 0)
-            wins = perf.get("wins", 0)
-            total_trades = perf.get("total_trades", 0)
-            # Compte les pertes consécutives (optionnel : stocke dans shared_data)
             last_trades = data.get("trade_history", [])[-5:]
             consecutive_losses = sum(1 for t in last_trades if t.get("pnl_usd", 0) < 0)
             mode_safe = consecutive_losses >= 3
+            # Patch : écris le flag dans le shared_data pour Streamlit
+            data["safe_mode"] = mode_safe
+            with open(bot.data_file, "w") as f:
+                json.dump(data, f, indent=4)
         except Exception:
             mode_safe = False
 
