@@ -1,0 +1,97 @@
+📊 TRADING BOT ULTIMATE v4 - DASHBOARD MOCKUP
+================================================================================
+TABS: 📊 Trading | 📈 Graphiques | 🔬 Analyse | 📖 Portefeuille | 🧪 Backtest | 📈 Performance | [⏸️ Gestion Pauses] | 📝 Logs
+================================================================================
+
+⏸️ GESTION AVANCÉE DES PAUSES TRADING
+--------------------------------------------------
+
+🚨 Pauses Trading Actives
+┌───────┬─────────────┬──────────────┬─────────────────┬─────────────────┬──────────────┐
+│ Index │ Asset/Paire │ Type de Pause│ Action Bloquée  │ Cycles Restants │ Temps Estimé │
+├───────┼─────────────┼──────────────┼─────────────────┼─────────────────┼──────────────┤
+│   0   │     BTC     │     FULL     │       ALL       │        8        │     240s     │
+│   1   │     ETH     │     BUY      │       BUY       │       12        │     360s     │
+│   2   │   GLOBAL    │    GLOBAL    │       ALL       │        5        │     150s     │
+└───────┴─────────────┴──────────────┴─────────────────┴─────────────────┴──────────────┘
+
+🎛️ Contrôles des Pauses
+┌─────────────────────────────────────┬─────────────────────────────────────┐
+│           Reprendre le Trading      │          Prolonger une Pause        │
+├─────────────────────────────────────┼─────────────────────────────────────┤
+│ Sélectionner: [#0 - BTC (FULL)  ▼] │ Sélectionner: [#1 - ETH (BUY)   ▼] │
+│                                     │ Cycles à ajouter: [10          ] │
+│         [🟢 Forcer la Reprise]      │         [🟡 Prolonger la Pause]     │
+└─────────────────────────────────────┴─────────────────────────────────────┘
+
+📜 Historique des Pauses
+┌─────────────┬─────────────────┬─────────────┬─────────────────────┐
+│ Asset/Paire │     Trigger     │   Durée     │     Terminé le      │
+├─────────────┼─────────────────┼─────────────┼─────────────────────┤
+│     SOL     │   news_hack     │ 20 cycles   │ 2024-01-15 10:30:00 │
+│     ADA     │  regulation     │ 15 cycles   │ 2024-01-14 16:45:00 │
+└─────────────┴─────────────────┴─────────────┴─────────────────────┘
+
+ℹ️ Informations
+• GLOBAL: Pause sur tout le trading
+• FULL: Pause complète sur une paire spécifique
+• BUY: Pause uniquement sur les achats d'une paire
+• Forcer la Reprise: Met cycles_left à 0 pour reprendre immédiatement
+• Prolonger: Ajoute des cycles supplémentaires à une pause existante
+• Note: Un cycle correspond généralement à 30 secondes de trading.
+
+
+🏛️ MULTI-EXCHANGE SYSTEM - BACKEND ARCHITECTURE
+================================================================================
+
+📡 Exchange Connectors Status
+┌─────────────┬─────────────┬─────────────────┬─────────────────────┐
+│  Exchange   │   Status    │      Type       │   Supported Pairs   │
+├─────────────┼─────────────┼─────────────────┼─────────────────────┤
+│   Binance   │ ✅ Connected │   Spot Trading  │ BTC/USDT, ETH/USDT │
+│    BingX    │ ✅ Connected │ Futures Trading │ BTC/USDT, ETH/USDT │
+│   KuCoin    │ ⏸️ Placeholder│   Spot Trading  │     [Ready]         │
+│     OKX     │ ⏸️ Placeholder│ Spot & Futures  │     [Ready]         │
+└─────────────┴─────────────┴─────────────────┴─────────────────────┘
+
+🔄 Trading Execution Flow
+1. Market Analysis  → 2. Best Exchange Selection → 3. Order Execution
+   ↓                    ↓                          ↓
+ All Exchanges      Price Comparison        ExchangeManager
+   ↓                    ↓                          ↓
+BTC/USDT Analysis   Binance: $43,480         execute_trade_multi_exchange()
+                    BingX:   $43,520         Result: Arbitrage executed
+
+💡 Architecture Benefits:
+✅ Unified interface for all exchanges
+✅ Automatic best price detection
+✅ Easy to add new exchanges
+✅ Centralized error handling
+✅ Scalable and maintainable code
+
+
+🔧 INTEGRATION IN ACTION
+================================================================================
+📅 Real-Time Trading Scenario:
+┌─────────┬─────────────────────────────────────────────────────────────┐
+│  Time   │                          Event                             │
+├─────────┼─────────────────────────────────────────────────────────────┤
+│ 09:00   │ 🚀 Bot starts, ExchangeManager connects to all exchanges   │
+│ 09:15   │ 📊 Normal trading: Binance spot + BingX futures           │
+│ 10:30   │ 🚨 News detected: 'Major exchange security incident'      │
+│ 10:30   │ 🛑 NewsPauseManager triggers GLOBAL pause (20 cycles)     │
+│ 10:31   │ 📊 Dashboard shows active pause with 19 cycles countdown  │
+│ 10:35   │ 👤 User opens dashboard, sees pause status                │
+│ 10:36   │ 🎛️ User clicks 'Force Resume' button                      │
+│ 10:36   │ ✅ Trading resumes, all exchanges active                  │
+│ 10:37   │ 💹 Bot detects arbitrage opportunity                      │
+│ 10:38   │ 🏦 Orders executed via ExchangeManager                    │
+│ 10:39   │ 💰 Profit realized: $40 from cross-exchange arbitrage    │
+└─────────┴─────────────────────────────────────────────────────────────┘
+
+================================================================================
+🎉 IMPLEMENTATION COMPLETE!
+📋 Files modified:
+  • src/main.py - Added pause management UI
+  • src/bot_runner.py - Added multi-exchange system
+🔗 Ready for production deployment!

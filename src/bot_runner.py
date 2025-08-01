@@ -23,6 +23,7 @@ import pyarrow.parquet as pq
 import argparse
 import json
 import lz4.frame
+from abc import ABC, abstractmethod
 
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -637,6 +638,424 @@ class WarningFilter:
 sys.stderr = WarningFilter(sys.stderr)
 
 
+class ExchangeConnector(ABC):
+    """
+    Classe abstraite pour la connexion et l'exécution d'ordres sur différents exchanges.
+    Fournit une interface unifiée pour le trading multi-exchange.
+    """
+    
+    def __init__(self, name: str, api_key: str = None, api_secret: str = None):
+        self.name = name
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.is_connected = False
+    
+    @abstractmethod
+    async def connect(self):
+        """Établit la connexion avec l'exchange"""
+        pass
+    
+    @abstractmethod
+    async def disconnect(self):
+        """Ferme la connexion avec l'exchange"""
+        pass
+    
+    @abstractmethod
+    async def execute_order(self, symbol: str, side: str, amount: float, 
+                          order_type: str = "market", price: float = None, **kwargs):
+        """
+        Exécute un ordre sur l'exchange
+        
+        Args:
+            symbol: Paire de trading (ex: "BTC/USDT")
+            side: "buy" ou "sell"
+            amount: Quantité à trader
+            order_type: Type d'ordre ("market", "limit", etc.)
+            price: Prix pour les ordres limit
+            **kwargs: Paramètres supplémentaires spécifiques à l'exchange
+        
+        Returns:
+            dict: Résultat de l'exécution de l'ordre
+        """
+        pass
+    
+    @abstractmethod
+    async def get_portfolio(self):
+        """
+        Récupère le portefeuille/balance de l'exchange
+        
+        Returns:
+            dict: Balance par asset
+        """
+        pass
+    
+    @abstractmethod
+    async def get_order_book(self, symbol: str, limit: int = 5):
+        """
+        Récupère le carnet d'ordres pour un symbole
+        
+        Args:
+            symbol: Paire de trading
+            limit: Nombre de niveaux à récupérer
+        
+        Returns:
+            dict: Carnet d'ordres avec bids et asks
+        """
+        pass
+    
+    @abstractmethod
+    async def get_ticker(self, symbol: str):
+        """
+        Récupère le ticker pour un symbole
+        
+        Args:
+            symbol: Paire de trading
+        
+        Returns:
+            dict: Données du ticker (prix, volume, etc.)
+        """
+        pass
+    
+    def is_symbol_supported(self, symbol: str) -> bool:
+        """Vérifie si un symbole est supporté par cet exchange"""
+        return True  # Par défaut, assume que tous les symboles sont supportés
+
+
+class BinanceConnector(ExchangeConnector):
+    """Connecteur pour l'exchange Binance (Spot)"""
+    
+    def __init__(self, api_key: str = None, api_secret: str = None):
+        super().__init__("Binance", api_key, api_secret)
+        self.client = None
+        self.executor = None
+    
+    async def connect(self):
+        """Établit la connexion avec Binance"""
+        try:
+            from binance.client import Client
+            from web_interface.app.services.order_execution import SmartOrderExecutor
+            
+            if self.api_key and self.api_secret:
+                self.client = Client(self.api_key, self.api_secret)
+                self.executor = SmartOrderExecutor(self.client)
+                self.is_connected = True
+                return True
+            else:
+                raise ValueError("API credentials missing for Binance")
+        except Exception as e:
+            print(f"Erreur connexion Binance: {e}")
+            return False
+    
+    async def disconnect(self):
+        """Ferme la connexion avec Binance"""
+        self.client = None
+        self.executor = None
+        self.is_connected = False
+    
+    async def execute_order(self, symbol: str, side: str, amount: float, 
+                          order_type: str = "market", price: float = None, **kwargs):
+        """Exécute un ordre sur Binance Spot"""
+        if not self.is_connected or not self.executor:
+            raise ConnectionError("Not connected to Binance")
+        
+        try:
+            # Conversion du symbole (BTC/USDT -> BTCUSDT)
+            binance_symbol = symbol.replace("/", "")
+            
+            # Configuration de l'ordre
+            order_params = {
+                "symbol": binance_symbol,
+                "side": side.upper(),
+                "quoteOrderQty": amount if side.lower() == "buy" else None,
+                "quantity": amount if side.lower() == "sell" else None,
+                "orderbook": kwargs.get("orderbook", {}),
+                "market_data": kwargs.get("market_data", {}),
+                "iceberg": kwargs.get("iceberg", False),
+                "iceberg_visible_size": kwargs.get("iceberg_visible_size", 0.1)
+            }
+            
+            result = await self.executor.execute_order(**order_params)
+            return result
+            
+        except Exception as e:
+            return {"status": "error", "reason": str(e)}
+    
+    async def get_portfolio(self):
+        """Récupère le portefeuille Binance"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to Binance")
+        
+        try:
+            account = self.client.get_account()
+            portfolio = {}
+            
+            for balance in account["balances"]:
+                asset = balance["asset"]
+                free = float(balance["free"])
+                locked = float(balance["locked"])
+                
+                if free > 0 or locked > 0:
+                    portfolio[asset] = {
+                        "free": free,
+                        "locked": locked,
+                        "total": free + locked
+                    }
+            
+            return portfolio
+        except Exception as e:
+            return {"error": str(e)}
+    
+    async def get_order_book(self, symbol: str, limit: int = 5):
+        """Récupère le carnet d'ordres Binance"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to Binance")
+        
+        try:
+            binance_symbol = symbol.replace("/", "")
+            orderbook = self.client.get_order_book(symbol=binance_symbol, limit=limit)
+            return {
+                "bids": [[float(bid[0]), float(bid[1])] for bid in orderbook["bids"]],
+                "asks": [[float(ask[0]), float(ask[1])] for ask in orderbook["asks"]]
+            }
+        except Exception as e:
+            return {"error": str(e)}
+    
+    async def get_ticker(self, symbol: str):
+        """Récupère le ticker Binance"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to Binance")
+        
+        try:
+            binance_symbol = symbol.replace("/", "")
+            ticker = self.client.get_symbol_ticker(symbol=binance_symbol)
+            return {
+                "symbol": symbol,
+                "price": float(ticker["price"]),
+                "exchange": "binance"
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+
+class BingXConnector(ExchangeConnector):
+    """Connecteur pour l'exchange BingX (Futures)"""
+    
+    def __init__(self, api_key: str = None, api_secret: str = None):
+        super().__init__("BingX", api_key, api_secret)
+        self.client = None
+        self.executor = None
+    
+    async def connect(self):
+        """Établit la connexion avec BingX"""
+        try:
+            from src.exchanges.bingx_exchange import BingXExchange
+            from bingx_order_executor import BingXOrderExecutor
+            
+            if self.api_key and self.api_secret:
+                self.client = BingXExchange(self.api_key, self.api_secret)
+                self.executor = BingXOrderExecutor(self.client)
+                self.is_connected = True
+                return True
+            else:
+                raise ValueError("API credentials missing for BingX")
+        except Exception as e:
+            print(f"Erreur connexion BingX: {e}")
+            return False
+    
+    async def disconnect(self):
+        """Ferme la connexion avec BingX"""
+        self.client = None
+        self.executor = None
+        self.is_connected = False
+    
+    async def execute_order(self, symbol: str, side: str, amount: float, 
+                          order_type: str = "market", price: float = None, **kwargs):
+        """Exécute un ordre sur BingX Futures"""
+        if not self.is_connected or not self.executor:
+            raise ConnectionError("Not connected to BingX")
+        
+        try:
+            # Conversion du symbole pour BingX (BTC/USDT -> BTCUSDT:USDT)
+            bingx_symbol = symbol.replace("/", "") + ":USDT"
+            
+            if side.lower() == "sell" and kwargs.get("position_side") == "short":
+                # Ouverture de position short
+                leverage = kwargs.get("leverage", 3)
+                result = await self.executor.short_order(bingx_symbol, amount, leverage)
+            elif side.lower() == "buy" and kwargs.get("close_short", False):
+                # Fermeture de position short
+                result = await self.executor.close_short_order(bingx_symbol, amount)
+            else:
+                # Ordre classique
+                result = {"status": "not_implemented", "reason": "Order type not implemented for BingX"}
+            
+            return result
+            
+        except Exception as e:
+            return {"status": "error", "reason": str(e)}
+    
+    async def get_portfolio(self):
+        """Récupère le portefeuille BingX"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to BingX")
+        
+        try:
+            # Placeholder - implémentation spécifique à BingX
+            return {"error": "Portfolio retrieval not implemented for BingX"}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    async def get_order_book(self, symbol: str, limit: int = 5):
+        """Récupère le carnet d'ordres BingX"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to BingX")
+        
+        try:
+            bingx_symbol = symbol.replace("/", "") + ":USDT"
+            # Placeholder - implémentation spécifique à BingX
+            return {"error": "Order book retrieval not implemented for BingX"}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    async def get_ticker(self, symbol: str):
+        """Récupère le ticker BingX"""
+        if not self.is_connected or not self.client:
+            raise ConnectionError("Not connected to BingX")
+        
+        try:
+            bingx_symbol = symbol.replace("/", "") + ":USDT"
+            ticker = await self.client.fetch_ticker(bingx_symbol)
+            return {
+                "symbol": symbol,
+                "price": float(ticker["last"]),
+                "exchange": "bingx"
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+
+class KuCoinConnector(ExchangeConnector):
+    """Connecteur pour l'exchange KuCoin (Placeholder)"""
+    
+    def __init__(self, api_key: str = None, api_secret: str = None, passphrase: str = None):
+        super().__init__("KuCoin", api_key, api_secret)
+        self.passphrase = passphrase
+    
+    async def connect(self):
+        """Placeholder - À implémenter"""
+        print("KuCoin connector - À implémenter")
+        return False
+    
+    async def disconnect(self):
+        """Placeholder - À implémenter"""
+        pass
+    
+    async def execute_order(self, symbol: str, side: str, amount: float, 
+                          order_type: str = "market", price: float = None, **kwargs):
+        """Placeholder - À implémenter"""
+        return {"status": "not_implemented", "reason": "KuCoin connector not implemented yet"}
+    
+    async def get_portfolio(self):
+        """Placeholder - À implémenter"""
+        return {"error": "KuCoin portfolio not implemented yet"}
+    
+    async def get_order_book(self, symbol: str, limit: int = 5):
+        """Placeholder - À implémenter"""
+        return {"error": "KuCoin order book not implemented yet"}
+    
+    async def get_ticker(self, symbol: str):
+        """Placeholder - À implémenter"""
+        return {"error": "KuCoin ticker not implemented yet"}
+
+
+class OKXConnector(ExchangeConnector):
+    """Connecteur pour l'exchange OKX (Placeholder)"""
+    
+    def __init__(self, api_key: str = None, api_secret: str = None, passphrase: str = None):
+        super().__init__("OKX", api_key, api_secret)
+        self.passphrase = passphrase
+    
+    async def connect(self):
+        """Placeholder - À implémenter"""
+        print("OKX connector - À implémenter")  
+        return False
+    
+    async def disconnect(self):
+        """Placeholder - À implémenter"""
+        pass
+    
+    async def execute_order(self, symbol: str, side: str, amount: float, 
+                          order_type: str = "market", price: float = None, **kwargs):
+        """Placeholder - À implémenter"""
+        return {"status": "not_implemented", "reason": "OKX connector not implemented yet"}
+    
+    async def get_portfolio(self):
+        """Placeholder - À implémenter"""
+        return {"error": "OKX portfolio not implemented yet"}
+    
+    async def get_order_book(self, symbol: str, limit: int = 5):
+        """Placeholder - À implémenter"""
+        return {"error": "OKX order book not implemented yet"}
+    
+    async def get_ticker(self, symbol: str):
+        """Placeholder - À implémenter"""
+        return {"error": "OKX ticker not implemented yet"}
+
+
+class ExchangeManager:
+    """
+    Gestionnaire centralisé des connecteurs d'exchange.
+    Permet de gérer plusieurs exchanges simultanément.
+    """
+    
+    def __init__(self):
+        self.connectors = {}
+        self.active_exchanges = []
+    
+    def add_connector(self, exchange_name: str, connector: ExchangeConnector):
+        """Ajoute un connecteur d'exchange"""
+        self.connectors[exchange_name.lower()] = connector
+    
+    async def connect_all(self):
+        """Connecte tous les exchanges configurés"""
+        for name, connector in self.connectors.items():
+            try:
+                success = await connector.connect()
+                if success:
+                    self.active_exchanges.append(name)
+                    print(f"✅ {name} connecté avec succès")
+                else:
+                    print(f"❌ Échec de connexion à {name}")
+            except Exception as e:
+                print(f"❌ Erreur connexion {name}: {e}")
+    
+    async def disconnect_all(self):
+        """Déconnecte tous les exchanges"""
+        for connector in self.connectors.values():
+            await connector.disconnect()
+        self.active_exchanges.clear()
+    
+    def get_connector(self, exchange_name: str) -> ExchangeConnector:
+        """Récupère un connecteur par nom"""
+        return self.connectors.get(exchange_name.lower())
+    
+    def get_active_exchanges(self):
+        """Retourne la liste des exchanges actifs"""
+        return self.active_exchanges.copy()
+    
+    async def execute_order_on_exchange(self, exchange_name: str, symbol: str, 
+                                      side: str, amount: float, **kwargs):
+        """Exécute un ordre sur un exchange spécifique"""
+        connector = self.get_connector(exchange_name)
+        if not connector:
+            return {"status": "error", "reason": f"Exchange {exchange_name} not found"}
+        
+        if not connector.is_connected:
+            return {"status": "error", "reason": f"Exchange {exchange_name} not connected"}
+        
+        return await connector.execute_order(symbol, side, amount, **kwargs)
+
+
 def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
     import numpy as np
 
@@ -740,6 +1159,11 @@ class TradingBotM4:
                 },
             },
         }
+        
+        # --- INITIALISATION EXCHANGE MANAGER ---
+        self.exchange_manager = ExchangeManager()
+        self._initialize_exchange_connectors()
+        
         self.news_pause_manager = NewsPauseManager(
             default_pause_cycles=6
         )  # 6 cycles = 3 minutes si cycle=30s
@@ -755,6 +1179,7 @@ class TradingBotM4:
         self.positions = {}  # Ajouté : gestion des positions spot par paire
         self.stop_loss_pct = 0.03  # 3% stop-loss, modifiable
 
+        # Legacy support - garde les clients individuels pour compatibilité
         bingx_api_key = os.getenv("BINGX_API_KEY")
         bingx_api_secret = os.getenv("BINGX_API_SECRET")
 
@@ -867,6 +1292,58 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
+
+    def _initialize_exchange_connectors(self):
+        """Initialise les connecteurs d'exchange"""
+        try:
+            # Binance Connector
+            binance_api_key = os.getenv("BINANCE_API_KEY")
+            binance_api_secret = os.getenv("BINANCE_API_SECRET")
+            if binance_api_key and binance_api_secret:
+                binance_connector = BinanceConnector(binance_api_key, binance_api_secret)
+                self.exchange_manager.add_connector("binance", binance_connector)
+                print("✅ Binance connector configuré")
+            
+            # BingX Connector
+            bingx_api_key = os.getenv("BINGX_API_KEY")
+            bingx_api_secret = os.getenv("BINGX_API_SECRET")
+            if bingx_api_key and bingx_api_secret:
+                bingx_connector = BingXConnector(bingx_api_key, bingx_api_secret)
+                self.exchange_manager.add_connector("bingx", bingx_connector)
+                print("✅ BingX connector configuré")
+            
+            # KuCoin Connector (placeholder)
+            kucoin_api_key = os.getenv("KUCOIN_API_KEY")
+            kucoin_api_secret = os.getenv("KUCOIN_API_SECRET")
+            kucoin_passphrase = os.getenv("KUCOIN_PASSPHRASE")
+            if kucoin_api_key and kucoin_api_secret and kucoin_passphrase:
+                kucoin_connector = KuCoinConnector(kucoin_api_key, kucoin_api_secret, kucoin_passphrase)
+                self.exchange_manager.add_connector("kucoin", kucoin_connector)
+                print("✅ KuCoin connector configuré (placeholder)")
+            
+            # OKX Connector (placeholder)
+            okx_api_key = os.getenv("OKX_API_KEY")
+            okx_api_secret = os.getenv("OKX_API_SECRET")
+            okx_passphrase = os.getenv("OKX_PASSPHRASE")
+            if okx_api_key and okx_api_secret and okx_passphrase:
+                okx_connector = OKXConnector(okx_api_key, okx_api_secret, okx_passphrase)
+                self.exchange_manager.add_connector("okx", okx_connector)
+                print("✅ OKX connector configuré (placeholder)")
+            
+        except Exception as e:
+            print(f"⚠️ Erreur initialisation connecteurs: {e}")
+
+    async def connect_exchanges(self):
+        """Connecte tous les exchanges configurés"""
+        await self.exchange_manager.connect_all()
+        active_exchanges = self.exchange_manager.get_active_exchanges()
+        print(f"📡 Exchanges actifs: {active_exchanges}")
+        return active_exchanges
+
+    async def disconnect_exchanges(self):
+        """Déconnecte tous les exchanges"""
+        await self.exchange_manager.disconnect_all()
+        print("🔌 Tous les exchanges déconnectés")
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
@@ -2335,6 +2812,135 @@ class TradingBotM4:
             print(f"[ORDER] Execution error: {e}")
             self.logger.error(f"Execution error: {e}")
             return {"status": "error", "reason": str(e)}
+
+    async def execute_trade_multi_exchange(self, symbol: str, side: str, amount: float, 
+                                         exchange: str = "binance", **kwargs):
+        """
+        Nouvelle méthode d'exécution utilisant l'ExchangeManager.
+        Permet de trader sur différents exchanges de manière unifiée.
+        
+        Args:
+            symbol: Paire de trading (ex: "BTC/USDT")
+            side: "buy" ou "sell"
+            amount: Montant à trader
+            exchange: Nom de l'exchange ("binance", "bingx", "kucoin", "okx")
+            **kwargs: Paramètres supplémentaires
+        """
+        try:
+            log_dashboard(f"[MULTI-EXCHANGE] Exécution {side} {amount} {symbol} sur {exchange}")
+            
+            # Récupération du connecteur
+            connector = self.exchange_manager.get_connector(exchange)
+            if not connector:
+                return {"status": "error", "reason": f"Exchange {exchange} non configuré"}
+            
+            if not connector.is_connected:
+                await connector.connect()
+            
+            # Préparation des paramètres selon l'exchange
+            order_params = kwargs.copy()
+            
+            if exchange.lower() == "binance":
+                # Configuration spécifique Binance
+                order_params.update({
+                    "orderbook": kwargs.get("orderbook"),
+                    "market_data": kwargs.get("market_data"),
+                    "iceberg": kwargs.get("iceberg", False)
+                })
+            elif exchange.lower() == "bingx":
+                # Configuration spécifique BingX
+                if side.lower() == "sell" and kwargs.get("is_short_opening", False):
+                    order_params.update({
+                        "position_side": "short",
+                        "leverage": kwargs.get("leverage", 3)
+                    })
+                elif side.lower() == "buy" and kwargs.get("is_short_closing", False):
+                    order_params.update({
+                        "close_short": True
+                    })
+            
+            # Exécution de l'ordre
+            result = await connector.execute_order(
+                symbol=symbol,
+                side=side,
+                amount=amount,
+                **order_params
+            )
+            
+            # Mise à jour des métriques si succès
+            if result.get("status") == "completed":
+                self._update_performance_metrics(result)
+                
+                # Mise à jour des positions selon l'exchange
+                if exchange.lower() == "binance":
+                    self.sync_positions_with_binance()
+                
+                # Notification Telegram
+                await self.telegram.send_message(
+                    f"✅ <b>Trade exécuté sur {exchange.upper()}</b>\n"
+                    f"📊 {side.upper()} {amount} {symbol}\n"
+                    f"💰 Prix moyen: {result.get('avg_price', 'N/A')}\n"
+                    f"📈 Exchange: {exchange.upper()}"
+                )
+            
+            return result
+            
+        except Exception as e:
+            error_msg = f"Erreur exécution multi-exchange: {e}"
+            log_dashboard(f"[MULTI-EXCHANGE ERROR] {error_msg}")
+            await self.telegram.send_message(f"❌ {error_msg}")
+            return {"status": "error", "reason": str(e)}
+
+    async def get_best_exchange_for_symbol(self, symbol: str, side: str = "buy"):
+        """
+        Détermine le meilleur exchange pour trader un symbole donné.
+        Compare les prix, liquidité, frais, etc.
+        
+        Args:
+            symbol: Paire de trading
+            side: "buy" ou "sell"
+        
+        Returns:
+            str: Nom du meilleur exchange
+        """
+        try:
+            best_exchange = "binance"  # Par défaut
+            best_price = None
+            
+            active_exchanges = self.exchange_manager.get_active_exchanges()
+            
+            for exchange_name in active_exchanges:
+                connector = self.exchange_manager.get_connector(exchange_name)
+                if not connector or not connector.is_connected:
+                    continue
+                
+                try:
+                    ticker = await connector.get_ticker(symbol)
+                    if "error" not in ticker:
+                        price = ticker.get("price")
+                        if price:
+                            # Pour un achat, on veut le prix le plus bas
+                            # Pour une vente, on veut le prix le plus haut
+                            if best_price is None:
+                                best_price = price
+                                best_exchange = exchange_name
+                            elif side.lower() == "buy" and price < best_price:
+                                best_price = price
+                                best_exchange = exchange_name
+                            elif side.lower() == "sell" and price > best_price:
+                                best_price = price
+                                best_exchange = exchange_name
+                                
+                except Exception as e:
+                    print(f"Erreur récupération prix {exchange_name}: {e}")
+                    continue
+            
+            log_dashboard(f"[BEST EXCHANGE] {symbol} {side}: {best_exchange} @ {best_price}")
+            return best_exchange
+            
+        except Exception as e:
+            log_dashboard(f"[BEST EXCHANGE ERROR] {e}")
+            return "binance"  # Fallback
 
     def _update_performance_metrics(self, trade_result):
         """Met à jour les métriques de performance après un trade réel"""
