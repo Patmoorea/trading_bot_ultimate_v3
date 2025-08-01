@@ -910,6 +910,58 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def check_tp_partial(
+        self,
+        entry_price,
+        current_price,
+        filled_tp_targets=None,
+        tp_levels=[(0.03, 0.3), (0.07, 0.3)],
+    ):
+        """
+        Fractionne la sortie sur plusieurs TP (take profit).
+        tp_levels = [(niveau de gain, % à sortir)]
+        filled_tp_targets = [bool, bool] selon si les TP ont déjà été touchés
+        Retourne (proportion à sortir, new_filled)
+        """
+        if filled_tp_targets is None:
+            filled_tp_targets = [False] * len(tp_levels)
+        to_exit = 0
+        new_filled = filled_tp_targets[:]
+        for i, (tp_pct, frac) in enumerate(tp_levels):
+            if (
+                not new_filled[i]
+                and (current_price - entry_price) / entry_price > tp_pct
+            ):
+                to_exit += frac
+                new_filled[i] = True
+        return to_exit, new_filled
+
+    def check_trailing(self, entry_price, price_history, max_price, trailing_pct=0.03):
+        """
+        Trailing stop universel : sort si le prix retombe de X% par rapport au max atteint.
+        """
+        if not price_history or len(price_history) < 3:
+            return False, max_price
+        current_price = price_history[-1]
+        if current_price > max_price:
+            max_price = current_price
+        if current_price < max_price * (1 - trailing_pct):
+            return True, max_price
+        return False, max_price
+
+    def calculate_atr(df, period=14):
+        """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
+        high = np.array(df["high"])
+        low = np.array(df["low"])
+        close = np.array(df["close"])
+        tr = np.maximum(
+            high[1:] - low[1:],
+            np.abs(high[1:] - close[:-1]),
+            np.abs(low[1:] - close[:-1]),
+        )
+        atr = pd.Series(tr).rolling(window=period).mean()
+        return float(atr.iloc[-1]) if len(atr) > 0 else 0.01
+
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
             "symbol": symbol,
@@ -2102,11 +2154,7 @@ class TradingBotM4:
 
     def check_stop_loss(self, symbol, price: float = None):
         """
-        Vérifie si le stop-loss doit être déclenché pour la position SPOT sur le symbole.
-        - Retourne True si le stop doit être déclenché (perte dépassant le seuil)
-        - Le seuil par défaut est self.stop_loss_pct (ex : 0.03 pour -3%)
-        - Utilise le prix d'entrée mémorisé dans self.positions[symbol]['entry_price']
-        - Utilise le dernier prix marché si price n'est pas fourni
+        Stop-loss dynamique basé sur la volatilité (ATR).
         """
         try:
             pos = self.positions.get(symbol)
@@ -2116,12 +2164,9 @@ class TradingBotM4:
             if entry is None:
                 return False
 
-            # Utilise toujours le format sans slash pour ws_collector et market_data
             symbol_ws = symbol.replace("/", "").upper()
             if price is None:
-                if hasattr(self, "ws_collector") and self.ws_collector is not None:
-                    price = self.ws_collector.get_last_price(symbol_ws)
-                # Fallback sur market_data si rien via le collector
+                price = self.ws_collector.get_last_price(symbol_ws)
                 if (
                     price is None
                     and symbol_ws in self.market_data
@@ -2131,33 +2176,22 @@ class TradingBotM4:
                     if closes:
                         price = closes[-1]
             if price is None:
-                self.logger.warning(
-                    f"[STOPLOSS] Impossible de récupérer le prix courant pour {symbol} — source manquante (est-ce bien {symbol} ou {symbol_ws} ?)"
-                )
-                print(
-                    "[STOPLOSS DEBUG] market_data keys:", list(self.market_data.keys())
-                )
-                if hasattr(self, "ws_collector"):
-                    print(
-                        "[STOPLOSS DEBUG] ws_collector.last_price:",
-                        self.ws_collector.get_last_price(symbol),
-                    )
-                    print(
-                        "[STOPLOSS DEBUG] ws_collector.last_price alt:",
-                        self.ws_collector.get_last_price(symbol_ws),
-                    )
                 return False
 
-            # Calcul de la perte latente
+            # Calcul ATR sur 1h pour stop dynamique
+            df_ohlcv = pd.DataFrame(self.market_data[symbol_ws]["1h"])
+            atr = calculate_atr(df_ohlcv, period=14)
+            dynamic_stop_pct = max(0.01, min(atr / entry, 0.10))  # Entre 1% et 10% max
+
             loss = (price - entry) / entry
-            if loss < -self.stop_loss_pct:
-                self.logger.warning(
-                    f"[STOPLOSS] Déclenché sur {symbol}: perte = {loss:.2%} (entrée {entry}, prix actuel {price})"
+            if loss < -dynamic_stop_pct:
+                print(
+                    f"[STOPLOSS] Déclenché sur {symbol}: perte = {loss:.2%} (ATR dynamique={dynamic_stop_pct:.2%})"
                 )
                 return True
             return False
         except Exception as e:
-            self.logger.error(f"[STOPLOSS] Erreur vérification stop-loss: {e}")
+            print(f"[STOPLOSS] Erreur vérification stop-loss: {e}")
             return False
 
     async def execute_trade(
@@ -5229,6 +5263,7 @@ def calculate_position_size(bot, decision):
     Sizing progressif : risque dynamique selon la confiance du signal.
     Utilise le Kelly optimal si possible.
     Mode SAFE réduit temporairement le sizing.
+    Réduction sizing si drawdown > 15% sur le mois.
     """
     import json
 
@@ -5236,24 +5271,24 @@ def calculate_position_size(bot, decision):
         # --- Récupération du solde ---
         balance = bot.get_performance_metrics().get("balance", 0)
         confidence = float(decision.get("confidence", 0.5))
-        # --- Sizing progressif selon confiance ---
-        if confidence > 0.7:
-            risk_pct = 0.09  # Entre 7 et 10%
-        elif confidence > 0.4:
-            risk_pct = 0.04  # 4%
-        else:
-            risk_pct = 0.02  # 2%
 
-        # --- Kelly optimal ---
+        # Sizing progressif selon confiance
+        if confidence > 0.7:
+            risk_pct = 0.09  # 9%
+        elif confidence > 0.4:
+            risk_pct = 0.04
+        else:
+            risk_pct = 0.02
+
+        # Kelly optimal
         perf = bot.get_performance_metrics()
         win_rate = perf.get("win_rate", 0.55)
         profit_factor = perf.get("profit_factor", 1.7)
         kelly_frac = kelly_criterion(win_rate, profit_factor)
-        # On ne prend que la valeur positive, et on limite à 12%
         if kelly_frac > 0:
             risk_pct = min(risk_pct + kelly_frac * 0.5, 0.12)
 
-        # --- SAFE MODE : temporaire, désactivé dès le premier gain ---
+        # SAFE MODE : temporaire, désactivé dès le premier gain
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
@@ -5261,7 +5296,6 @@ def calculate_position_size(bot, decision):
             losses = [t for t in last_trades if t.get("pnl_usd", 0) < 0]
             wins = [t for t in last_trades if t.get("pnl_usd", 0) > 0]
             mode_safe = len(losses) >= 3 and len(wins) == 0
-            # Désactive le SAFE dès qu'il y a un gain
             if mode_safe and wins:
                 mode_safe = False
             data["safe_mode"] = mode_safe
@@ -5271,8 +5305,26 @@ def calculate_position_size(bot, decision):
             mode_safe = False
 
         if mode_safe:
-            risk_pct *= 0.25  # Réduit le sizing à 25% du normal
+            risk_pct *= 0.25  # Sizing réduit à 25%
             print("[SAFE MODE] Sizing réduit temporairement.")
+
+        # --- Drawdown global : sizing divisé par 2 si drawdown > 15% ---
+        try:
+            with open(bot.data_file, "r") as f:
+                data = json.load(f)
+            equity_history = data.get("equity_history", [])
+            if equity_history and len(equity_history) >= 30:
+                balances = [pt["balance"] for pt in equity_history if "balance" in pt]
+                peak = max(balances)
+                trough = min(balances)
+                drawdown = (trough - peak) / peak if peak > 0 else 0
+                if drawdown < -0.15:
+                    risk_pct *= 0.5
+                    print(
+                        "[DRAWDOWN] Sizing réduit de moitié temporairement (drawdown > 15%)"
+                    )
+        except Exception:
+            pass
 
         # --- Calcul final ---
         size = balance * risk_pct
