@@ -44,6 +44,10 @@ class NewsPauseManager:
         self.pair_pauses = {}  # {pair: cycles_restants}
         self.buy_paused_pairs = set()  # Paires où seuls les achats sont bloqués
 
+    def activate_pause(self, pause_decision):
+        # Ajoute la pause active dans la RAM ou le fichier partagé
+        self.active_pauses.append(pause_decision)
+
     def scan_news(self, news_list):
         """
         Scanne les news et déclenche une pause globale ou ciblée si un mot-clé critique est détecté.
@@ -109,25 +113,49 @@ class NewsPauseManager:
                     triggered = True
         return triggered
 
-    def should_pause(self, pair=None, action="ALL"):
+    def should_pause(news_item, market_data):
         """
-        Retourne True si le trading doit être en pause :
-        - pair: optionnel, si précisé, ne bloque que cette paire
-        - action: 'ALL' (tout), 'BUY' (seulement les achats), 'SELL' (seulement les ventes)
+        Décide automatiquement si une pause doit être déclenchée selon :
+        - sentiment négatif
+        - impact élevé
+        - classification automatique
+        - réaction du marché (hausse de volatilité)
+        - propagation multi-sources
         """
-        # Pause globale stricte
-        if self.global_cycles_remaining > 0:
-            return True
+        sentiment = news_item.get("sentiment", 0)
+        impact = news_item.get("impact_score", 0)
+        risk_class = news_item.get("risk_class", "")
+        n_sources = news_item.get("n_sources", 1)
+        symbol = news_item.get("symbols", ["GLOBAL"])[0]
+        vol_before = market_data.get(symbol, {}).get("volatility", 0)
+        vol_after = market_data.get(symbol, {}).get("volatility_post_news", vol_before)
 
-        # Pause ciblée sur une paire
-        if pair:
-            pause = self.pair_pauses.get(pair, 0)
-            if pause > 0:
-                if action == "BUY" and pair in self.buy_paused_pairs:
-                    return True
-                if action == "ALL" and pair not in self.buy_paused_pairs:
-                    return True
-        return False
+        # Pause totale si risque systémique
+        if risk_class in ["Réglementaire", "Hack"] and impact > 0.6:
+            return {"type": "total", "reason": news_item.get("title"), "duration": 10}
+
+        # Pause sur la paire si sentiment très négatif ET hausse de volatilité
+        if sentiment < -0.5 and vol_after > vol_before * 2:
+            return {
+                "type": "pair",
+                "pair": symbol,
+                "reason": news_item.get("title"),
+                "duration": 5,
+            }
+
+        # Pause si la même news repérée sur >2 sources et impact élevé
+        if n_sources >= 2 and impact > 0.5:
+            return {"type": "total", "reason": news_item.get("title"), "duration": 10}
+
+        # Pause sur les shorts si news "Short squeeze"
+        if "short squeeze" in news_item.get("title", "").lower():
+            return {
+                "type": "short_only",
+                "reason": news_item.get("title"),
+                "duration": 3,
+            }
+
+        return None  # Pas de pause
 
     def on_cycle_end(self):
         """

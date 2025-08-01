@@ -1544,6 +1544,10 @@ class TradingBotM4:
                 print(f"♻️ Nouveau modèle IA chargé automatiquement ({path})")
 
     async def _news_analysis_loop(self):
+        """
+        Boucle d’analyse des news avec pause automatique intelligente.
+        Déclenche la pause selon sentiment, impact, classification, multi-source, volatilité, etc.
+        """
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
             try:
@@ -1553,7 +1557,9 @@ class TradingBotM4:
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                news_data = self.enrich_news_symbols(news_data)  # <-- AJOUT PATCH
+                news_data = self.enrich_news_symbols(
+                    news_data
+                )  # Ajout des symboles aux news
 
                 sentiment_analysis = {}
                 try:
@@ -1562,27 +1568,53 @@ class TradingBotM4:
                     self.logger.error("Erreur update_analysis", exc_info=True)
                     # sentiment_analysis reste {}
 
-                # Extract the items list from the analysis result
+                # Extraction des items analysés
                 sentiment_scores = (
                     sentiment_analysis.get("items", [])
                     if isinstance(sentiment_analysis, dict)
                     else []
                 )
 
+                # MAJ des données de sentiment dans le bot
                 try:
                     await self._update_sentiment_data(sentiment_scores)
                 except Exception:
                     pass
 
+                # Sauvegarde dans shared_data.json
                 try:
                     await self._save_sentiment_data(sentiment_scores, news_data)
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
 
+                # Envoi du résumé des news sur Telegram
                 try:
                     await self.telegram.send_news_summary(news_data[:5])
                 except Exception:
                     pass
+
+                # === INTÉGRATION PAUSE INTELLIGENTE ===
+                # Pour chaque news, analyse le besoin de pause
+                for news in news_data:
+                    pause_decision = self.news_pause_manager.should_pause(
+                        news, self.market_data
+                    )
+                    if pause_decision:
+                        self.news_pause_manager.activate_pause(pause_decision)
+                        log_dashboard(
+                            f"🚨 Pause déclenchée automatique: {pause_decision}"
+                        )
+                        # Optionnel: notification Telegram
+                        try:
+                            await self.telegram.send_message(
+                                f"🚨 Pause automatique déclenchée\n"
+                                f"Type: {pause_decision.get('type')}\n"
+                                f"Paire: {pause_decision.get('pair', 'Toutes')}\n"
+                                f"Raison: {pause_decision.get('reason')}\n"
+                                f"Durée: {pause_decision.get('duration', 'N/A')} cycles"
+                            )
+                        except Exception:
+                            pass
 
                 # === LOG SENTIMENT GLOBAL ===
                 try:
