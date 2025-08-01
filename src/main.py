@@ -34,6 +34,38 @@ CONFIG_FILE = "config.json"
 CURRENT_USER = "Patmoorea"
 
 
+def update_pause_data(shared_data_path, pause_index, action_type, extend_cycles=None):
+    """
+    Met à jour les données de pause dans shared_data.json
+    - pause_index: index de la pause dans la liste active_pauses
+    - action_type: 'resume' pour reprendre, 'extend' pour prolonger
+    - extend_cycles: nombre de cycles à ajouter si action_type='extend'
+    """
+    try:
+        with open(shared_data_path, "r") as f:
+            data = json.load(f)
+        
+        active_pauses = data.get("active_pauses", [])
+        
+        if 0 <= pause_index < len(active_pauses):
+            if action_type == "resume":
+                active_pauses[pause_index]["cycles_left"] = 0
+                st.success(f"Pause #{pause_index} reprise avec succès!")
+            elif action_type == "extend" and extend_cycles:
+                active_pauses[pause_index]["cycles_left"] += extend_cycles
+                st.success(f"Pause #{pause_index} prolongée de {extend_cycles} cycles!")
+        
+        data["active_pauses"] = active_pauses
+        
+        with open(shared_data_path, "w") as f:
+            json.dump(data, f, indent=4)
+        
+        return True
+    except Exception as e:
+        st.error(f"Erreur lors de la mise à jour des pauses: {e}")
+        return False
+
+
 def get_current_time():
     utc_now = datetime.utcnow()
     polynesie_offset = timedelta(hours=-10)
@@ -370,7 +402,7 @@ with st.sidebar:
         st.sidebar.warning(f"Erreur sauvegarde filtres dynamiques: {e}")
 
 # --- TABS ---
-tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab_pause, tab_logs = st.tabs(
     [
         "📊 Trading",
         "📈 Graphiques",
@@ -378,6 +410,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
         "📖 Portefeuille/Positions",
         "🧪 Backtest",
         "📈 Performance",
+        "⏸️ Gestion Pauses",
         "📝 Logs",
     ]
 )
@@ -806,6 +839,98 @@ with tab6:
             st.error(f"🚨 Max drawdown dépassé : {max_dd:.2%} ! Pause conseillée.")
         if var95 is not None and var95 < -0.05:
             st.error(f"🛑 VaR(95%) critique : {var95:.2f}")
+
+# --- TAB PAUSE MANAGEMENT ---
+with tab_pause:
+    st.subheader("⏸️ Gestion avancée des pauses trading")
+    
+    # Affichage des pauses actives
+    active_pauses = shared_data.get("active_pauses", [])
+    
+    if active_pauses:
+        st.markdown("#### 🚨 Pauses Trading Actives")
+        
+        # Créer un tableau avec les informations des pauses
+        pause_data = []
+        for i, pause in enumerate(active_pauses):
+            pause_data.append({
+                "Index": i,
+                "Asset/Paire": pause.get("asset", "N/A"),
+                "Type de Pause": pause.get("type", "N/A"),
+                "Action Bloquée": pause.get("action", "ALL"),
+                "Cycles Restants": pause.get("cycles_left", 0),
+                "Temps Estimé": f"{pause.get('cycles_left', 0) * 30}s" if pause.get('cycles_left', 0) > 0 else "Terminé"
+            })
+        
+        if pause_data:
+            df_pauses = pd.DataFrame(pause_data)
+            st.dataframe(df_pauses, use_container_width=True)
+            
+            # Section de contrôle des pauses
+            st.markdown("#### 🎛️ Contrôles des Pauses")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("##### Reprendre le Trading")
+                pause_to_resume = st.selectbox(
+                    "Sélectionner une pause à reprendre:",
+                    options=range(len(active_pauses)),
+                    format_func=lambda x: f"#{x} - {active_pauses[x].get('asset', 'N/A')} ({active_pauses[x].get('type', 'N/A')})"
+                )
+                
+                if st.button("🟢 Forcer la Reprise", type="primary"):
+                    if update_pause_data(SHARED_DATA_PATH, pause_to_resume, "resume"):
+                        st.rerun()
+            
+            with col2:
+                st.markdown("##### Prolonger une Pause")
+                pause_to_extend = st.selectbox(
+                    "Sélectionner une pause à prolonger:",
+                    options=range(len(active_pauses)),
+                    format_func=lambda x: f"#{x} - {active_pauses[x].get('asset', 'N/A')} ({active_pauses[x].get('type', 'N/A')})",
+                    key="extend_select"
+                )
+                
+                extend_cycles = st.number_input(
+                    "Nombre de cycles à ajouter:",
+                    min_value=1,
+                    max_value=100,
+                    value=10,
+                    step=1
+                )
+                
+                if st.button("🟡 Prolonger la Pause", type="secondary"):
+                    if update_pause_data(SHARED_DATA_PATH, pause_to_extend, "extend", extend_cycles):
+                        st.rerun()
+    
+    else:
+        st.info("✅ Aucune pause trading active actuellement")
+    
+    # Historique des pauses (si disponible)
+    st.markdown("#### 📜 Historique des Pauses")
+    pause_history = shared_data.get("pause_history", [])
+    
+    if pause_history:
+        df_history = pd.DataFrame(pause_history)
+        st.dataframe(df_history, use_container_width=True)
+    else:
+        st.info("Aucun historique de pause disponible")
+    
+    # Section d'information
+    st.markdown("#### ℹ️ Informations")
+    st.markdown("""
+    **Types de Pauses:**
+    - **GLOBAL**: Pause sur tout le trading
+    - **FULL**: Pause complète sur une paire spécifique
+    - **BUY**: Pause uniquement sur les achats d'une paire
+    
+    **Actions:**
+    - **Forcer la Reprise**: Met cycles_left à 0 pour reprendre immédiatement
+    - **Prolonger**: Ajoute des cycles supplémentaires à une pause existante
+    
+    **Note**: Un cycle correspond généralement à 30 secondes de trading.
+    """)
 
 # --- TAB LOGS ---
 with tab_logs:
