@@ -1180,15 +1180,12 @@ class TradingBotM4:
 
     # Ajoute cette méthode pour savoir si on est long
     def is_long(self, symbol):
-        # Retourne True si position ouverte par le bot
-        if self.positions.get(symbol, {}).get("side") == "long":
-            return True
-        # PATCH : retourne True si tu as l'asset spot sur Binance
-        if hasattr(self, "positions_binance"):
+        # En mode live, ne regarder QUE la position réelle Binance
+        if getattr(self, "is_live_trading", False):
             pos_spot = self.positions_binance.get(symbol)
-            if pos_spot and float(pos_spot.get("amount", 0)) > 0:
-                return True
-        return False
+            return pos_spot and float(pos_spot.get("amount", 0)) > 0
+        # En simulation, garder la logique actuelle
+        return self.positions.get(symbol, {}).get("side") == "long"
 
     def get_entry_price(self, symbol):
         return self.positions.get(symbol, {}).get("entry_price")
@@ -1261,19 +1258,18 @@ class TradingBotM4:
 
     def get_ws_orderbook(self, symbol):
         """
-        Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket) ou via Binance API.
+        Récupère le carnet d'ordres (bid/ask) depuis le ws_collector (WebSocket) ou via Binance API REST en fallback.
         - symbol : exemple 'BTCUSDC'
         Retourne : tuple (bid, ask) ou (None, None) si non dispo.
         """
         try:
-            # Méthode ws_collector (stub ou réelle)
+            # Essai WebSocket
             if hasattr(self, "ws_collector") and self.ws_collector is not None:
                 bid, ask = self.ws_collector.get_orderbook(symbol)
                 # Si les valeurs existent et sont numériques, retourne-les
                 if bid is not None and ask is not None:
                     return float(bid), float(ask)
-                # Sinon, tente la récupération via Binance API si disponible
-            # Fallback sur Binance API réelle (live trading uniquement)
+            # Fallback sur Binance API REST
             if (
                 getattr(self, "is_live_trading", False)
                 and hasattr(self, "binance_client")
@@ -1283,6 +1279,7 @@ class TradingBotM4:
                     ob = self.binance_client.get_order_book(symbol=symbol, limit=5)
                     best_bid = float(ob["bids"][0][0]) if ob["bids"] else None
                     best_ask = float(ob["asks"][0][0]) if ob["asks"] else None
+                    print("[FALLBACK REST] Carnet d'ordres récupéré via REST Binance.")
                     return best_bid, best_ask
                 except Exception as e:
                     self.logger.warning(
@@ -2184,17 +2181,13 @@ class TradingBotM4:
 
             # ----- ACHAT SPOT -----
             if side.upper() == "BUY" and symbol.endswith("USDC"):
-                already_in_portfolio = False
-                if self.is_long(symbol):
-                    already_in_portfolio = True
-                if hasattr(self, "positions_binance"):
-                    pos_binance = self.positions_binance.get(symbol)
-                    if pos_binance and float(pos_binance.get("amount", 0)) > 0:
-                        already_in_portfolio = True
-
+                pos_binance = self.positions_binance.get(symbol)
+                already_in_portfolio = (
+                    pos_binance and float(pos_binance.get("amount", 0)) > 0
+                )
                 if already_in_portfolio:
                     log_dashboard(
-                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (spot ou portefeuille Binance)."
+                        f"[ORDER] Déjà long sur {symbol}, achat ignoré (portefeuille Binance)."
                     )
                     return {"status": "skipped", "reason": "already long"}
 
@@ -2224,20 +2217,20 @@ class TradingBotM4:
                     iceberg_visible_size=iceberg_visible_size,
                 )
                 if result.get("status") == "completed":
-                    self.positions[symbol] = {
-                        "side": "long",
-                        "entry_price": result.get("avg_price", price),
-                        "amount": result.get("filled_amount", amount),
-                    }
+                    # Resynchronise la position réelle avec Binance
+                    self.sync_positions_with_binance()
 
             # ----- VENTE SPOT -----
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
                 allow_sell = False
                 use_amount = None
-                if self.is_long(symbol):
+                # --- Amélioration : utiliser position réelle Binance ---
+                pos_binance = self.positions_binance.get(symbol)
+                if pos_binance and float(pos_binance.get("amount", 0)) > 0:
                     allow_sell = True
-                    use_amount = self.positions[symbol]["amount"]
+                    use_amount = float(pos_binance.get("amount", 0))
                 else:
+                    # Fallback: check solde réel Binance (rare cas ou la position_binance n'est pas à jour)
                     asset = symbol.replace("/USDC", "").replace("USDC", "")
                     balance = None
                     try:
@@ -2285,13 +2278,15 @@ class TradingBotM4:
                     iceberg=iceberg,
                     iceberg_visible_size=iceberg_visible_size,
                 )
-                # Retire la position virtuelle si elle existait et enregistre la position fermée
-                if result.get("status") == "completed" and self.is_long(symbol):
+                # Retire la position virtuelle si elle existait et enregistre la position fermée (pour l'historique uniquement)
+                if result.get("status") == "completed":
                     pos = self.positions.get(symbol)
                     last_price = result.get("avg_price", None)
                     if pos and last_price is not None:
                         self.log_closed_position(symbol, pos, last_price, "SELL")
                     self.positions.pop(symbol, None)
+                    # Resynchronise la position réelle avec Binance
+                    self.sync_positions_with_binance()
 
             # ----- SHORT BINGX -----
             elif side.upper() == "SHORT":
@@ -3540,22 +3535,30 @@ class TradingBotM4:
                 }
             )
 
-            # Ajoute les prédictions IA si besoin
-            if self.ai_enabled:
-                ai_predictions = {}
-                for pair in self.pairs_valid:
-                    pair_key = pair.replace("/", "").upper()
-                    if (
-                        pair_key in self.market_data
-                        and "ai_prediction" in self.market_data[pair_key]
-                    ):
-                        ai_predictions[pair] = self.market_data[pair_key][
-                            "ai_prediction"
-                        ]
-                data["ai_predictions"] = ai_predictions
+            # Ajoute les métriques avancées pour dashboard
+            perf = data["bot_status"]["performance"]
+            equity_history = data.get("equity_history", [])
+            if equity_history and len(equity_history) > 10:
+                import numpy as np
 
-            # PATCH : Ajoute les positions SPOT Binance pour le dashboard (corrigé)
-            data["positions_binance"] = self.positions_binance
+                balances = [pt["balance"] for pt in equity_history if "balance" in pt]
+                perf["max_drawdown"] = float(
+                    np.min(
+                        [0]
+                        + [
+                            (min(balances[i:], default=0) - b) / b
+                            for i, b in enumerate(balances)
+                            if b > 0
+                        ]
+                    )
+                )
+                returns = np.diff(np.array(balances)) / np.array(balances)[:-1]
+                perf["sharpe_ratio"] = (
+                    float(np.mean(returns) / np.std(returns))
+                    if np.std(returns) > 0
+                    else 0
+                )
+            data["bot_status"]["performance"] = perf
 
             with open(self.data_file, "w") as f:
                 json.dump(data, f, indent=4)
@@ -5183,52 +5186,40 @@ def calculate_position_size(bot, decision):
     """
     Calcule le montant en USDC à investir (et non la quantité de BTC).
     Utilise le money management dynamique avancé.
+    Réduit le sizing en mode 'safe' si plusieurs pertes consécutives.
     """
     try:
-        # 1. mm_risk optimisé si dispo, sinon fallback
         mm_risk = 0.05
         if hasattr(bot, "signal_fusion_params") and bot.signal_fusion_params:
             mm_risk = bot.signal_fusion_params.get("mm_risk", 0.05)
-
-        # 2. Balance du bot (réelle ou simulée)
-        try:
-            balance = bot.get_performance_metrics().get("balance", 0)
-        except Exception:
-            balance = 0
-
-        # 3. Paramètres dynamiques
+        balance = bot.get_performance_metrics().get("balance", 0)
         confidence = decision.get("confidence", 0.5)
         volatility = abs(decision.get("signals", {}).get("volatility", 0.5))
-        # Drawdown
+
+        # Nouveau : mode safe si plusieurs pertes consécutives
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
-            equity_curve = [
-                pt["balance"]
-                for pt in data.get("equity_history", [])
-                if "balance" in pt
-            ]
-            drawdown = compute_drawdown(np.array(equity_curve)) if equity_curve else 0
+            perf = data.get("bot_status", {}).get("performance", {})
+            losses = perf.get("losses", 0)
+            wins = perf.get("wins", 0)
+            total_trades = perf.get("total_trades", 0)
+            # Compte les pertes consécutives (optionnel : stocke dans shared_data)
+            last_trades = data.get("trade_history", [])[-5:]
+            consecutive_losses = sum(1 for t in last_trades if t.get("pnl_usd", 0) < 0)
+            mode_safe = consecutive_losses >= 3
         except Exception:
-            drawdown = 0
-        # Performance récente (gain moyen sur les 10 derniers trades)
-        perf_recent = 0
-        try:
-            if equity_curve and len(equity_curve) > 10:
-                perf_recent = (equity_curve[-1] - equity_curve[-11]) / equity_curve[-11]
-        except Exception:
-            pass
+            mode_safe = False
 
-        # 4. Sizing dynamique
-        risk_pct = dynamic_position_size(
-            mm_risk, volatility, confidence, drawdown, perf_recent
-        )
-        size = balance * risk_pct
+        # Sizing dynamique
+        risk_pct = mm_risk
+        if mode_safe:
+            risk_pct *= 0.25  # Réduit le risque à 25% du normal
+            print("[SAFE MODE] Sizing réduit à cause de pertes consécutives.")
 
-        # 5. Min notional
+        size = balance * risk_pct * confidence
         min_notional = 5
         size = max(min_notional, round(size, 2))
-
         return size
 
     except Exception as e:

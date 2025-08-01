@@ -282,6 +282,13 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    # == MODE SAFE WARNING ==
+    safe_mode = shared_data.get("safe_mode", False)
+    if safe_mode:
+        st.warning(
+            "⚠️ MODE SAFE ACTIVÉ : sizing réduit à cause de pertes consécutives !"
+        )
+
     # == 1. Alertes actives ==
     st.markdown("### 🚨 Alertes actives")
     alerts = shared_data.get("alerts", [])
@@ -714,6 +721,15 @@ with tab6:
     kelly = None
     max_dd = None
     var95 = None
+    win_streak = None
+    loss_streak = None
+    avg_win = None
+    avg_loss = None
+    best_trade = None
+    worst_trade = None
+    win_pct = None
+
+    # Calcul des métriques avancées
     if equity_curve and len(equity_curve) > 10:
         equity_curve_np = np.array(equity_curve)
         max_dd = calculate_max_drawdown(equity_curve_np)
@@ -723,10 +739,65 @@ with tab6:
         kelly = kelly_criterion(
             win_rate=perf.get("win_rate", 0), payoff_ratio=perf.get("profit_factor", 1)
         )
-    with st.expander("📉 Indicateurs avancés de risque"):
+        # Streaks & trade stats (à partir de trade_history)
+        trades = shared_data.get("trade_history", [])
+        wins = [t.get("pnl_usd", 0) for t in trades if t.get("pnl_usd", 0) > 0]
+        losses = [t.get("pnl_usd", 0) for t in trades if t.get("pnl_usd", 0) < 0]
+        avg_win = np.mean(wins) if wins else 0
+        avg_loss = np.mean(losses) if losses else 0
+        best_trade = np.max(wins) if wins else 0
+        worst_trade = np.min(losses) if losses else 0
+        # Win/loss streaks
+        streak = 0
+        max_win_streak = 0
+        max_loss_streak = 0
+        prev = None
+        for t in trades:
+            pnl = t.get("pnl_usd", 0)
+            if pnl > 0:
+                streak = streak + 1 if prev == "win" else 1
+                max_win_streak = max(max_win_streak, streak)
+                prev = "win"
+            elif pnl < 0:
+                streak = streak + 1 if prev == "loss" else 1
+                max_loss_streak = max(max_loss_streak, streak)
+                prev = "loss"
+        win_streak = max_win_streak
+        loss_streak = max_loss_streak
+        # Ratio gagnant/perdant
+        total_trades = len(trades)
+        win_pct = len(wins) / total_trades if total_trades > 0 else 0
+
+    with st.expander("📉 Indicateurs avancés de risque et performance"):
         st.metric("Kelly optimal", f"{kelly:.2f}" if kelly is not None else "N/A")
         st.metric("Max Drawdown", f"{max_dd:.2%}" if max_dd is not None else "N/A")
         st.metric("VaR (95%)", f"{var95:.2%}" if var95 is not None else "N/A")
+        st.metric(
+            "Plus longue série de trades gagnants",
+            f"{win_streak}" if win_streak is not None else "N/A",
+        )
+        st.metric(
+            "Plus longue série de trades perdants",
+            f"{loss_streak}" if loss_streak is not None else "N/A",
+        )
+        st.metric(
+            "Moyenne gains/trade", f"${avg_win:.2f}" if avg_win is not None else "N/A"
+        )
+        st.metric(
+            "Moyenne pertes/trade",
+            f"${avg_loss:.2f}" if avg_loss is not None else "N/A",
+        )
+        st.metric(
+            "Meilleur trade", f"${best_trade:.2f}" if best_trade is not None else "N/A"
+        )
+        st.metric(
+            "Pire trade", f"${worst_trade:.2f}" if worst_trade is not None else "N/A"
+        )
+        st.metric(
+            "Ratio de trades gagnants",
+            f"{win_pct:.1%}" if win_pct is not None else "N/A",
+        )
+
         if kelly is not None and abs(kelly) > 0.5:
             st.warning(
                 f"⚠️ Kelly fraction élevée : {kelly:.2f} — attention à la taille des positions !"
