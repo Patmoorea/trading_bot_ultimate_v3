@@ -418,12 +418,29 @@ with tab1:
         df_signals = pd.DataFrame(trade_decisions).T
 
         # Filtrer dynamiquement les colonnes où tout est None ou NaN
-        # Conserve uniquement les colonnes où il existe au moins une valeur non nulle
         keep_cols = [
             col for col in df_signals.columns if not df_signals[col].isna().all()
         ]
         df_signals = df_signals[keep_cols]
 
+        # Ajoute une colonne 'Sizing (%)'
+        perf = shared_data.get("bot_status", {}).get("performance", {})
+        win_rate = perf.get("win_rate", 0.55)
+        profit_factor = perf.get("profit_factor", 1.7)
+
+        def sizing_pct(conf):
+            if conf > 0.7:
+                rp = 0.09
+            elif conf > 0.4:
+                rp = 0.04
+            else:
+                rp = 0.02
+            kelly = kelly_criterion(win_rate, profit_factor)
+            if kelly > 0:
+                rp = min(rp + kelly * 0.5, 0.12)
+            return f"{rp*100:.1f}%"
+
+        df_signals["Sizing (%)"] = df_signals["confidence"].map(sizing_pct)
         st.dataframe(df_signals, use_container_width=True)
     else:
         st.info("Aucun signal de trading ce cycle.")
@@ -559,7 +576,7 @@ with tab4:
             "current_price",
             "amount",
             "% Gain/Perte",
-            "tps_position_h",
+            "tps_position_h",  # Attention, c'est probablement "temps_en_position_h" dans le dict source
             "pause_bloc",
             "note",
         ]
@@ -575,6 +592,33 @@ with tab4:
             df_pending["Durée position (h)"] = df_pending["temps_en_position_h"].map(
                 lambda x: f"{x}h" if x not in ["", "N/A", None] else "N/A"
             )
+        # Ajout sizing (%) selon la confiance et le Kelly
+        perf = shared_data.get("bot_status", {}).get("performance", {})
+        win_rate = perf.get("win_rate", 0.55)
+        profit_factor = perf.get("profit_factor", 1.7)
+        from src.risk_tools import kelly_criterion
+
+        def sizing_pct(conf):
+            try:
+                conf = float(conf)
+            except:
+                conf = 0.5
+            if conf > 0.7:
+                rp = 0.09
+            elif conf > 0.4:
+                rp = 0.04
+            else:
+                rp = 0.02
+            kelly = kelly_criterion(win_rate, profit_factor)
+            if kelly > 0:
+                rp = min(rp + kelly * 0.5, 0.12)
+            return f"{rp*100:.1f}%"
+
+        # Si colonne 'confidence' existe, sinon fallback sur 0.5
+        if "confidence" in df_pending.columns:
+            df_pending["Sizing (%)"] = df_pending["confidence"].map(sizing_pct)
+        else:
+            df_pending["Sizing (%)"] = "N/A"
         # Trie d'abord par urgence (Signal SELL > SL > TP > perte > gain), puis par %PnL
         order = [
             "🔴 Signal SELL",
@@ -592,7 +636,7 @@ with tab4:
         )
         # Affichage
         st.dataframe(
-            df_pending[required_cols],
+            df_pending[required_cols + ["Sizing (%)"]],
             use_container_width=True,
         )
     else:

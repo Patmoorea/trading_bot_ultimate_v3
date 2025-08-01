@@ -5226,42 +5226,56 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
 def calculate_position_size(bot, decision):
     """
-    Calcule le montant en USDC à investir (et non la quantité de BTC).
-    Utilise le money management dynamique avancé.
-    Réduit le sizing en mode 'safe' si plusieurs pertes consécutives.
-    Met à jour le flag safe_mode pour le dashboard.
+    Sizing progressif : risque dynamique selon la confiance du signal.
+    Utilise le Kelly optimal si possible.
+    Mode SAFE réduit temporairement le sizing.
     """
     import json
 
     try:
-        mm_risk = 0.05
-        if hasattr(bot, "signal_fusion_params") and bot.signal_fusion_params:
-            mm_risk = bot.signal_fusion_params.get("mm_risk", 0.05)
+        # --- Récupération du solde ---
         balance = bot.get_performance_metrics().get("balance", 0)
-        confidence = decision.get("confidence", 0.5)
-        volatility = abs(decision.get("signals", {}).get("volatility", 0.5))
+        confidence = float(decision.get("confidence", 0.5))
+        # --- Sizing progressif selon confiance ---
+        if confidence > 0.7:
+            risk_pct = 0.09  # Entre 7 et 10%
+        elif confidence > 0.4:
+            risk_pct = 0.04  # 4%
+        else:
+            risk_pct = 0.02  # 2%
 
-        # Mode safe si plusieurs pertes consécutives
+        # --- Kelly optimal ---
+        perf = bot.get_performance_metrics()
+        win_rate = perf.get("win_rate", 0.55)
+        profit_factor = perf.get("profit_factor", 1.7)
+        kelly_frac = kelly_criterion(win_rate, profit_factor)
+        # On ne prend que la valeur positive, et on limite à 12%
+        if kelly_frac > 0:
+            risk_pct = min(risk_pct + kelly_frac * 0.5, 0.12)
+
+        # --- SAFE MODE : temporaire, désactivé dès le premier gain ---
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
             last_trades = data.get("trade_history", [])[-5:]
-            consecutive_losses = sum(1 for t in last_trades if t.get("pnl_usd", 0) < 0)
-            mode_safe = consecutive_losses >= 3
-            # Patch : écris le flag dans le shared_data pour Streamlit
+            losses = [t for t in last_trades if t.get("pnl_usd", 0) < 0]
+            wins = [t for t in last_trades if t.get("pnl_usd", 0) > 0]
+            mode_safe = len(losses) >= 3 and len(wins) == 0
+            # Désactive le SAFE dès qu'il y a un gain
+            if mode_safe and wins:
+                mode_safe = False
             data["safe_mode"] = mode_safe
             with open(bot.data_file, "w") as f:
                 json.dump(data, f, indent=4)
         except Exception:
             mode_safe = False
 
-        # Sizing dynamique
-        risk_pct = mm_risk
         if mode_safe:
-            risk_pct *= 0.25  # Réduit le risque à 25% du normal
-            print("[SAFE MODE] Sizing réduit à cause de pertes consécutives.")
+            risk_pct *= 0.25  # Réduit le sizing à 25% du normal
+            print("[SAFE MODE] Sizing réduit temporairement.")
 
-        size = balance * risk_pct * confidence
+        # --- Calcul final ---
+        size = balance * risk_pct
         min_notional = 5
         size = max(min_notional, round(size, 2))
         return size
@@ -5269,7 +5283,7 @@ def calculate_position_size(bot, decision):
     except Exception as e:
         import logging
 
-        logging.error(f"Erreur calcul montant USDC: {e}")
+        logging.error(f"Erreur calcul sizing : {e}")
         return 10
 
 

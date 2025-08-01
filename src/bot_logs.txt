@@ -85637,3 +85637,4 @@
 2025-08-01T21:40:19.792948 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
 2025-08-01T21:40:21.568875 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.07381728676634773
 2025-08-01T21:40:21.573526 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-08-01T21:48:25.044066 | [NEWS] Score sentiment global: 0.26 | Impact: 0.55 | Événements: Why This SharpLink Whale Holds Millions in SBET—But Not Ethereum;  Tether’s US Treasury holdings hit $127B, surpassing South Korea ;  Crypto treasuries top $100B for Ethereum’s 10th anniversary: Finance Redefined 
