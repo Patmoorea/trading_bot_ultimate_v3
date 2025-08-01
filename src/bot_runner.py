@@ -23,6 +23,7 @@ import pyarrow.parquet as pq
 import argparse
 import json
 import lz4.frame
+import shutil
 
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -910,6 +911,34 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def safe_update_shared_data(new_fields: dict, data_file="src/shared_data.json"):
+        # 1. Lis le fichier existant SANS jamais repartir sur {}
+        try:
+            with open(data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            # En cas de bug, tente de restaurer une sauvegarde précédente
+            backup_file = data_file + ".bak"
+            if os.path.exists(backup_file):
+                with open(backup_file, "r") as f:
+                    shared_data = json.load(f)
+            else:
+                shared_data = None
+        # Si shared_data est None, NE PAS ÉCRIRE !
+        if shared_data is None:
+            print("[SAFE PATCH] shared_data.json corrompu, skip écriture !")
+            return
+        # 2. Mets à jour les champs nécessaires
+        shared_data.update(new_fields)
+        # 3. Sauvegarde une copie de secours avant d’écrire
+        try:
+            shutil.copyfile(data_file, data_file + ".bak")
+        except Exception:
+            pass
+        # 4. Écris
+        with open(data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
+
     def check_tp_partial(
         self,
         entry_price,
@@ -1075,14 +1104,7 @@ class TradingBotM4:
 
         print("DEBUG pending_sales tableau:", pending)
         # Sauvegarde dans shared_data.json
-        try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
-        except Exception:
-            shared_data = {}
-        shared_data["pending_sales"] = pending
-        with open(self.data_file, "w") as f:
-            json.dump(shared_data, f, indent=4)
+        safe_update_shared_data({"pending_sales": pending}, self.data_file)
         return pending
 
     def sync_positions_with_binance(self):
