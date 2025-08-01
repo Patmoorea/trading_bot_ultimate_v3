@@ -62502,3 +62502,11 @@
 2025-07-31T23:33:23.832336 | [NEWS] Lancement boucle d'analyse des news…
 2025-07-31T23:34:53.051990 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0463 | Tendance: -0.0057
 2025-07-31T23:34:53.054489 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-01T00:41:23.970100 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-01T00:41:23.973921 | Initialisation des modèles d'IA...
+2025-08-01T00:41:24.484549 | ✅ Modèles d'IA initialisés avec succès
+2025-08-01T00:41:24.960971 | ✅ PPO Strategy initialized successfully
+2025-08-01T00:41:24.965179 | ✅ Bot initialisé avec Telegram: True
+2025-08-01T00:41:24.965260 | ✅ Trading en direct: True
+2025-08-01T00:41:24.965334 | ✅ IA activée: True
+2025-08-01T00:41:24.965397 | ✅ Analyse de news activée: True

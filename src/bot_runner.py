@@ -926,30 +926,56 @@ class TradingBotM4:
                 action = td.get("action", "neutral")
                 confidence = td.get("confidence", None)
 
+                # --- INITIALISATION SYSTÉMATIQUE DES VARIABLES ---
+                decision = ""
+                pause_status = "Non"
+                note = ""
+
                 # Raison
                 if action == "SELL":
                     reason = "🔴 Signal SELL"
+                    decision = "Vente prévue au prochain cycle"
                 elif pnl_pct < -5:
                     reason = (
                         f"🔴 Perte latente {pnl_pct:.1f}%, signal: {action.upper()}"
                     )
+                    decision = "Surveillance, risque de vente auto si perte aggrave"
                 elif pnl_pct > 7:
                     reason = f"🟢 Gain latent {pnl_pct:.1f}%, signal: {action.upper()}"
+                    decision = "Surveillance, possibilité de prise de profit"
                 else:
                     reason = f"Signal actuel: {action.upper()}"
+                    decision = "Aucune action prévue, position maintenue"
+
+                # Pause (exemple simple, adapte selon tes pauses réelles)
+                if hasattr(
+                    self, "news_pause_manager"
+                ) and self.news_pause_manager.should_pause(symbol):
+                    pause_status = "Oui"
+                    note = "Trading suspendu (pause active)"
+                elif reason.startswith("🟢 Gain latent"):
+                    note = "En zone de profit, TP possible"
+                elif reason.startswith("🔴 Perte latente"):
+                    note = "Risque de stop-loss"
+                else:
+                    note = ""
 
                 pending.append(
                     {
                         "symbol": symbol,
-                        "reason": reason,  # ex: "Signal SELL détecté"
-                        "decision": decision,  # ex: "Vente prévue au prochain cycle", "Attente", etc.
+                        "reason": reason,
+                        "decision": decision,
                         "entry_price": entry_price,
-                        "cur_prix": current_price,
+                        "current_price": current_price,
                         "amount": amount,
                         "% Gain/Perte": f"{pnl_pct:.2f}%",
-                        "tps_position": temps_en_position,
-                        "pause_bloc": pause_status,  # "Oui" si pause, "Non" sinon
-                        "note": note,  # ex: "Gain latent, pas de blocage", "Vente bloquée temporairement", etc.
+                        "temps_en_position_h": (
+                            f"{temps_en_position:.1f}"
+                            if temps_en_position is not None
+                            else "N/A"
+                        ),
+                        "pause_blocage": pause_status,
+                        "note": note,
                     }
                 )
 

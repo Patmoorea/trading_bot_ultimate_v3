@@ -552,8 +552,8 @@ with tab4:
             "current_price",
             "amount",
             "% Gain/Perte",
-            "temps_en_position_h",
-            "pause_blocage",
+            "tps_position_h",
+            "pause_bloc",
             "note",
         ]
         for col in required_cols:
