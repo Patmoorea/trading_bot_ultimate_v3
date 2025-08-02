@@ -87138,3 +87138,14 @@
 2025-08-01T23:32:37.353223 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
 2025-08-01T23:32:38.626361 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 24.0 | Confidence: 0.07138768707171944
 2025-08-01T23:32:38.639192 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-08-02T00:35:29.930029 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-02T00:35:29.935121 | Initialisation des modèles d'IA...
+2025-08-02T00:35:30.414973 | ✅ Modèles d'IA initialisés avec succès
+2025-08-02T00:35:32.170992 | ✅ PPO Strategy initialized successfully
+2025-08-02T00:35:32.176264 | ✅ Bot initialisé avec Telegram: True
+2025-08-02T00:35:32.176392 | ✅ Trading en direct: True
+2025-08-02T00:35:32.176447 | ✅ IA activée: True
+2025-08-02T00:35:32.176499 | ✅ Analyse de news activée: True
+2025-08-02T00:37:35.815593 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-02T00:39:02.768961 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0822 | Tendance: -0.0050
+2025-08-02T00:39:02.776865 | 🔈 Régime de marché détecté: Range/Scalping
