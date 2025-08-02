@@ -911,7 +911,9 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
-    def safe_update_shared_data(new_fields: dict, data_file="src/shared_data.json"):
+    def safe_update_shared_data(
+        self, new_fields: dict, data_file="src/shared_data.json"
+    ):
         # 1. Lis le fichier existant SANS jamais repartir sur {}
         try:
             with open(data_file, "r") as f:
