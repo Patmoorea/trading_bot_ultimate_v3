@@ -1070,11 +1070,11 @@ class TradingBotM4:
                     decision = "Aucune action prévue, position maintenue"
 
                 # Pause (exemple simple, adapte selon tes pauses réelles)
-                if hasattr(
-                    self, "news_pause_manager"
-                ) and self.news_pause_manager.should_pause(symbol):
-                    pause_status = "Oui"
-                    note = "Trading suspendu (pause active)"
+                if hasattr(self, "news_pause_manager"):
+                    pauses = self.news_pause_manager.get_active_pauses()
+                    if any(symbol in p.get("asset", "") for p in pauses):
+                        pause_status = "Oui"
+                        note = "Trading suspendu (pause active)"
                 elif reason.startswith("🟢 Gain latent"):
                     note = "En zone de profit, TP possible"
                 elif reason.startswith("🔴 Perte latente"):
