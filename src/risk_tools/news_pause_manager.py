@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from src.bot_runner import safe_update_shared_data
 
 
 class NewsPauseManager:
