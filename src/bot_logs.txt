@@ -131324,3 +131324,51 @@
 2025-08-02T23:26:56.671950 | [ORDER] Tentative d'exécution: neutral 7.3 TRX/USDC (iceberg: False)
 2025-08-02T23:26:59.216926 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 7.3 | Confidence: 0.0
 2025-08-02T23:26:59.223687 | [ORDER] Tentative d'exécution: neutral 7.3 SUI/USDC (iceberg: False)
+2025-08-02T23:34:28.136954 | [NEWS] Score sentiment global: 0.28 | Impact: 0.54 | Événements: Bitcoin Miner Profits Hit Highest Monthly Mark Since Halving: JP Morgan; Why This SharpLink Whale Holds Millions in SBET—But Not Ethereum;  Crypto treasuries top $100B for Ethereum’s 10th anniversary: Finance Redefined 
+2025-08-02T23:35:15.861987 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0402 | Tendance: -0.0045
+2025-08-02T23:35:15.878217 | 🎯 Stratégie active: Range/Scalping
+2025-08-02T23:35:15.878328 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-02T23:36:00.066045 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.074706 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.077574 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.22988842433969728 | news_enabled=True
+2025-08-02T23:36:00.077629 | [ANALYZE_SIGNALS] BTCUSDC | TF: 1m | Tech: -0.555 | AI: 0.782 | Sentiment: 0.230 | Total: -0.104 | Action: NEUTRAL | Confidence: 0.104
+2025-08-02T23:36:00.210539 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.210709 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.212370 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.22988842433969708 | news_enabled=True
+2025-08-02T23:36:00.212426 | [ANALYZE_SIGNALS] BTCUSDC | TF: 5m | Tech: -0.578 | AI: 0.782 | Sentiment: 0.230 | Total: -0.114 | Action: NEUTRAL | Confidence: 0.114
+2025-08-02T23:36:00.333400 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.351748 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.354247 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.22988842433969728 | news_enabled=True
+2025-08-02T23:36:00.354339 | [ANALYZE_SIGNALS] BTCUSDC | TF: 15m | Tech: -0.370 | AI: 0.782 | Sentiment: 0.230 | Total: -0.022 | Action: NEUTRAL | Confidence: 0.022
+2025-08-02T23:36:00.467739 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.467880 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.469401 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.2298884243396973 | news_enabled=True
+2025-08-02T23:36:00.469705 | [ANALYZE_SIGNALS] BTCUSDC | TF: 1h | Tech: -0.238 | AI: 0.782 | Sentiment: 0.230 | Total: 0.036 | Action: NEUTRAL | Confidence: 0.036
+2025-08-02T23:36:00.582241 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.586423 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.588019 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.22988842433969733 | news_enabled=True
+2025-08-02T23:36:00.588071 | [ANALYZE_SIGNALS] BTCUSDC | TF: 4h | Tech: -0.648 | AI: 0.782 | Sentiment: 0.230 | Total: -0.145 | Action: NEUTRAL | Confidence: 0.145
+2025-08-02T23:36:00.697959 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.698123 | [AI] Prédiction IA sollicitée pour BTCUSDC
+2025-08-02T23:36:00.699741 | [DEBUG SENTIMENT] symbol=BTCUSDC | sentiment_score=0.22988842433969725 | news_enabled=True
+2025-08-02T23:36:00.699797 | [ANALYZE_SIGNALS] BTCUSDC | TF: 1d | Tech: -0.554 | AI: 0.782 | Sentiment: 0.230 | Total: -0.103 | Action: NEUTRAL | Confidence: 0.103
+2025-08-02T23:36:00.856324 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.856485 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-08-02T23:36:00.858047 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.12716031518421758 | news_enabled=True
+2025-08-02T23:36:00.858104 | [ANALYZE_SIGNALS] ETHUSDC | TF: 1m | Tech: -0.660 | AI: 0.774 | Sentiment: 0.127 | Total: -0.162 | Action: NEUTRAL | Confidence: 0.162
+2025-08-02T23:36:00.987260 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:00.987425 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-08-02T23:36:00.988985 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.12716031518421778 | news_enabled=True
+2025-08-02T23:36:00.989046 | [ANALYZE_SIGNALS] ETHUSDC | TF: 5m | Tech: -0.768 | AI: 0.774 | Sentiment: 0.127 | Total: -0.209 | Action: SELL | Confidence: 0.209
+2025-08-02T23:36:01.105066 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:01.111752 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-08-02T23:36:01.113214 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.12716031518421758 | news_enabled=True
+2025-08-02T23:36:01.113491 | [ANALYZE_SIGNALS] ETHUSDC | TF: 15m | Tech: -0.593 | AI: 0.774 | Sentiment: 0.127 | Total: -0.132 | Action: NEUTRAL | Confidence: 0.132
+2025-08-02T23:36:01.225909 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:01.226044 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-08-02T23:36:01.227465 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.12716031518421755 | news_enabled=True
+2025-08-02T23:36:01.227514 | [ANALYZE_SIGNALS] ETHUSDC | TF: 1h | Tech: -0.798 | AI: 0.774 | Sentiment: 0.127 | Total: -0.223 | Action: SELL | Confidence: 0.223
+2025-08-02T23:36:01.338930 | [STRATEGY] Stratégie STANDARD appliquée
+2025-08-02T23:36:01.339094 | [AI] Prédiction IA sollicitée pour ETHUSDC
+2025-08-02T23:36:01.340672 | [DEBUG SENTIMENT] symbol=ETHUSDC | sentiment_score=0.12716031518421758 | news_enabled=True
+2025-08-02T23:36:01.340729 | [ANALYZE_SIGNALS] ETHUSDC | TF: 4h | Tech: -0.655 | AI: 0.774 | Sentiment: 0.127 | Total: -0.160 | Action: NEUTRAL | Confidence: 0.160

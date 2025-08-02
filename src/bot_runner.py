@@ -833,6 +833,13 @@ class TradingBotM4:
             },
         }
 
+        self.system_metrics = {
+            "cpu_usage": [],
+            "memory_usage": [],
+            "api_latency": [],
+            "ws_status": True,
+        }
+
         self.news_pause_manager = NewsPauseManager(
             default_pause_cycles=6
         )  # 6 cycles = 3 minutes si cycle=30s
@@ -1017,40 +1024,56 @@ class TradingBotM4:
 
     # Backup automatique
     def backup_critical_data(self):
-        """Sauvegarde les données critiques"""
         try:
-            # Sauvegarde positions
-            positions_backup = {
-                "timestamp": datetime.now(),
-                "positions": self.positions,
-                "orders": self.pending_orders,
+            backup_data = {
+                "timestamp": get_current_time(),
+                "positions": self.positions_binance,
+                "market_data": self.market_data,
+                "indicators": self.indicators,
+                "system_metrics": self.system_metrics,
+                "performance": self.get_performance_metrics(),
             }
 
-            # Sauvegarde configuration
-            config_backup = {
-                "pairs": self.pairs_valid,
-                "risk_params": self.risk_params,
-                "strategies": self.strategies,
-            }
+            # Sauvegarde compressée
+            import lz4.frame
+            import json
 
-            # Écriture dans fichiers séparés
-            self.save_backup("positions.bak", positions_backup)
-            self.save_backup("config.bak", config_backup)
+            backup_path = (
+                f"backups/backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.lz4"
+            )
+            with lz4.frame.open(backup_path, "wb") as f:
+                f.write(json.dumps(backup_data).encode())
 
+            # Nettoyage des vieux backups (garde 7 jours)
+            self.cleanup_old_backups(days=7)
+
+            return True
         except Exception as e:
             self.logger.error(f"Erreur backup: {e}")
+            return False
 
     def monitor_system_health(self):
-        """Surveillance système temps réel"""
-        metrics = {
-            "cpu_usage": psutil.cpu_percent(),
-            "memory_usage": psutil.virtual_memory().percent,
-            "api_latency": self.measure_api_latency(),
-            "ws_connection": self.check_ws_status(),
-        }
+        try:
+            import psutil
 
-        if any(v > 90 for v in metrics.values()):
-            self.alert_system_stress()
+            metrics = {
+                "cpu_usage": psutil.cpu_percent(),
+                "memory_usage": psutil.virtual_memory().percent,
+                "api_latency": self.measure_api_latency(),
+                "ws_status": self.check_ws_status(),
+            }
+
+            # Stockage historique
+            for key, value in metrics.items():
+                if isinstance(value, (int, float)):
+                    self.system_metrics[key].append(
+                        {"timestamp": get_current_time(), "value": value}
+                    )
+
+            return metrics
+        except Exception as e:
+            self.logger.error(f"Erreur monitoring système: {e}")
+            return {}
 
     def analyze_volume_profile(self, symbol, timeframe="1h"):
         """Analyse avancée du volume profile"""
@@ -1696,63 +1719,6 @@ class TradingBotM4:
         self.safe_update_shared_data({"pending_sales": pending}, self.data_file)
         return pending
 
-    def sync_positions_with_binance(self):
-        if self.is_live_trading and self.binance_client:
-            account = self.binance_client.get_account()
-            positions = {}
-            supported_quotes = ["USDC", "USDT", "BUSD"]
-            for bal in account["balances"]:
-                asset = bal["asset"]
-                free = float(bal["free"])
-                if free > 0 and asset not in supported_quotes:
-                    entry_price = None
-                    symbol = None
-                    current_price = None
-                    quote_found = None
-                    # Essaye toutes les quotes possibles
-                    for quote in supported_quotes:
-                        try:
-                            test_symbol = f"{asset}{quote}"
-                            ticker = self.binance_client.get_symbol_ticker(
-                                symbol=test_symbol
-                            )
-                            current_price = float(ticker["price"])
-                            # Va chercher le vrai prix d'achat moyen spot
-                            entry_price = get_avg_entry_price_binance_spot(
-                                self.binance_client, asset, quote=quote
-                            )
-                            if entry_price is not None:
-                                quote_found = quote
-                                symbol = f"{asset}/{quote}"
-                                break
-                        except Exception:
-                            continue
-                    if symbol is None or entry_price is None:
-                        # fallback: dernière quote testée, ou skip si rien trouvé
-                        if current_price is not None:
-                            symbol = f"{asset}/{quote_found or 'USDC'}"
-                            entry_price = current_price
-                        else:
-                            continue
-                    if entry_price and current_price:
-                        pnl_pct = (current_price - entry_price) / entry_price * 100
-                        pnl_usd = (current_price - entry_price) * free
-                    else:
-                        pnl_pct = 0.0
-                        pnl_usd = 0.0
-                    positions[symbol] = {
-                        "side": self.positions.get(symbol, {}).get("side", "long"),
-                        "amount": free,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "pnl_pct": pnl_pct,
-                        "pnl_usd": pnl_usd,
-                        "value_usd": (
-                            free * current_price if free and current_price else 0.0
-                        ),
-                    }
-            self.positions_binance = positions
-
     def get_active_pauses(self):
         """
         Retourne la liste des pauses actives : [{"asset": ..., "action": ..., "cycles_left": ..., "type": ...}, ...]
@@ -2251,8 +2217,15 @@ class TradingBotM4:
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
-        Analyse la paire, retourne la décision réelle (pondération dynamique tech/IA/news selon tf OU selon params optimisés si présents)
-        PATCH : Sécurisation complète contre NaN/None et logs debug détaillés.
+        Analyse complète des signaux de trading avec :
+        - Analyse technique avancée avec 12+ indicateurs
+        - Intégration IA et apprentissage profond
+        - Sentiment des news et impact marché
+        - Analyse volume, liquidité et orderflow
+        - Structure de marché et niveaux clés
+        - Fusion pondérée intelligente des signaux
+        - Multi-timeframe confirmation
+        - Monitoring système et performance
         """
 
         def is_valid(val):
@@ -2260,237 +2233,334 @@ class TradingBotM4:
                 isinstance(val, float) and (np.isnan(val) or np.isinf(val))
             )
 
-        # DEBUG : Affiche les dernières valeurs de close pour voir si la data est OK
-        print(
-            f"[DEBUG OHLVC] {symbol} {tf} close: {ohlcv_df['close'].tail(5).tolist() if 'close' in ohlcv_df else 'NO CLOSE'}"
-        )
-        print(f"[DEBUG INDICATORS] {symbol} {tf}: {indicators}")
-
-        params = getattr(self, "signal_fusion_params", None)
-
-        if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
-            auto_cfg = self.auto_strategy_config
-            log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE appliquée pour {symbol}")
-        else:
-            log_dashboard(f"[STRATEGY] Stratégie STANDARD appliquée")
-
-        # Indicateurs techniques sécurisés
-        close = (
-            ohlcv_df["close"].iloc[-1]
-            if "close" in ohlcv_df and len(ohlcv_df) > 0
-            else None
-        )
-        prev_close = (
-            ohlcv_df["close"].iloc[-2]
-            if "close" in ohlcv_df and len(ohlcv_df) >= 2
-            else None
-        )
-        sma_20 = indicators.get("sma_20")
-        sma_50 = indicators.get("sma_50")
-        ema_20 = indicators.get("ema_20")
-        rsi_14 = indicators.get("rsi_14")
-        macd = indicators.get("macd")
-        macd_signal = indicators.get("macd_signal")
-        macd_hist = indicators.get("macd_hist")
-        bb_upper = indicators.get("bb_upper")
-        bb_lower = indicators.get("bb_lower")
-        psar = indicators.get("psar")
-        momentum_10 = indicators.get("momentum_10")
-        zscore_20 = indicators.get("zscore_20")
-
-        tech_score = 0
-        tech_factors = 0
-
-        # Calcul des scores techniques avec sécurisation
-        if is_valid(close) and is_valid(sma_20):
-            tech_factors += 1
-            pct_diff = (close - sma_20) / sma_20 * 100
-            tech_score += np.clip(pct_diff * 2, -1, 1)
-
-        if is_valid(close) and is_valid(sma_50):
-            tech_factors += 1
-            pct_diff = (close - sma_50) / sma_50 * 100
-            tech_score += np.clip(pct_diff * 1.5, -1, 1)
-
-        if is_valid(close) and is_valid(ema_20):
-            tech_factors += 1
-            pct_diff = (close - ema_20) / ema_20 * 100
-            tech_score += np.clip(pct_diff * 2.5, -1, 1)
-
-        if is_valid(rsi_14):
-            tech_factors += 1
-            if rsi_14 > 70:
-                tech_score -= 0.8
-            elif rsi_14 < 30:
-                tech_score += 0.8
+        try:
+            # === 1. Monitoring système ===
+            system_metrics = (
+                self.monitor_system_health()
+                if hasattr(self, "monitor_system_health")
+                else {}
+            )
+            if (
+                system_metrics.get("cpu_usage", 0) > 90
+                or system_metrics.get("memory_usage", 0) > 90
+            ):
+                log_dashboard(
+                    f"⚠️ Surcharge système détectée sur {symbol}, réduction risque!"
+                )
+                risk_multiplier = 0.5
             else:
-                tech_score += (rsi_14 - 50) / 25
+                risk_multiplier = 1.0
 
-        if is_valid(macd) and is_valid(macd_signal):
-            tech_factors += 1
-            macd_diff = macd - macd_signal
-            tech_score += np.clip(macd_diff * 10, -1, 1)
+            # === 2. Validation et logs initiaux ===
+            print(
+                f"[DEBUG OHLVC] {symbol} {tf} close: {ohlcv_df['close'].tail(5).tolist() if 'close' in ohlcv_df else 'NO CLOSE'}"
+            )
+            print(f"[DEBUG INDICATORS] {symbol} {tf}: {indicators}")
 
-        if is_valid(macd_hist):
-            tech_factors += 1
-            tech_score += np.clip(macd_hist * 15, -1, 1)
+            # === 3. Configuration stratégie et paramètres ===
+            params = getattr(self, "signal_fusion_params", None)
+            if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
+                log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE pour {symbol}")
+                auto_cfg = self.auto_strategy_config
+            else:
+                log_dashboard(f"[STRATEGY] Stratégie STANDARD")
 
-        if is_valid(bb_upper) and is_valid(bb_lower) and is_valid(close):
-            tech_factors += 1
-            bb_position = (close - bb_lower) / (bb_upper - bb_lower)
-            if bb_position < 0.2:
-                tech_score += 0.6
-            elif bb_position > 0.8:
-                tech_score -= 0.6
+            # === 4. Extraction et validation des indicateurs ===
+            indics = {
+                "close": (
+                    ohlcv_df["close"].iloc[-1]
+                    if "close" in ohlcv_df and len(ohlcv_df) > 0
+                    else None
+                ),
+                "prev_close": (
+                    ohlcv_df["close"].iloc[-2]
+                    if "close" in ohlcv_df and len(ohlcv_df) >= 2
+                    else None
+                ),
+                "open": (
+                    ohlcv_df["open"].iloc[-1]
+                    if "open" in ohlcv_df and len(ohlcv_df) > 0
+                    else None
+                ),
+                "high": (
+                    ohlcv_df["high"].iloc[-1]
+                    if "high" in ohlcv_df and len(ohlcv_df) > 0
+                    else None
+                ),
+                "low": (
+                    ohlcv_df["low"].iloc[-1]
+                    if "low" in ohlcv_df and len(ohlcv_df) > 0
+                    else None
+                ),
+                "volume": (
+                    ohlcv_df["volume"].iloc[-1]
+                    if "volume" in ohlcv_df and len(ohlcv_df) > 0
+                    else None
+                ),
+                "sma_20": indicators.get("sma_20"),
+                "sma_50": indicators.get("sma_50"),
+                "ema_20": indicators.get("ema_20"),
+                "rsi_14": indicators.get("rsi_14"),
+                "macd": indicators.get("macd"),
+                "macd_signal": indicators.get("macd_signal"),
+                "macd_hist": indicators.get("macd_hist"),
+                "bb_upper": indicators.get("bb_upper"),
+                "bb_lower": indicators.get("bb_lower"),
+                "psar": indicators.get("psar"),
+                "momentum_10": indicators.get("momentum_10"),
+                "zscore_20": indicators.get("zscore_20"),
+                "stochrsi": indicators.get("stochrsi"),
+                "kc_upper": indicators.get("kc_upper"),
+                "kc_lower": indicators.get("kc_lower"),
+                "vwap": indicators.get("vwap"),
+            }
 
-        if is_valid(psar) and is_valid(prev_close) and is_valid(close):
-            tech_factors += 1
-            if prev_close < psar and close > psar:
-                tech_score += 0.8
-            elif prev_close > psar and close < psar:
-                tech_score -= 0.8
+            # === 5. Analyses avancées ===
+            # Volume et liquidité
+            volume_profile = self.analyze_volume_profile(symbol, tf)
+            order_pressure = self.analyze_order_pressure(symbol)
 
-        if is_valid(momentum_10) and is_valid(close):
-            tech_factors += 1
-            momentum_pct = momentum_10 / close * 100
-            tech_score += np.clip(momentum_pct * 5, -1, 1)
+            # Structure de marché
+            market_struct = self.identify_market_structure(ohlcv_df)
 
-        if is_valid(zscore_20):
-            tech_factors += 1
-            tech_score += np.clip(zscore_20 * 0.5, -1, 1)
+            # Momentum et volatilité
+            squeeze_data = self.calculate_squeeze_momentum(ohlcv_df)
 
-        if tech_factors > 0:
-            tech_score = tech_score / tech_factors
-            if abs(tech_score) > 0.3:
-                tech_score *= 1.2
+            # Order flow et delta volume
+            flow_analysis = self.analyze_order_flow(ohlcv_df)
 
-        # === IA réelle uniquement ===
-        ai_score = 0
-        if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
-            log_dashboard(f"[AI] Prédiction IA sollicitée pour {symbol}")
-            try:
-                features = await self._prepare_features_for_ai(symbol)
-                if features is not None:
-                    ai_score = float(self.dl_model.predict(features))
-            except Exception as e:
-                self.logger.warning(f"Erreur IA analyse_signals: {e}")
+            # === 6. Score technique ===
+            tech_score = 0
+            tech_factors = 0
 
-        sentiment_score = 0
-        pair_key = symbol.replace("/", "").upper()
-        if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
-            try:
-                sentiment_score = await self.news_analyzer.get_symbol_sentiment(
-                    pair_key
+            # Moyennes mobiles
+            for ma_type, (price, weight) in {
+                "sma_20": (indics["sma_20"], 2.0),
+                "sma_50": (indics["sma_50"], 1.5),
+                "ema_20": (indics["ema_20"], 2.5),
+            }.items():
+                if is_valid(indics["close"]) and is_valid(price):
+                    tech_factors += 1
+                    pct_diff = (indics["close"] - price) / price * 100
+                    tech_score += np.clip(pct_diff * weight, -1, 1)
+
+            # RSI
+            if is_valid(indics["rsi_14"]):
+                tech_factors += 1
+                if indics["rsi_14"] > 70:
+                    tech_score -= 0.8
+                elif indics["rsi_14"] < 30:
+                    tech_score += 0.8
+                else:
+                    tech_score += (indics["rsi_14"] - 50) / 25
+
+            # MACD
+            if is_valid(indics["macd"]) and is_valid(indics["macd_signal"]):
+                tech_factors += 1
+                macd_diff = indics["macd"] - indics["macd_signal"]
+                tech_score += np.clip(macd_diff * 10, -1, 1)
+
+            if is_valid(indics["macd_hist"]):
+                tech_factors += 1
+                tech_score += np.clip(indics["macd_hist"] * 15, -1, 1)
+
+            # Bollinger Bands
+            if all(is_valid(indics[x]) for x in ["bb_upper", "bb_lower", "close"]):
+                tech_factors += 1
+                bb_position = (indics["close"] - indics["bb_lower"]) / (
+                    indics["bb_upper"] - indics["bb_lower"]
                 )
-                if sentiment_score == 0:
-                    sentiment_score = self.news_analyzer.get_sentiment_summary().get(
-                        "sentiment_global", 0.0
+                if bb_position < 0.2:
+                    tech_score += 0.6
+                elif bb_position > 0.8:
+                    tech_score -= 0.6
+
+            # PSAR
+            if all(
+                is_valid(x)
+                for x in [indics["psar"], indics["prev_close"], indics["close"]]
+            ):
+                tech_factors += 1
+                if (
+                    indics["prev_close"] < indics["psar"]
+                    and indics["close"] > indics["psar"]
+                ):
+                    tech_score += 0.8
+                elif (
+                    indics["prev_close"] > indics["psar"]
+                    and indics["close"] < indics["psar"]
+                ):
+                    tech_score -= 0.8
+
+            # Momentum et Z-Score
+            if is_valid(indics["momentum_10"]) and is_valid(indics["close"]):
+                tech_factors += 1
+                momentum_pct = indics["momentum_10"] / indics["close"] * 100
+                tech_score += np.clip(momentum_pct * 5, -1, 1)
+
+            if is_valid(indics["zscore_20"]):
+                tech_factors += 1
+                tech_score += np.clip(indics["zscore_20"] * 0.5, -1, 1)
+
+            # Normalisation score technique
+            if tech_factors > 0:
+                tech_score = tech_score / tech_factors
+                if abs(tech_score) > 0.3:
+                    tech_score *= 1.2
+
+            # === 7. Scores avancés ===
+            # Volume Profile Score
+            volume_score = 0
+            if volume_profile:
+                volume_score = (
+                    0.3
+                    if volume_profile.get("is_accumulation")
+                    else -0.3 if volume_profile.get("is_distribution") else 0
+                )
+                if volume_profile.get("buy_volume_ratio", 0.5) > 0.6:
+                    tech_score *= 1.2
+
+            # Order Pressure Score
+            pressure_score = 0
+            if order_pressure:
+                pressure_score = order_pressure.get(
+                    "imbalance", 0
+                ) * order_pressure.get("pressure_ratio", 1)
+
+            # Market Structure Score
+            structure_score = 0
+            if market_struct:
+                structure_score = market_struct.get("trend_strength", 0)
+                if market_struct.get("volatility", 0) > 0.8:
+                    tech_score *= 0.8
+
+            # Squeeze Momentum Score
+            squeeze_score = 0
+            if squeeze_data and squeeze_data.get("squeeze_on"):
+                squeeze_score = 0.3 if squeeze_data.get("momentum", 0) > 0 else -0.3
+
+            # === 8. Score IA ===
+            ai_score = 0
+            if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
+                try:
+                    features = await self._prepare_features_for_ai(symbol)
+                    if features is not None:
+                        ai_score = float(self.dl_model.predict(features))
+                except Exception as e:
+                    self.logger.warning(f"Erreur IA: {e}")
+
+            # === 9. Score Sentiment ===
+            sentiment_score = 0
+            pair_key = symbol.replace("/", "").upper()
+            if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
+                try:
+                    sentiment_score = await self.news_analyzer.get_symbol_sentiment(
+                        pair_key
                     )
-            except Exception as e:
-                self.logger.error(f"Erreur récupération sentiment pour {pair_key}: {e}")
-                sentiment_score = self.news_analyzer.get_sentiment_summary().get(
-                    "sentiment_global", 0.0
-                )
-        log_dashboard(
-            f"[DEBUG SENTIMENT] symbol={symbol} | sentiment_score={sentiment_score} | news_enabled={getattr(self, 'news_enabled', False)}"
-        )
+                    if sentiment_score == 0:
+                        sentiment_score = (
+                            self.news_analyzer.get_sentiment_summary().get(
+                                "sentiment_global", 0.0
+                            )
+                        )
+                except Exception as e:
+                    self.logger.error(f"Erreur sentiment {pair_key}: {e}")
 
-        arbitrage_score = 0
-
-        # === Pondération dynamique (Optuna ou fallback legacy) ===
-        if params is not None:
-            tech_w = params.get("tech_weight", 0.6)
-            ia_w = params.get("ia_weight", 0.3)
-            sent_w = params.get("sentiment_weight", 0.1)
-            buy_thr = params.get("buy_threshold", 0.2)
-            sell_thr = params.get("sell_threshold", -0.2)
-        else:
-            tf_weights = {
-                "1m": {"tech": 0.7, "ai": 0.2, "sentiment": 0.1},
-                "5m": {"tech": 0.6, "ai": 0.3, "sentiment": 0.1},
-                "15m": {"tech": 0.5, "ai": 0.35, "sentiment": 0.15},
-                "1h": {"tech": 0.3, "ai": 0.45, "sentiment": 0.25},
-                "4h": {"tech": 0.2, "ai": 0.45, "sentiment": 0.35},
-                "1d": {"tech": 0.15, "ai": 0.4, "sentiment": 0.45},
-            }
-            w = tf_weights.get(tf, tf_weights["1h"])
-            tech_w = w["tech"]
-            ia_w = w["ai"]
-            sent_w = w["sentiment"]
-            buy_thr = 0.2
-            sell_thr = -0.2
-
-        total_score = (
-            tech_w * tech_score
-            + ia_w * ai_score
-            + sent_w * sentiment_score
-            + 0.05 * arbitrage_score
-        )
-
-        decision = {
-            "action": "neutral",
-            "confidence": abs(total_score),
-            "signals": {
+            # === 10. Fusion pondérée des signaux ===
+            signals = {
                 "technical": tech_score,
                 "ai": ai_score,
                 "sentiment": sentiment_score,
-            },
-        }
-        if total_score > buy_thr:
-            decision["action"] = "buy"
-        elif total_score < sell_thr:
-            decision["action"] = "sell"
-
-        print(
-            f"[DEBUG SIGNALS] {symbol} | TF: {tf} | tech_score={tech_score} | ai_score={ai_score} | sentiment_score={sentiment_score} | total={total_score}"
-        )
-        print(f"[DEBUG DECISION] {decision}")
-
-        # PATCH : Forçage scoring test si tout est à zéro (à retirer quand tout marche)
-        if tech_score == 0 and ai_score == 0 and sentiment_score == 0:
-            print(f"[DEBUG PATCH] Forçage scoring pour {symbol} {tf}")
-            tech_score = 0.7
-            ai_score = 0.2
-            sentiment_score = 0.5
-            total_score = (
-                tech_w * tech_score + ia_w * ai_score + sent_w * sentiment_score
-            )
-            decision["action"] = "buy" if total_score > buy_thr else "neutral"
-            decision["confidence"] = abs(total_score)
-            decision["signals"] = {
-                "technical": tech_score,
-                "ai": ai_score,
-                "sentiment": sentiment_score,
+                "volume": volume_score,
+                "pressure": pressure_score,
+                "structure": structure_score,
+                "squeeze": squeeze_score,
             }
-            print(f"[DEBUG PATCH DECISION] {decision}")
 
-            indicators.update(
-                {
-                    "squeeze_momentum": self.calculate_squeeze_momentum(ohlcv_df),
-                    "volume_profile": self.analyze_volume_distribution(ohlcv_df),
-                    "order_flow": self.analyze_order_flow(ohlcv_df),
-                    "market_structure": self.identify_market_structure(ohlcv_df),
-                }
+            weights = {
+                "technical": 0.3,
+                "ai": 0.2,
+                "sentiment": 0.15,
+                "volume": 0.15,
+                "pressure": 0.1,
+                "structure": 0.05,
+                "squeeze": 0.05,
+            }
+
+            total_score = sum(
+                score * weights[signal_type] for signal_type, score in signals.items()
             )
+            total_score *= risk_multiplier  # Ajustement selon charge système
 
-            # Analyse multi-timeframes
-            timeframes = ["5m", "15m", "1h", "4h"]
-            mtp_analysis = self.multi_timeframe_analysis(symbol, timeframes)
+            # === 11. Multi-timeframe confirmation ===
+            if tf in ["1h", "4h"]:
+                try:
+                    mtp_analysis = self.multi_timeframe_analysis(
+                        symbol, ["15m", "1h", "4h"]
+                    )
+                    confirmation = self.calculate_confirmation_score(
+                        {
+                            "market_structure": market_struct,
+                            "volume_profile": volume_profile,
+                            "squeeze_momentum": squeeze_data,
+                            "order_flow": order_pressure,
+                        },
+                        mtp_analysis,
+                    )
 
-            # Score de confirmation
-            confirmation_score = self.calculate_confirmation_score(
-                indicators, mtp_analysis
+                    if confirmation > 0.8:
+                        total_score *= 1.2
+                    elif confirmation < 0.2:
+                        total_score *= 0.8
+
+                except Exception as e:
+                    self.logger.error(f"Erreur confirmation multi-TF: {e}")
+
+            # === 12. Décision finale ===
+            volatility = market_struct.get("volatility", 1) if market_struct else 1
+            buy_threshold = params.get("buy_threshold", 0.2) * (1 + volatility)
+            sell_threshold = params.get("sell_threshold", -0.2) * (1 + volatility)
+
+            decision = {
+                "action": "neutral",
+                "confidence": abs(total_score),
+                "signals": signals,
+                "metrics": {
+                    "volume_profile": volume_profile,
+                    "order_pressure": order_pressure,
+                    "market_structure": market_struct,
+                    "squeeze": squeeze_data,
+                    "system_health": system_metrics,
+                    "confirmation_score": (
+                        confirmation if "confirmation" in locals() else None
+                    ),
+                },
+            }
+
+            if total_score > buy_threshold:
+                decision["action"] = "buy"
+            elif total_score < sell_threshold:
+                decision["action"] = "sell"
+
+            # === 13. Logs détaillés ===
+            log_msg = (
+                f"[ANALYZE] {symbol} {tf} |\n"
+                f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sent: {sentiment_score:.3f}\n"
+                f"Vol: {volume_score:.3f} | Press: {pressure_score:.3f} | Struct: {structure_score:.3f}\n"
+                f"Total: {total_score:.3f} | {decision['action'].upper()} ({decision['confidence']:.3f})"
             )
+            log_dashboard(log_msg)
+            print(f"[DEBUG] {log_msg}")
 
-            return confirmation_score > 0.8
+            # === 14. Backup automatique (tous les 100 cycles) ===
+            if hasattr(self, "current_cycle") and self.current_cycle % 100 == 0:
+                self.backup_critical_data()
 
-        log_dashboard(
-            f"[ANALYZE_SIGNALS] {symbol} | TF: {tf} | "
-            f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sentiment: {sentiment_score:.3f} | "
-            f"Total: {total_score:.3f} | Action: {decision['action'].upper()} | "
-            f"Confidence: {decision['confidence']:.3f}"
-        )
-        return decision
+            return decision
+
+        except Exception as e:
+            self.logger.error(f"Erreur analyze_signals: {e}")
+            return {"action": "neutral", "confidence": 0, "signals": {}}
 
     def get_binance_real_balance(self, asset="USDC"):
         if self.is_live_trading and self.binance_client:
@@ -3357,69 +3427,6 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"ERREUR dans _merge_signals: {str(e)}", exc_info=True)
             return default_signals.copy()
-
-    async def _news_analysis_loop(self):
-        log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
-        """Boucle d'analyse des news (version propre sans print/debug)"""
-        while True:
-            try:
-                if not self.news_enabled or not self.news_analyzer:
-                    await asyncio.sleep(self.news_update_interval)
-                    continue
-
-                self.logger.info("Fetching latest news for sentiment analysis")
-                news_data = await self.news_analyzer.fetch_all_news()
-
-                sentiment_analysis = {}
-                try:
-                    sentiment_analysis = await self.news_analyzer.update_analysis()
-                except Exception:
-                    self.logger.error("Erreur update_analysis", exc_info=True)
-                    # sentiment_analysis reste {}
-
-                # Extract the items list from the analysis result
-                sentiment_scores = (
-                    sentiment_analysis.get("items", [])
-                    if isinstance(sentiment_analysis, dict)
-                    else []
-                )
-
-                try:
-                    await self._update_sentiment_data(sentiment_scores)
-                except Exception:
-                    pass
-
-                try:
-                    await self._save_sentiment_data(sentiment_scores, news_data)
-                except Exception as e:
-                    self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
-
-                try:
-                    await self.telegram.send_news_summary(news_data[:5])
-                except Exception:
-                    pass
-
-                # === LOG SENTIMENT GLOBAL ===
-                try:
-                    with open(self.data_file, "r") as f:
-                        shared_data = json.load(f)
-                    sentiment_data = shared_data.get("sentiment", {})
-                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
-                    impact_score = sentiment_data.get("impact_score", 0)
-                    major_events = sentiment_data.get("major_events", "")
-
-                    log_dashboard(
-                        f"[NEWS] Score sentiment global: {avg_sentiment:.2f} | Impact: {impact_score:.2f} | Événements: {major_events}"
-                    )
-                except Exception as e:
-                    print(
-                        f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
-                    )
-
-            except Exception as e:
-                self.logger.error(f"News analysis error: {e}")
-
-            await asyncio.sleep(self.news_update_interval)
 
     async def _update_sentiment_data(self, sentiment_scores):
         """
@@ -4768,39 +4775,43 @@ def filter_pairs(
     anomaly_threshold=4.0,
 ):
     """
-    Filtre dynamiquement les paires selon la volatilité, le score signal et la propreté du marché.
-    Ajoute un log DEBUG pour chaque filtre appliqué.
-    Le filtre est trop strict = plus de signaux. Sois permissif si tu veux voir tout passer !
+    Filtre dynamiquement les paires selon :
+    - Volatilité
+    - Score du signal
+    - Propreté du marché
+    - NOUVEAU: Corrélations entre paires
     """
     from src.analysis.filters.volatility_anomaly_filter import filter_market
     from src.analysis.filters.correlation_filter import filter_uncorrelated_pairs
+    import numpy as np
+    import pandas as pd
+
+    # NOUVEAU: Calcul des corrélations
+    correlations = bot.calculate_correlation_matrix()
 
     candidates = []
     for pair in bot.pairs_valid:
         pair_key = pair.replace("/", "").upper()
-        # Récupère la volatilité sur 1h
+
+        # 1. Analyse volatilité
+        vol = 0
         if (
             pair_key in bot.market_data
             and "1h" in bot.market_data[pair_key]
             and "close" in bot.market_data[pair_key]["1h"]
         ):
+
             closes = bot.market_data[pair_key]["1h"]["close"]
             if len(closes) >= 20:
-                import numpy as np
-
                 returns = np.diff(np.log(closes[-20:]))
                 vol = float(np.std(returns))
-            else:
-                vol = 0
-        else:
-            vol = 0
 
-        # Récupère le signal technique/IA/sentiment (exemple: total_score du dernier cycle)
+        # 2. Récupération signal
         signal = 0
         if pair_key in bot.market_data and "ai_prediction" in bot.market_data[pair_key]:
             signal = bot.market_data[pair_key]["ai_prediction"]
 
-        # Nouveau: filtre volatilité/anomalie marché (optionnel)
+        # 3. Analyse anomalies
         df_ohlcv = None
         if (
             pair_key in bot.market_data
@@ -4810,7 +4821,6 @@ def filter_pairs(
                 for k in ["close", "high", "low", "volume"]
             )
         ):
-            import pandas as pd
 
             df_ohlcv = pd.DataFrame(
                 {
@@ -4821,6 +4831,7 @@ def filter_pairs(
                 }
             )
 
+        # 4. Vérification propreté marché
         is_clean = True
         if vol_anomaly_filter and df_ohlcv is not None and len(df_ohlcv) >= 50:
             is_clean = filter_market(
@@ -4829,22 +4840,31 @@ def filter_pairs(
                 anomaly_threshold=anomaly_threshold,
                 price_col="close",
             )
-        # === AJOUT LOG DEBUG ===
-        print(
-            f"[FILTER DEBUG] {pair_key}: vol={vol:.4f}, sig={signal:.4f}, clean={is_clean}"
-        )
-        # Filtrage
-        if is_clean:
-            candidates.append((pair, vol, abs(signal)))
-        else:
-            print(
-                f"[FILTER OUT] {pair_key} (vol={vol:.4f}, sig={signal:.4f}, clean={is_clean})"
-            )
 
-    # Classe par volatilité x signal décroissant
-    candidates.sort(key=lambda x: x[1] * x[2], reverse=True)
+        # 5. NOUVEAU: Score de corrélation
+        corr_score = max([v for k, v in correlations.items() if pair in k], default=1.0)
+
+        # 6. Score final combiné
+        final_score = (vol * abs(signal)) * (1 - corr_score)
+
+        print(f"[FILTER DEBUG] {pair_key}:")
+        print(f"  - Volatilité: {vol:.4f}")
+        print(f"  - Signal: {signal:.4f}")
+        print(f"  - Corrélation: {corr_score:.4f}")
+        print(f"  - Marché propre: {is_clean}")
+        print(f"  - Score final: {final_score:.4f}")
+
+        if is_clean and final_score > min_signal:
+            candidates.append((pair, final_score))
+            print(f"✅ {pair_key} ACCEPTÉ")
+        else:
+            print(f"❌ {pair_key} REJETÉ")
+
+    # Tri par score final
+    candidates.sort(key=lambda x: x[1], reverse=True)
     filtered_candidates = [c[0] for c in candidates]
-    # Filtrage corrélation: sélectionne des paires peu corrélées entre elles
+
+    # Filtrage corrélation final
     filtered_uncorr = filter_uncorrelated_pairs(
         bot.market_data,
         filtered_candidates,
@@ -4853,6 +4873,7 @@ def filter_pairs(
         corr_threshold=0.85,
         top_n=top_n,
     )
+
     return filtered_uncorr
 
 
@@ -5718,104 +5739,99 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
 def calculate_position_size(bot, decision):
     """
-    Sizing progressif et adaptatif basé sur :
-    - Confiance du signal (0.7+ => 9%, 0.4+ => 4%, autre => 2%)
-    - Kelly Criterion optimal
-    - Mode SAFE (25% du sizing normal si 3+ pertes consécutives)
-    - Drawdown protection (50% du sizing si DD > 15%)
-
-    Returns:
-        float: Montant en USDC à trader
+    Sizing intelligent et adaptatif basé sur :
+    - Confiance du signal
+    - Kelly Criterion
+    - Mode SAFE
+    - Protection Drawdown
+    - NOUVEAU: Ajustement par corrélation
     """
     try:
-        # --- 1. Configuration de base ---
+        # --- Configuration de base ---
         balance = bot.get_performance_metrics().get("balance", 0)
         confidence = float(decision.get("confidence", 0.5))
-        MIN_NOTIONAL = 5  # Montant minimum en USDC
+        MIN_NOTIONAL = 5  # Minimum USDC
 
-        # --- 2. Sizing de base selon confiance ---
+        # --- Sizing selon confiance ---
         if confidence > 0.7:
-            risk_pct = 0.09  # 9% max pour très haute confiance
+            risk_pct = 0.09  # 9% max
         elif confidence > 0.4:
-            risk_pct = 0.04  # 4% pour confiance moyenne
+            risk_pct = 0.04  # 4%
         else:
-            risk_pct = 0.02  # 2% pour faible confiance
+            risk_pct = 0.02  # 2%
 
-        # --- 3. Ajustement Kelly ---
+        # --- Ajustement Kelly ---
         perf = bot.get_performance_metrics()
         win_rate = perf.get("win_rate", 0.55)
         profit_factor = perf.get("profit_factor", 1.7)
         kelly = kelly_criterion(win_rate, profit_factor)
 
         if kelly > 0:
-            # Augmente le sizing selon Kelly mais plafonne à 12%
             risk_pct = min(risk_pct + kelly * 0.5, 0.12)
 
-        # --- 4. Mode SAFE (après pertes) ---
+        # --- NOUVEAU: Ajustement par corrélation ---
+        pair = decision.get("pair")
+        if pair:
+            correlations = bot.calculate_correlation_matrix()
+            corr_factor = max(
+                [v for k, v in correlations.items() if pair in k], default=0.5
+            )
+            # Réduit le sizing si forte corrélation
+            risk_pct *= 1 - corr_factor * 0.5
+
+        # --- Mode SAFE ---
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
 
-            # Analyse des 5 derniers trades
             recent_trades = data.get("trade_history", [])[-5:]
             losses = [t for t in recent_trades if t.get("pnl_usd", 0) < 0]
             wins = [t for t in recent_trades if t.get("pnl_usd", 0) > 0]
 
-            # Active mode safe si 3+ pertes consécutives sans gain
             mode_safe = len(losses) >= 3 and len(wins) == 0
-
-            # Désactive si au moins 1 gain récent
             if mode_safe and wins:
                 mode_safe = False
 
-            # Sauvegarde l'état du mode safe
             bot.safe_update_shared_data({"safe_mode": mode_safe}, bot.data_file)
 
-            # Réduit le sizing à 25% si mode safe actif
             if mode_safe:
                 risk_pct *= 0.25
-                print("[SAFE MODE] Sizing réduit à 25% après pertes consécutives")
+                print("[SAFE MODE] Sizing -75%")
 
         except Exception as e:
-            print(f"[WARNING] Erreur vérification mode safe: {e}")
+            print(f"[WARNING] Erreur mode safe: {e}")
 
-        # --- 5. Protection Drawdown ---
+        # --- Protection Drawdown ---
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
 
-            # Analyse sur 30 jours minimum
             equity_history = data.get("equity_history", [])
             if equity_history and len(equity_history) >= 30:
                 balances = [pt["balance"] for pt in equity_history if "balance" in pt]
-
-                # Calcul drawdown
                 peak = max(balances)
                 trough = min(balances)
                 drawdown = (trough - peak) / peak if peak > 0 else 0
 
-                # Réduit sizing de 50% si drawdown > 15%
                 if drawdown < -0.15:
                     risk_pct *= 0.5
-                    print(
-                        f"[DRAWDOWN] Sizing réduit de 50% (DD actuel: {drawdown:.1%})"
-                    )
+                    print(f"[DRAWDOWN] Sizing -50% (DD: {drawdown:.1%})")
 
         except Exception as e:
-            print(f"[WARNING] Erreur calcul drawdown: {e}")
+            print(f"[WARNING] Erreur drawdown: {e}")
 
-        # --- 6. Calcul final ---
+        # --- Calcul final ---
         size = balance * risk_pct
-        size = max(MIN_NOTIONAL, round(size, 2))  # Arrondi à 2 décimales
+        size = max(MIN_NOTIONAL, round(size, 2))
 
-        print(f"[SIZING] Final: {size:.2f} USDC ({risk_pct*100:.1f}% du capital)")
+        print(f"[SIZING] {size:.2f} USDC ({risk_pct*100:.1f}% du capital)")
         return size
 
     except Exception as e:
         import logging
 
-        logging.error(f"Erreur critique calcul sizing: {e}")
-        return MIN_NOTIONAL  # Retourne le minimum en cas d'erreur
+        logging.error(f"Erreur sizing: {e}")
+        return MIN_NOTIONAL
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):
@@ -5874,160 +5890,185 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
 
 
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
-    """Envoie les rapports de fin de cycle et alertes de risque avancé"""
-
+    """
+    Envoi des rapports de fin de cycle avec :
+    - Résumé des trades
+    - Analyse complète
+    - Métriques avancées
+    - Alertes de risque
+    """
     import json
     import numpy as np
+    from datetime import datetime
 
     try:
-        # 1. Rapport des trades si nécessaire
-        if trade_decisions:
-            trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
-            for trade in trade_decisions:
-                emoji = (
-                    "🟢"
-                    if trade["action"] == "buy"
-                    else "🔴" if trade["action"] == "sell" else "⚪️"
-                )
-                pair = trade.get("pair", "INCONNU")
-                conf = f"{trade.get('confidence', 0):.0%}"
-                tech = f"{trade.get('signals', {}).get('technical', 0):.0%}"
-                ia = f"{trade.get('signals', {}).get('ai', 0):.2f}"
-                sent = f"{trade.get('signals', {}).get('sentiment', 0):.2f}"
-                trade_report += f"{emoji} {pair}: {trade['action'].upper()} ({conf}) | Tech {tech} | IA {ia} | Sent {sent}\n"
-            await bot.telegram.send_message(trade_report)
-        else:
-            await bot.telegram.send_cycle_update(cycle, regime, duration)
+        # 1. Rapport des trades du cycle
+        await send_trade_summary(bot, trade_decisions)
 
-        # 2. ====== RAPPORT ANALYSE COMPLET (news + décisions + multi-TF/paire) ======
+        # 2. Construction des analyses
+        analysis_data = await prepare_analysis_data(bot, trade_decisions)
 
-        # Construction d'un dict { "1m | BTC/USDT": {...}, ... }
-        indicators_analysis = {}
-        for pair in bot.pairs_valid:
-            pair_key = pair.replace("/", "").upper()
-            for tf in bot.config["TRADING"]["timeframes"]:
-                tf_key = f"{tf} | {pair}"
-                indics = bot.indicators.get(pair_key, {}).get(tf, {})
-                indicators_analysis[tf_key] = indics if indics else {}
+        # 3. Sauvegarde des données
+        await save_cycle_data(bot, analysis_data)
 
-        # Générer les décisions de trade par TF/paire (clé = f"{tf} | {pair}")
-        trade_decisions_dict = {}
-        for decision in trade_decisions:
-            tf = decision.get("tf", "1h")
-            pair = decision.get("pair", "")
+        # 4. Envoi du rapport complet
+        await send_analysis_report(bot, analysis_data)
+
+        # 5. Alertes de risque avancées
+        await check_risk_alerts(bot, analysis_data)
+
+    except Exception as e:
+        logging.error(f"Erreur envoi rapports: {e}")
+
+
+async def send_trade_summary(bot, trade_decisions):
+    """Envoi du résumé des trades"""
+    if trade_decisions:
+        trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
+        for trade in trade_decisions:
+            emoji = (
+                "🟢"
+                if trade["action"] == "buy"
+                else "🔴" if trade["action"] == "sell" else "⚪️"
+            )
+            pair = trade.get("pair", "INCONNU")
+            signals = trade.get("signals", {})
+
+            # Utilisation de format strings pour plus de clarté
+            trade_report += (
+                f"{emoji} {pair}: {trade['action'].upper()} "
+                f"({trade.get('confidence', 0):.0%}) | "
+                f"Tech {signals.get('technical', 0):.0%} | "
+                f"IA {signals.get('ai', 0):.2f} | "
+                f"Sent {signals.get('sentiment', 0):.2f}\n"
+            )
+        await bot.telegram.send_message(trade_report)
+    else:
+        await bot.telegram.send_cycle_update(cycle, regime, duration)
+
+
+async def prepare_analysis_data(bot, trade_decisions):
+    """Préparation des données d'analyse"""
+    # Construction des analyses par timeframe/paire
+    indicators_analysis = {}
+    trade_decisions_dict = {}
+
+    # Analyse des indicateurs
+    for pair in bot.pairs_valid:
+        pair_key = pair.replace("/", "").upper()
+        for tf in bot.config["TRADING"]["timeframes"]:
             tf_key = f"{tf} | {pair}"
-            trade_decisions_dict[tf_key] = {
-                "pair": pair,
-                "tf": tf,
-                "action": decision.get("action", "NEUTRAL").upper(),
-                "confidence": decision.get("confidence", 0),
-                "tech": decision.get("signals", {}).get("technical", 0),
-                "ai": decision.get("signals", {}).get("ai", 0),
-                "sentiment": decision.get("signals", {}).get("sentiment", 0),
+            indics = bot.indicators.get(pair_key, {}).get(tf, {})
+            indicators_analysis[tf_key] = indics if indics else {}
+
+    # Organisation des décisions de trade
+    for decision in trade_decisions:
+        tf = decision.get("tf", "1h")
+        pair = decision.get("pair", "")
+        tf_key = f"{tf} | {pair}"
+
+        trade_decisions_dict[tf_key] = {
+            "pair": pair,
+            "tf": tf,
+            "action": decision.get("action", "NEUTRAL").upper(),
+            "confidence": decision.get("confidence", 0),
+            "tech": decision.get("signals", {}).get("technical", 0),
+            "ai": decision.get("signals", {}).get("ai", 0),
+            "sentiment": decision.get("signals", {}).get("sentiment", 0),
+        }
+
+    # Métriques avancées (intégration de track_advanced_metrics)
+    advanced_metrics = bot.track_advanced_metrics()
+
+    return {
+        "indicators": indicators_analysis,
+        "decisions": trade_decisions_dict,
+        "metrics": advanced_metrics,
+        "perf": bot.get_performance_metrics(),
+    }
+
+
+async def save_cycle_data(bot, analysis_data):
+    """Sauvegarde des données du cycle"""
+    try:
+        with open(bot.data_file, "r") as f:
+            data = json.load(f)
+
+        # Mise à jour des données
+        equity_history = data.get("equity_history", [])
+        equity_history.append(
+            {
+                "timestamp": get_current_time(),
+                "balance": analysis_data["perf"].get("balance", 0),
+                "metrics": analysis_data["metrics"],  # Ajout des métriques avancées
             }
-
-        # PATCH : Sauvegarde des décisions dans shared_data.json pour dashboard Streamlit + equity_history
-        try:
-            with open(bot.data_file, "r") as f:
-                data = json.load(f)
-            data["trade_decisions"] = trade_decisions_dict
-
-            # ==== AJOUT HISTORIQUE BALANCE POUR DRAWDOWN/VaR ====
-            perf = bot.get_performance_metrics()
-            equity_history = data.get("equity_history", [])
-            equity_history.append(
-                {"timestamp": get_current_time(), "balance": perf.get("balance", 0)}
-            )
-            # Limite la taille de l'historique si besoin
-            if len(equity_history) > 1000:
-                equity_history = equity_history[-1000:]
-            data["equity_history"] = equity_history
-
-            # PATCH : sauvegarde robuste avec safe_update_shared_data
-            bot.safe_update_shared_data(
-                {
-                    "trade_decisions": trade_decisions_dict,
-                    "equity_history": equity_history,
-                    "positions_binance": getattr(bot, "positions_binance", {}),
-                    "trade_decisions": getattr(bot, "trade_decisions", {}),
-                },
-                bot.data_file,
-            )
-        except Exception as e:
-            import logging
-
-            logging.error(f"Erreur sauvegarde trade_decisions : {e}")
-
-        # Charger le sentiment/news si dispo
-        news_sentiment = None
-        try:
-            with open(bot.data_file, "r") as f:
-                shared_data = json.load(f)
-            news_sentiment = shared_data.get("sentiment", None)
-        except Exception:
-            news_sentiment = None
-
-        regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
-
-        rapport = _generate_analysis_report(
-            indicators_analysis,
-            regime_name,
-            news_sentiment=news_sentiment,
-            trade_decisions=trade_decisions_dict,
         )
 
-        # Envoi sur Telegram
-        await bot.telegram.send_message(
-            build_telegram_summary(bot, trade_decisions, news_sentiment)
+        # Limitation de l'historique
+        if len(equity_history) > 1000:
+            equity_history = equity_history[-1000:]
+
+        # Sauvegarde sécurisée
+        bot.safe_update_shared_data(
+            {
+                "trade_decisions": analysis_data["decisions"],
+                "equity_history": equity_history,
+                "positions_binance": getattr(bot, "positions_binance", {}),
+                "advanced_metrics": analysis_data["metrics"],
+            },
+            bot.data_file,
         )
 
-        # ==== ALERTES RISQUE AVANCÉES (Kelly, Drawdown, VaR) ====
-        try:
-            # 1. Kelly
-            kelly = kelly_criterion(
-                win_rate=perf.get("win_rate", 0),
-                payoff_ratio=perf.get("profit_factor", 1),
+    except Exception as e:
+        logging.error(f"Erreur sauvegarde données: {e}")
+
+
+async def check_risk_alerts(bot, analysis_data):
+    """Vérification et envoi des alertes de risque"""
+    try:
+        equity_history = analysis_data.get("equity_history", [])
+        perf = analysis_data["perf"]
+
+        # 1. Alerte Kelly
+        kelly = kelly_criterion(
+            win_rate=perf.get("win_rate", 0), payoff_ratio=perf.get("profit_factor", 1)
+        )
+        if abs(kelly) > 0.5:
+            await bot.telegram.send_message(
+                f"⚠️ Kelly fraction élevée: {kelly:.2f}\n"
+                f"Réduction recommandée du sizing!"
             )
-            if abs(kelly) > 0.5:
+
+        # 2. Alerte Drawdown
+        equity_curve = [
+            pt.get("balance", 0) for pt in equity_history if pt.get("balance", 0) > 0
+        ]
+        if equity_curve and len(equity_curve) > 10:
+            max_dd = calculate_max_drawdown(np.array(equity_curve))
+            if max_dd < -0.15:
                 await bot.telegram.send_message(
-                    f"⚠️ Kelly fraction élevée : {kelly:.2f} — attention à la taille des positions !"
+                    f"🚨 Drawdown critique: {max_dd:.2%}\n"
+                    f"Actions recommandées:\n"
+                    f"- Réduction du sizing\n"
+                    f"- Pause trading conseillée"
                 )
 
-            # 2. Drawdown
-            equity_curve = [
-                pt.get("balance", 0)
-                for pt in equity_history
-                if pt.get("balance", 0) > 0
-            ]
-            if equity_curve and len(equity_curve) > 10:
-                max_dd = calculate_max_drawdown(np.array(equity_curve))
-                if max_dd < -0.15:
-                    await bot.telegram.send_message(
-                        f"🚨 Max drawdown dépassé : {max_dd:.2%} ! Pause conseillée ou réduction risque."
-                    )
-
-            # 3. VaR
-            returns = []
+        # 3. Alerte VaR
+        if len(equity_curve) > 10:
             try:
                 equity_curve_np = np.array(equity_curve)
                 returns = np.diff(equity_curve_np) / equity_curve_np[:-1]
-            except Exception:
-                returns = []
-            if returns is not None and len(returns) > 10:
                 var95 = calculate_var(returns, 0.05)
                 if var95 < -0.05:
                     await bot.telegram.send_message(
-                        f"🛑 VaR(95%) critique : {var95:.2%} sur la période !"
+                        f"🛑 VaR(95%) critique: {var95:.2%}\n"
+                        f"Risque de perte important!"
                     )
-        except Exception as e:
-            import logging
-
-            logging.error(f"Erreur alertes risque avancé : {e}")
+            except Exception:
+                pass
 
     except Exception as e:
-        import logging
-
-        logging.error(f"Erreur envoi rapports: {e}")
+        logging.error(f"Erreur alertes risque: {e}")
 
 
 async def handle_shutdown(bot, message):
