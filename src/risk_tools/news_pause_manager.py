@@ -39,12 +39,12 @@ class NewsPauseManager:
         self.last_event_news = None
         self.last_triggered_title = None
         self.alert_callback = alert_callback
-        
+
         # Gestion avancée :
         self.pair_pauses = {}  # {pair: cycles_restants}
         self.buy_paused_pairs = set()  # Paires où seuls les achats sont bloqués
-         self.active_pauses = []
-         
+        self.active_pauses = []
+
     def activate_pause(self, pause_decision):
         # Ajoute la pause active dans la RAM ou le fichier partagé
         self.active_pauses.append(pause_decision)
