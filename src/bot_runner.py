@@ -1103,7 +1103,7 @@ class TradingBotM4:
 
         print("DEBUG pending_sales tableau:", pending)
         # Sauvegarde dans shared_data.json
-        safe_update_shared_data({"pending_sales": pending}, self.data_file)
+        self.safe_update_shared_data({"pending_sales": pending}, self.data_file)
         return pending
 
     def sync_positions_with_binance(self):
