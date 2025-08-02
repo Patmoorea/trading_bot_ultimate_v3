@@ -961,6 +961,97 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def calculate_correlation_matrix(self):
+        """Calcule la matrice de corrélation entre les paires"""
+        correlations = {}
+        for pair1 in self.pairs_valid:
+            for pair2 in self.pairs_valid:
+                correlation = self.calculate_pair_correlation(pair1, pair2)
+                correlations[f"{pair1}-{pair2}"] = correlation
+        return correlations
+
+    def adjust_position_sizing(self, base_size, correlation_factor):
+        """Ajuste le sizing selon les corrélations"""
+        return base_size * (1 - correlation_factor)
+
+    def weighted_signal_fusion(self, signals):
+        """Fusion pondérée des signaux avec poids adaptatifs"""
+        weights = {"technical": 0.4, "ai": 0.3, "sentiment": 0.2, "orderflow": 0.1}
+        total_score = 0
+        for signal_type, value in signals.items():
+            if signal_type in weights:
+                total_score += value * weights[signal_type]
+        return total_score
+
+    def track_advanced_metrics(self):
+        """Suivi de métriques avancées"""
+        metrics = {
+            "sharpe_ratio": self.calculate_sharpe(),
+            "sortino_ratio": self.calculate_sortino(),
+            "calmar_ratio": self.calculate_calmar(),
+            "win_rate": self.get_win_rate(),
+            "avg_profit": self.get_avg_profit(),
+            "max_drawdown": self.get_max_drawdown(),
+        }
+        return metrics
+
+    def safe_trade_execution(self, order):
+        """Exécution sécurisée des ordres"""
+        try:
+            # Vérifications pré-trade
+            self.check_margin_requirements()
+            self.verify_risk_limits()
+            self.check_market_conditions()
+
+            # Exécution avec retry
+            for attempt in range(3):
+                try:
+                    result = self.execute_order(order)
+                    return result
+                except ConnectionError:
+                    continue
+
+        except Exception as e:
+            self.logger.error(f"Erreur exécution: {e}")
+            return None
+
+    # Backup automatique
+    def backup_critical_data(self):
+        """Sauvegarde les données critiques"""
+        try:
+            # Sauvegarde positions
+            positions_backup = {
+                "timestamp": datetime.now(),
+                "positions": self.positions,
+                "orders": self.pending_orders,
+            }
+
+            # Sauvegarde configuration
+            config_backup = {
+                "pairs": self.pairs_valid,
+                "risk_params": self.risk_params,
+                "strategies": self.strategies,
+            }
+
+            # Écriture dans fichiers séparés
+            self.save_backup("positions.bak", positions_backup)
+            self.save_backup("config.bak", config_backup)
+
+        except Exception as e:
+            self.logger.error(f"Erreur backup: {e}")
+
+    def monitor_system_health(self):
+        """Surveillance système temps réel"""
+        metrics = {
+            "cpu_usage": psutil.cpu_percent(),
+            "memory_usage": psutil.virtual_memory().percent,
+            "api_latency": self.measure_api_latency(),
+            "ws_connection": self.check_ws_status(),
+        }
+
+        if any(v > 90 for v in metrics.values()):
+            self.alert_system_stress()
+
     def analyze_volume_profile(self, symbol, timeframe="1h"):
         """Analyse avancée du volume profile"""
         df = self.get_timeframe_data(symbol, timeframe)

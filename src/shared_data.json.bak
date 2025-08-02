@@ -10,33 +10,33 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 108157.62198198192,
-      "current_price": 112880.0,
+      "current_price": 113066.0,
       "amount": 9e-05,
-      "% Gain/Perte": "4.37%",
+      "% Gain/Perte": "4.54%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "LTC/USDC",
-      "reason": "\ud83d\udfe2 Gain latent 52.8%, signal: NEUTRAL",
+      "reason": "\ud83d\udfe2 Gain latent 52.6%, signal: NEUTRAL",
       "decision": "Surveillance, possibilit\u00e9 de prise de profit",
       "entry_price": 70.07813412060145,
-      "current_price": 107.08,
+      "current_price": 106.95,
       "amount": 0.102,
-      "% Gain/Perte": "52.80%",
+      "% Gain/Perte": "52.62%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "ETH/USDC",
-      "reason": "\ud83d\udd34 Perte latente -5.7%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -5.4%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3654.1087878787876,
-      "current_price": 3445.09,
+      "current_price": 3456.9,
       "amount": 0.0033,
-      "% Gain/Perte": "-5.72%",
+      "% Gain/Perte": "-5.40%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -46,9 +46,9 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 719.1871428571428,
-      "current_price": 742.96,
+      "current_price": 744.6,
       "amount": 0.02490865,
-      "% Gain/Perte": "3.31%",
+      "% Gain/Perte": "3.53%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -58,33 +58,33 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 0.309744424778761,
-      "current_price": 0.3208,
+      "current_price": 0.3216,
       "amount": 37.2,
-      "% Gain/Perte": "3.57%",
+      "% Gain/Perte": "3.83%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "XRP/USDC",
-      "reason": "\ud83d\udd34 Perte latente -14.3%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -14.1%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.29422,
-      "current_price": 2.8246,
+      "current_price": 2.8307,
       "amount": 3.4,
-      "% Gain/Perte": "-14.26%",
+      "% Gain/Perte": "-14.07%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "ADA/USDC",
-      "reason": "\ud83d\udd34 Perte latente -16.5%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -16.2%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.83298,
-      "current_price": 0.6958,
+      "current_price": 0.6977,
       "amount": 14.2,
-      "% Gain/Perte": "-16.47%",
+      "% Gain/Perte": "-16.24%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -94,7 +94,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.616,
+      "current_price": 0.617,
       "amount": 0.03230637,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -103,12 +103,12 @@
     },
     {
       "symbol": "DOGE/USDC",
-      "reason": "\ud83d\udd34 Perte latente -23.0%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -22.7%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.252465,
-      "current_price": 0.19433,
+      "current_price": 0.19512,
       "amount": 23.0,
-      "% Gain/Perte": "-23.03%",
+      "% Gain/Perte": "-22.71%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -127,12 +127,12 @@
     },
     {
       "symbol": "SOL/USDC",
-      "reason": "\ud83d\udd34 Perte latente -17.6%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -17.5%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 194.96943548387094,
-      "current_price": 160.65,
+      "current_price": 160.81,
       "amount": 0.058,
-      "% Gain/Perte": "-17.60%",
+      "% Gain/Perte": "-17.52%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -166,7 +166,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 8.867,
+      "current_price": 8.908,
       "amount": 3.85614,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -178,7 +178,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01454,
+      "current_price": 0.01458,
       "amount": 1484.74630755,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -190,7 +190,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01752,
+      "current_price": 0.0175,
       "amount": 397.59699569,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -202,7 +202,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.876,
+      "current_price": 0.883,
       "amount": 28.28169,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -247,12 +247,12 @@
     },
     {
       "symbol": "SUI/USDC",
-      "reason": "\ud83d\udd34 Perte latente -15.6%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -15.3%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.9549924242424246,
-      "current_price": 3.3373,
+      "current_price": 3.3485,
       "amount": 5.2,
-      "% Gain/Perte": "-15.62%",
+      "% Gain/Perte": "-15.33%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -262,7 +262,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 3.549,
+      "current_price": 3.571,
       "amount": 0.087214,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -286,7 +286,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.923,
+      "current_price": 0.927,
       "amount": 0.35478462,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -298,7 +298,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.5374,
+      "current_price": 0.5392,
       "amount": 2.85374308,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -310,7 +310,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2279,
+      "current_price": 0.2282,
       "amount": 0.05435377,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -322,7 +322,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.11,
+      "current_price": 4.13,
       "amount": 0.05679375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -334,7 +334,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01176,
+      "current_price": 0.01175,
       "amount": 4.05396039,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -343,12 +343,12 @@
     },
     {
       "symbol": "NOT/USDC",
-      "reason": "\ud83d\udd34 Perte latente -81.0%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -81.1%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.01052,
-      "current_price": 0.001998,
+      "current_price": 0.00199,
       "amount": 1116.15,
-      "% Gain/Perte": "-81.01%",
+      "% Gain/Perte": "-81.08%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -358,7 +358,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.257,
+      "current_price": 0.2572,
       "amount": 39.51211224,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -370,7 +370,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.573,
+      "current_price": 0.574,
       "amount": 0.43377579,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -394,7 +394,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 21.82,
+      "current_price": 21.77,
       "amount": 0.01833206,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -406,7 +406,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0799,
+      "current_price": 0.0803,
       "amount": 0.07004223,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -430,7 +430,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0683,
+      "current_price": 0.0689,
       "amount": 3.76301349,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -454,7 +454,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.045,
+      "current_price": 4.067,
       "amount": 5.47230677,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -490,7 +490,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01577,
+      "current_price": 0.01579,
       "amount": 2.50258947,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -502,7 +502,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.5885,
+      "current_price": 0.5914,
       "amount": 0.03474063,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -514,7 +514,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.02452,
+      "current_price": 0.02476,
       "amount": 1.1566659,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -526,7 +526,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3576,
+      "current_price": 0.362,
       "amount": 0.13870156,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -538,7 +538,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2873,
+      "current_price": 0.2895,
       "amount": 0.18545852,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -550,7 +550,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.03887,
+      "current_price": 0.03903,
       "amount": 0.88600535,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -562,7 +562,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3783,
+      "current_price": 0.3799,
       "amount": 0.1179094,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -574,7 +574,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.06783,
+      "current_price": 0.06778,
       "amount": 1.17754728,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -586,7 +586,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0813,
+      "current_price": 0.0805,
       "amount": 0.08862893,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -598,7 +598,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.08,
+      "current_price": 0.081,
       "amount": 0.56851639,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -610,7 +610,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.8573,
+      "current_price": 0.8655,
       "amount": 0.17386141,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -622,7 +622,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1335,
+      "current_price": 0.1351,
       "amount": 0.17714676,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -634,7 +634,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.03143,
+      "current_price": 0.03184,
       "amount": 2.49958419,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -646,7 +646,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1619,
+      "current_price": 0.1638,
       "amount": 0.11578375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -658,7 +658,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.03254,
+      "current_price": 0.03265,
       "amount": 1.16253643,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -670,7 +670,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.092908,
+      "current_price": 0.093254,
       "amount": 1.36076364,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -682,7 +682,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3381,
+      "current_price": 0.343,
       "amount": 0.10083373,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -694,7 +694,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.08872,
+      "current_price": 0.09029,
       "amount": 1.00786376,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -706,7 +706,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3281,
+      "current_price": 0.3311,
       "amount": 0.16214933,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -718,7 +718,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.929,
+      "current_price": 0.9404,
       "amount": 0.34099158,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -730,7 +730,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2664,
+      "current_price": 0.2693,
       "amount": 0.26255203,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -742,7 +742,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.4638,
+      "current_price": 0.4628,
       "amount": 0.10868663,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -753,21 +753,9 @@
   "safe_mode": false,
   "active_pauses": [
     {
-      "asset": "BTC",
-      "action": "BUY",
-      "cycles_left": 1,
-      "type": "BUY"
-    },
-    {
-      "asset": "XRP",
-      "action": "BUY",
-      "cycles_left": 1,
-      "type": "BUY"
-    },
-    {
       "asset": "GLOBAL",
       "action": "ALL",
-      "cycles_left": 5,
+      "cycles_left": 4,
       "type": "GLOBAL"
     }
   ],
@@ -776,82 +764,82 @@
       "side": "long",
       "amount": 9e-05,
       "entry_price": 108157.62198198192,
-      "current_price": 112880.0,
-      "pnl_pct": 4.366199932543618,
-      "pnl_usd": 0.42501402162162694,
-      "value_usd": 10.1592
+      "current_price": 113066.0,
+      "pnl_pct": 4.538171169144018,
+      "pnl_usd": 0.4417540216216269,
+      "value_usd": 10.17594
     },
     "LTC/USDC": {
       "side": "long",
       "amount": 0.102,
       "entry_price": 70.07813412060145,
-      "current_price": 107.08,
-      "pnl_pct": 52.80087197487299,
-      "pnl_usd": 3.774190319698652,
-      "value_usd": 10.92216
+      "current_price": 106.95,
+      "pnl_pct": 52.61536475263977,
+      "pnl_usd": 3.7609303196986525,
+      "value_usd": 10.9089
     },
     "ETH/USDC": {
       "side": "long",
       "amount": 0.0033,
       "entry_price": 3654.1087878787876,
-      "current_price": 3445.09,
-      "pnl_pct": -5.720103040504247,
-      "pnl_usd": -0.6897619999999984,
-      "value_usd": 11.368797
+      "current_price": 3456.9,
+      "pnl_pct": -5.396905218940328,
+      "pnl_usd": -0.6507889999999986,
+      "value_usd": 11.407770000000001
     },
     "BNB/USDC": {
       "side": "long",
       "amount": 0.02490865,
       "entry_price": 719.1871428571428,
-      "current_price": 742.96,
-      "pnl_pct": 3.305517538649796,
-      "pnl_usd": 0.5921497780714305,
-      "value_usd": 18.506130604000003
+      "current_price": 744.6,
+      "pnl_pct": 3.5335527609543402,
+      "pnl_usd": 0.6329999640714301,
+      "value_usd": 18.546980790000003
     },
     "TRX/USDC": {
       "side": "long",
       "amount": 37.2,
       "entry_price": 0.309744424778761,
-      "current_price": 0.3208,
-      "pnl_pct": 3.56925721234064,
-      "pnl_usd": 0.4112673982300892,
-      "value_usd": 11.93376
+      "current_price": 0.3216,
+      "pnl_pct": 3.8275346617479804,
+      "pnl_usd": 0.44102739823009,
+      "value_usd": 11.96352
     },
     "XRP/USDC": {
       "side": "long",
       "amount": 3.4,
       "entry_price": 3.29422,
-      "current_price": 2.8246,
-      "pnl_pct": -14.25587847806157,
-      "pnl_usd": -1.5967079999999998,
-      "value_usd": 9.60364
+      "current_price": 2.8307,
+      "pnl_pct": -14.070705660216984,
+      "pnl_usd": -1.5759679999999998,
+      "value_usd": 9.62438
     },
     "ADA/USDC": {
       "side": "long",
       "amount": 14.2,
       "entry_price": 0.83298,
-      "current_price": 0.6958,
-      "pnl_pct": -16.468582679055928,
-      "pnl_usd": -1.9479560000000011,
-      "value_usd": 9.88036
+      "current_price": 0.6977,
+      "pnl_pct": -16.24048596604961,
+      "pnl_usd": -1.920976000000001,
+      "value_usd": 9.90734
     },
     "FET/USDC": {
       "side": "long",
       "amount": 0.03230637,
       "entry_price": null,
-      "current_price": 0.616,
+      "current_price": 0.617,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.019900723920000002
+      "value_usd": 0.01993303029
     },
     "DOGE/USDC": {
       "side": "long",
       "amount": 23.0,
       "entry_price": 0.252465,
-      "current_price": 0.19433,
-      "pnl_pct": -23.026954231279582,
-      "pnl_usd": -1.3371049999999998,
-      "value_usd": 4.46959
+      "current_price": 0.19512,
+      "pnl_pct": -22.71403956984137,
+      "pnl_usd": -1.3189350000000002,
+      "value_usd": 4.48776
     },
     "LDBNB/USDC": {
       "side": "long",
@@ -866,10 +854,10 @@
       "side": "long",
       "amount": 0.058,
       "entry_price": 194.96943548387094,
-      "current_price": 160.65,
-      "pnl_pct": -17.602469535133906,
-      "pnl_usd": -1.9905272580645141,
-      "value_usd": 9.3177
+      "current_price": 160.81,
+      "pnl_pct": -17.520405390257597,
+      "pnl_usd": -1.9812472580645144,
+      "value_usd": 9.32698
     },
     "NVT/USDC": {
       "side": "long",
@@ -893,37 +881,37 @@
       "side": "long",
       "amount": 3.85614,
       "entry_price": null,
-      "current_price": 8.867,
+      "current_price": 8.908,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 34.192393380000006
+      "value_usd": 34.35049512
     },
     "GALA/USDC": {
       "side": "long",
       "amount": 1484.74630755,
       "entry_price": null,
-      "current_price": 0.01454,
+      "current_price": 0.01458,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 21.588211311777002
+      "value_usd": 21.647601164079
     },
     "PEOPLE/USDC": {
       "side": "long",
       "amount": 397.59699569,
       "entry_price": null,
-      "current_price": 0.01752,
+      "current_price": 0.0175,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 6.965899364488801
+      "value_usd": 6.957947424575001
     },
     "LDO/USDC": {
       "side": "long",
       "amount": 28.28169,
       "entry_price": null,
-      "current_price": 0.876,
+      "current_price": 0.883,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 24.77476044
+      "value_usd": 24.97273227
     },
     "LUNC/USDC": {
       "side": "long",
@@ -956,19 +944,19 @@
       "side": "long",
       "amount": 5.2,
       "entry_price": 3.9549924242424246,
-      "current_price": 3.3373,
-      "pnl_pct": -15.618043171365697,
-      "pnl_usd": -3.212000606060608,
-      "value_usd": 17.35396
+      "current_price": 3.3485,
+      "pnl_pct": -15.33485678821743,
+      "pnl_usd": -3.1537606060606076,
+      "value_usd": 17.412200000000002
     },
     "TON/USDC": {
       "side": "long",
       "amount": 0.087214,
       "entry_price": null,
-      "current_price": 3.549,
+      "current_price": 3.571,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.309522486
+      "value_usd": 0.31144119400000003
     },
     "AEVO/USDC": {
       "side": "long",
@@ -983,73 +971,73 @@
       "side": "long",
       "amount": 0.35478462,
       "entry_price": null,
-      "current_price": 0.923,
+      "current_price": 0.927,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.32746620426
+      "value_usd": 0.32888534274000003
     },
     "ENA/USDC": {
       "side": "long",
       "amount": 2.85374308,
       "entry_price": null,
-      "current_price": 0.5374,
+      "current_price": 0.5392,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 1.533601531192
+      "value_usd": 1.538738268736
     },
     "SAGA/USDC": {
       "side": "long",
       "amount": 0.05435377,
       "entry_price": null,
-      "current_price": 0.2279,
+      "current_price": 0.2282,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.012387224183
+      "value_usd": 0.012403530313999999
     },
     "OMNI/USDC": {
       "side": "long",
       "amount": 0.05679375,
       "entry_price": null,
-      "current_price": 4.11,
+      "current_price": 4.13,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.2334223125
+      "value_usd": 0.2345581875
     },
     "REZ/USDC": {
       "side": "long",
       "amount": 4.05396039,
       "entry_price": null,
-      "current_price": 0.01176,
+      "current_price": 0.01175,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.047674574186400004
+      "value_usd": 0.047634034582500005
     },
     "NOT/USDC": {
       "side": "long",
       "amount": 1116.15,
       "entry_price": 0.01052,
-      "current_price": 0.001998,
-      "pnl_pct": -81.00760456273764,
-      "pnl_usd": -9.511830300000002,
-      "value_usd": 2.2300677
+      "current_price": 0.00199,
+      "pnl_pct": -81.08365019011407,
+      "pnl_usd": -9.5207595,
+      "value_usd": 2.2211385000000003
     },
     "LISTA/USDC": {
       "side": "long",
       "amount": 39.51211224,
       "entry_price": null,
-      "current_price": 0.257,
+      "current_price": 0.2572,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 10.15461284568
+      "value_usd": 10.162515268127999
     },
     "IO/USDC": {
       "side": "long",
       "amount": 0.43377579,
       "entry_price": null,
-      "current_price": 0.573,
+      "current_price": 0.574,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.24855352766999997
+      "value_usd": 0.24898730345999998
     },
     "G/USDC": {
       "side": "long",
@@ -1064,19 +1052,19 @@
       "side": "long",
       "amount": 0.01833206,
       "entry_price": null,
-      "current_price": 21.82,
+      "current_price": 21.77,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.40000554920000003
+      "value_usd": 0.3990889462
     },
     "CATI/USDC": {
       "side": "long",
       "amount": 0.07004223,
       "entry_price": null,
-      "current_price": 0.0799,
+      "current_price": 0.0803,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.005596374177
+      "value_usd": 0.005624391069
     },
     "SCR/USDC": {
       "side": "long",
@@ -1091,10 +1079,10 @@
       "side": "long",
       "amount": 3.76301349,
       "entry_price": null,
-      "current_price": 0.0683,
+      "current_price": 0.0689,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.257013821367
+      "value_usd": 0.259271629461
     },
     "ME/USDC": {
       "side": "long",
@@ -1109,10 +1097,10 @@
       "side": "long",
       "amount": 5.47230677,
       "entry_price": null,
-      "current_price": 4.045,
+      "current_price": 4.067,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 22.13548088465
+      "value_usd": 22.25587163359
     },
     "BIO/USDC": {
       "side": "long",
@@ -1136,279 +1124,279 @@
       "side": "long",
       "amount": 2.50258947,
       "entry_price": null,
-      "current_price": 0.01577,
+      "current_price": 0.01579,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0394658359419
+      "value_usd": 0.0395158877313
     },
     "LAYER/USDC": {
       "side": "long",
       "amount": 0.03474063,
       "entry_price": null,
-      "current_price": 0.5885,
+      "current_price": 0.5914,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.020444860755000002
+      "value_usd": 0.020545608582000004
     },
     "GUN/USDC": {
       "side": "long",
       "amount": 1.1566659,
       "entry_price": null,
-      "current_price": 0.02452,
+      "current_price": 0.02476,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.028361447868
+      "value_usd": 0.028639047684
     },
     "INIT/USDC": {
       "side": "long",
       "amount": 0.13870156,
       "entry_price": null,
-      "current_price": 0.3576,
+      "current_price": 0.362,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.049599677855999995
+      "value_usd": 0.05020996472
     },
     "WCT/USDC": {
       "side": "long",
       "amount": 0.18545852,
       "entry_price": null,
-      "current_price": 0.2873,
+      "current_price": 0.2895,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.053282232795999994
+      "value_usd": 0.053690241539999996
     },
     "SOPH/USDC": {
       "side": "long",
       "amount": 0.88600535,
       "entry_price": null,
-      "current_price": 0.03887,
+      "current_price": 0.03903,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.034439027954500004
+      "value_usd": 0.0345807888105
     },
     "HYPER/USDC": {
       "side": "long",
       "amount": 0.1179094,
       "entry_price": null,
-      "current_price": 0.3783,
+      "current_price": 0.3799,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.044605126020000004
+      "value_usd": 0.04479378106
     },
     "SIGN/USDC": {
       "side": "long",
       "amount": 1.17754728,
       "entry_price": null,
-      "current_price": 0.06783,
+      "current_price": 0.06778,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0798730320024
+      "value_usd": 0.07981415463840001
     },
     "STO/USDC": {
       "side": "long",
       "amount": 0.08862893,
       "entry_price": null,
-      "current_price": 0.0813,
+      "current_price": 0.0805,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.007205532008999999
+      "value_usd": 0.007134628865
     },
     "SXT/USDC": {
       "side": "long",
       "amount": 0.56851639,
       "entry_price": null,
-      "current_price": 0.08,
+      "current_price": 0.081,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0454813112
+      "value_usd": 0.04604982759
     },
     "NXPC/USDC": {
       "side": "long",
       "amount": 0.17386141,
       "entry_price": null,
-      "current_price": 0.8573,
+      "current_price": 0.8655,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.14905138679299998
+      "value_usd": 0.150477050355
     },
     "HAEDAL/USDC": {
       "side": "long",
       "amount": 0.17714676,
       "entry_price": null,
-      "current_price": 0.1335,
+      "current_price": 0.1351,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.02364909246
+      "value_usd": 0.023932527276
     },
     "HUMA/USDC": {
       "side": "long",
       "amount": 2.49958419,
       "entry_price": null,
-      "current_price": 0.03143,
+      "current_price": 0.03184,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.07856193109170001
+      "value_usd": 0.0795867606096
     },
     "RESOLV/USDC": {
       "side": "long",
       "amount": 0.11578375,
       "entry_price": null,
-      "current_price": 0.1619,
+      "current_price": 0.1638,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.018745389125
+      "value_usd": 0.01896537825
     },
     "HOME/USDC": {
       "side": "long",
       "amount": 1.16253643,
       "entry_price": null,
-      "current_price": 0.03254,
+      "current_price": 0.03265,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0378289354322
+      "value_usd": 0.0379568144395
     },
     "SPK/USDC": {
       "side": "long",
       "amount": 1.36076364,
       "entry_price": null,
-      "current_price": 0.092908,
+      "current_price": 0.093254,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.12642582826512
+      "value_usd": 0.12689665248456
     },
     "NEWT/USDC": {
       "side": "long",
       "amount": 0.10083373,
       "entry_price": null,
-      "current_price": 0.3381,
+      "current_price": 0.343,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.034091884113
+      "value_usd": 0.03458596939
     },
     "SAHARA/USDC": {
       "side": "long",
       "amount": 1.00786376,
       "entry_price": null,
-      "current_price": 0.08872,
+      "current_price": 0.09029,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.08941767278719999
+      "value_usd": 0.09100001889039999
     },
     "LA/USDC": {
       "side": "long",
       "amount": 0.16214933,
       "entry_price": null,
-      "current_price": 0.3281,
+      "current_price": 0.3311,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.053201195173
+      "value_usd": 0.053687643163
     },
     "ERA/USDC": {
       "side": "long",
       "amount": 0.34099158,
       "entry_price": null,
-      "current_price": 0.929,
+      "current_price": 0.9404,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.31678117782000004
+      "value_usd": 0.32066848183200003
     },
     "C/USDC": {
       "side": "long",
       "amount": 0.26255203,
       "entry_price": null,
-      "current_price": 0.2664,
+      "current_price": 0.2693,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.069943860792
+      "value_usd": 0.070705261679
     },
     "TREE/USDC": {
       "side": "long",
       "amount": 0.10868663,
       "entry_price": null,
-      "current_price": 0.4638,
+      "current_price": 0.4628,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.050408858994
+      "value_usd": 0.050300172364
     }
   },
   "trade_decisions": {
     "BTC/USDC": {
-      "confidence": 0.0741122017225142,
+      "confidence": 0.04697893115499018,
       "action": "neutral",
-      "tech": 0.18039628135604296,
-      "ai": 0.480366975069046,
-      "sentiment": 0.19698079504305122
+      "tech": 0.42932054704094985,
+      "ai": 0.9114787578582764,
+      "sentiment": 0.19698079504305113
     },
     "ETH/USDC": {
-      "confidence": 0.12925923059810718,
+      "confidence": 0.06707078001847777,
       "action": "neutral",
-      "tech": -0.19936640577137696,
-      "ai": 0.4789278507232666,
+      "tech": -0.10797035810812794,
+      "ai": 0.9131203293800354,
       "sentiment": 0.1380878169407312
     },
     "LTC/USDC": {
-      "confidence": 0.0810466384662586,
+      "confidence": 0.15534595804363172,
       "action": "neutral",
-      "tech": -0.7255686086243307,
-      "ai": 0.4131357669830322,
-      "sentiment": 0.13587714592338201
+      "tech": -0.6400291053240059,
+      "ai": 0.9139549136161804,
+      "sentiment": 0.135877145923382
     },
     "XRP/USDC": {
-      "confidence": 0.07892015490807829,
+      "confidence": 0.0,
       "action": "neutral",
-      "tech": -0.4638183386901795,
-      "ai": 0.4221741855144501,
-      "sentiment": -0.0021932692627178218
+      "tech": -0.4294417562565168,
+      "ai": 0.9147093296051025,
+      "sentiment": -0.0021932692627178113
     },
     "DOGE/USDC": {
-      "confidence": 0.05777626224192963,
+      "confidence": 0.0,
       "action": "neutral",
-      "tech": 0.042560841637611826,
-      "ai": 0.4232178330421448,
-      "sentiment": 0.1056527193775313
+      "tech": -0.20311442550740297,
+      "ai": 0.917612612247467,
+      "sentiment": 0.10565271937753126
     },
     "BNB/USDC": {
-      "confidence": 0.14374113185968135,
+      "confidence": 0.030901147190635206,
       "action": "neutral",
-      "tech": 0.12654626600449412,
-      "ai": 0.48113399744033813,
-      "sentiment": 0.33011403526116373
+      "tech": 0.14226929866263263,
+      "ai": 0.998540997505188,
+      "sentiment": 0.3301140352611637
     },
     "ADA/USDC": {
-      "confidence": 0.01989474335440488,
+      "confidence": 0.0,
       "action": "neutral",
-      "tech": -0.45482693968380017,
-      "ai": 0.3796747028827667,
+      "tech": -0.5306853371071725,
+      "ai": 0.9109293222427368,
       "sentiment": 0.44953626819153425
     },
     "SOL/USDC": {
-      "confidence": 0.13393633055876986,
+      "confidence": 0.038436471880101894,
       "action": "neutral",
-      "tech": -0.36790827529314096,
-      "ai": 0.3939385712146759,
-      "sentiment": 0.1340959573267745
+      "tech": -0.48112585861282253,
+      "ai": 0.9148247241973877,
+      "sentiment": 0.13409595732677437
     },
     "TRX/USDC": {
-      "confidence": 0.06654611662375177,
+      "confidence": 0.0491732157577349,
       "action": "neutral",
-      "tech": -0.29634970306745345,
-      "ai": 0.4204843044281006,
-      "sentiment": 0.1239066232502628
+      "tech": -0.2018847095998773,
+      "ai": 0.9111332297325134,
+      "sentiment": 0.12390662325026276
     },
     "SUI/USDC": {
       "confidence": 0.0,
       "action": "neutral",
-      "tech": -0.5084981834958272,
-      "ai": 0.430353581905365,
-      "sentiment": 0.4806799351382453
+      "tech": -0.2805408306787342,
+      "ai": 0.9114616513252258,
+      "sentiment": 0.48067993513824525
     }
   },
-  "timestamp": "2025-08-02 06:32:03",
+  "timestamp": "2025-08-02 06:42:16",
   "user": "Patmoorea",
   "bot_status": {
     "regime": "Range/Scalping",
-    "cycle": 66,
-    "last_update": "2025-08-02 06:32:03",
+    "cycle": 67,
+    "last_update": "2025-08-02 06:42:16",
     "performance": {
       "total_trades": 36,
       "win_rate": 0.638,
@@ -1426,17 +1414,6 @@
     "BTCUSDC": {
       "1m": {
         "open": [
-          113026.0,
-          113002.54,
-          113111.99,
-          113116.94,
-          112949.38,
-          112998.0,
-          113075.19,
-          113058.0,
-          113054.02,
-          113150.0,
-          113149.89,
           113090.4,
           113201.46,
           113130.02,
@@ -1525,20 +1502,20 @@
           112916.28,
           112980.88,
           112879.7,
-          112914.02
+          112914.02,
+          112918.82,
+          112903.96,
+          112876.87,
+          112869.99,
+          112876.86,
+          112864.0,
+          112924.98,
+          112880.69,
+          112881.2,
+          112915.26,
+          112999.99
         ],
         "high": [
-          113039.55,
-          113112.0,
-          113131.99,
-          113116.94,
-          112994.35,
-          113075.2,
-          113079.99,
-          113058.01,
-          113150.0,
-          113150.0,
-          113158.19,
           113202.11,
           113201.46,
           113174.99,
@@ -1627,20 +1604,20 @@
           112988.23,
           112980.88,
           112939.99,
-          112946.0
+          112946.0,
+          112926.0,
+          112924.0,
+          112891.99,
+          112876.87,
+          112878.0,
+          112926.55,
+          112966.09,
+          112932.0,
+          112926.55,
+          113000.0,
+          112999.99
         ],
         "low": [
-          113000.0,
-          113002.54,
-          113105.74,
-          112950.0,
-          112932.83,
-          112984.7,
-          113052.0,
-          113054.01,
-          113054.02,
-          113123.24,
-          113090.41,
           113079.11,
           113114.01,
           113126.01,
@@ -1729,20 +1706,20 @@
           112916.28,
           112875.71,
           112879.7,
-          112914.02
+          112914.02,
+          112903.96,
+          112876.87,
+          112868.01,
+          112865.16,
+          112850.0,
+          112853.11,
+          112880.68,
+          112880.69,
+          112881.19,
+          112915.26,
+          112979.15
         ],
         "close": [
-          113001.68,
-          113112.0,
-          113121.99,
-          112950.0,
-          112994.35,
-          113075.19,
-          113061.53,
-          113054.02,
-          113150.0,
-          113145.28,
-          113090.41,
           113202.0,
           113139.84,
           113143.74,
@@ -1831,20 +1808,20 @@
           112980.88,
           112879.71,
           112914.02,
-          112917.98
+          112917.99,
+          112903.96,
+          112876.87,
+          112869.99,
+          112876.86,
+          112864.0,
+          112926.55,
+          112880.68,
+          112881.2,
+          112926.55,
+          113000.0,
+          112989.99
         ],
         "volume": [
-          0.64738,
-          2.63722,
-          1.78616,
-          4.5716,
-          2.38836,
-          5.66397,
-          0.80842,
-          0.53795,
-          0.69346,
-          0.90273,
-          1.68315,
           0.88142,
           1.65294,
           0.36282,
@@ -1933,20 +1910,20 @@
           1.14745,
           3.18915,
           2.17164,
-          0.60768
+          0.61154,
+          0.85143,
+          2.18624,
+          0.97549,
+          1.3336,
+          3.41738,
+          5.08207,
+          2.00388,
+          1.19526,
+          0.80481,
+          0.972,
+          0.82487
         ],
         "timestamp": [
-          1754146140000,
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -2035,13 +2012,22 @@
           1754151900000,
           1754151960000,
           1754152020000,
-          1754152080000
+          1754152080000,
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          113952.01,
-          113949.5,
           113977.99,
           113920.14,
           113866.01,
@@ -2139,11 +2125,11 @@
           112757.4,
           112763.64,
           112904.01,
-          112916.28
+          112916.28,
+          112903.96,
+          112924.98
         ],
         "high": [
-          113965.41,
-          113992.26,
           114032.28,
           113920.14,
           113866.01,
@@ -2241,11 +2227,11 @@
           112860.0,
           112919.37,
           112936.66,
-          112988.23
+          112988.23,
+          112926.55,
+          113000.0
         ],
         "low": [
-          113931.35,
-          113949.49,
           113877.78,
           113865.98,
           113712.8,
@@ -2343,11 +2329,11 @@
           112707.52,
           112707.52,
           112824.0,
-          112875.71
+          112875.71,
+          112850.0,
+          112880.68
         ],
         "close": [
-          113949.5,
-          113977.98,
           113922.73,
           113866.0,
           113739.74,
@@ -2445,11 +2431,11 @@
           112758.65,
           112912.01,
           112916.29,
-          112917.98
+          112903.96,
+          112926.55,
+          112989.99
         ],
         "volume": [
-          4.837,
-          3.16378,
           5.24887,
           3.34354,
           19.55841,
@@ -2547,11 +2533,11 @@
           11.70849,
           10.52848,
           17.15027,
-          7.11592
+          7.97121,
+          12.99478,
+          5.80082
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -2649,12 +2635,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          114774.82,
           115200.0,
           115336.68,
           115618.95,
@@ -2753,10 +2740,10 @@
           113229.07,
           113008.53,
           112830.5,
-          112763.64
+          112763.64,
+          112903.96
         ],
         "high": [
-          115200.0,
           115476.92,
           115690.0,
           115685.36,
@@ -2855,10 +2842,10 @@
           113229.07,
           113041.05,
           112964.0,
-          112988.23
+          112988.23,
+          113000.0
         ],
         "low": [
-          114666.01,
           115138.11,
           115282.0,
           115474.93,
@@ -2957,10 +2944,10 @@
           112959.72,
           112803.85,
           112707.52,
-          112707.52
+          112707.52,
+          112850.0
         ],
         "close": [
-          115199.99,
           115336.69,
           115618.96,
           115576.75,
@@ -3059,10 +3046,10 @@
           113008.53,
           112830.5,
           112758.65,
-          112917.99
+          112903.96,
+          112989.99
         ],
         "volume": [
-          95.20219,
           67.55134,
           54.46552,
           42.14174,
@@ -3161,10 +3148,10 @@
           34.74521,
           66.29799,
           46.64524,
-          34.79853
+          35.64996,
+          18.7956
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -3263,7 +3250,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -3469,7 +3457,7 @@
           113632.3,
           113524.0,
           113406.63,
-          112988.23
+          113000.0
         ],
         "low": [
           118536.24,
@@ -3673,7 +3661,7 @@
           113448.0,
           113090.41,
           112830.5,
-          112917.99
+          112989.99
         ],
         "volume": [
           167.03457,
@@ -3775,7 +3763,7 @@
           119.55286,
           102.66728,
           128.53331,
-          81.44377
+          101.0908
         ],
         "timestamp": [
           1753794000000,
@@ -4083,7 +4071,7 @@
           114024.66,
           114032.28,
           113774.8,
-          112988.23
+          113000.0
         ],
         "low": [
           117904.0,
@@ -4287,7 +4275,7 @@
           113966.1,
           113768.72,
           112830.5,
-          112917.99
+          112989.99
         ],
         "volume": [
           571.68937,
@@ -4389,7 +4377,7 @@
           418.69181,
           295.01676,
           402.99288,
-          81.44377
+          101.0908
         ],
         "timestamp": [
           1752724800000,
@@ -4901,7 +4889,7 @@
           117842.0,
           115757.87,
           113260.03,
-          112917.99
+          112989.99
         ],
         "volume": [
           6172.22693,
@@ -5003,7 +4991,7 @@
           4510.45382,
           3852.23197,
           9063.72524,
-          1620.43781
+          1640.1063
         ],
         "timestamp": [
           1745539200000,
@@ -5109,25 +5097,15 @@
         ]
       },
       "signals": {
-        "trend": 0.2431284412741661,
-        "momentum": 0.2431284412741661,
-        "volatility": 0.2431284412741661
+        "trend": 0.3940175652503967,
+        "momentum": 0.3940175652503967,
+        "volatility": 0.3940175652503967
       },
-      "ai_prediction": 0.4862568825483322
+      "ai_prediction": 0.7880351305007934
     },
     "ETHUSDC": {
       "1m": {
         "open": [
-          3474.7,
-          3477.23,
-          3474.6,
-          3471.0,
-          3472.44,
-          3477.1,
-          3475.2,
-          3474.29,
-          3476.6,
-          3480.49,
           3478.5,
           3482.32,
           3478.88,
@@ -5217,19 +5195,19 @@
           3458.28,
           3444.81,
           3448.3,
-          3449.11
+          3449.3,
+          3448.4,
+          3444.7,
+          3441.88,
+          3442.08,
+          3436.69,
+          3439.3,
+          3441.49,
+          3436.21,
+          3442.01,
+          3444.59
         ],
         "high": [
-          3479.18,
-          3477.28,
-          3475.59,
-          3472.33,
-          3478.26,
-          3477.52,
-          3476.59,
-          3476.99,
-          3480.5,
-          3482.5,
           3485.01,
           3483.46,
           3482.89,
@@ -5319,19 +5297,19 @@
           3458.28,
           3449.39,
           3450.39,
-          3449.11
+          3451.49,
+          3449.98,
+          3446.4,
+          3443.57,
+          3442.08,
+          3440.4,
+          3444.79,
+          3445.08,
+          3442.28,
+          3444.89,
+          3445.19
         ],
         "low": [
-          3473.3,
-          3473.21,
-          3471.2,
-          3466.43,
-          3471.8,
-          3474.4,
-          3472.71,
-          3471.91,
-          3476.6,
-          3478.62,
           3477.7,
           3476.81,
           3478.45,
@@ -5421,19 +5399,19 @@
           3443.33,
           3444.81,
           3446.91,
-          3449.11
+          3447.6,
+          3444.46,
+          3441.48,
+          3439.81,
+          3436.16,
+          3432.5,
+          3438.55,
+          3436.21,
+          3436.21,
+          3439.78,
+          3442.8
         ],
         "close": [
-          3477.23,
-          3474.68,
-          3471.2,
-          3472.29,
-          3477.27,
-          3475.0,
-          3474.2,
-          3476.48,
-          3480.49,
-          3478.62,
           3482.33,
           3479.03,
           3479.57,
@@ -5523,19 +5501,19 @@
           3444.81,
           3447.58,
           3449.11,
-          3449.11
+          3448.16,
+          3444.8,
+          3441.8,
+          3441.72,
+          3436.69,
+          3439.19,
+          3441.29,
+          3436.21,
+          3442.01,
+          3444.46,
+          3444.09
         ],
         "volume": [
-          408.153,
-          158.7493,
-          207.6284,
-          587.5541,
-          292.7639,
-          199.7478,
-          152.2545,
-          209.638,
-          401.6992,
-          246.2121,
           470.8032,
           337.726,
           162.1775,
@@ -5625,19 +5603,19 @@
           413.642,
           318.8531,
           213.8853,
-          0.0
+          364.5776,
+          194.1153,
+          456.3039,
+          493.8807,
+          251.8104,
+          1055.1781,
+          395.1427,
+          531.5903,
+          314.8745,
+          294.8658,
+          131.9115
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -5727,13 +5705,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          3519.9,
-          3516.51,
           3520.03,
           3514.41,
           3508.08,
@@ -5831,11 +5817,11 @@
           3450.7,
           3455.76,
           3455.72,
-          3453.89
+          3453.89,
+          3448.4,
+          3439.3
         ],
         "high": [
-          3522.68,
-          3521.79,
           3524.13,
           3514.49,
           3509.3,
@@ -5933,11 +5919,11 @@
           3463.02,
           3458.8,
           3456.75,
-          3459.38
+          3459.38,
+          3449.98,
+          3445.19
         ],
         "low": [
-          3515.55,
-          3516.05,
           3512.58,
           3507.89,
           3486.72,
@@ -6035,11 +6021,11 @@
           3446.18,
           3443.67,
           3448.81,
-          3443.33
+          3443.33,
+          3432.5,
+          3436.21
         ],
         "close": [
-          3516.51,
-          3520.09,
           3514.48,
           3507.98,
           3496.08,
@@ -6137,11 +6123,11 @@
           3455.6,
           3455.2,
           3453.79,
-          3449.11
+          3448.16,
+          3439.19,
+          3444.09
         ],
         "volume": [
-          681.9092,
-          551.8196,
           904.9371,
           1079.7932,
           2206.7681,
@@ -6239,11 +6225,11 @@
           1799.0343,
           1367.7984,
           1037.4189,
-          1159.1448
+          1523.7224,
+          2451.2884,
+          1668.3848
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -6341,12 +6327,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          3591.39,
           3611.8,
           3615.8,
           3629.11,
@@ -6445,10 +6432,10 @@
           3484.59,
           3467.71,
           3458.88,
-          3455.76
+          3455.76,
+          3448.4
         ],
         "high": [
-          3615.05,
           3620.0,
           3633.6,
           3631.88,
@@ -6547,10 +6534,10 @@
           3485.58,
           3470.79,
           3465.2,
-          3459.38
+          3459.38,
+          3449.98
         ],
         "low": [
-          3587.18,
           3605.8,
           3609.0,
           3622.62,
@@ -6649,10 +6636,10 @@
           3457.29,
           3450.57,
           3446.18,
-          3443.33
+          3443.33,
+          3432.5
         ],
         "close": [
-          3611.61,
           3615.92,
           3629.11,
           3625.92,
@@ -6751,10 +6738,10 @@
           3467.69,
           3458.89,
           3455.6,
-          3449.3
+          3448.16,
+          3443.75
         ],
         "volume": [
-          5133.7042,
           2256.6636,
           2821.7274,
           2175.401,
@@ -6853,10 +6840,10 @@
           5608.6603,
           6407.7364,
           4874.0653,
-          3564.3909
+          3928.9397,
+          4136.3008
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -6955,7 +6942,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -7263,7 +7251,7 @@
           3492.08,
           3465.0,
           3450.57,
-          3443.33
+          3432.5
         ],
         "close": [
           3838.91,
@@ -7365,7 +7353,7 @@
           3508.49,
           3478.62,
           3458.89,
-          3449.2
+          3443.75
         ],
         "volume": [
           10726.5208,
@@ -7467,7 +7455,7 @@
           9964.6048,
           19277.5211,
           18352.4719,
-          8440.4311
+          12939.3058
         ],
         "timestamp": [
           1753794000000,
@@ -7877,7 +7865,7 @@
           3454.25,
           3473.9,
           3450.57,
-          3443.33
+          3432.5
         ],
         "close": [
           3449.89,
@@ -7979,7 +7967,7 @@
           3518.99,
           3507.91,
           3458.89,
-          3449.2
+          3443.72
         ],
         "volume": [
           58586.8044,
@@ -8081,7 +8069,7 @@
           53086.4858,
           41016.8197,
           54270.8111,
-          8440.4311
+          12939.3893
         ],
         "timestamp": [
           1752724800000,
@@ -8491,7 +8479,7 @@
           3676.29,
           3684.27,
           3430.43,
-          3443.33
+          3432.5
         ],
         "close": [
           1785.91,
@@ -8593,7 +8581,7 @@
           3810.78,
           3698.47,
           3486.93,
-          3449.2
+          3443.72
         ],
         "volume": [
           592181.0509,
@@ -8695,7 +8683,7 @@
           227618.025,
           229038.3107,
           440443.879,
-          195654.2243
+          200153.1825
         ],
         "timestamp": [
           1745539200000,
@@ -8801,25 +8789,15 @@
         ]
       },
       "signals": {
-        "trend": 0.2426247477531433,
-        "momentum": 0.2426247477531433,
-        "volatility": 0.2426247477531433
+        "trend": 0.39459211528301236,
+        "momentum": 0.39459211528301236,
+        "volatility": 0.39459211528301236
       },
-      "ai_prediction": 0.4852494955062866
+      "ai_prediction": 0.7891842305660247
     },
     "LTCUSDC": {
       "1m": {
         "open": [
-          108.44,
-          108.44,
-          108.26,
-          108.05,
-          108.19,
-          108.29,
-          108.07,
-          108.02,
-          108.2,
-          108.43,
           108.35,
           108.54,
           108.4,
@@ -8909,19 +8887,19 @@
           107.67,
           107.39,
           107.43,
-          107.41
+          107.41,
+          107.34,
+          107.09,
+          106.78,
+          106.71,
+          106.63,
+          106.68,
+          106.68,
+          106.56,
+          106.41,
+          106.6
         ],
         "high": [
-          108.48,
-          108.45,
-          108.28,
-          108.15,
-          108.32,
-          108.32,
-          108.14,
-          108.22,
-          108.48,
-          108.45,
           108.63,
           108.54,
           108.6,
@@ -9011,19 +8989,19 @@
           107.68,
           107.43,
           107.44,
-          107.41
+          107.42,
+          107.34,
+          107.2,
+          106.87,
+          106.71,
+          106.73,
+          106.8,
+          106.68,
+          106.56,
+          106.58,
+          106.6
         ],
         "low": [
-          108.41,
-          108.32,
-          108.02,
-          107.96,
-          108.13,
-          108.01,
-          108.0,
-          107.99,
-          108.2,
-          108.37,
           108.35,
           108.33,
           108.4,
@@ -9113,19 +9091,19 @@
           107.3,
           107.29,
           107.41,
-          107.41
+          107.27,
+          107.08,
+          106.81,
+          106.67,
+          106.58,
+          106.48,
+          106.62,
+          106.51,
+          106.26,
+          106.33,
+          106.47
         ],
         "close": [
-          108.47,
-          108.32,
-          108.04,
-          108.14,
-          108.32,
-          108.06,
-          108.06,
-          108.19,
-          108.4,
-          108.38,
           108.55,
           108.34,
           108.53,
@@ -9215,19 +9193,19 @@
           107.33,
           107.4,
           107.44,
-          107.41
+          107.27,
+          107.08,
+          106.81,
+          106.71,
+          106.65,
+          106.71,
+          106.62,
+          106.51,
+          106.42,
+          106.58,
+          106.47
         ],
         "volume": [
-          3.821,
-          8.385,
-          94.367,
-          39.523,
-          69.087,
-          46.777,
-          71.037,
-          23.871,
-          247.811,
-          6.969,
           36.414,
           34.254,
           19.068,
@@ -9317,19 +9295,19 @@
           82.443,
           25.684,
           13.138,
-          0.092
+          45.647,
+          313.776,
+          212.158,
+          181.968,
+          29.267,
+          306.595,
+          102.53,
+          56.339,
+          662.456,
+          75.189,
+          12.733
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -9419,13 +9397,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          107.97,
-          107.94,
           107.95,
           107.67,
           107.42,
@@ -9523,11 +9509,11 @@
           107.36,
           107.29,
           107.64,
-          107.67
+          107.67,
+          107.34,
+          106.68
         ],
         "high": [
-          108.12,
-          108.13,
           108.07,
           107.72,
           107.54,
@@ -9625,11 +9611,11 @@
           107.64,
           107.71,
           107.93,
-          107.74
+          107.74,
+          107.34,
+          106.8
         ],
         "low": [
-          107.9,
-          107.94,
           107.64,
           107.39,
           107.29,
@@ -9727,11 +9713,11 @@
           107.2,
           107.16,
           107.57,
-          107.29
+          107.27,
+          106.48,
+          106.26
         ],
         "close": [
-          107.93,
-          108.0,
           107.71,
           107.44,
           107.36,
@@ -9829,11 +9815,11 @@
           107.32,
           107.68,
           107.63,
-          107.41
+          107.27,
+          106.71,
+          106.47
         ],
         "volume": [
-          251.741,
-          206.905,
           113.11,
           281.302,
           193.659,
@@ -9931,11 +9917,11 @@
           499.763,
           677.23,
           202.171,
-          142.96
+          188.515,
+          1043.764,
+          909.247
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -10033,12 +10019,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          105.68,
           106.31,
           106.31,
           106.75,
@@ -10137,10 +10124,10 @@
           109.38,
           109.02,
           108.1,
-          107.29
+          107.29,
+          107.34
         ],
         "high": [
-          106.35,
           106.44,
           106.82,
           106.92,
@@ -10239,10 +10226,10 @@
           109.42,
           109.08,
           108.13,
-          107.93
+          107.93,
+          107.34
         ],
         "low": [
-          105.25,
           105.97,
           106.15,
           106.56,
@@ -10341,10 +10328,10 @@
           108.44,
           107.96,
           107.2,
-          107.16
+          107.16,
+          106.26
         ],
         "close": [
-          106.28,
           106.4,
           106.74,
           106.7,
@@ -10443,10 +10430,10 @@
           109.0,
           108.1,
           107.32,
-          107.41
+          107.27,
+          106.47
         ],
         "volume": [
-          599.281,
           675.332,
           337.462,
           351.505,
@@ -10545,10 +10532,10 @@
           1864.068,
           1798.381,
           1210.425,
-          1022.361
+          1067.916,
+          1953.011
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -10647,7 +10634,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -10955,7 +10943,7 @@
           107.5,
           107.91,
           107.96,
-          107.16
+          106.26
         ],
         "close": [
           109.25,
@@ -11057,7 +11045,7 @@
           108.82,
           108.38,
           108.1,
-          107.41
+          106.47
         ],
         "volume": [
           2776.886,
@@ -11159,7 +11147,7 @@
           4455.541,
           4408.16,
           9491.864,
-          2232.786
+          4231.352
         ],
         "timestamp": [
           1753794000000,
@@ -11569,7 +11557,7 @@
           106.21,
           106.09,
           106.47,
-          107.16
+          106.26
         ],
         "close": [
           98.27,
@@ -11671,7 +11659,7 @@
           108.35,
           107.03,
           108.1,
-          107.42
+          106.47
         ],
         "volume": [
           11988.855,
@@ -11773,7 +11761,7 @@
           8211.818,
           10202.112,
           20282.68,
-          2233.313
+          4231.352
         ],
         "timestamp": [
           1752724800000,
@@ -12285,7 +12273,7 @@
           110.5,
           106.08,
           106.57,
-          107.42
+          106.47
         ],
         "volume": [
           78705.905,
@@ -12387,7 +12375,7 @@
           85794.788,
           51772.585,
           114427.356,
-          54009.547
+          56007.586
         ],
         "timestamp": [
           1745539200000,
@@ -12493,25 +12481,15 @@
         ]
       },
       "signals": {
-        "trend": 0.21959751844406128,
-        "momentum": 0.21959751844406128,
-        "volatility": 0.21959751844406128
+        "trend": 0.3948842197656631,
+        "momentum": 0.3948842197656631,
+        "volatility": 0.3948842197656631
       },
-      "ai_prediction": 0.43919503688812256
+      "ai_prediction": 0.7897684395313262
     },
     "XRPUSDC": {
       "1m": {
         "open": [
-          2.8816,
-          2.8845,
-          2.8831,
-          2.8749,
-          2.8755,
-          2.8784,
-          2.8763,
-          2.8743,
-          2.8785,
-          2.8836,
           2.8783,
           2.8827,
           2.8776,
@@ -12601,19 +12579,19 @@
           2.8401,
           2.8329,
           2.8344,
-          2.8353
+          2.8353,
+          2.8325,
+          2.8246,
+          2.8211,
+          2.8185,
+          2.8146,
+          2.8182,
+          2.817,
+          2.8124,
+          2.8156,
+          2.8232
         ],
         "high": [
-          2.8863,
-          2.8854,
-          2.8833,
-          2.8754,
-          2.8799,
-          2.8791,
-          2.8768,
-          2.8796,
-          2.8835,
-          2.884,
           2.8844,
           2.8832,
           2.8857,
@@ -12703,19 +12681,19 @@
           2.8401,
           2.8365,
           2.8379,
-          2.8356
+          2.8358,
+          2.8355,
+          2.8281,
+          2.8243,
+          2.8192,
+          2.8185,
+          2.822,
+          2.819,
+          2.8157,
+          2.8241,
+          2.8233
         ],
         "low": [
-          2.8808,
-          2.8816,
-          2.8738,
-          2.8713,
-          2.8755,
-          2.8744,
-          2.8722,
-          2.8712,
-          2.8781,
-          2.8785,
           2.8773,
           2.8751,
           2.8768,
@@ -12805,19 +12783,19 @@
           2.8306,
           2.8327,
           2.8344,
-          2.8348
+          2.8324,
+          2.8245,
+          2.8202,
+          2.8182,
+          2.8128,
+          2.8116,
+          2.8167,
+          2.8123,
+          2.8112,
+          2.8132,
+          2.8206
         ],
         "close": [
-          2.8848,
-          2.8838,
-          2.8744,
-          2.875,
-          2.8785,
-          2.8762,
-          2.8741,
-          2.879,
-          2.8835,
-          2.8785,
           2.8828,
           2.8781,
           2.8816,
@@ -12907,19 +12885,19 @@
           2.8324,
           2.8343,
           2.8353,
-          2.8348
+          2.8325,
+          2.8245,
+          2.8209,
+          2.8187,
+          2.8146,
+          2.8175,
+          2.817,
+          2.8123,
+          2.8155,
+          2.8233,
+          2.8213
         ],
         "volume": [
-          49600.5,
-          39922.2,
-          167052.9,
-          164021.5,
-          60789.4,
-          56158.3,
-          34609.0,
-          42485.1,
-          69671.7,
-          37156.3,
           54821.1,
           187561.7,
           50442.0,
@@ -13009,19 +12987,19 @@
           90674.0,
           34041.4,
           29485.8,
-          11204.5
+          47019.4,
+          73452.9,
+          207737.7,
+          245452.8,
+          189810.8,
+          132979.8,
+          161514.9,
+          80120.7,
+          211520.6,
+          165484.6,
+          63836.3
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -13111,13 +13089,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          2.9944,
-          2.9937,
           2.998,
           2.9901,
           2.9845,
@@ -13215,11 +13201,11 @@
           2.8356,
           2.8356,
           2.8388,
-          2.8405
+          2.8405,
+          2.8325,
+          2.8182
         ],
         "high": [
-          2.9975,
-          2.9998,
           3.0014,
           2.9904,
           2.9849,
@@ -13317,11 +13303,11 @@
           2.8443,
           2.8394,
           2.8419,
-          2.8429
+          2.8429,
+          2.8355,
+          2.8241
         ],
         "low": [
-          2.9923,
-          2.9923,
           2.9883,
           2.9834,
           2.9733,
@@ -13419,11 +13405,11 @@
           2.8298,
           2.8244,
           2.8329,
-          2.8306
+          2.8306,
+          2.8116,
+          2.8112
         ],
         "close": [
-          2.9935,
-          2.998,
           2.9904,
           2.9848,
           2.9795,
@@ -13521,11 +13507,11 @@
           2.8359,
           2.8388,
           2.84,
-          2.8355
+          2.8325,
+          2.8175,
+          2.8215
         ],
         "volume": [
-          76543.9,
-          100368.8,
           173290.7,
           95981.4,
           255329.9,
@@ -13623,11 +13609,11 @@
           273454.1,
           334312.8,
           247991.6,
-          285695.2
+          315112.0,
+          849434.0,
+          682919.1
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -13725,12 +13711,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          3.024,
           3.0498,
           3.0428,
           3.0464,
@@ -13829,10 +13816,10 @@
           2.8785,
           2.8564,
           2.8295,
-          2.8356
+          2.8356,
+          2.8325
         ],
         "high": [
-          3.05,
           3.0518,
           3.0522,
           3.0501,
@@ -13931,10 +13918,10 @@
           2.8797,
           2.8592,
           2.8443,
-          2.8429
+          2.8429,
+          2.8355
         ],
         "low": [
-          3.0213,
           3.0358,
           3.0331,
           3.0355,
@@ -14033,10 +14020,10 @@
           2.8533,
           2.8211,
           2.8269,
-          2.8244
+          2.8244,
+          2.8112
         ],
         "close": [
-          3.0498,
           3.0429,
           3.0462,
           3.0392,
@@ -14135,10 +14122,10 @@
           2.8566,
           2.8295,
           2.8359,
-          2.8355
+          2.8325,
+          2.8219
         ],
         "volume": [
-          732654.4,
           525264.1,
           638428.0,
           452117.4,
@@ -14237,10 +14224,10 @@
           1040372.0,
           3164867.9,
           1812935.1,
-          867999.6
+          897416.4,
+          1532358.7
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -14339,7 +14326,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -14647,7 +14635,7 @@
           2.9182,
           2.8712,
           2.8211,
-          2.8244
+          2.8112
         ],
         "close": [
           3.1398,
@@ -14749,7 +14737,7 @@
           2.938,
           2.8785,
           2.8295,
-          2.8355
+          2.8221
         ],
         "volume": [
           2697799.3,
@@ -14851,7 +14839,7 @@
           1483152.3,
           4312532.5,
           5508317.7,
-          2680934.7
+          4242712.2
         ],
         "timestamp": [
           1753794000000,
@@ -15261,7 +15249,7 @@
           2.9445,
           2.9298,
           2.8211,
-          2.8244
+          2.8112
         ],
         "close": [
           3.1568,
@@ -15363,7 +15351,7 @@
           2.9912,
           2.9401,
           2.8295,
-          2.8355
+          2.8225
         ],
         "volume": [
           20402292.8,
@@ -15465,7 +15453,7 @@
           5825830.8,
           5558046.0,
           12738476.4,
-          2680934.7
+          4242758.9
         ],
         "timestamp": [
           1752724800000,
@@ -15875,7 +15863,7 @@
           3.0009,
           3.0106,
           2.892,
-          2.8211
+          2.8112
         ],
         "close": [
           2.1824,
@@ -15977,7 +15965,7 @@
           3.0971,
           3.022,
           2.96,
-          2.8358
+          2.8219
         ],
         "volume": [
           33930508.0,
@@ -16079,7 +16067,7 @@
           48207990.0,
           36814734.9,
           89248343.1,
-          31256357.1
+          32821999.2
         ],
         "timestamp": [
           1745539200000,
@@ -16185,25 +16173,15 @@
         ]
       },
       "signals": {
-        "trend": 0.22276096493005754,
-        "momentum": 0.22276096493005754,
-        "volatility": 0.22276096493005754
+        "trend": 0.3951482653617859,
+        "momentum": 0.3951482653617859,
+        "volatility": 0.3951482653617859
       },
-      "ai_prediction": 0.4455219298601151
+      "ai_prediction": 0.7902965307235718
     },
     "DOGEUSDC": {
       "1m": {
         "open": [
-          0.19501,
-          0.19535,
-          0.1952,
-          0.19473,
-          0.19493,
-          0.19519,
-          0.19517,
-          0.19526,
-          0.19568,
-          0.1959,
           0.19561,
           0.19599,
           0.19576,
@@ -16293,19 +16271,19 @@
           0.19569,
           0.19488,
           0.19516,
-          0.19518
+          0.19518,
+          0.19506,
+          0.19441,
+          0.19371,
+          0.19342,
+          0.19317,
+          0.19346,
+          0.19372,
+          0.19357,
+          0.19372,
+          0.19444
         ],
         "high": [
-          0.1955,
-          0.1954,
-          0.19525,
-          0.19493,
-          0.19544,
-          0.19526,
-          0.19538,
-          0.19569,
-          0.19589,
-          0.19597,
           0.19616,
           0.19603,
           0.19594,
@@ -16395,19 +16373,19 @@
           0.19569,
           0.19525,
           0.19525,
-          0.1952
+          0.19528,
+          0.19516,
+          0.1945,
+          0.19384,
+          0.19342,
+          0.19345,
+          0.19406,
+          0.19396,
+          0.19376,
+          0.19446,
+          0.19444
         ],
         "low": [
-          0.19497,
-          0.19504,
-          0.19464,
-          0.19427,
-          0.19486,
-          0.195,
-          0.19515,
-          0.19506,
-          0.19555,
-          0.19562,
           0.19553,
           0.19554,
           0.19568,
@@ -16497,19 +16475,19 @@
           0.19475,
           0.19486,
           0.19506,
-          0.19518
+          0.19501,
+          0.19442,
+          0.19367,
+          0.19312,
+          0.19293,
+          0.19238,
+          0.19336,
+          0.19356,
+          0.19352,
+          0.19359,
+          0.19414
         ],
         "close": [
-          0.1954,
-          0.19518,
-          0.19472,
-          0.19493,
-          0.19528,
-          0.19516,
-          0.19525,
-          0.19564,
-          0.19585,
-          0.19562,
           0.19598,
           0.1958,
           0.1957,
@@ -16599,19 +16577,19 @@
           0.19475,
           0.19519,
           0.19513,
-          0.1952
+          0.19501,
+          0.19442,
+          0.19367,
+          0.19337,
+          0.19315,
+          0.19338,
+          0.1937,
+          0.19356,
+          0.19374,
+          0.19446,
+          0.19423
         ],
         "volume": [
-          33795.0,
-          63126.0,
-          215149.0,
-          105907.0,
-          571085.0,
-          89524.0,
-          52274.0,
-          54610.0,
-          137922.0,
-          134544.0,
           334099.0,
           83621.0,
           24974.0,
@@ -16701,19 +16679,19 @@
           121400.0,
           72960.0,
           106238.0,
-          2654.0
+          41018.0,
+          87318.0,
+          241006.0,
+          574436.0,
+          517789.0,
+          816741.0,
+          219222.0,
+          72630.0,
+          91783.0,
+          101705.0,
+          110714.0
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -16803,13 +16781,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          0.20034,
-          0.20024,
           0.20042,
           0.20014,
           0.1996,
@@ -16907,11 +16893,11 @@
           0.19465,
           0.19495,
           0.1952,
-          0.19522
+          0.19522,
+          0.19506,
+          0.19346
         ],
         "high": [
-          0.20058,
-          0.20055,
           0.20097,
           0.20014,
           0.1997,
@@ -17009,11 +16995,11 @@
           0.19543,
           0.19528,
           0.19538,
-          0.19571
+          0.19571,
+          0.19516,
+          0.19446
         ],
         "low": [
-          0.19997,
-          0.20008,
           0.19991,
           0.19956,
           0.19864,
@@ -17111,11 +17097,11 @@
           0.19419,
           0.19414,
           0.19463,
-          0.19475
+          0.19475,
+          0.19238,
+          0.19336
         ],
         "close": [
-          0.20022,
-          0.20042,
           0.20015,
           0.1996,
           0.19911,
@@ -17213,11 +17199,11 @@
           0.19494,
           0.19522,
           0.19521,
-          0.1952
+          0.19501,
+          0.19338,
+          0.1942
         ],
         "volume": [
-          204686.0,
-          248686.0,
           922395.0,
           436633.0,
           769710.0,
@@ -17315,11 +17301,11 @@
           637660.0,
           681078.0,
           711074.0,
-          400822.0
+          439186.0,
+          2237290.0,
+          596060.0
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -17417,12 +17403,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          0.20748,
           0.20929,
           0.2096,
           0.21141,
@@ -17521,10 +17508,10 @@
           0.19666,
           0.1956,
           0.19455,
-          0.19495
+          0.19495,
+          0.19506
         ],
         "high": [
-          0.20957,
           0.20985,
           0.2118,
           0.21248,
@@ -17623,10 +17610,10 @@
           0.19682,
           0.19571,
           0.19543,
-          0.19571
+          0.19571,
+          0.19516
         ],
         "low": [
-          0.20744,
           0.20866,
           0.20917,
           0.2109,
@@ -17725,10 +17712,10 @@
           0.1946,
           0.19364,
           0.19419,
-          0.19414
+          0.19414,
+          0.19238
         ],
         "close": [
-          0.20928,
           0.20962,
           0.21141,
           0.21188,
@@ -17827,10 +17814,10 @@
           0.19559,
           0.19454,
           0.19494,
-          0.1952
+          0.19501,
+          0.19418
         ],
         "volume": [
-          2270448.0,
           1168361.0,
           2433455.0,
           1978908.0,
@@ -17929,10 +17916,10 @@
           1889653.0,
           2946663.0,
           1972775.0,
-          1792974.0
+          1831338.0,
+          2838465.0
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -18031,7 +18018,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -18339,7 +18327,7 @@
           0.19765,
           0.19427,
           0.19364,
-          0.19414
+          0.19238
         ],
         "close": [
           0.22741,
@@ -18441,7 +18429,7 @@
           0.19938,
           0.19562,
           0.19454,
-          0.1952
+          0.19418
         ],
         "volume": [
           10038912.0,
@@ -18543,7 +18531,7 @@
           4887222.0,
           10557619.0,
           7707959.0,
-          3765749.0
+          6642578.0
         ],
         "timestamp": [
           1753794000000,
@@ -18953,7 +18941,7 @@
           0.19445,
           0.19721,
           0.19364,
-          0.19414
+          0.19238
         ],
         "close": [
           0.21211,
@@ -19055,7 +19043,7 @@
           0.20008,
           0.19965,
           0.19454,
-          0.1952
+          0.1942
         ],
         "volume": [
           41039587.0,
@@ -19157,7 +19145,7 @@
           32129970.0,
           15535381.0,
           27162848.0,
-          3765749.0
+          6645750.0
         ],
         "timestamp": [
           1752724800000,
@@ -19567,7 +19555,7 @@
           0.209,
           0.2081,
           0.19563,
-          0.19364
+          0.19238
         ],
         "close": [
           0.1817,
@@ -19669,7 +19657,7 @@
           0.22001,
           0.20971,
           0.20094,
-          0.1952
+          0.19426
         ],
         "volume": [
           134820682.0,
@@ -19771,7 +19759,7 @@
           219314012.0,
           141115242.0,
           271295022.0,
-          98538136.0
+          101421315.0
         ],
         "timestamp": [
           1745539200000,
@@ -19877,25 +19865,15 @@
         ]
       },
       "signals": {
-        "trend": 0.22312624156475064,
-        "momentum": 0.22312624156475064,
-        "volatility": 0.22312624156475064
+        "trend": 0.3961644142866135,
+        "momentum": 0.3961644142866135,
+        "volatility": 0.3961644142866135
       },
-      "ai_prediction": 0.4462524831295013
+      "ai_prediction": 0.792328828573227
     },
     "BNBUSDC": {
       "1m": {
         "open": [
-          748.57,
-          749.24,
-          748.73,
-          746.76,
-          746.84,
-          746.95,
-          746.42,
-          746.25,
-          747.45,
-          748.23,
           747.83,
           748.69,
           747.63,
@@ -19985,19 +19963,19 @@
           745.36,
           743.69,
           744.25,
-          744.44
+          744.44,
+          744.07,
+          742.99,
+          741.98,
+          741.74,
+          741.3,
+          742.37,
+          742.04,
+          741.69,
+          742.64,
+          743.8
         ],
         "high": [
-          749.31,
-          749.29,
-          748.91,
-          746.92,
-          747.04,
-          746.96,
-          746.6,
-          747.7,
-          748.15,
-          748.36,
           749.05,
           748.88,
           748.19,
@@ -20087,19 +20065,19 @@
           745.36,
           744.46,
           744.77,
-          744.56
+          744.59,
+          744.2,
+          743.36,
+          742.27,
+          741.85,
+          742.59,
+          743.31,
+          742.96,
+          742.82,
+          743.98,
+          743.8
         ],
         "low": [
-          748.53,
-          748.61,
-          746.64,
-          746.16,
-          746.55,
-          746.25,
-          745.9,
-          746.07,
-          747.45,
-          747.84,
           747.7,
           747.77,
           747.33,
@@ -20189,19 +20167,19 @@
           743.47,
           743.69,
           744.24,
-          744.38
+          743.95,
+          742.96,
+          742.0,
+          741.73,
+          741.1,
+          740.8,
+          741.88,
+          741.61,
+          741.69,
+          742.41,
+          743.12
         ],
         "close": [
-          748.96,
-          748.77,
-          746.76,
-          746.84,
-          746.92,
-          746.48,
-          746.19,
-          747.56,
-          748.08,
-          747.84,
           748.7,
           747.81,
           747.39,
@@ -20291,19 +20269,19 @@
           743.47,
           744.44,
           744.25,
-          744.56
+          743.95,
+          742.97,
+          742.0,
+          741.73,
+          741.25,
+          742.59,
+          741.92,
+          741.72,
+          742.76,
+          743.76,
+          743.12
         ],
         "volume": [
-          62.486,
-          27.417,
-          97.005,
-          51.911,
-          216.028,
-          75.783,
-          130.547,
-          67.308,
-          66.309,
-          27.979,
           30.021,
           43.285,
           45.549,
@@ -20393,19 +20371,19 @@
           18.89,
           22.045,
           11.055,
-          3.811
+          17.77,
+          22.443,
+          174.8,
+          94.367,
+          49.072,
+          254.151,
+          153.007,
+          293.427,
+          69.971,
+          56.165,
+          16.122
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -20495,13 +20473,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          758.37,
-          758.11,
           758.55,
           757.18,
           756.8,
@@ -20599,11 +20585,11 @@
           743.55,
           744.4,
           744.12,
-          744.61
+          744.61,
+          744.07,
+          742.37
         ],
         "high": [
-          758.66,
-          758.93,
           758.88,
           757.44,
           756.86,
@@ -20701,11 +20687,11 @@
           745.7,
           745.07,
           744.75,
-          745.56
+          745.56,
+          744.2,
+          743.98
         ],
         "low": [
-          757.67,
-          757.94,
           756.9,
           756.8,
           754.12,
@@ -20803,11 +20789,11 @@
           742.93,
           742.6,
           743.15,
-          743.47
+          743.47,
+          740.8,
+          741.61
         ],
         "close": [
-          758.04,
-          758.56,
           757.32,
           756.82,
           755.03,
@@ -20905,11 +20891,11 @@
           744.39,
           744.12,
           744.62,
-          744.56
+          743.95,
+          742.59,
+          743.12
         ],
         "volume": [
-          196.081,
-          242.546,
           183.545,
           164.87,
           413.933,
@@ -21007,11 +20993,11 @@
           306.228,
           292.57,
           165.56,
-          371.025
+          384.984,
+          594.833,
+          588.692
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -21109,12 +21095,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          760.06,
           763.41,
           763.79,
           767.03,
@@ -21213,10 +21200,10 @@
           748.63,
           746.36,
           743.16,
-          744.4
+          744.4,
+          744.07
         ],
         "high": [
-          764.3,
           764.3,
           767.02,
           767.79,
@@ -21315,10 +21302,10 @@
           748.63,
           746.77,
           745.7,
-          745.56
+          745.56,
+          744.2
         ],
         "low": [
-          759.09,
           761.4,
           761.57,
           765.82,
@@ -21417,10 +21404,10 @@
           744.62,
           741.21,
           742.83,
-          742.6
+          742.6,
+          740.8
         ],
         "close": [
-          763.36,
           763.8,
           766.93,
           766.96,
@@ -21519,10 +21506,10 @@
           746.23,
           743.16,
           744.39,
-          744.56
+          743.95,
+          743.12
         ],
         "volume": [
-          1051.478,
           759.717,
           790.147,
           611.194,
@@ -21621,10 +21608,10 @@
           545.393,
           1669.273,
           860.19,
-          829.155
+          843.114,
+          1183.525
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -21723,7 +21710,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -22031,7 +22019,7 @@
           751.57,
           745.9,
           741.21,
-          742.6
+          740.8
         ],
         "close": [
           815.28,
@@ -22133,7 +22121,7 @@
           754.5,
           747.84,
           743.16,
-          744.56
+          743.12
         ],
         "volume": [
           3552.762,
@@ -22235,7 +22223,7 @@
           1126.082,
           2763.69,
           3233.893,
-          1689.345
+          2886.829
         ],
         "timestamp": [
           1753794000000,
@@ -22645,7 +22633,7 @@
           750.0,
           750.55,
           741.21,
-          742.6
+          740.8
         ],
         "close": [
           721.36,
@@ -22747,7 +22735,7 @@
           758.7,
           756.21,
           743.16,
-          744.56
+          743.12
         ],
         "volume": [
           8152.056,
@@ -22849,7 +22837,7 @@
           9583.605,
           6735.349,
           8168.852,
-          1689.345
+          2886.829
         ],
         "timestamp": [
           1752724800000,
@@ -23259,7 +23247,7 @@
           765.99,
           781.63,
           744.56,
-          741.21
+          740.8
         ],
         "close": [
           600.31,
@@ -23361,7 +23349,7 @@
           793.51,
           783.24,
           756.76,
-          744.59
+          743.42
         ],
         "volume": [
           109892.772,
@@ -23463,7 +23451,7 @@
           148348.758,
           54421.832,
           106513.116,
-          34154.789
+          35352.273
         ],
         "timestamp": [
           1745539200000,
@@ -23569,25 +23557,15 @@
         ]
       },
       "signals": {
-        "trend": 0.24339689910411832,
-        "momentum": 0.24339689910411832,
-        "volatility": 0.24339689910411832
+        "trend": 0.4244893491268158,
+        "momentum": 0.4244893491268158,
+        "volatility": 0.4244893491268158
       },
-      "ai_prediction": 0.48679379820823665
+      "ai_prediction": 0.8489786982536316
     },
     "ADAUSDC": {
       "1m": {
         "open": [
-          0.703,
-          0.7037,
-          0.7036,
-          0.7015,
-          0.7017,
-          0.7027,
-          0.7022,
-          0.7018,
-          0.703,
-          0.7043,
           0.7033,
           0.7049,
           0.7037,
@@ -23677,19 +23655,19 @@
           0.6999,
           0.6978,
           0.6979,
-          0.6979
+          0.698,
+          0.6973,
+          0.6958,
+          0.6943,
+          0.6938,
+          0.6932,
+          0.6933,
+          0.6924,
+          0.6915,
+          0.6919,
+          0.6943
         ],
         "high": [
-          0.7042,
-          0.7042,
-          0.7036,
-          0.7017,
-          0.7029,
-          0.7029,
-          0.7023,
-          0.7032,
-          0.7042,
-          0.7045,
           0.7054,
           0.7049,
           0.7045,
@@ -23779,19 +23757,19 @@
           0.6999,
           0.6984,
           0.6984,
-          0.6979
+          0.698,
+          0.6975,
+          0.6961,
+          0.6947,
+          0.6942,
+          0.6936,
+          0.6939,
+          0.6929,
+          0.6922,
+          0.6944,
+          0.6947
         ],
         "low": [
-          0.703,
-          0.703,
-          0.7015,
-          0.7002,
-          0.7017,
-          0.7016,
-          0.7013,
-          0.7012,
-          0.703,
-          0.7034,
           0.7032,
           0.7034,
           0.7037,
@@ -23881,19 +23859,19 @@
           0.6976,
           0.6976,
           0.6977,
-          0.6979
+          0.6973,
+          0.6958,
+          0.6942,
+          0.6934,
+          0.6926,
+          0.6918,
+          0.6921,
+          0.6915,
+          0.6913,
+          0.6915,
+          0.6939
         ],
         "close": [
-          0.7038,
-          0.7034,
-          0.7016,
-          0.7016,
-          0.7029,
-          0.7023,
-          0.702,
-          0.7028,
-          0.7042,
-          0.7034,
           0.7051,
           0.704,
           0.7042,
@@ -23983,19 +23961,19 @@
           0.6977,
           0.6977,
           0.6979,
-          0.6979
+          0.6973,
+          0.6958,
+          0.6942,
+          0.6938,
+          0.6933,
+          0.6934,
+          0.6924,
+          0.6915,
+          0.692,
+          0.6944,
+          0.6945
         ],
         "volume": [
-          159282.0,
-          44752.7,
-          238961.1,
-          68400.4,
-          51143.5,
-          12838.7,
-          46463.4,
-          8022.5,
-          19532.0,
-          20759.3,
           14787.8,
           23325.7,
           29922.5,
@@ -24085,19 +24063,19 @@
           14360.5,
           24102.1,
           53527.6,
-          0.0
+          78810.1,
+          36238.4,
+          187347.9,
+          126077.5,
+          56335.4,
+          104476.1,
+          120763.4,
+          34033.7,
+          61534.2,
+          24235.5,
+          33341.8
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -24187,13 +24165,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          0.7223,
-          0.7226,
           0.723,
           0.7212,
           0.7184,
@@ -24291,11 +24277,11 @@
           0.6979,
           0.6984,
           0.6992,
-          0.6991
+          0.6991,
+          0.6973,
+          0.6933
         ],
         "high": [
-          0.7229,
-          0.7237,
           0.724,
           0.7212,
           0.7186,
@@ -24393,11 +24379,11 @@
           0.7002,
           0.6991,
           0.6997,
-          0.7003
+          0.7003,
+          0.6975,
+          0.6947
         ],
         "low": [
-          0.7218,
-          0.7222,
           0.7207,
           0.7185,
           0.7149,
@@ -24495,11 +24481,11 @@
           0.6966,
           0.6956,
           0.6973,
-          0.6976
+          0.6973,
+          0.6918,
+          0.6913
         ],
         "close": [
-          0.7223,
-          0.7229,
           0.7213,
           0.7185,
           0.7164,
@@ -24597,11 +24583,11 @@
           0.6983,
           0.6989,
           0.6993,
-          0.698
+          0.6973,
+          0.6934,
+          0.6945
         ],
         "volume": [
-          49861.0,
-          28751.7,
           30912.9,
           61159.6,
           173901.4,
@@ -24699,11 +24685,11 @@
           93381.2,
           180965.2,
           88686.3,
-          109860.9
+          188299.7,
+          510475.3,
+          273908.6
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -24801,12 +24787,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          0.7296,
           0.7353,
           0.7329,
           0.7359,
@@ -24905,10 +24892,10 @@
           0.7046,
           0.7014,
           0.699,
-          0.6984
+          0.6984,
+          0.6973
         ],
         "high": [
-          0.7357,
           0.736,
           0.7368,
           0.738,
@@ -25007,10 +24994,10 @@
           0.7047,
           0.7018,
           0.7008,
-          0.7003
+          0.7003,
+          0.6975
         ],
         "low": [
-          0.7276,
           0.7319,
           0.7312,
           0.7342,
@@ -25109,10 +25096,10 @@
           0.6987,
           0.6965,
           0.6966,
-          0.6956
+          0.6956,
+          0.6913
         ],
         "close": [
-          0.7351,
           0.7333,
           0.7358,
           0.7364,
@@ -25211,10 +25198,10 @@
           0.7012,
           0.6993,
           0.6983,
-          0.698
+          0.6973,
+          0.6944
         ],
         "volume": [
-          499334.3,
           886092.5,
           599341.0,
           286279.6,
@@ -25313,10 +25300,10 @@
           539512.6,
           711701.7,
           1154741.2,
-          379512.4
+          457951.2,
+          784394.2
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -25415,7 +25402,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -25723,7 +25711,7 @@
           0.7085,
           0.7002,
           0.6965,
-          0.6956
+          0.6913
         ],
         "close": [
           0.7923,
@@ -25825,7 +25813,7 @@
           0.7153,
           0.7034,
           0.6993,
-          0.698
+          0.6943
         ],
         "volume": [
           1421886.5,
@@ -25927,7 +25915,7 @@
           1864976.9,
           2687889.4,
           2167662.9,
-          1534253.6
+          2397103.8
         ],
         "timestamp": [
           1753794000000,
@@ -26337,7 +26325,7 @@
           0.7057,
           0.7065,
           0.6965,
-          0.6956
+          0.6913
         ],
         "close": [
           0.7735,
@@ -26439,7 +26427,7 @@
           0.7227,
           0.7148,
           0.6993,
-          0.698
+          0.6943
         ],
         "volume": [
           10133294.2,
@@ -26541,7 +26529,7 @@
           3096349.2,
           4818160.4,
           7987817.5,
-          1534253.6
+          2397128.8
         ],
         "timestamp": [
           1752724800000,
@@ -26951,7 +26939,7 @@
           0.7303,
           0.7356,
           0.696,
-          0.6956
+          0.6913
         ],
         "close": [
           0.7138,
@@ -27053,7 +27041,7 @@
           0.7634,
           0.7393,
           0.7138,
-          0.698
+          0.6943
         ],
         "volume": [
           41753612.9,
@@ -27155,7 +27143,7 @@
           41456531.5,
           34950946.0,
           57780056.0,
-          20635170.0
+          21498045.2
         ],
         "timestamp": [
           1745539200000,
@@ -27261,25 +27249,15 @@
         ]
       },
       "signals": {
-        "trend": 0.20788614600896832,
-        "momentum": 0.20788614600896832,
-        "volatility": 0.20788614600896832
+        "trend": 0.3938252627849579,
+        "momentum": 0.3938252627849579,
+        "volatility": 0.3938252627849579
       },
-      "ai_prediction": 0.41577229201793664
+      "ai_prediction": 0.7876505255699158
     },
     "SOLUSDC": {
       "1m": {
         "open": [
-          162.8,
-          162.92,
-          162.86,
-          162.53,
-          162.54,
-          162.6,
-          162.54,
-          162.49,
-          162.58,
-          162.81,
           162.64,
           163.04,
           162.92,
@@ -27369,19 +27347,19 @@
           161.7,
           161.22,
           161.36,
-          161.31
+          161.31,
+          161.19,
+          160.75,
+          160.5,
+          160.5,
+          160.31,
+          160.5,
+          160.34,
+          160.19,
+          160.26,
+          160.54
         ],
         "high": [
-          163.01,
-          162.97,
-          162.89,
-          162.55,
-          162.67,
-          162.65,
-          162.61,
-          162.64,
-          162.8,
-          162.82,
           163.2,
           163.08,
           163.05,
@@ -27471,19 +27449,19 @@
           161.7,
           161.38,
           161.44,
-          161.34
+          161.34,
+          161.19,
+          160.84,
+          160.59,
+          160.53,
+          160.54,
+          160.76,
+          160.43,
+          160.34,
+          160.54,
+          160.54
         ],
         "low": [
-          162.77,
-          162.79,
-          162.54,
-          162.23,
-          162.49,
-          162.48,
-          162.42,
-          162.33,
-          162.58,
-          162.65,
           162.59,
           162.81,
           162.91,
@@ -27573,19 +27551,19 @@
           161.14,
           161.22,
           161.29,
-          161.29
+          161.16,
+          160.74,
+          160.51,
+          160.37,
+          160.2,
+          160.16,
+          160.3,
+          160.17,
+          160.16,
+          160.26,
+          160.41
         ],
         "close": [
-          162.94,
-          162.88,
-          162.54,
-          162.52,
-          162.62,
-          162.55,
-          162.48,
-          162.63,
-          162.8,
-          162.65,
           163.06,
           162.95,
           162.92,
@@ -27675,19 +27653,19 @@
           161.21,
           161.33,
           161.32,
-          161.31
+          161.17,
+          160.76,
+          160.51,
+          160.5,
+          160.33,
+          160.49,
+          160.3,
+          160.17,
+          160.34,
+          160.54,
+          160.5
         ],
         "volume": [
-          280.341,
-          352.714,
-          701.915,
-          693.93,
-          1059.552,
-          489.414,
-          183.084,
-          180.963,
-          160.826,
-          290.272,
           766.346,
           312.831,
           208.739,
@@ -27777,19 +27755,19 @@
           1114.067,
           442.499,
           59.049,
-          258.407
+          310.546,
+          714.837,
+          1731.358,
+          3074.956,
+          1168.014,
+          1350.595,
+          1085.708,
+          746.849,
+          1122.142,
+          367.061,
+          514.449
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -27879,13 +27857,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          164.56,
-          164.51,
           164.69,
           164.35,
           164.05,
@@ -27983,11 +27969,11 @@
           161.4,
           161.44,
           161.43,
-          161.49
+          161.49,
+          161.19,
+          160.5
         ],
         "high": [
-          164.66,
-          164.76,
           164.8,
           164.35,
           164.1,
@@ -28085,11 +28071,11 @@
           161.85,
           161.62,
           161.5,
-          161.71
+          161.71,
+          161.19,
+          160.76
         ],
         "low": [
-          164.41,
-          164.41,
           164.28,
           164.04,
           163.61,
@@ -28187,11 +28173,11 @@
           161.11,
           160.85,
           161.04,
-          161.14
+          161.14,
+          160.16,
+          160.16
         ],
         "close": [
-          164.5,
-          164.67,
           164.36,
           164.06,
           163.96,
@@ -28289,11 +28275,11 @@
           161.4,
           161.41,
           161.5,
-          161.29
+          161.17,
+          160.49,
+          160.45
         ],
         "volume": [
-          689.329,
-          849.081,
           594.78,
           2455.998,
           1453.309,
@@ -28391,11 +28377,11 @@
           2094.201,
           3254.23,
           1621.175,
-          2920.926
+          2962.244,
+          8039.76,
+          3839.904
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -28493,12 +28479,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          167.64,
           168.81,
           168.53,
           169.44,
@@ -28597,10 +28584,10 @@
           163.14,
           162.0,
           161.5,
-          161.44
+          161.44,
+          161.19
         ],
         "high": [
-          168.86,
           168.99,
           169.43,
           169.72,
@@ -28699,10 +28686,10 @@
           163.16,
           162.04,
           162.04,
-          161.71
+          161.71,
+          161.19
         ],
         "low": [
-          167.14,
           168.29,
           168.17,
           169.13,
@@ -28801,10 +28788,10 @@
           161.84,
           161.0,
           161.11,
-          160.85
+          160.85,
+          160.16
         ],
         "close": [
-          168.83,
           168.53,
           169.43,
           169.4,
@@ -28903,10 +28890,10 @@
           161.94,
           161.49,
           161.4,
-          161.29
+          161.17,
+          160.45
         ],
         "volume": [
-          13413.342,
           4212.521,
           14661.711,
           4977.229,
@@ -29005,10 +28992,10 @@
           10315.885,
           13170.616,
           7720.839,
-          7796.331
+          7837.649,
+          11879.664
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -29107,7 +29094,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -29415,7 +29403,7 @@
           163.59,
           162.23,
           161.0,
-          160.85
+          160.16
         ],
         "close": [
           182.69,
@@ -29517,7 +29505,7 @@
           164.4,
           162.65,
           161.49,
-          161.29
+          160.45
         ],
         "volume": [
           67740.363,
@@ -29619,7 +29607,7 @@
           11043.549,
           27012.425,
           33799.472,
-          15517.17
+          27438.152
         ],
         "timestamp": [
           1753794000000,
@@ -30029,7 +30017,7 @@
           161.78,
           162.21,
           161.0,
-          160.85
+          160.16
         ],
         "close": [
           174.09,
@@ -30131,7 +30119,7 @@
           164.39,
           164.49,
           161.49,
-          161.29
+          160.45
         ],
         "volume": [
           106998.339,
@@ -30233,7 +30221,7 @@
           58738.696,
           60522.784,
           84989.26,
-          15517.17
+          27438.152
         ],
         "timestamp": [
           1752724800000,
@@ -30643,7 +30631,7 @@
           170.22,
           171.43,
           159.17,
-          160.85
+          160.16
         ],
         "close": [
           150.94,
@@ -30745,7 +30733,7 @@
           177.77,
           172.22,
           162.66,
-          161.29
+          160.45
         ],
         "volume": [
           3437164.018,
@@ -30847,7 +30835,7 @@
           809168.77,
           613613.6,
           1236946.052,
-          280890.616
+          292811.598
         ],
         "timestamp": [
           1745539200000,
@@ -30953,25 +30941,15 @@
         ]
       },
       "signals": {
-        "trend": 0.21287849992513658,
-        "momentum": 0.21287849992513658,
-        "volatility": 0.21287849992513658
+        "trend": 0.39518865346908566,
+        "momentum": 0.39518865346908566,
+        "volatility": 0.39518865346908566
       },
-      "ai_prediction": 0.42575699985027315
+      "ai_prediction": 0.7903773069381713
     },
     "TRXUSDC": {
       "1m": {
         "open": [
-          0.3259,
-          0.326,
-          0.326,
-          0.3258,
-          0.3258,
-          0.3259,
-          0.3258,
-          0.3257,
-          0.326,
-          0.326,
           0.3257,
           0.3256,
           0.3255,
@@ -31061,19 +31039,19 @@
           0.3218,
           0.3216,
           0.3214,
-          0.3214
+          0.3214,
+          0.3212,
+          0.3208,
+          0.3208,
+          0.321,
+          0.3208,
+          0.3211,
+          0.3211,
+          0.3211,
+          0.321,
+          0.3213
         ],
         "high": [
-          0.326,
-          0.326,
-          0.326,
-          0.3258,
-          0.3258,
-          0.3259,
-          0.3259,
-          0.3258,
-          0.326,
-          0.3261,
           0.3259,
           0.3257,
           0.3257,
@@ -31163,19 +31141,19 @@
           0.3218,
           0.3217,
           0.3215,
-          0.3214
+          0.3214,
+          0.3212,
+          0.321,
+          0.321,
+          0.321,
+          0.321,
+          0.3211,
+          0.3212,
+          0.3211,
+          0.3213,
+          0.3215
         ],
         "low": [
-          0.3259,
-          0.326,
-          0.3257,
-          0.3256,
-          0.3257,
-          0.3257,
-          0.3257,
-          0.3257,
-          0.326,
-          0.3259,
           0.3256,
           0.3254,
           0.3255,
@@ -31265,19 +31243,19 @@
           0.3215,
           0.3214,
           0.3214,
-          0.3214
+          0.3211,
+          0.3208,
+          0.3206,
+          0.3207,
+          0.3209,
+          0.3208,
+          0.321,
+          0.321,
+          0.3209,
+          0.3209,
+          0.3213
         ],
         "close": [
-          0.326,
-          0.326,
-          0.3258,
-          0.3257,
-          0.3258,
-          0.3258,
-          0.3258,
-          0.3258,
-          0.326,
-          0.3259,
           0.3256,
           0.3255,
           0.3257,
@@ -31367,19 +31345,19 @@
           0.3215,
           0.3214,
           0.3215,
+          0.3211,
+          0.3208,
+          0.3207,
+          0.3209,
+          0.3209,
+          0.321,
+          0.321,
+          0.3211,
+          0.3209,
+          0.3213,
           0.3214
         ],
         "volume": [
-          5709.5,
-          3999.9,
-          31667.7,
-          7863.1,
-          6785.6,
-          11243.9,
-          15979.3,
-          2379.3,
-          1240.7,
-          18378.3,
           14686.3,
           45127.8,
           5975.9,
@@ -31469,19 +31447,19 @@
           22069.2,
           16177.7,
           1973.8,
-          676.6
+          4574.5,
+          18798.8,
+          55655.1,
+          7511.8,
+          6099.5,
+          3802.4,
+          16852.0,
+          5753.4,
+          83170.4,
+          7258.0,
+          19087.5
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -31571,13 +31549,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          0.3279,
-          0.3279,
           0.3281,
           0.3272,
           0.3272,
@@ -31675,11 +31661,11 @@
           0.3222,
           0.3215,
           0.3214,
-          0.3218
+          0.3218,
+          0.3212,
+          0.3211
         ],
         "high": [
-          0.3281,
-          0.3282,
           0.3281,
           0.3275,
           0.3272,
@@ -31777,11 +31763,11 @@
           0.3223,
           0.3215,
           0.3219,
-          0.322
+          0.322,
+          0.3212,
+          0.3215
         ],
         "low": [
-          0.3277,
-          0.3279,
           0.3272,
           0.3271,
           0.3268,
@@ -31879,11 +31865,11 @@
           0.3213,
           0.3208,
           0.3212,
-          0.3214
+          0.3211,
+          0.3206,
+          0.3209
         ],
         "close": [
-          0.3278,
-          0.3281,
           0.3273,
           0.3273,
           0.3269,
@@ -31981,11 +31967,11 @@
           0.3214,
           0.3214,
           0.3217,
+          0.3211,
+          0.321,
           0.3214
         ],
         "volume": [
-          48608.7,
-          18023.7,
           122695.8,
           19099.9,
           33963.2,
@@ -32083,11 +32069,11 @@
           88517.2,
           132614.4,
           65011.9,
-          59859.8
+          63757.7,
+          91867.6,
+          132121.3
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -32185,12 +32171,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          0.3267,
           0.3272,
           0.3268,
           0.3276,
@@ -32289,10 +32276,10 @@
           0.3259,
           0.324,
           0.3227,
-          0.3215
+          0.3215,
+          0.3212
         ],
         "high": [
-          0.3273,
           0.3273,
           0.3278,
           0.328,
@@ -32391,10 +32378,10 @@
           0.3259,
           0.324,
           0.3228,
-          0.322
+          0.322,
+          0.3215
         ],
         "low": [
-          0.3264,
           0.3264,
           0.3268,
           0.327,
@@ -32493,10 +32480,10 @@
           0.324,
           0.3225,
           0.3213,
-          0.3208
+          0.3208,
+          0.3206
         ],
         "close": [
-          0.3272,
           0.3269,
           0.3276,
           0.3271,
@@ -32595,10 +32582,10 @@
           0.324,
           0.3225,
           0.3214,
+          0.3211,
           0.3214
         ],
         "volume": [
-          106566.0,
           132923.7,
           177610.2,
           188801.4,
@@ -32697,10 +32684,10 @@
           441323.7,
           478603.7,
           238172.7,
-          257486.1
+          261384.0,
+          223988.9
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -32799,7 +32786,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -33107,7 +33095,7 @@
           0.3261,
           0.3256,
           0.3225,
-          0.3208
+          0.3206
         ],
         "close": [
           0.3385,
@@ -33311,7 +33299,7 @@
           647048.2,
           601249.0,
           1207676.0,
-          495658.8
+          723545.6
         ],
         "timestamp": [
           1753794000000,
@@ -33721,7 +33709,7 @@
           0.3249,
           0.3255,
           0.3225,
-          0.3208
+          0.3206
         ],
         "close": [
           0.3116,
@@ -33925,7 +33913,7 @@
           2398992.7,
           2275895.9,
           2639199.7,
-          495658.8
+          723545.6
         ],
         "timestamp": [
           1752724800000,
@@ -34335,7 +34323,7 @@
           0.3205,
           0.3241,
           0.3212,
-          0.3208
+          0.3206
         ],
         "close": [
           0.2421,
@@ -34539,7 +34527,7 @@
           27120344.6,
           14824146.3,
           22480244.6,
-          9799811.9
+          10027698.7
         ],
         "timestamp": [
           1745539200000,
@@ -34645,25 +34633,15 @@
         ]
       },
       "signals": {
-        "trend": 0.2221695065498352,
-        "momentum": 0.2221695065498352,
-        "volatility": 0.2221695065498352
+        "trend": 0.3938966304063797,
+        "momentum": 0.3938966304063797,
+        "volatility": 0.3938966304063797
       },
-      "ai_prediction": 0.4443390130996704
+      "ai_prediction": 0.7877932608127594
     },
     "SUIUSDC": {
       "1m": {
         "open": [
-          3.3804,
-          3.384,
-          3.3819,
-          3.3721,
-          3.3727,
-          3.3773,
-          3.3722,
-          3.3711,
-          3.3758,
-          3.3801,
           3.3773,
           3.3856,
           3.381,
@@ -34753,19 +34731,19 @@
           3.3562,
           3.3451,
           3.348,
-          3.3508
+          3.3508,
+          3.3472,
+          3.3374,
+          3.3312,
+          3.3287,
+          3.3233,
+          3.3257,
+          3.3256,
+          3.326,
+          3.332,
+          3.3404
         ],
         "high": [
-          3.3863,
-          3.3863,
-          3.3823,
-          3.3727,
-          3.3788,
-          3.3783,
-          3.3746,
-          3.3775,
-          3.38,
-          3.3818,
           3.3876,
           3.3857,
           3.3846,
@@ -34855,19 +34833,19 @@
           3.3562,
           3.3488,
           3.3513,
-          3.3514
+          3.3514,
+          3.3478,
+          3.338,
+          3.3327,
+          3.33,
+          3.3268,
+          3.3308,
+          3.3336,
+          3.3328,
+          3.3404,
+          3.3404
         ],
         "low": [
-          3.3799,
-          3.3786,
-          3.3721,
-          3.3663,
-          3.3718,
-          3.3704,
-          3.3691,
-          3.3678,
-          3.3756,
-          3.3773,
           3.3769,
           3.378,
           3.3795,
@@ -34957,19 +34935,19 @@
           3.3428,
           3.3444,
           3.348,
-          3.3496
+          3.3462,
+          3.3375,
+          3.3288,
+          3.3257,
+          3.3221,
+          3.318,
+          3.3236,
+          3.3256,
+          3.3253,
+          3.3297,
+          3.336
         ],
         "close": [
-          3.3841,
-          3.3804,
-          3.3721,
-          3.3727,
-          3.3777,
-          3.3721,
-          3.3711,
-          3.375,
-          3.38,
-          3.3782,
           3.3856,
           3.3812,
           3.38,
@@ -35059,19 +35037,19 @@
           3.3442,
           3.3471,
           3.3493,
-          3.35
+          3.3467,
+          3.3375,
+          3.3318,
+          3.3281,
+          3.3231,
+          3.3255,
+          3.3248,
+          3.3259,
+          3.3328,
+          3.3404,
+          3.3377
         ],
         "volume": [
-          48069.9,
-          12679.6,
-          18518.4,
-          65211.8,
-          32580.5,
-          7808.5,
-          4551.7,
-          11117.8,
-          8192.8,
-          19448.4,
           24671.5,
           16529.9,
           9708.4,
@@ -35161,19 +35139,19 @@
           29377.2,
           14389.3,
           16024.9,
-          2474.8
+          7128.0,
+          29382.5,
+          59243.5,
+          77657.5,
+          34208.0,
+          97887.4,
+          59827.7,
+          19371.2,
+          18415.5,
+          29901.0,
+          10593.6
         ],
         "timestamp": [
-          1754146200000,
-          1754146260000,
-          1754146320000,
-          1754146380000,
-          1754146440000,
-          1754146500000,
-          1754146560000,
-          1754146620000,
-          1754146680000,
-          1754146740000,
           1754146800000,
           1754146860000,
           1754146920000,
@@ -35263,13 +35241,21 @@
           1754151960000,
           1754152020000,
           1754152080000,
-          1754152140000
+          1754152140000,
+          1754152200000,
+          1754152260000,
+          1754152320000,
+          1754152380000,
+          1754152440000,
+          1754152500000,
+          1754152560000,
+          1754152620000,
+          1754152680000,
+          1754152740000
         ]
       },
       "5m": {
         "open": [
-          3.4996,
-          3.5012,
           3.5093,
           3.4979,
           3.4763,
@@ -35367,11 +35353,11 @@
           3.3571,
           3.3533,
           3.3444,
-          3.3498
+          3.3498,
+          3.3472,
+          3.3257
         ],
         "high": [
-          3.5043,
-          3.5107,
           3.5135,
           3.4979,
           3.4777,
@@ -35469,11 +35455,11 @@
           3.3683,
           3.3585,
           3.3523,
-          3.3576
+          3.3576,
+          3.3478,
+          3.3404
         ],
         "low": [
-          3.4942,
-          3.5008,
           3.496,
           3.4761,
           3.4622,
@@ -35571,11 +35557,11 @@
           3.3496,
           3.3357,
           3.3376,
-          3.3428
+          3.3428,
+          3.318,
+          3.3236
         ],
         "close": [
-          3.5001,
-          3.5092,
           3.498,
           3.4762,
           3.47,
@@ -35673,11 +35659,11 @@
           3.3532,
           3.3433,
           3.3502,
-          3.35
+          3.3467,
+          3.3255,
+          3.3384
         ],
         "volume": [
-          61928.3,
-          77731.6,
           90162.5,
           241625.9,
           265805.5,
@@ -35775,11 +35761,11 @@
           157085.2,
           288500.9,
           89909.6,
-          84640.8
+          89294.0,
+          298378.9,
+          138267.8
         ],
         "timestamp": [
-          1754122200000,
-          1754122500000,
           1754122800000,
           1754123100000,
           1754123400000,
@@ -35877,12 +35863,13 @@
           1754151000000,
           1754151300000,
           1754151600000,
-          1754151900000
+          1754151900000,
+          1754152200000,
+          1754152500000
         ]
       },
       "15m": {
         "open": [
-          3.5063,
           3.5454,
           3.5468,
           3.5796,
@@ -35981,10 +35968,10 @@
           3.397,
           3.3849,
           3.3612,
-          3.3533
+          3.3533,
+          3.3472
         ],
         "high": [
-          3.5504,
           3.5542,
           3.5935,
           3.5964,
@@ -36083,10 +36070,10 @@
           3.3993,
           3.3878,
           3.3767,
-          3.3585
+          3.3585,
+          3.3478
         ],
         "low": [
-          3.5033,
           3.5358,
           3.5427,
           3.572,
@@ -36185,10 +36172,10 @@
           3.3689,
           3.3482,
           3.3496,
-          3.3357
+          3.3357,
+          3.318
         ],
         "close": [
-          3.5454,
           3.5475,
           3.5801,
           3.5817,
@@ -36287,10 +36274,10 @@
           3.3843,
           3.3611,
           3.3532,
-          3.3499
+          3.3467,
+          3.3384
         ],
         "volume": [
-          925872.2,
           318075.6,
           835003.1,
           537033.6,
@@ -36389,10 +36376,10 @@
           391168.0,
           683633.6,
           531572.6,
-          463707.2
+          467704.5,
+          436704.0
         ],
         "timestamp": [
-          1754062200000,
           1754063100000,
           1754064000000,
           1754064900000,
@@ -36491,7 +36478,8 @@
           1754148600000,
           1754149500000,
           1754150400000,
-          1754151300000
+          1754151300000,
+          1754152200000
         ]
       },
       "1h": {
@@ -36799,7 +36787,7 @@
           3.3926,
           3.364,
           3.3482,
-          3.3357
+          3.318
         ],
         "close": [
           3.8491,
@@ -36901,7 +36889,7 @@
           3.4329,
           3.3782,
           3.3611,
-          3.3499
+          3.3384
         ],
         "volume": [
           2366158.4,
@@ -37003,7 +36991,7 @@
           1079236.5,
           1754069.6,
           1516614.4,
-          995279.8
+          1435981.1
         ],
         "timestamp": [
           1753794000000,
@@ -37413,7 +37401,7 @@
           3.4273,
           3.3852,
           3.3482,
-          3.3357
+          3.318
         ],
         "close": [
           4.0044,
@@ -37515,7 +37503,7 @@
           3.5084,
           3.4202,
           3.3611,
-          3.3499
+          3.3384
         ],
         "volume": [
           4391503.5,
@@ -37617,7 +37605,7 @@
           4031964.4,
           5051024.6,
           5235611.3,
-          995279.8
+          1435981.1
         ],
         "timestamp": [
           1752724800000,
@@ -38027,7 +38015,7 @@
           3.6208,
           3.5879,
           3.3542,
-          3.3357
+          3.318
         ],
         "close": [
           3.5218,
@@ -38129,7 +38117,7 @@
           3.7582,
           3.6141,
           3.4579,
-          3.3499
+          3.3384
         ],
         "volume": [
           62645649.9,
@@ -38231,7 +38219,7 @@
           35850182.2,
           36896316.9,
           63569213.8,
-          17731256.5
+          18171957.8
         ],
         "timestamp": [
           1745539200000,
@@ -38337,96 +38325,96 @@
         ]
       },
       "signals": {
-        "trend": 0.22562375366687776,
-        "momentum": 0.22562375366687776,
-        "volatility": 0.22562375366687776
+        "trend": 0.394011577963829,
+        "momentum": 0.394011577963829,
+        "volatility": 0.394011577963829
       },
-      "ai_prediction": 0.4512475073337555
+      "ai_prediction": 0.788023155927658
     }
   },
   "indicators": {
     "1m | BTC/USDC": {
       "trend": {
-        "trend_strength": 0.0005449622722160097
+        "trend_strength": 6.273572063508759e-05
       },
       "volatility": {
-        "current_volatility": 0.007929510123899797
+        "current_volatility": 0.005780417262394341
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.2278815951711662
+          "strength": 0.3756488363980483
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 112886.34949999994,
-        "sma_50": 113048.99760000006,
-        "ema_20": 112913.52348228925,
-        "rsi_14": 47.03799837239103,
-        "macd": -61.717719991720514,
-        "macd_signal": -81.95071085570852,
-        "macd_hist": 20.232990863988007,
-        "bb_lower": 112690.17292717219,
-        "bb_upper": 113082.52607282769,
-        "donchian_high": 113048.0,
+        "sma_20": 112876.22349999996,
+        "sma_50": 113040.27600000006,
+        "ema_20": 112942.89675663576,
+        "rsi_14": 56.84939344465671,
+        "macd": -12.522990192679572,
+        "macd_signal": -46.60316571173759,
+        "macd_hist": 34.08017551905802,
+        "bb_lower": 112700.10206036952,
+        "bb_upper": 113052.3449396304,
+        "donchian_high": 113045.2,
         "donchian_low": 112731.73,
-        "psar": 112755.1081515008,
-        "momentum_10": -0.41999999999825377,
-        "zscore_20": 0.193572988415924,
-        "vwma_20": 112829.69481954447,
-        "obv": -421.66951000000023,
-        "vwap": 113159.57548633112,
-        "stochrsi": 97.87935955496351,
+        "psar": 112816.800116885,
+        "momentum_10": 240.34999999999127,
+        "zscore_20": 1.8702767796892967,
+        "vwma_20": 112836.31977246751,
+        "obv": -421.16829000000024,
+        "vwap": 113155.72929141547,
+        "stochrsi": 99.99883167366245,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | BTC/USDC": {
       "trend": {
-        "trend_strength": -0.0011997789107026646
+        "trend_strength": -0.0011479686304199932
       },
       "volatility": {
-        "current_volatility": 0.010663700928005638
+        "current_volatility": 0.010575070392597816
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6143782001382797
+          "strength": 0.5052448542968767
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 113032.99499999997,
-        "sma_50": 113270.51060000008,
-        "ema_20": 113001.38089544274,
-        "rsi_14": 40.89143642776908,
-        "macd": -120.79847400488507,
-        "macd_signal": -121.99725824139911,
-        "macd_hist": 1.1987842365140438,
-        "bb_lower": 112672.51661448984,
-        "bb_upper": 113393.4733855101,
+        "sma_20": 113019.60899999997,
+        "sma_50": 113242.62240000005,
+        "ema_20": 113000.29973527172,
+        "rsi_14": 46.616643866310845,
+        "macd": -94.37437507190043,
+        "macd_signal": -114.0282858198286,
+        "macd_hist": 19.653910747928165,
+        "bb_lower": 112666.1705595957,
+        "bb_upper": 113373.04744040423,
         "donchian_high": 113361.59,
         "donchian_low": 112707.52,
-        "psar": 113024.1613865219,
-        "momentum_10": -129.47000000000116,
-        "zscore_20": -0.6876701365865863,
-        "vwma_20": 112936.03522458159,
-        "obv": -1421.4773300000002,
-        "vwap": 113279.35450889201,
-        "stochrsi": 58.42606807116932,
+        "psar": 112713.265,
+        "momentum_10": 29.189999999987776,
+        "zscore_20": -0.13015822472909627,
+        "vwma_20": 112926.0609577038,
+        "obv": -1416.7973900000002,
+        "vwap": 113273.2902252975,
+        "stochrsi": 86.79114215533328,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | BTC/USDC": {
       "trend": {
-        "trend_strength": -0.0021935470998107887
+        "trend_strength": -0.002159071438347371
       },
       "volatility": {
-        "current_volatility": 0.0174471754454778
+        "current_volatility": 0.017763541711216316
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.3745927670968794
+          "strength": 0.7340249089132285
         }
       },
       "dominant_signal": "NEUTRE",
@@ -38455,17 +38443,17 @@
     },
     "1h | BTC/USDC": {
       "trend": {
-        "trend_strength": -0.0010132906008664122
+        "trend_strength": -0.0009815605851801745
       },
       "volatility": {
-        "current_volatility": 0.039092189455872485
+        "current_volatility": 0.03941750716906216
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.670367421796276
+          "strength": 0.8254089549957474
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
         "sma_20": 113623.16250000006,
         "sma_50": 114820.7572,
@@ -38491,14 +38479,14 @@
     },
     "4h | BTC/USDC": {
       "trend": {
-        "trend_strength": -0.015215079247964391
+        "trend_strength": -0.01518349692689791
       },
       "volatility": {
-        "current_volatility": 0.10231528255850572
+        "current_volatility": 0.10259593623135806
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.08963606768324298
+          "strength": 0.11113920101922975
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38527,14 +38515,14 @@
     },
     "1d | BTC/USDC": {
       "trend": {
-        "trend_strength": -0.0067314761258672196
+        "trend_strength": -0.006700691303684336
       },
       "volatility": {
-        "current_volatility": 0.16653787208697013
+        "current_volatility": 0.16655924638027034
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.3347510883827826
+          "strength": 0.33874539941932374
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38563,86 +38551,86 @@
     },
     "1m | ETH/USDC": {
       "trend": {
-        "trend_strength": -0.00026188369698665337
+        "trend_strength": -0.001405804089034346
       },
       "volatility": {
-        "current_volatility": 0.025516455316882417
+        "current_volatility": 0.01990957922217218
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.0
+          "strength": 0.39489646060371825
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 3455.7355,
-        "sma_50": 3470.177999999998,
-        "ema_20": 3456.5884078272334,
-        "rsi_14": 36.57091618767936,
-        "macd": -7.1776438745087034,
-        "macd_signal": -7.404057559846442,
-        "macd_hist": 0.22641368533773853,
-        "bb_lower": 3441.3890475106673,
-        "bb_upper": 3470.0819524893323,
-        "donchian_high": 3470.91,
-        "donchian_low": 3446.89,
-        "psar": 3481.5278771442663,
-        "momentum_10": -7.940000000000055,
-        "zscore_20": -0.9967287728623473,
-        "vwma_20": 3452.415607276233,
-        "obv": -18687.924300000028,
-        "vwap": 3480.964022156208,
-        "stochrsi": 59.71554749518612,
+        "sma_20": 3451.007,
+        "sma_50": 3467.4155999999984,
+        "ema_20": 3452.820087860855,
+        "rsi_14": 48.35471564846475,
+        "macd": -5.992902549730843,
+        "macd_signal": -7.0098855649804745,
+        "macd_hist": 1.0169830152496315,
+        "bb_lower": 3441.084500112192,
+        "bb_upper": 3460.929499887808,
+        "donchian_high": 3461.19,
+        "donchian_low": 3439.78,
+        "psar": 3439.78,
+        "momentum_10": 3.3099999999999454,
+        "zscore_20": 0.6862293381160796,
+        "vwma_20": 3450.3503215836276,
+        "obv": -18487.40350000003,
+        "vwap": 3478.7567048244223,
+        "stochrsi": 63.54757498565559,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | ETH/USDC": {
       "trend": {
-        "trend_strength": -0.003301511099525034
+        "trend_strength": -0.003466095941027425
       },
       "volatility": {
-        "current_volatility": 0.028242934138969965
+        "current_volatility": 0.029471061833265123
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7817454658256092
+          "strength": 1.0669076213322475
         }
       },
       "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 3467.208,
-        "sma_50": 3487.1021999999966,
-        "ema_20": 3464.390084696313,
-        "rsi_14": 34.27856004205863,
-        "macd": -11.187954073691799,
-        "macd_signal": -10.062431919334264,
-        "macd_hist": -1.1255221543575349,
-        "bb_lower": 3437.931994397746,
-        "bb_upper": 3496.484005602254,
+        "sma_20": 3463.7445000000007,
+        "sma_50": 3484.866399999997,
+        "ema_20": 3460.9359650235124,
+        "rsi_14": 33.82771675491686,
+        "macd": -11.293090234200918,
+        "macd_signal": -10.519519052055179,
+        "macd_hist": -0.773571182145739,
+        "bb_lower": 3433.206231892494,
+        "bb_upper": 3494.2827681075073,
         "donchian_high": 3491.11,
-        "donchian_low": 3443.33,
+        "donchian_low": 3436.21,
         "psar": 3466.8746,
-        "momentum_10": -20.690000000000055,
-        "zscore_20": -1.2523409821141902,
-        "vwma_20": 3462.911912268215,
-        "obv": -86604.66600000006,
-        "vwap": 3484.8524266042828,
-        "stochrsi": 28.975717882401867,
+        "momentum_10": -10.960000000000036,
+        "zscore_20": -1.1326902471666478,
+        "vwma_20": 3455.652171824517,
+        "obv": -88090.30200000005,
+        "vwap": 3482.546644975981,
+        "stochrsi": 35.35029602389917,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | ETH/USDC": {
       "trend": {
-        "trend_strength": -0.004427879970154258
+        "trend_strength": -0.005202855432610232
       },
       "volatility": {
-        "current_volatility": 0.03285801643794557
+        "current_volatility": 0.03300518046486489
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.0849973902571262
+          "strength": 1.2155333453104813
         }
       },
       "dominant_signal": "NEUTRE",
@@ -38671,17 +38659,17 @@
     },
     "1h | ETH/USDC": {
       "trend": {
-        "trend_strength": -0.002775042955596607
+        "trend_strength": -0.002853119423427364
       },
       "volatility": {
-        "current_volatility": 0.1152725354521134
+        "current_volatility": 0.11568133956668267
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6621553829855469
+          "strength": 0.997491341583343
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
         "sma_20": 3503.785499999998,
         "sma_50": 3601.061,
@@ -38707,14 +38695,14 @@
     },
     "4h | ETH/USDC": {
       "trend": {
-        "trend_strength": -0.034002530053775404
+        "trend_strength": -0.03407990297412122
       },
       "volatility": {
-        "current_volatility": 0.1614377446940234
+        "current_volatility": 0.16124018700072168
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.16669986433199382
+          "strength": 0.2544246614248082
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38743,14 +38731,14 @@
     },
     "1d | ETH/USDC": {
       "trend": {
-        "trend_strength": 0.028264786071746872
+        "trend_strength": 0.02819096589882797
       },
       "volatility": {
-        "current_volatility": 0.47515550166202447
+        "current_volatility": 0.47598581637592846
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.4819020017748007
+          "strength": 0.4927100780853579
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38779,86 +38767,86 @@
     },
     "1m | LTC/USDC": {
       "trend": {
-        "trend_strength": 0.0007857943264719669
+        "trend_strength": -0.004429177498471715
       },
       "volatility": {
-        "current_volatility": 0.030869178070543006
+        "current_volatility": 0.02001945577084728
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.0012088371249648518
+          "strength": 0.10865739043912245
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 107.94699999999997,
-        "sma_50": 108.37840000000001,
-        "ema_20": 107.86069282398013,
-        "rsi_14": 34.45240911526979,
-        "macd": -0.34528517771103395,
-        "macd_signal": -0.31043228221385977,
-        "macd_hist": -0.034852895497174186,
-        "bb_lower": 106.75415298551299,
-        "bb_upper": 109.13984701448696,
-        "donchian_high": 109.03,
-        "donchian_low": 107.26,
+        "sma_20": 107.41749999999998,
+        "sma_50": 108.23219999999999,
+        "ema_20": 107.4172816981667,
+        "rsi_14": 35.56422213460657,
+        "macd": -0.4593878750182512,
+        "macd_signal": -0.39939494952753246,
+        "macd_hist": -0.05999292549071872,
+        "bb_lower": 106.44514461231665,
+        "bb_upper": 108.3898553876833,
+        "donchian_high": 108.29,
+        "donchian_low": 106.33,
         "psar": 108.66934709043403,
-        "momentum_10": -0.35999999999999943,
-        "zscore_20": -1.1063580981017203,
-        "vwma_20": 107.9946422185558,
-        "obv": 5065.089000000004,
-        "vwap": 108.26528566500008,
-        "stochrsi": 51.53619861470585,
+        "momentum_10": -0.6599999999999966,
+        "zscore_20": -1.0374737749625613,
+        "vwma_20": 107.51934747320139,
+        "obv": 4984.528000000003,
+        "vwap": 108.19728557798773,
+        "stochrsi": 19.622758127266174,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | LTC/USDC": {
       "trend": {
-        "trend_strength": -0.004418656138149846
+        "trend_strength": -0.00691178237125889
       },
       "volatility": {
-        "current_volatility": 0.05411900075474777
+        "current_volatility": 0.05649285240049717
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.2317713142143616
+          "strength": 1.3251223328409318
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 108.36799999999997,
-        "sma_50": 108.09640000000009,
-        "ema_20": 108.07819484564965,
-        "rsi_14": 36.57210728703635,
-        "macd": -0.2474113129782296,
-        "macd_signal": -0.06170586577442757,
-        "macd_hist": -0.18570544720380203,
-        "bb_lower": 106.98411272133802,
-        "bb_upper": 109.75188727866191,
+        "sma_20": 108.18249999999996,
+        "sma_50": 108.08600000000007,
+        "ema_20": 107.80641346775403,
+        "rsi_14": 30.082341637923054,
+        "macd": -0.3956899349979466,
+        "macd_signal": -0.17185810849156866,
+        "macd_hist": -0.22383182650637792,
+        "bb_lower": 106.43719916632055,
+        "bb_upper": 109.92780083367937,
         "donchian_high": 110.3,
-        "donchian_low": 107.16,
+        "donchian_low": 106.26,
         "psar": 108.5516,
-        "momentum_10": -1.75,
-        "zscore_20": -1.5466548982327353,
-        "vwma_20": 108.5846350495969,
-        "obv": 7625.179999999993,
-        "vwap": 107.9657074744264,
-        "stochrsi": 7.188382327917537,
+        "momentum_10": -1.980000000000004,
+        "zscore_20": -1.7898619694965918,
+        "vwma_20": 108.15668960807744,
+        "obv": 6728.665999999993,
+        "vwap": 107.83198786080071,
+        "stochrsi": 0.330603533917962,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | LTC/USDC": {
       "trend": {
-        "trend_strength": 0.004103257597510179
+        "trend_strength": 0.0021170050632088877
       },
       "volatility": {
-        "current_volatility": 0.06991439131722058
+        "current_volatility": 0.07481035318449804
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.8722927571897466
+          "strength": 1.5803150975195788
         }
       },
       "dominant_signal": "NEUTRE",
@@ -38887,17 +38875,17 @@
     },
     "1h | LTC/USDC": {
       "trend": {
-        "trend_strength": 0.0020939387453120517
+        "trend_strength": 0.0016572630951716683
       },
       "volatility": {
-        "current_volatility": 0.1376712022708962
+        "current_volatility": 0.14628007915444713
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5740582902669077
+          "strength": 1.060647549293323
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
         "sma_20": 107.48500000000006,
         "sma_50": 106.81339999999989,
@@ -38923,14 +38911,14 @@
     },
     "4h | LTC/USDC": {
       "trend": {
-        "trend_strength": -0.010081728719954164
+        "trend_strength": -0.01052651095526591
       },
       "volatility": {
-        "current_volatility": 0.1409152176493619
+        "current_volatility": 0.14871397493688476
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.1622683673500638
+          "strength": 0.30522661825881375
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38959,14 +38947,14 @@
     },
     "1d | LTC/USDC": {
       "trend": {
-        "trend_strength": 0.015116584066154015
+        "trend_strength": 0.014685842663523907
       },
       "volatility": {
-        "current_volatility": 0.5669743441111167
+        "current_volatility": 0.5674657672657168
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5172630013585978
+          "strength": 0.535885994605467
         }
       },
       "dominant_signal": "ATTENTE",
@@ -38995,86 +38983,86 @@
     },
     "1m | XRP/USDC": {
       "trend": {
-        "trend_strength": 0.0003296949352158407
+        "trend_strength": -0.0032005828243640844
       },
       "volatility": {
-        "current_volatility": 0.026251279703626895
+        "current_volatility": 0.021672429399730863
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.19742645206102682
+          "strength": 0.6094114757285474
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 2.837165000000002,
-        "sma_50": 2.8646379999999994,
-        "ema_20": 2.8414507838340484,
-        "rsi_14": 35.41262757489025,
-        "macd": -0.009650480235347647,
-        "macd_signal": -0.011536551276456405,
-        "macd_hist": 0.0018860710411087583,
-        "bb_lower": 2.8180790601497177,
-        "bb_upper": 2.856250939850286,
-        "donchian_high": 2.8601,
-        "donchian_low": 2.8211,
-        "psar": 2.822489609936,
-        "momentum_10": -0.0054000000000002935,
-        "zscore_20": -0.48667736999302547,
-        "vwma_20": 2.826152004239533,
-        "obv": -223030.10000000006,
-        "vwap": 2.892589590364222,
-        "stochrsi": 83.82842627941947,
+        "sma_20": 2.830765000000002,
+        "sma_50": 2.858206,
+        "ema_20": 2.8347118726007765,
+        "rsi_14": 37.602637564340924,
+        "macd": -0.009438198175333756,
+        "macd_signal": -0.010401635609962715,
+        "macd_hist": 0.0009634374346289588,
+        "bb_lower": 2.82009236677453,
+        "bb_upper": 2.8414376332254743,
+        "donchian_high": 2.8409,
+        "donchian_low": 2.8132,
+        "psar": 2.82281981773728,
+        "momentum_10": -0.005399999999999849,
+        "zscore_20": -0.5232928969539816,
+        "vwma_20": 2.8250605176475467,
+        "obv": -387151.4000000001,
+        "vwap": 2.8846346784480925,
+        "stochrsi": 35.52539058019168,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | XRP/USDC": {
       "trend": {
-        "trend_strength": -0.007063261417656452
+        "trend_strength": -0.006836285086589067
       },
       "volatility": {
-        "current_volatility": 0.04454496050052597
+        "current_volatility": 0.047165177656257454
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6412393666131981
+          "strength": 1.4007128257721246
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 2.856650000000001,
-        "sma_50": 2.8958499999999976,
-        "ema_20": 2.854483786748481,
-        "rsi_14": 30.327877042248332,
-        "macd": -0.019713540471827606,
-        "macd_signal": -0.019756187064412872,
-        "macd_hist": 4.264659258526593e-05,
-        "bb_lower": 2.8086246525262313,
-        "bb_upper": 2.9046753474737708,
+        "sma_20": 2.8509050000000014,
+        "sma_50": 2.891403999999997,
+        "ema_20": 2.8488785646625887,
+        "rsi_14": 27.201465411665144,
+        "macd": -0.019614025941095736,
+        "macd_signal": -0.019727908764125637,
+        "macd_hist": 0.00011388282302990035,
+        "bb_lower": 2.8022180623270696,
+        "bb_upper": 2.899591937672933,
         "donchian_high": 2.8896,
-        "donchian_low": 2.8211,
+        "donchian_low": 2.8112,
         "psar": 2.821536,
-        "momentum_10": -0.027000000000000135,
-        "zscore_20": -0.984312556985207,
-        "vwma_20": 2.8431274161363995,
-        "obv": -18307822.1,
-        "vwap": 2.8849700652342314,
-        "stochrsi": 91.98899316591975,
+        "momentum_10": -0.009599999999999831,
+        "zscore_20": -1.1052667131940455,
+        "vwma_20": 2.834091357516322,
+        "obv": -18918563.900000002,
+        "vwap": 2.8795303364984774,
+        "stochrsi": 76.79141394503978,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | XRP/USDC": {
       "trend": {
-        "trend_strength": -0.01068715439871859
+        "trend_strength": -0.012019239069260168
       },
       "volatility": {
-        "current_volatility": 0.05942052482112101
+        "current_volatility": 0.059394059478974554
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.0724804027437593
+          "strength": 1.7707987019501537
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39103,14 +39091,14 @@
     },
     "1h | XRP/USDC": {
       "trend": {
-        "trend_strength": -0.009304626561218887
+        "trend_strength": -0.009533815729271145
       },
       "volatility": {
-        "current_volatility": 0.15547794197581352
+        "current_volatility": 0.15436790949938473
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.2728848948587372
+          "strength": 1.9423876798394215
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39139,14 +39127,14 @@
     },
     "4h | XRP/USDC": {
       "trend": {
-        "trend_strength": -0.02387183705185547
+        "trend_strength": -0.024091942618545525
       },
       "volatility": {
-        "current_volatility": 0.21810018506723156
+        "current_volatility": 0.2165932560764447
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.27889817016097196
+          "strength": 0.4378182848862357
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39175,14 +39163,14 @@
     },
     "1d | XRP/USDC": {
       "trend": {
-        "trend_strength": -0.03325038095968946
+        "trend_strength": -0.03347535950374381
       },
       "volatility": {
-        "current_volatility": 0.7148411030476551
+        "current_volatility": 0.7187471564040862
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.4359323491814408
+          "strength": 0.4572691098011484
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39211,86 +39199,86 @@
     },
     "1m | DOGE/USDC": {
       "trend": {
-        "trend_strength": 0.0006846311837966912
+        "trend_strength": -0.0034509537695627257
       },
       "volatility": {
-        "current_volatility": 0.034014594319976194
+        "current_volatility": 0.03385339082205692
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.021837923768037476
+          "strength": 0.5558484226845841
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.19484200000000032,
-        "sma_50": 0.19555819999999993,
-        "ema_20": 0.19507567424076638,
-        "rsi_14": 47.673718219812265,
-        "macd": -0.00024386880770499442,
-        "macd_signal": -0.00035434176231567276,
-        "macd_hist": 0.00011047295461067834,
-        "bb_lower": 0.19392989035768346,
-        "bb_upper": 0.19575410964231718,
-        "donchian_high": 0.19581,
-        "donchian_low": 0.1937,
-        "psar": 0.19413660952013828,
-        "momentum_10": 0.00018000000000001348,
-        "zscore_20": 0.46590915565820984,
-        "vwma_20": 0.19404787967478043,
-        "obv": -8632072.0,
-        "vwap": 0.19676565888350572,
-        "stochrsi": 93.89429663875852,
+        "sma_20": 0.19467250000000033,
+        "sma_50": 0.19548459999999993,
+        "ema_20": 0.19486355585522674,
+        "rsi_14": 48.901191564952114,
+        "macd": -0.00025845719693551317,
+        "macd_signal": -0.00030578078348131717,
+        "macd_hist": 4.7323586545804e-05,
+        "bb_lower": 0.19403456975335281,
+        "bb_upper": 0.19531043024664785,
+        "donchian_high": 0.19525,
+        "donchian_low": 0.19359,
+        "psar": 0.19422568075852722,
+        "momentum_10": -2.0000000000020002e-05,
+        "zscore_20": 0.7868570444930031,
+        "vwma_20": 0.19408638266409242,
+        "obv": -8593574.0,
+        "vwap": 0.19667874193561746,
+        "stochrsi": 49.33503249709097,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | DOGE/USDC": {
       "trend": {
-        "trend_strength": -0.003408448759483096
+        "trend_strength": -0.0037160640432415404
       },
       "volatility": {
-        "current_volatility": 0.04805144639754123
+        "current_volatility": 0.05817408876482223
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6199088066451567
+          "strength": 0.8310107572994367
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 0.1955039999999999,
-        "sma_50": 0.1971408,
-        "ema_20": 0.19547988370539526,
-        "rsi_14": 42.71881593991649,
-        "macd": -0.0006492538067563725,
-        "macd_signal": -0.000728257179157545,
-        "macd_hist": 7.900337240117252e-05,
-        "bb_lower": 0.19356264583343577,
-        "bb_upper": 0.19744535416656403,
+        "sma_20": 0.1953924999999999,
+        "sma_50": 0.19694860000000003,
+        "ema_20": 0.19529609527811267,
+        "rsi_14": 38.858417740750966,
+        "macd": -0.0006478324955841996,
+        "macd_signal": -0.000700575596107717,
+        "macd_hist": 5.2743100523517305e-05,
+        "bb_lower": 0.19336441839415122,
+        "bb_upper": 0.1974205816058486,
         "donchian_high": 0.1975,
-        "donchian_low": 0.1937,
+        "donchian_low": 0.19336,
         "psar": 0.19485818566500349,
-        "momentum_10": -0.0006199999999999817,
-        "zscore_20": -0.4458307261605807,
-        "vwma_20": 0.19513746900057263,
-        "obv": -55102837.0,
-        "vwap": 0.19692224571004227,
-        "stochrsi": 63.68958485407598,
+        "momentum_10": 0.00035000000000001696,
+        "zscore_20": -0.857856402577972,
+        "vwma_20": 0.19492427976871804,
+        "obv": -55545102.0,
+        "vwap": 0.19682635787719435,
+        "stochrsi": 60.367783693542464,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | DOGE/USDC": {
       "trend": {
-        "trend_strength": -0.007895702803619953
+        "trend_strength": -0.008528936012696886
       },
       "volatility": {
-        "current_volatility": 0.06707945139073158
+        "current_volatility": 0.06745552402786967
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.1254502611719583
+          "strength": 1.6533313669019365
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39319,17 +39307,17 @@
     },
     "1h | DOGE/USDC": {
       "trend": {
-        "trend_strength": -0.008574260201017037
+        "trend_strength": -0.00883179044023763
       },
       "volatility": {
-        "current_volatility": 0.2067846315583763
+        "current_volatility": 0.20556829280416586
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.519959512254306
+          "strength": 0.8993190958362137
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
         "sma_20": 0.2000959999999999,
         "sma_50": 0.20554640000000007,
@@ -39355,14 +39343,14 @@
     },
     "4h | DOGE/USDC": {
       "trend": {
-        "trend_strength": -0.036635633234331055
+        "trend_strength": -0.03688239718918729
       },
       "volatility": {
-        "current_volatility": 0.21908144913710711
+        "current_volatility": 0.21670786088835264
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.11236165848489625
+          "strength": 0.1974461908734038
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39391,14 +39379,14 @@
     },
     "1d | DOGE/USDC": {
       "trend": {
-        "trend_strength": -0.030862527812922758
+        "trend_strength": -0.031073951728682325
       },
       "volatility": {
-        "current_volatility": 0.8383980265634521
+        "current_volatility": 0.8407350719316982
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.39391166071688505
+          "strength": 0.4052038163562295
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39427,86 +39415,86 @@
     },
     "1m | BNB/USDC": {
       "trend": {
-        "trend_strength": 0.00022105357223267674
+        "trend_strength": -0.0012679522873253468
       },
       "volatility": {
-        "current_volatility": 0.0188346876068122
+        "current_volatility": 0.01798971936739516
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.06713153182670516
+          "strength": 0.18594415793143182
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 743.9524999999996,
-        "sma_50": 746.7306000000003,
-        "ema_20": 744.481436895482,
-        "rsi_14": 44.571455671239676,
-        "macd": -0.9306293672714219,
-        "macd_signal": -1.218085619162331,
-        "macd_hist": 0.2874562518909092,
-        "bb_lower": 741.2885640018009,
-        "bb_upper": 746.6164359981984,
-        "donchian_high": 747.32,
+        "sma_20": 743.4544999999996,
+        "sma_50": 746.2120000000001,
+        "ema_20": 744.1207718113402,
+        "rsi_14": 45.56441047226031,
+        "macd": -0.7283715364609407,
+        "macd_signal": -0.9455046707076046,
+        "macd_hist": 0.21713313424666392,
+        "bb_lower": 742.1672008881857,
+        "bb_upper": 744.7417991118135,
+        "donchian_high": 744.77,
         "donchian_low": 741.39,
-        "psar": 741.7546243328001,
-        "momentum_10": 0.12000000000000455,
-        "zscore_20": 0.08598167046858717,
-        "vwma_20": 741.7420291674276,
-        "obv": -2348.2269999999985,
-        "vwap": 750.8922728408678,
-        "stochrsi": 94.72998337567627,
+        "psar": 742.3113450079578,
+        "momentum_10": 0.2300000000000182,
+        "zscore_20": 0.5989062110039901,
+        "vwma_20": 742.4423555035654,
+        "obv": -2299.191999999998,
+        "vwap": 750.3424532854576,
+        "stochrsi": 78.4022328503776,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | BNB/USDC": {
       "trend": {
-        "trend_strength": -0.0028165200999554774
+        "trend_strength": -0.0027244667575494486
       },
       "volatility": {
-        "current_volatility": 0.028499854388536666
+        "current_volatility": 0.028686931290543883
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.291417646085258
+          "strength": 1.9236031304803585
         }
       },
       "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 746.0039999999992,
-        "sma_50": 750.0039999999998,
-        "ema_20": 745.8069064872191,
-        "rsi_14": 39.471358838244875,
-        "macd": -1.9654718544787784,
-        "macd_signal": -2.0326054800803304,
-        "macd_hist": 0.067133625601552,
-        "bb_lower": 740.6644030109509,
-        "bb_upper": 751.3435969890476,
+        "sma_20": 745.5994999999991,
+        "sma_50": 749.5879999999996,
+        "ema_20": 745.4167647208302,
+        "rsi_14": 37.66517948704238,
+        "macd": -1.8267590511803746,
+        "macd_signal": -1.967671970078083,
+        "macd_hist": 0.1409129188977083,
+        "bb_lower": 740.2475266251057,
+        "bb_upper": 750.9514733748925,
         "donchian_high": 750.49,
         "donchian_low": 741.39,
-        "psar": 741.4734,
-        "momentum_10": -3.25,
-        "zscore_20": -0.7060570414986111,
-        "vwma_20": 744.1224482739707,
-        "obv": -23081.90099999997,
-        "vwap": 749.5267524090698,
-        "stochrsi": 74.32800281867829,
+        "psar": 741.61,
+        "momentum_10": 0.4900000000000091,
+        "zscore_20": -0.7683469715507373,
+        "vwma_20": 743.6251736324367,
+        "obv": -23648.44099999997,
+        "vwap": 748.7741937049934,
+        "stochrsi": 81.12143574509493,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | BNB/USDC": {
       "trend": {
-        "trend_strength": -0.0043181946816620576
+        "trend_strength": -0.004711507635788426
       },
       "volatility": {
-        "current_volatility": 0.034285549086777625
+        "current_volatility": 0.03405771156106496
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.5796324564265347
+          "strength": 2.084961762415214
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39535,14 +39523,14 @@
     },
     "1h | BNB/USDC": {
       "trend": {
-        "trend_strength": -0.0059193415376807
+        "trend_strength": -0.006015067406820007
       },
       "volatility": {
-        "current_volatility": 0.11123043135783507
+        "current_volatility": 0.1107849267684367
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7111027317184789
+          "strength": 1.1852914478722534
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39571,14 +39559,14 @@
     },
     "4h | BNB/USDC": {
       "trend": {
-        "trend_strength": -0.022088681852662218
+        "trend_strength": -0.022183467308269478
       },
       "volatility": {
-        "current_volatility": 0.12304069426800662
+        "current_volatility": 0.12217338141542289
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.13547592210389295
+          "strength": 0.23040108412884813
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39607,14 +39595,14 @@
     },
     "1d | BNB/USDC": {
       "trend": {
-        "trend_strength": 0.03539937224143608
+        "trend_strength": 0.03532542820189932
       },
       "volatility": {
-        "current_volatility": 0.36874399570318833
+        "current_volatility": 0.36993119714362993
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5515779286566935
+          "strength": 0.5703650239476561
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39643,86 +39631,86 @@
     },
     "1m | ADA/USDC": {
       "trend": {
-        "trend_strength": 0.0003078972052958928
+        "trend_strength": -0.003527374871584832
       },
       "volatility": {
-        "current_volatility": 0.02842894801772294
+        "current_volatility": 0.024366687915669854
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.0
+          "strength": 0.6282786048483192
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.6985250000000003,
-        "sma_50": 0.702046,
-        "ema_20": 0.6990340983124685,
-        "rsi_14": 37.1079855183609,
-        "macd": -0.0015185339296541756,
-        "macd_signal": -0.0016913072594315478,
-        "macd_hist": 0.00017277332977737227,
-        "bb_lower": 0.6956846655134299,
-        "bb_upper": 0.7013653344865707,
-        "donchian_high": 0.7019,
-        "donchian_low": 0.6966,
+        "sma_20": 0.6973300000000003,
+        "sma_50": 0.7012179999999999,
+        "ema_20": 0.6975607202655871,
+        "rsi_14": 44.07709755823871,
+        "macd": -0.0017093052809842302,
+        "macd_signal": -0.0017515300409466118,
+        "macd_hist": 4.222475996238165e-05,
+        "bb_lower": 0.6943553739738253,
+        "bb_upper": 0.7003046260261754,
+        "donchian_high": 0.6995,
+        "donchian_low": 0.6915,
         "psar": 0.6967785532320001,
-        "momentum_10": -0.0010999999999999899,
-        "zscore_20": -0.9093649050414089,
-        "vwma_20": 0.6972302266396808,
-        "obv": -1918785.5999999987,
-        "vwap": 0.704938820914637,
-        "stochrsi": 65.33154835608057,
+        "momentum_10": -0.0010000000000000009,
+        "zscore_20": -0.21625858878930018,
+        "vwma_20": 0.6966250048536109,
+        "obv": -1957462.1999999988,
+        "vwap": 0.7041083694990925,
+        "stochrsi": 46.019341144604475,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | ADA/USDC": {
       "trend": {
-        "trend_strength": -0.003963162546688492
+        "trend_strength": -0.004161283645370273
       },
       "volatility": {
-        "current_volatility": 0.03844450210430152
+        "current_volatility": 0.043129092733288105
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5025575859098937
+          "strength": 1.2001062404616674
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 0.7012600000000005,
-        "sma_50": 0.7069100000000001,
-        "ema_20": 0.7008789835673389,
-        "rsi_14": 35.52263942613752,
-        "macd": -0.0028786808747955916,
-        "macd_signal": -0.002824415177208343,
-        "macd_hist": -5.426569758724877e-05,
-        "bb_lower": 0.693963041729706,
-        "bb_upper": 0.7085569582702951,
+        "sma_20": 0.7003450000000007,
+        "sma_50": 0.7062040000000003,
+        "ema_20": 0.6997435670471867,
+        "rsi_14": 33.1120628894108,
+        "macd": -0.0031044020262672722,
+        "macd_signal": -0.0029181993281300984,
+        "macd_hist": -0.00018620269813717383,
+        "bb_lower": 0.6922868426425522,
+        "bb_upper": 0.7084031573574491,
         "donchian_high": 0.7079,
-        "donchian_low": 0.6956,
+        "donchian_low": 0.6913,
         "psar": 0.700354,
-        "momentum_10": -0.0046999999999999265,
-        "zscore_20": -1.0846159063490481,
-        "vwma_20": 0.6999687838135129,
-        "obv": -14148841.299999993,
-        "vwap": 0.7075352495139638,
-        "stochrsi": 46.637187634060666,
+        "momentum_10": -0.0019000000000000128,
+        "zscore_20": -1.2930155980169995,
+        "vwma_20": 0.6983499650828566,
+        "obv": -14389380.699999994,
+        "vwap": 0.7067440072819478,
+        "stochrsi": 33.47114467709073,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | ADA/USDC": {
       "trend": {
-        "trend_strength": -0.006806179219972286
+        "trend_strength": -0.007736260006222961
       },
       "volatility": {
-        "current_volatility": 0.05598749679731859
+        "current_volatility": 0.056729498832450785
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7825365165590038
+          "strength": 1.497918347874745
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39751,14 +39739,14 @@
     },
     "1h | ADA/USDC": {
       "trend": {
-        "trend_strength": -0.00574905581200158
+        "trend_strength": -0.006009388357597012
       },
       "volatility": {
-        "current_volatility": 0.1656660921521746
+        "current_volatility": 0.16672834157870112
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.0881873159013737
+          "strength": 1.6496943727686606
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39787,14 +39775,14 @@
     },
     "4h | ADA/USDC": {
       "trend": {
-        "trend_strength": -0.02966018729196329
+        "trend_strength": -0.029917473695584618
       },
       "volatility": {
-        "current_volatility": 0.19199950412815012
+        "current_volatility": 0.1916244732210263
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.21933218490598888
+          "strength": 0.3405855454062743
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39823,14 +39811,14 @@
     },
     "1d | ADA/USDC": {
       "trend": {
-        "trend_strength": -0.026289555027493416
+        "trend_strength": -0.026527694160144444
       },
       "volatility": {
-        "current_volatility": 0.5832362660969372
+        "current_volatility": 0.5859086858263532
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.39840591101548933
+          "strength": 0.41472010027252726
         }
       },
       "dominant_signal": "ATTENTE",
@@ -39859,86 +39847,86 @@
     },
     "1m | SOL/USDC": {
       "trend": {
-        "trend_strength": 9.296877178988083e-06
+        "trend_strength": -0.0027596837551587816
       },
       "volatility": {
-        "current_volatility": 0.02498912886197271
+        "current_volatility": 0.01985729425494139
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5231063945089082
+          "strength": 0.6251131573057273
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 161.4695000000001,
-        "sma_50": 162.36239999999964,
-        "ema_20": 161.58297284976746,
-        "rsi_14": 36.14694101267025,
-        "macd": -0.37469536027467143,
-        "macd_signal": -0.41078147219740363,
-        "macd_hist": 0.0360861119227322,
-        "bb_lower": 160.74696349563447,
-        "bb_upper": 162.19203650436572,
-        "donchian_high": 162.45,
-        "donchian_low": 161.0,
+        "sma_20": 161.15050000000008,
+        "sma_50": 162.15059999999966,
+        "ema_20": 161.20702172407988,
+        "rsi_14": 37.66342822748952,
+        "macd": -0.43403329904467114,
+        "macd_signal": -0.4287429369721984,
+        "macd_hist": -0.005290362072472743,
+        "bb_lower": 160.4551015529342,
+        "bb_upper": 161.84589844706596,
+        "donchian_high": 161.7,
+        "donchian_low": 160.26,
         "psar": 163.12608115956786,
-        "momentum_10": -0.5,
-        "zscore_20": -0.808032504659173,
-        "vwma_20": 161.1850441888662,
-        "obv": -71962.25400000013,
-        "vwap": 162.71745325072445,
-        "stochrsi": 84.05485224887478,
+        "momentum_10": -0.3199999999999932,
+        "zscore_20": -0.8704016114468411,
+        "vwma_20": 161.02441807613,
+        "obv": -72296.43500000016,
+        "vwap": 162.5595476625602,
+        "stochrsi": 35.03786770386014,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | SOL/USDC": {
       "trend": {
-        "trend_strength": -0.00444184146848936
+        "trend_strength": -0.00454980399419691
       },
       "volatility": {
-        "current_volatility": 0.03235749267698741
+        "current_volatility": 0.0334641359818346
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.0876726386595719
+          "strength": 1.2540996038644474
         }
       },
       "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 162.17450000000002,
-        "sma_50": 163.2011999999999,
-        "ema_20": 162.004935900078,
-        "rsi_14": 33.885484803564005,
-        "macd": -0.6024572517540321,
-        "macd_signal": -0.5485125763732128,
-        "macd_hist": -0.05394467538081926,
-        "bb_lower": 160.41959287998955,
-        "bb_upper": 163.9294071200105,
+        "sma_20": 161.9455,
+        "sma_50": 163.05839999999992,
+        "ema_20": 161.73841691593688,
+        "rsi_14": 29.01146708615591,
+        "macd": -0.670947918658868,
+        "macd_signal": -0.5886507422393435,
+        "macd_hist": -0.0822971764195245,
+        "bb_lower": 160.00665008319373,
+        "bb_upper": 163.8843499168063,
         "donchian_high": 163.65,
-        "donchian_low": 160.85,
+        "donchian_low": 160.16,
         "psar": 162.33546048,
-        "momentum_10": -1.1300000000000239,
-        "zscore_20": -1.1158032020577984,
-        "vwma_20": 161.79654729825867,
-        "obv": -400010.1289999999,
-        "vwap": 163.0081551933793,
-        "stochrsi": 44.52910904419201,
+        "momentum_10": -0.7199999999999989,
+        "zscore_20": -1.4030638875197607,
+        "vwma_20": 161.50391676297525,
+        "obv": -403226.62699999986,
+        "vwap": 162.85515649290173,
+        "stochrsi": 35.58488358214479,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | SOL/USDC": {
       "trend": {
-        "trend_strength": -0.00515131017131254
+        "trend_strength": -0.006050018389113454
       },
       "volatility": {
-        "current_volatility": 0.04075426047365106
+        "current_volatility": 0.04242961126261625
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.4064275393375072
+          "strength": 2.0617801072926567
         }
       },
       "dominant_signal": "NEUTRE",
@@ -39967,14 +39955,14 @@
     },
     "1h | SOL/USDC": {
       "trend": {
-        "trend_strength": -0.001509779951100132
+        "trend_strength": -0.0017669572873231232
       },
       "volatility": {
-        "current_volatility": 0.11628671319751814
+        "current_volatility": 0.1179935755333637
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7605567130823294
+          "strength": 1.3066761727093545
         }
       },
       "dominant_signal": "NEUTRE",
@@ -40003,14 +39991,14 @@
     },
     "4h | SOL/USDC": {
       "trend": {
-        "trend_strength": -0.03484112935733186
+        "trend_strength": -0.03509510035936536
       },
       "volatility": {
-        "current_volatility": 0.16759080508245291
+        "current_volatility": 0.16683433340415024
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.1149370029648037
+          "strength": 0.20234339103568316
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40039,14 +40027,14 @@
     },
     "1d | SOL/USDC": {
       "trend": {
-        "trend_strength": -0.00591326467995823
+        "trend_strength": -0.006149004553164583
       },
       "volatility": {
-        "current_volatility": 0.6010234681752513
+        "current_volatility": 0.6022454899161883
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.2909679449582255
+          "strength": 0.30312944606148434
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40075,86 +40063,86 @@
     },
     "1m | TRX/USDC": {
       "trend": {
-        "trend_strength": 0.0001244051876965191
+        "trend_strength": -0.0008404146045382088
       },
       "volatility": {
-        "current_volatility": 0.011107168891347488
+        "current_volatility": 0.011445896636679366
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.03910945358035602
+          "strength": 1.0821851209822018
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 0.3223549999999996,
-        "sma_50": 0.3245240000000006,
-        "ema_20": 0.32240762345227,
-        "rsi_14": 15.277197322418562,
-        "macd": -0.0010290617915227895,
-        "macd_signal": -0.0010411055352575944,
-        "macd_hist": 1.2043743734804855e-05,
-        "bb_lower": 0.320264569422006,
-        "bb_upper": 0.32444543057799324,
-        "donchian_high": 0.3245,
-        "donchian_low": 0.3211,
-        "psar": 0.3258884576,
-        "momentum_10": -0.0010000000000000009,
-        "zscore_20": -1.1703069246542261,
-        "vwma_20": 0.32310922976464135,
-        "obv": -466489.60000000003,
-        "vwap": 0.3258320216994323,
-        "stochrsi": 87.9040275270969,
+        "sma_20": 0.32168499999999967,
+        "sma_50": 0.3240340000000006,
+        "ema_20": 0.3219783692965826,
+        "rsi_14": 34.80890613474878,
+        "macd": -0.0008016760840783843,
+        "macd_signal": -0.0009472673933461408,
+        "macd_hist": 0.00014559130926775651,
+        "bb_lower": 0.32068046030375225,
+        "bb_upper": 0.3226895396962471,
+        "donchian_high": 0.3226,
+        "donchian_low": 0.3208,
+        "psar": 0.3208376,
+        "momentum_10": 0.00019999999999997797,
+        "zscore_20": -0.16494669607200418,
+        "vwma_20": 0.3220377929453567,
+        "obv": -459923.30000000005,
+        "vwap": 0.32567561432439174,
+        "stochrsi": 99.99999999999996,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | TRX/USDC": {
       "trend": {
-        "trend_strength": -0.005262426889303562
+        "trend_strength": -0.005393876636322847
       },
       "volatility": {
-        "current_volatility": 0.017468706204109643
+        "current_volatility": 0.018952343850586358
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6619528082247415
+          "strength": 1.3682665935385148
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 0.32391500000000006,
-        "sma_50": 0.32560600000000145,
-        "ema_20": 0.32340727881044484,
-        "rsi_14": 14.991877867437342,
-        "macd": -0.0013729125610709714,
-        "macd_signal": -0.0010930405758204922,
-        "macd_hist": -0.0002798719852504792,
-        "bb_lower": 0.32005169830344316,
-        "bb_upper": 0.327778301696557,
+        "sma_20": 0.3234600000000001,
+        "sma_50": 0.32540400000000147,
+        "ema_20": 0.3230354368493664,
+        "rsi_14": 22.9905630553919,
+        "macd": -0.001338557717643074,
+        "macd_signal": -0.0011873950588543038,
+        "macd_hist": -0.00015116265878877032,
+        "bb_lower": 0.3195662100726096,
+        "bb_upper": 0.32735378992739056,
         "donchian_high": 0.3262,
         "donchian_low": 0.3208,
         "psar": 0.3266967991109281,
-        "momentum_10": -0.003400000000000014,
-        "zscore_20": -1.4204029731235543,
-        "vwma_20": 0.323185129605016,
-        "obv": -7304743.699999999,
-        "vwap": 0.3253508007106384,
-        "stochrsi": 10.041694433779206,
+        "momentum_10": -0.0017999999999999683,
+        "zscore_20": -0.9812402451683921,
+        "vwma_20": 0.32235803200755964,
+        "obv": -7192494.899999999,
+        "vwap": 0.32502496617010335,
+        "stochrsi": 31.40606595778858,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | TRX/USDC": {
       "trend": {
-        "trend_strength": -0.0029936902221467943
+        "trend_strength": -0.004071473566150008
       },
       "volatility": {
-        "current_volatility": 0.03103318697590206
+        "current_volatility": 0.030370497616282837
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.5190130377585376
+          "strength": 1.2787106897575962
         }
       },
       "dominant_signal": "NEUTRE",
@@ -40190,7 +40178,7 @@
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7736741672393808
+          "strength": 1.1096472750248934
         }
       },
       "dominant_signal": "NEUTRE",
@@ -40226,7 +40214,7 @@
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.15638039865424697
+          "strength": 0.22746100272845146
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40262,7 +40250,7 @@
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.5298600833475527
+          "strength": 0.5418477383439328
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40291,86 +40279,86 @@
     },
     "1m | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.00046433781098309534
+        "trend_strength": -0.0024274716108616534
       },
       "volatility": {
-        "current_volatility": 0.03194706874502841
+        "current_volatility": 0.025402065530393085
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.07981468596026843
+          "strength": 0.34412039146228274
         }
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 3.3578249999999947,
-        "sma_50": 3.3757900000000016,
-        "ema_20": 3.3574363187008034,
-        "rsi_14": 38.31408826020454,
-        "macd": -0.010986885247609823,
-        "macd_signal": -0.011043790027576088,
-        "macd_hist": 5.690477996626517e-05,
-        "bb_lower": 3.3290281338495484,
-        "bb_upper": 3.386621866150441,
-        "donchian_high": 3.386,
-        "donchian_low": 3.3361,
-        "psar": 3.3965788842179783,
-        "momentum_10": -0.013299999999999645,
-        "zscore_20": -0.7260121209549156,
-        "vwma_20": 3.353340779265706,
-        "obv": -769302.7999999988,
-        "vwap": 3.393018002713414,
-        "stochrsi": 97.03033554305121,
+        "sma_20": 3.3481199999999944,
+        "sma_50": 3.372104000000002,
+        "ema_20": 3.350624096147167,
+        "rsi_14": 39.939205571154595,
+        "macd": -0.00998458616738862,
+        "macd_signal": -0.010785598958716074,
+        "macd_hist": 0.0008010127913274535,
+        "bb_lower": 3.331191491498064,
+        "bb_upper": 3.365048508501925,
+        "donchian_high": 3.365,
+        "donchian_low": 3.3297,
+        "psar": 3.3297,
+        "momentum_10": 0.0029000000000003467,
+        "zscore_20": -0.5320042208791856,
+        "vwma_20": 3.3513529694956743,
+        "obv": -738254.4999999988,
+        "vwap": 3.390289202822937,
+        "stochrsi": 81.90383474014392,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "5m | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.0045793338854408505
+        "trend_strength": -0.0058068115056171266
       },
       "volatility": {
-        "current_volatility": 0.0435321948020167
+        "current_volatility": 0.050156012400700674
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.6179473834895644
+          "strength": 0.936602954027826
         }
       },
-      "dominant_signal": "ATTENTE",
+      "dominant_signal": "NEUTRE",
       "ta": {
-        "sma_20": 3.3734700000000037,
-        "sma_50": 3.392946000000003,
-        "ema_20": 3.3684110839210235,
-        "rsi_14": 35.587375155930125,
-        "macd": -0.014772290002928123,
-        "macd_signal": -0.012228910851362249,
-        "macd_hist": -0.0025433791515658746,
-        "bb_lower": 3.330735699959124,
-        "bb_upper": 3.4162043000408833,
+        "sma_20": 3.3693900000000037,
+        "sma_50": 3.390372000000003,
+        "ema_20": 3.363267576633763,
+        "rsi_14": 33.30371263352962,
+        "macd": -0.015349345692862393,
+        "macd_signal": -0.013329401045244934,
+        "macd_hist": -0.002019944647617459,
+        "bb_lower": 3.3226925953612074,
+        "bb_upper": 3.4160874046388,
         "donchian_high": 3.4112,
-        "donchian_low": 3.3361,
+        "donchian_low": 3.3236,
         "psar": 3.3743996141699073,
-        "momentum_10": -0.03810000000000002,
-        "zscore_20": -1.2028883899986877,
-        "vwma_20": 3.359473056119419,
-        "obv": -10384253.5,
-        "vwap": 3.3919761747044648,
-        "stochrsi": 25.1987572817745,
+        "momentum_10": -0.024900000000000144,
+        "zscore_20": -1.218521368044859,
+        "vwma_20": 3.3550120339489506,
+        "obv": -10509893.5,
+        "vwap": 3.389612669512413,
+        "stochrsi": 29.085594615274335,
         "kc_upper": null,
         "kc_lower": null
       }
     },
     "15m | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.004572526869298321
+        "trend_strength": -0.005566436905609651
       },
       "volatility": {
-        "current_volatility": 0.0623915386510759
+        "current_volatility": 0.062161793176615736
       },
       "volume": {
         "volume_profile": {
-          "strength": 1.4009889190657612
+          "strength": 1.274618898423553
         }
       },
       "dominant_signal": "NEUTRE",
@@ -40399,14 +40387,14 @@
     },
     "1h | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.009898868204302635
+        "trend_strength": -0.010067070353629193
       },
       "volatility": {
-        "current_volatility": 0.1797049107874997
+        "current_volatility": 0.18034035458448025
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.7774229572800146
+          "strength": 1.1026800115024245
         }
       },
       "dominant_signal": "NEUTRE",
@@ -40435,14 +40423,14 @@
     },
     "4h | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.04046343349536019
+        "trend_strength": -0.04062869020571902
       },
       "volatility": {
-        "current_volatility": 0.2547834847242517
+        "current_volatility": 0.2545067307099735
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.14024782324334212
+          "strength": 0.20172199607435676
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40471,14 +40459,14 @@
     },
     "1d | SUI/USDC": {
       "trend": {
-        "trend_strength": -0.014156154126082954
+        "trend_strength": -0.014307215261029405
       },
       "volatility": {
-        "current_volatility": 0.6976766056443525
+        "current_volatility": 0.6993412624410426
       },
       "volume": {
         "volume_profile": {
-          "strength": 0.4310814833187377
+          "strength": 0.4415592427069901
         }
       },
       "dominant_signal": "ATTENTE",
@@ -40698,9 +40686,13 @@
     {
       "timestamp": "2025-08-02 06:38:42",
       "balance": 60.85659068
+    },
+    {
+      "timestamp": "2025-08-02 06:49:04",
+      "balance": 60.85659068
     }
   ],
-  "last_sentiment_update": 1754152741.664556,
+  "last_sentiment_update": 1754153364.70611,
   "sentiment_by_symbol": {
     "BTCUSDC": -0.8557175397872925,
     "ETHUSDC": -0.8557175397872925,
@@ -40714,7 +40706,7 @@
     "SUIUSDC": -0.8557175397872925
   },
   "sentiment": {
-    "timestamp": "2025-08-02T06:39:01.685013",
+    "timestamp": "2025-08-02T06:49:24.728020",
     "scores": [
       {
         "title": "Comment acheter des cryptomonnaies avec MoonPay ? Guide 2025",
