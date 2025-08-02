@@ -4599,13 +4599,15 @@ async def run_clean_bot():
                         shared_data["sentiment"], dict
                     ):
                         shared_data["sentiment"] = {}
-                    shared_data["sentiment"]["scores"] = news_list
-                    print(
-                        "[DEBUG PATCH] News traitées:",
-                        [n.get("title") for n in news_list if n.get("processed")],
+                    bot.safe_update_shared_data(
+                        {
+                            "sentiment": {
+                                **shared_data.get("sentiment", {}),
+                                "scores": news_list,
+                            }
+                        },
+                        bot.data_file,
                     )
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
 
                 trading_paused = bot.news_pause_manager.should_pause()
                 if trading_paused:
@@ -4779,14 +4781,14 @@ async def run_clean_bot():
                     except Exception:
                         shared_data = {}
 
-                    shared_data["active_pauses"] = active_pauses
-                    shared_data["positions_binance"] = getattr(
-                        bot, "positions_binance", {}
+                    bot.safe_update_shared_data(
+                        {
+                            "active_pauses": active_pauses,
+                            "positions_binance": getattr(bot, "positions_binance", {}),
+                            "trade_decisions": bot.trade_decisions,
+                        },
+                        bot.data_file,
                     )
-                    shared_data["trade_decisions"] = bot.trade_decisions
-
-                    with open(bot.data_file, "w") as f:
-                        json.dump(shared_data, f, indent=4)
 
                     # Sauvegarde de l'état du bot à chaque cycle
                     bot.save_shared_data()
@@ -5343,24 +5345,18 @@ def calculate_position_size(bot, decision):
             risk_pct = min(risk_pct + kelly_frac * 0.5, 0.12)
 
         # SAFE MODE : temporaire, désactivé dès le premier gain
+        mode_safe = False
         try:
-            bot.safe_update_shared_data({"safe_mode": mode_safe}, bot.data_file)
+            with open(bot.data_file, "r") as f:
+                data = json.load(f)
             last_trades = data.get("trade_history", [])[-5:]
             losses = [t for t in last_trades if t.get("pnl_usd", 0) < 0]
             wins = [t for t in last_trades if t.get("pnl_usd", 0) > 0]
             mode_safe = len(losses) >= 3 and len(wins) == 0
             if mode_safe and wins:
                 mode_safe = False
-            data["safe_mode"] = mode_safe
-            bot.safe_update_shared_data(
-                {
-                    "sentiment": {
-                        **shared_data.get("sentiment", {}),
-                        "scores": news_list,
-                    }
-                },
-                bot.data_file,
-            )
+            # Utilise la fonction safe_update_shared_data pour sauvegarder
+            bot.safe_update_shared_data({"safe_mode": mode_safe}, bot.data_file)
         except Exception:
             mode_safe = False
 
@@ -5457,6 +5453,9 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
     """Envoie les rapports de fin de cycle et alertes de risque avancé"""
 
+    import json
+    import numpy as np
+
     try:
         # 1. Rapport des trades si nécessaire
         if trade_decisions:
@@ -5487,21 +5486,6 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                 tf_key = f"{tf} | {pair}"
                 indics = bot.indicators.get(pair_key, {}).get(tf, {})
                 indicators_analysis[tf_key] = indics if indics else {}
-
-        # Charger le sentiment/news si dispo
-        news_sentiment = None
-        try:
-            bot.safe_update_shared_data(
-                {
-                    "trade_decisions": trade_decisions_dict,
-                    "equity_history": equity_history,
-                    "positions_binance": getattr(bot, "positions_binance", {}),
-                    "trade_decisions": getattr(bot, "trade_decisions", {}),
-                },
-                bot.data_file,
-            )
-        except Exception:
-            news_sentiment = None
 
         # Générer les décisions de trade par TF/paire (clé = f"{tf} | {pair}")
         trade_decisions_dict = {}
@@ -5536,12 +5520,29 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                 equity_history = equity_history[-1000:]
             data["equity_history"] = equity_history
 
-            shared_data["positions_binance"] = getattr(bot, "positions_binance", {})
-            shared_data["trade_decisions"] = getattr(bot, "trade_decisions", {})
-            with open(bot.data_file, "w") as f:
-                json.dump(data, f, indent=4)
+            # PATCH : sauvegarde robuste avec safe_update_shared_data
+            bot.safe_update_shared_data(
+                {
+                    "trade_decisions": trade_decisions_dict,
+                    "equity_history": equity_history,
+                    "positions_binance": getattr(bot, "positions_binance", {}),
+                    "trade_decisions": getattr(bot, "trade_decisions", {}),
+                },
+                bot.data_file,
+            )
         except Exception as e:
+            import logging
+
             logging.error(f"Erreur sauvegarde trade_decisions : {e}")
+
+        # Charger le sentiment/news si dispo
+        news_sentiment = None
+        try:
+            with open(bot.data_file, "r") as f:
+                shared_data = json.load(f)
+            news_sentiment = shared_data.get("sentiment", None)
+        except Exception:
+            news_sentiment = None
 
         regime_name = bot.regime if hasattr(bot, "regime") else "Indéterminé"
 
@@ -5596,9 +5597,13 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
                         f"🛑 VaR(95%) critique : {var95:.2%} sur la période !"
                     )
         except Exception as e:
+            import logging
+
             logging.error(f"Erreur alertes risque avancé : {e}")
 
     except Exception as e:
+        import logging
+
         logging.error(f"Erreur envoi rapports: {e}")
 
 
