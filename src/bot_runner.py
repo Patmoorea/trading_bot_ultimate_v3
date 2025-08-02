@@ -1012,16 +1012,15 @@ class TradingBotM4:
             "reason": reason,
         }
         # Ajoute à closed_positions dans shared_data.json
+        closed = []
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
+                closed = shared_data.get("closed_positions", [])
         except Exception:
-            shared_data = {}
-        closed = shared_data.get("closed_positions", [])
+            closed = []
         closed.append(closed_position)
-        shared_data["closed_positions"] = closed
-        with open(self.data_file, "w") as f:
-            json.dump(shared_data, f, indent=4)
+        self.safe_update_shared_data({"closed_positions": closed}, self.data_file)
 
     def get_pending_sales(self):
         """
@@ -2469,8 +2468,9 @@ class TradingBotM4:
     def _update_performance_metrics(self, trade_result):
         """Met à jour les métriques de performance après un trade réel"""
         try:
-            with open(self.data_file, "r") as f:
-                data = json.load(f)
+            self.safe_update_shared_data(
+                {"bot_status": {"performance": performance}}, self.data_file
+            )
 
             performance = data["bot_status"]["performance"]
 
@@ -2880,15 +2880,13 @@ class TradingBotM4:
             key: data.get("sentiment", 0) for key, data in self.market_data.items()
         }
         try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
-        except Exception:
-            shared_data = {}
-        shared_data["last_sentiment_update"] = time.time()
-        shared_data["sentiment_by_symbol"] = symbol_sentiments_out
-        try:
-            with open(self.data_file, "w") as f:
-                json.dump(shared_data, f, indent=2)
+            self.safe_update_shared_data(
+                {
+                    "last_sentiment_update": time.time(),
+                    "sentiment_by_symbol": symbol_sentiments_out,
+                },
+                self.data_file,
+            )
             print("[SENTIMENT SAVE] shared_data.json mis à jour avec les sentiments")
         except Exception as e:
             print(f"[SENTIMENT SAVE ERROR] {e}")
@@ -2976,11 +2974,7 @@ class TradingBotM4:
         )
 
         try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
-            shared_data["sentiment"] = sentiment_data
-            with open(self.data_file, "w") as f:
-                json.dump(shared_data, f, indent=4)
+            self.safe_update_shared_data({"sentiment": sentiment_data}, self.data_file)
             self.logger.info(
                 f"[SENTIMENT] Data written successfully to {self.data_file}"
             )
@@ -5350,8 +5344,7 @@ def calculate_position_size(bot, decision):
 
         # SAFE MODE : temporaire, désactivé dès le premier gain
         try:
-            with open(bot.data_file, "r") as f:
-                data = json.load(f)
+            bot.safe_update_shared_data({"safe_mode": mode_safe}, bot.data_file)
             last_trades = data.get("trade_history", [])[-5:]
             losses = [t for t in last_trades if t.get("pnl_usd", 0) < 0]
             wins = [t for t in last_trades if t.get("pnl_usd", 0) > 0]
@@ -5359,8 +5352,15 @@ def calculate_position_size(bot, decision):
             if mode_safe and wins:
                 mode_safe = False
             data["safe_mode"] = mode_safe
-            with open(bot.data_file, "w") as f:
-                json.dump(data, f, indent=4)
+            bot.safe_update_shared_data(
+                {
+                    "sentiment": {
+                        **shared_data.get("sentiment", {}),
+                        "scores": news_list,
+                    }
+                },
+                bot.data_file,
+            )
         except Exception:
             mode_safe = False
 
@@ -5491,9 +5491,15 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         # Charger le sentiment/news si dispo
         news_sentiment = None
         try:
-            with open(bot.data_file, "r") as f:
-                shared_data = json.load(f)
-            news_sentiment = shared_data.get("sentiment", None)
+            bot.safe_update_shared_data(
+                {
+                    "trade_decisions": trade_decisions_dict,
+                    "equity_history": equity_history,
+                    "positions_binance": getattr(bot, "positions_binance", {}),
+                    "trade_decisions": getattr(bot, "trade_decisions", {}),
+                },
+                bot.data_file,
+            )
         except Exception:
             news_sentiment = None
 
