@@ -2523,9 +2523,10 @@ class TradingBotM4:
                         )
 
             # Sauvegarde des données mises à jour
-            data["bot_status"]["performance"] = performance
-            with open(self.data_file, "w") as f:
-                json.dump(data, f, indent=4)
+            self.safe_update_shared_data(
+                {"bot_status": {"performance": performance}}, self.data_file
+            )
+
         except Exception as e:
             self.logger.error(f"Error updating performance metrics: {e}")
 
@@ -2840,8 +2841,13 @@ class TradingBotM4:
 
         # 3. Récupère la valeur globale du sentiment depuis le fichier partagé
         try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
+            self.safe_update_shared_data(
+                {
+                    "last_sentiment_update": time.time(),
+                    "sentiment_by_symbol": symbol_sentiments_out,
+                },
+                self.data_file,
+            )
             news_sentiment = shared_data.get("sentiment", None)
             if news_sentiment:
                 global_sentiment = news_sentiment.get("overall_sentiment", 0)
