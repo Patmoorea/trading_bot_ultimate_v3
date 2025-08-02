@@ -1,4 +1,7 @@
 import re
+import os
+import json
+import shutil
 from datetime import datetime
 
 
@@ -45,7 +48,12 @@ class NewsPauseManager:
         self.buy_paused_pairs = set()  # Paires où seuls les achats sont bloqués
         self.active_pauses = []
 
-    def safe_update_shared_data(new_fields: dict, data_file="src/shared_data.json"):
+        self.volatility_thresholds = {"low": 0.02, "medium": 0.05, "high": 0.08}
+        self.market_conditions = {}
+
+    def safe_update_shared_data(
+        self, new_fields: dict, data_file="src/shared_data.json"
+    ):
         # 1. Lis le fichier existant SANS jamais repartir sur {}
         try:
             with open(data_file, "r") as f:
@@ -142,7 +150,7 @@ class NewsPauseManager:
                     triggered = True
         return triggered
 
-    def should_pause(news_item, market_data):
+    def should_pause(self, news_item, market_data):
         """
         Décide automatiquement si une pause doit être déclenchée selon :
         - sentiment négatif
@@ -161,7 +169,12 @@ class NewsPauseManager:
 
         # Pause totale si risque systémique
         if risk_class in ["Réglementaire", "Hack"] and impact > 0.6:
-            return {"type": "total", "reason": news_item.get("title"), "duration": 10}
+            return {
+                "type": "total",
+                "reason": news_item.get("title"),
+                "duration": 10,
+                "pair": symbol,
+            }
 
         # Pause sur la paire si sentiment très négatif ET hausse de volatilité
         if sentiment < -0.5 and vol_after > vol_before * 2:
@@ -174,7 +187,12 @@ class NewsPauseManager:
 
         # Pause si la même news repérée sur >2 sources et impact élevé
         if n_sources >= 2 and impact > 0.5:
-            return {"type": "total", "reason": news_item.get("title"), "duration": 10}
+            return {
+                "type": "total",
+                "reason": news_item.get("title"),
+                "duration": 10,
+                "pair": symbol,
+            }
 
         # Pause sur les shorts si news "Short squeeze"
         if "short squeeze" in news_item.get("title", "").lower():
@@ -182,6 +200,7 @@ class NewsPauseManager:
                 "type": "short_only",
                 "reason": news_item.get("title"),
                 "duration": 3,
+                "pair": symbol,
             }
 
         return None  # Pas de pause
@@ -233,29 +252,63 @@ class NewsPauseManager:
     def get_active_pauses(self):
         """
         Retourne la liste des pauses actives sous forme de dicts.
-        Exemple : [{"asset": "ETH", "action": "BUY", "cycles_left": 8, "type": "FULL"}, ...]
+        Exemple : [{"asset": "ETH", "action": "BUY", "cycles_left": 8, "type": "FULL", "reason": ...}, ...]
         """
         pauses = []
         # Pauses par paire (ciblées)
         for pair, cycles_left in self.pair_pauses.items():
             if cycles_left > 0:
                 pause_type = "BUY" if pair in self.buy_paused_pairs else "FULL"
+                reason = getattr(self, "last_event_news", {}).get("title", "")
                 pauses.append(
                     {
                         "asset": pair,
                         "action": pause_type,
                         "cycles_left": cycles_left,
                         "type": pause_type,
+                        "reason": reason,
                     }
                 )
         # Pause globale
         if self.global_cycles_remaining > 0:
+            reason = getattr(self, "last_event_news", {}).get("title", "")
             pauses.append(
                 {
                     "asset": "GLOBAL",
                     "action": "ALL",
                     "cycles_left": self.global_cycles_remaining,
                     "type": "GLOBAL",
+                    "reason": reason,
                 }
             )
         return pauses
+
+    def analyze_market_conditions(self, price_data, volume_data):
+        """
+        Analyse avancée des conditions de marché pour un meilleur timing
+        """
+        for symbol in price_data:
+            volatility = self.calculate_rolling_volatility(price_data[symbol])
+            volume_profile = self.analyze_volume_profile(volume_data[symbol])
+            momentum = self.calculate_momentum_score(price_data[symbol])
+
+            self.market_conditions[symbol] = {
+                "volatility": volatility,
+                "volume_profile": volume_profile,
+                "momentum": momentum,
+            }
+
+    def should_enter_trade(self, symbol):
+        """
+        Vérifie si les conditions sont optimales pour entrer
+        """
+        conditions = self.market_conditions.get(symbol, {})
+
+        if (
+            conditions.get("volatility", 1) < self.volatility_thresholds["medium"]
+            and conditions.get("volume_profile", 0) > 0.7
+            and conditions.get("momentum", 0) > 0
+        ):
+            return True
+
+        return False

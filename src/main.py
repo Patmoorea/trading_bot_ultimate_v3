@@ -14,6 +14,17 @@ from src.strategies import sma_strategy, breakout_strategy, arbitrage_strategy
 from src.bot_runner import _generate_analysis_report
 from src.risk_tools import kelly_criterion, calculate_var, calculate_max_drawdown
 
+TRADING_PARAMS = {
+    "entry_confirmation_threshold": 0.8,
+    "profit_targets": [
+        {"threshold": 1.02, "size": 0.3},
+        {"threshold": 1.035, "size": 0.3},
+        {"threshold": 1.05, "size": 0.4},
+    ],
+    "stop_loss": {"initial": 0.02, "trailing": True, "trail_percent": 0.01},
+    "position_sizing": {"base_risk": 0.02, "max_risk": 0.05, "scaling": True},
+}
+
 # --- CONFIGURATION ---
 st.set_page_config(
     page_title="Trading Bot Ultimate v4 - Dashboard",

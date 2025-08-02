@@ -911,6 +911,368 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def calculate_squeeze_momentum(self, df):
+        """
+        Calcule l'indicateur TTM Squeeze avec momentum.
+        Un squeeze se produit quand la volatilité diminue et la pression augmente.
+        """
+        try:
+            # Keltner Channel
+            typical_price = (df["high"] + df["low"] + df["close"]) / 3
+            mean_tp = typical_price.rolling(window=20).mean()
+            atr = (
+                pd.DataFrame(
+                    {
+                        "h-l": df["high"] - df["low"],
+                        "h-pc": abs(df["high"] - df["close"].shift(1)),
+                        "l-pc": abs(df["low"] - df["close"].shift(1)),
+                    }
+                )
+                .max(axis=1)
+                .rolling(window=20)
+                .mean()
+            )
+
+            keltner_up = mean_tp + (atr * 1.5)
+            keltner_down = mean_tp - (atr * 1.5)
+
+            # Bollinger Bands
+            std = df["close"].rolling(window=20).std()
+            bb_up = mean_tp + (std * 2)
+            bb_down = mean_tp - (std * 2)
+
+            # Squeeze Detection
+            squeeze_on = (bb_up <= keltner_up) & (bb_down >= keltner_down)
+
+            # Momentum
+            highest = df["high"].rolling(window=20).max()
+            lowest = df["low"].rolling(window=20).min()
+            momentum = df["close"] - ((highest + lowest) / 2)
+
+            return {
+                "squeeze_on": squeeze_on.iloc[-1],
+                "momentum": momentum.iloc[-1],
+                "momentum_change": momentum.diff().iloc[-1],
+            }
+        except Exception as e:
+            self.logger.error(f"Erreur calcul squeeze momentum: {e}")
+            return {"squeeze_on": False, "momentum": 0, "momentum_change": 0}
+
+    def analyze_volume_distribution(self, df):
+        """
+        Analyse la distribution des volumes pour identifier les zones d'accumulation/distribution.
+        """
+        try:
+            # Volume Profile
+            price_bins = pd.qcut(df["close"], q=10, duplicates="drop")
+            vol_profile = df.groupby(price_bins)["volume"].sum()
+
+            # Volume POC (Point of Control)
+            poc_price = vol_profile.idxmax().left
+
+            # Volume Delta
+            buy_volume = df["volume"][df["close"] > df["open"]].sum()
+            sell_volume = df["volume"][df["close"] < df["open"]].sum()
+            delta = buy_volume - sell_volume
+
+            # Accumulation/Distribution
+            is_accumulation = delta > 0 and df["close"].iloc[-1] > df["close"].mean()
+            is_distribution = delta < 0 and df["close"].iloc[-1] < df["close"].mean()
+
+            return {
+                "poc_price": poc_price,
+                "volume_delta": delta,
+                "is_accumulation": is_accumulation,
+                "is_distribution": is_distribution,
+                "buy_volume_ratio": (
+                    buy_volume / (buy_volume + sell_volume)
+                    if (buy_volume + sell_volume) > 0
+                    else 0.5
+                ),
+            }
+        except Exception as e:
+            self.logger.error(f"Erreur analyse volume: {e}")
+            return {
+                "poc_price": 0,
+                "volume_delta": 0,
+                "is_accumulation": False,
+                "is_distribution": False,
+                "buy_volume_ratio": 0.5,
+            }
+
+    def analyze_order_flow(self, df):
+        """
+        Analyse avancée du flux d'ordres pour détecter la pression acheteur/vendeur.
+        """
+        try:
+            # Calcul de l'absorption
+            buying_pressure = (
+                (df["close"] - df["low"]) / (df["high"] - df["low"])
+            ) * df["volume"]
+            selling_pressure = (
+                (df["high"] - df["close"]) / (df["high"] - df["low"])
+            ) * df["volume"]
+
+            # CVD (Cumulative Volume Delta)
+            cvd = (buying_pressure - selling_pressure).cumsum()
+
+            # Imbalance Detection
+            imbalance = (
+                abs(buying_pressure.mean() - selling_pressure.mean())
+                / selling_pressure.mean()
+            )
+
+            return {
+                "buying_pressure": buying_pressure.iloc[-1],
+                "selling_pressure": selling_pressure.iloc[-1],
+                "cvd": cvd.iloc[-1],
+                "imbalance": imbalance,
+                "pressure_ratio": (
+                    buying_pressure.iloc[-1] / selling_pressure.iloc[-1]
+                    if selling_pressure.iloc[-1] != 0
+                    else 1
+                ),
+            }
+        except Exception as e:
+            self.logger.error(f"Erreur analyse order flow: {e}")
+            return {
+                "buying_pressure": 0,
+                "selling_pressure": 0,
+                "cvd": 0,
+                "imbalance": 0,
+                "pressure_ratio": 1,
+            }
+
+    def identify_market_structure(self, df):
+        """
+        Identifie la structure du marché (tendance, range, etc.).
+        """
+        try:
+            # Swing points
+            n = 5  # lookback period
+            highs = df["high"].rolling(window=2 * n + 1, center=True).max()
+            lows = df["low"].rolling(window=2 * n + 1, center=True).min()
+
+            # Higher Highs & Lower Lows
+            higher_highs = highs.diff() > 0
+            lower_lows = lows.diff() < 0
+
+            # Trend Detection
+            ema20 = df["close"].ewm(span=20).mean()
+            ema50 = df["close"].ewm(span=50).mean()
+            trend_strength = (ema20.iloc[-1] - ema50.iloc[-1]) / ema50.iloc[-1]
+
+            # Range Analysis
+            atr = (
+                pd.DataFrame(
+                    {
+                        "h-l": df["high"] - df["low"],
+                        "h-pc": abs(df["high"] - df["close"].shift(1)),
+                        "l-pc": abs(df["low"] - df["close"].shift(1)),
+                    }
+                )
+                .max(axis=1)
+                .rolling(window=14)
+                .mean()
+            )
+
+            is_ranging = atr.iloc[-1] < atr.mean()
+
+            return {
+                "trend_strength": trend_strength,
+                "is_ranging": is_ranging,
+                "higher_highs": higher_highs.iloc[-1],
+                "lower_lows": lower_lows.iloc[-1],
+                "structure": "range" if is_ranging else "trend",
+            }
+        except Exception as e:
+            self.logger.error(f"Erreur identification structure: {e}")
+            return {
+                "trend_strength": 0,
+                "is_ranging": False,
+                "higher_highs": False,
+                "lower_lows": False,
+                "structure": "unknown",
+            }
+
+    def multi_timeframe_analysis(self, symbol, timeframes):
+        """
+        Analyse multi-timeframes pour confirmation.
+        """
+        try:
+            analysis = {}
+            for tf in timeframes:
+                df = self.get_timeframe_data(symbol, tf)
+                if df is None or len(df) < 50:
+                    continue
+
+                # Analyses par timeframe
+                structure = self.identify_market_structure(df)
+                volume = self.analyze_volume_distribution(df)
+                momentum = self.calculate_squeeze_momentum(df)
+
+                analysis[tf] = {
+                    "structure": structure,
+                    "volume": volume,
+                    "momentum": momentum,
+                    "alignment": self.check_alignment(df),
+                }
+
+            return analysis
+        except Exception as e:
+            self.logger.error(f"Erreur analyse multi-timeframes: {e}")
+            return {}
+
+    def calculate_confirmation_score(self, indicators, mtp_analysis):
+        """
+        Calcule un score de confirmation basé sur tous les indicateurs.
+        """
+        try:
+            score = 0
+            weight_sum = 0
+
+            # 1. Structure de marché (40%)
+            if indicators.get("market_structure"):
+                ms = indicators["market_structure"]
+                if ms["structure"] == "trend":
+                    score += 0.4 * abs(ms["trend_strength"])
+                weight_sum += 0.4
+
+            # 2. Volume Analysis (30%)
+            if indicators.get("volume_profile"):
+                vp = indicators["volume_profile"]
+                if vp["is_accumulation"]:
+                    score += 0.3
+                elif vp["is_distribution"]:
+                    score -= 0.3
+                weight_sum += 0.3
+
+            # 3. Momentum & Squeeze (20%)
+            if indicators.get("squeeze_momentum"):
+                sq = indicators["squeeze_momentum"]
+                if sq["squeeze_on"] and sq["momentum"] > 0:
+                    score += 0.2
+                elif sq["squeeze_on"] and sq["momentum"] < 0:
+                    score -= 0.2
+                weight_sum += 0.2
+
+            # 4. Order Flow (10%)
+            if indicators.get("order_flow"):
+                of = indicators["order_flow"]
+                if of["pressure_ratio"] > 1:
+                    score += 0.1 * min(of["pressure_ratio"] - 1, 1)
+                elif of["pressure_ratio"] < 1:
+                    score -= 0.1 * min(1 - of["pressure_ratio"], 1)
+                weight_sum += 0.1
+
+            # Normalisation
+            if weight_sum > 0:
+                score = score / weight_sum
+
+            return score
+        except Exception as e:
+            self.logger.error(f"Erreur calcul score confirmation: {e}")
+            return 0
+
+    def get_volatility_multiplier(self, symbol):
+        """
+        Retourne un multiplicateur basé sur la volatilité.
+        Réduit le sizing quand la volatilité est élevée.
+        """
+        try:
+            df = self.get_recent_data(symbol)
+            if df is None or len(df) < 20:
+                return 1.0
+
+            # ATR relatif
+            atr = (
+                pd.DataFrame(
+                    {
+                        "h-l": df["high"] - df["low"],
+                        "h-pc": abs(df["high"] - df["close"].shift(1)),
+                        "l-pc": abs(df["low"] - df["close"].shift(1)),
+                    }
+                )
+                .max(axis=1)
+                .rolling(window=14)
+                .mean()
+                .iloc[-1]
+            )
+
+            price = df["close"].iloc[-1]
+            atr_pct = atr / price
+
+            # Ajustement du multiplicateur
+            if atr_pct < 0.01:  # Très faible volatilité
+                return 1.2
+            elif atr_pct < 0.02:  # Volatilité normale
+                return 1.0
+            elif atr_pct < 0.03:  # Volatilité élevée
+                return 0.8
+            elif atr_pct < 0.04:  # Très haute volatilité
+                return 0.6
+            else:  # Volatilité extrême
+                return 0.4
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul multiplicateur volatilité: {e}")
+            return 1.0
+
+    def get_risk_multiplier(self, symbol):
+        """
+        Calcule un multiplicateur de risque basé sur plusieurs facteurs.
+        """
+        try:
+            multiplier = 1.0
+
+            # 1. Corrélation avec le marché
+            correlation = self.get_market_correlation(symbol)
+            if correlation > 0.8:
+                multiplier *= 0.8  # Réduit le risque si forte corrélation
+
+            # 2. Liquidité
+            liquidity_score = self.get_liquidity_score(symbol)
+            if liquidity_score < 0.5:
+                multiplier *= 0.7  # Réduit le risque si faible liquidité
+
+            # 3. Spread moyen
+            spread = self.get_average_spread(symbol)
+            if spread > 0.001:  # Plus de 0.1%
+                multiplier *= 0.9
+
+            # 4. Distance aux supports/résistances
+            key_levels = self.get_key_levels(symbol)
+            if self.is_near_key_level(symbol, key_levels):
+                multiplier *= 1.1  # Augmente légèrement si près d'un niveau clé
+
+            return max(0.3, min(multiplier, 1.2))  # Borne entre 0.3 et 1.2
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul multiplicateur risque: {e}")
+            return 1.0
+
+    # Méthodes utilitaires nécessaires
+    def get_timeframe_data(self, symbol, timeframe):
+        """Helper pour récupérer les données d'un timeframe."""
+        try:
+            return self.market_data.get(symbol, {}).get(timeframe, None)
+        except Exception:
+            return None
+
+    def check_alignment(self, df):
+        """Vérifie l'alignement des indicateurs."""
+        try:
+            ema20 = df["close"].ewm(span=20).mean()
+            ema50 = df["close"].ewm(span=50).mean()
+            rsi = self.calculate_rsi(df["close"])
+
+            price_trend = ema20.iloc[-1] > ema50.iloc[-1]
+            momentum_aligned = rsi.iloc[-1] > 50 if price_trend else rsi.iloc[-1] < 50
+
+            return price_trend and momentum_aligned
+        except Exception:
+            return False
+
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
@@ -1875,6 +2237,26 @@ class TradingBotM4:
                 "sentiment": sentiment_score,
             }
             print(f"[DEBUG PATCH DECISION] {decision}")
+
+            indicators.update(
+                {
+                    "squeeze_momentum": self.calculate_squeeze_momentum(ohlcv_df),
+                    "volume_profile": self.analyze_volume_distribution(ohlcv_df),
+                    "order_flow": self.analyze_order_flow(ohlcv_df),
+                    "market_structure": self.identify_market_structure(ohlcv_df),
+                }
+            )
+
+            # Analyse multi-timeframes
+            timeframes = ["5m", "15m", "1h", "4h"]
+            mtp_analysis = self.multi_timeframe_analysis(symbol, timeframes)
+
+            # Score de confirmation
+            confirmation_score = self.calculate_confirmation_score(
+                indicators, mtp_analysis
+            )
+
+            return confirmation_score > 0.8
 
         log_dashboard(
             f"[ANALYZE_SIGNALS] {symbol} | TF: {tf} | "
@@ -5010,6 +5392,7 @@ async def execute_trade_decisions(bot, trade_decisions):
         news_list = news_sentiment.get("scores", [])
     except Exception:
         news_list = []
+
     # Vérification des champs "symbols" et "sentiment" dans les news
     for news in news_list:
         if "symbols" not in news or not news["symbols"]:
@@ -5036,11 +5419,13 @@ async def execute_trade_decisions(bot, trade_decisions):
 
         # ----- PATCH : Gestion de la pause news avancée -----
         # On vérifie si la pause news s'applique à cette paire et action
-        if bot.news_pause_manager.should_pause(pair=pair, action=action.upper()):
+        active_pauses = bot.news_pause_manager.get_active_pauses()
+        if any(
+            p.get("asset") == pair or p.get("asset") == "GLOBAL" for p in active_pauses
+        ):
             log_dashboard(
                 f"[NEWS PAUSE] Trade {action.upper()} sur {pair} bloqué (news critique/pause en cours)"
             )
-            # Notification Telegram si besoin (optionnel)
             await bot.telegram.send_message(
                 f"🚨 Trading {action.upper()} sur {pair} bloqué à cause d'une news critique !"
             )
@@ -5320,83 +5705,104 @@ async def run_automl_tuning(bot, mode="cnn_lstm"):
 
 def calculate_position_size(bot, decision):
     """
-    Sizing progressif : risque dynamique selon la confiance du signal.
-    Utilise le Kelly optimal si possible.
-    Mode SAFE réduit temporairement le sizing.
-    Réduction sizing si drawdown > 15% sur le mois.
-    """
-    import json
+    Sizing progressif et adaptatif basé sur :
+    - Confiance du signal (0.7+ => 9%, 0.4+ => 4%, autre => 2%)
+    - Kelly Criterion optimal
+    - Mode SAFE (25% du sizing normal si 3+ pertes consécutives)
+    - Drawdown protection (50% du sizing si DD > 15%)
 
+    Returns:
+        float: Montant en USDC à trader
+    """
     try:
-        # --- Récupération du solde ---
+        # --- 1. Configuration de base ---
         balance = bot.get_performance_metrics().get("balance", 0)
         confidence = float(decision.get("confidence", 0.5))
+        MIN_NOTIONAL = 5  # Montant minimum en USDC
 
-        # Sizing progressif selon confiance
+        # --- 2. Sizing de base selon confiance ---
         if confidence > 0.7:
-            risk_pct = 0.09  # 9%
+            risk_pct = 0.09  # 9% max pour très haute confiance
         elif confidence > 0.4:
-            risk_pct = 0.04
+            risk_pct = 0.04  # 4% pour confiance moyenne
         else:
-            risk_pct = 0.02
+            risk_pct = 0.02  # 2% pour faible confiance
 
-        # Kelly optimal
+        # --- 3. Ajustement Kelly ---
         perf = bot.get_performance_metrics()
         win_rate = perf.get("win_rate", 0.55)
         profit_factor = perf.get("profit_factor", 1.7)
-        kelly_frac = kelly_criterion(win_rate, profit_factor)
-        if kelly_frac > 0:
-            risk_pct = min(risk_pct + kelly_frac * 0.5, 0.12)
+        kelly = kelly_criterion(win_rate, profit_factor)
 
-        # SAFE MODE : temporaire, désactivé dès le premier gain
-        mode_safe = False
+        if kelly > 0:
+            # Augmente le sizing selon Kelly mais plafonne à 12%
+            risk_pct = min(risk_pct + kelly * 0.5, 0.12)
+
+        # --- 4. Mode SAFE (après pertes) ---
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
-            last_trades = data.get("trade_history", [])[-5:]
-            losses = [t for t in last_trades if t.get("pnl_usd", 0) < 0]
-            wins = [t for t in last_trades if t.get("pnl_usd", 0) > 0]
+
+            # Analyse des 5 derniers trades
+            recent_trades = data.get("trade_history", [])[-5:]
+            losses = [t for t in recent_trades if t.get("pnl_usd", 0) < 0]
+            wins = [t for t in recent_trades if t.get("pnl_usd", 0) > 0]
+
+            # Active mode safe si 3+ pertes consécutives sans gain
             mode_safe = len(losses) >= 3 and len(wins) == 0
+
+            # Désactive si au moins 1 gain récent
             if mode_safe and wins:
                 mode_safe = False
-            # Utilise la fonction safe_update_shared_data pour sauvegarder
+
+            # Sauvegarde l'état du mode safe
             bot.safe_update_shared_data({"safe_mode": mode_safe}, bot.data_file)
-        except Exception:
-            mode_safe = False
 
-        if mode_safe:
-            risk_pct *= 0.25  # Sizing réduit à 25%
-            print("[SAFE MODE] Sizing réduit temporairement.")
+            # Réduit le sizing à 25% si mode safe actif
+            if mode_safe:
+                risk_pct *= 0.25
+                print("[SAFE MODE] Sizing réduit à 25% après pertes consécutives")
 
-        # --- Drawdown global : sizing divisé par 2 si drawdown > 15% ---
+        except Exception as e:
+            print(f"[WARNING] Erreur vérification mode safe: {e}")
+
+        # --- 5. Protection Drawdown ---
         try:
             with open(bot.data_file, "r") as f:
                 data = json.load(f)
+
+            # Analyse sur 30 jours minimum
             equity_history = data.get("equity_history", [])
             if equity_history and len(equity_history) >= 30:
                 balances = [pt["balance"] for pt in equity_history if "balance" in pt]
+
+                # Calcul drawdown
                 peak = max(balances)
                 trough = min(balances)
                 drawdown = (trough - peak) / peak if peak > 0 else 0
+
+                # Réduit sizing de 50% si drawdown > 15%
                 if drawdown < -0.15:
                     risk_pct *= 0.5
                     print(
-                        "[DRAWDOWN] Sizing réduit de moitié temporairement (drawdown > 15%)"
+                        f"[DRAWDOWN] Sizing réduit de 50% (DD actuel: {drawdown:.1%})"
                     )
-        except Exception:
-            pass
 
-        # --- Calcul final ---
+        except Exception as e:
+            print(f"[WARNING] Erreur calcul drawdown: {e}")
+
+        # --- 6. Calcul final ---
         size = balance * risk_pct
-        min_notional = 5
-        size = max(min_notional, round(size, 2))
+        size = max(MIN_NOTIONAL, round(size, 2))  # Arrondi à 2 décimales
+
+        print(f"[SIZING] Final: {size:.2f} USDC ({risk_pct*100:.1f}% du capital)")
         return size
 
     except Exception as e:
         import logging
 
-        logging.error(f"Erreur calcul sizing : {e}")
-        return 10
+        logging.error(f"Erreur critique calcul sizing: {e}")
+        return MIN_NOTIONAL  # Retourne le minimum en cas d'erreur
 
 
 async def send_trade_notification(bot, decision, trade_result, amount):
