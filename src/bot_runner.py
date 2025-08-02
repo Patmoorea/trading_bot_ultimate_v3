@@ -833,6 +833,10 @@ class TradingBotM4:
             },
         }
 
+        self.last_correlation_check = 0
+        self.correlation_cache = {}
+        self.correlation_cache_ttl = 300  # 5 minutes
+
         self.system_metrics = {
             "cpu_usage": [],
             "memory_usage": [],
