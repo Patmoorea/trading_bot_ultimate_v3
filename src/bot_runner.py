@@ -4611,7 +4611,9 @@ async def run_clean_bot():
                         bot.data_file,
                     )
 
-                trading_paused = bot.news_pause_manager.should_pause()
+                # --- CORRECTION : Vérification de la pause globale via l'attribut ---
+                trading_paused = bot.news_pause_manager.global_cycles_remaining > 0
+
                 if trading_paused:
                     print(
                         "Trading en pause: calculs et signaux mis à jour, EXÉCUTION DES TRADES BLOQUÉE."
