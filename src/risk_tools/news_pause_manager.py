@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from src.bot_runner import safe_update_shared_data
 
 
 class NewsPauseManager:
@@ -45,6 +44,34 @@ class NewsPauseManager:
         self.pair_pauses = {}  # {pair: cycles_restants}
         self.buy_paused_pairs = set()  # Paires où seuls les achats sont bloqués
         self.active_pauses = []
+
+    def safe_update_shared_data(new_fields: dict, data_file="src/shared_data.json"):
+        # 1. Lis le fichier existant SANS jamais repartir sur {}
+        try:
+            with open(data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            # En cas de bug, tente de restaurer une sauvegarde précédente
+            backup_file = data_file + ".bak"
+            if os.path.exists(backup_file):
+                with open(backup_file, "r") as f:
+                    shared_data = json.load(f)
+            else:
+                shared_data = None
+        # Si shared_data est None, NE PAS ÉCRIRE !
+        if shared_data is None:
+            print("[SAFE PATCH] shared_data.json corrompu, skip écriture !")
+            return
+        # 2. Mets à jour les champs nécessaires
+        shared_data.update(new_fields)
+        # 3. Sauvegarde une copie de secours avant d’écrire
+        try:
+            shutil.copyfile(data_file, data_file + ".bak")
+        except Exception:
+            pass
+        # 4. Écris
+        with open(data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
 
     def activate_pause(self, pause_decision):
         # Ajoute la pause active dans la RAM ou le fichier partagé

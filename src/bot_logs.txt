@@ -87662,3 +87662,12 @@
 2025-08-02T04:30:28.122510 | [ORDER] Déjà long sur TRX/USDC, achat ignoré (portefeuille Binance).
 2025-08-02T04:30:29.791244 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.021357104367671836
 2025-08-02T04:30:29.798557 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-02T04:38:23.949910 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-02T04:38:23.957721 | Initialisation des modèles d'IA...
+2025-08-02T04:38:24.451392 | ✅ Modèles d'IA initialisés avec succès
+2025-08-02T04:38:26.086329 | ✅ PPO Strategy initialized successfully
+2025-08-02T04:38:26.091041 | ✅ Bot initialisé avec Telegram: True
+2025-08-02T04:38:26.091095 | ✅ Trading en direct: True
+2025-08-02T04:38:26.091139 | ✅ IA activée: True
+2025-08-02T04:38:26.091183 | ✅ Analyse de news activée: True
+2025-08-02T04:40:30.445207 | [NEWS] Lancement boucle d'analyse des news…
