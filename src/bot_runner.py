@@ -729,6 +729,56 @@ def merge_news_processed(old_scores, new_scores):
     return new_scores
 
 
+class APIRequestOptimizer:
+    """Gestionnaire optimisé des requêtes API"""
+
+    def __init__(self):
+        self.rate_limits = {}
+        self.cache = TTLCache(maxsize=100, ttl=60)
+        self.backup_endpoints = []
+
+    async def execute_with_retry(self, request_func, max_retries=3):
+        for i in range(max_retries):
+            try:
+                return await request_func()
+            except Exception as e:
+                if i == max_retries - 1:
+                    raise e
+                await asyncio.sleep(2**i)
+
+
+class DataBackupManager:
+    """Gestionnaire de sauvegarde des données"""
+
+    def __init__(self, backup_dir="backups"):
+        self.backup_dir = backup_dir
+        os.makedirs(backup_dir, exist_ok=True)
+
+    def backup_trade_data(self, data):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"trade_data_{timestamp}.parquet"
+        self.save_parquet(data, os.path.join(self.backup_dir, filename))
+
+
+class PerformanceMonitor:
+    """Système avancé de monitoring des performances"""
+
+    def __init__(self):
+        self.metrics = defaultdict(list)
+        self.alerts = []
+
+    def track_metric(self, name, value):
+        self.metrics[name].append({"timestamp": datetime.now(), "value": value})
+        self.check_alerts(name, value)
+
+    def check_alerts(self, metric_name, value):
+        """Vérifie les déviations de performance"""
+        if metric_name == "win_rate" and value < 0.55:
+            self.add_alert("Win rate below threshold", severity="high")
+        elif metric_name == "drawdown" and value < -0.15:
+            self.add_alert("Excessive drawdown", severity="critical")
+
+
 class TradingBotM4:
     def __init__(self):
         # Configuration de base existante...
@@ -910,6 +960,91 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
+
+    def analyze_volume_profile(self, symbol, timeframe="1h"):
+        """Analyse avancée du volume profile"""
+        df = self.get_timeframe_data(symbol, timeframe)
+        if df is None:
+            return None
+
+        # Calcul des points d'accumulation/distribution
+        volume_nodes = self.calculate_volume_nodes(df)
+
+        # Détection des zones de haute liquidité
+        liquidity_zones = self.identify_liquidity_zones(df)
+
+        return {
+            "volume_nodes": volume_nodes,
+            "liquidity_zones": liquidity_zones,
+            "poc_price": self.calculate_poc_price(df),
+        }
+
+    def analyze_order_pressure(self, symbol):
+        """Analyse de la pression des ordres limites"""
+        orderbook = self.get_ws_orderbook(symbol)
+        if not orderbook:
+            return None
+
+        bid_pressure = self.calculate_bid_pressure(orderbook["bids"])
+        ask_pressure = self.calculate_ask_pressure(orderbook["asks"])
+
+        return {
+            "bid_pressure": bid_pressure,
+            "ask_pressure": ask_pressure,
+            "imbalance": bid_pressure - ask_pressure,
+        }
+
+    def calculate_dynamic_stoploss(self, symbol, timeframe="1h"):
+        """Calcule un stop-loss dynamique basé sur l'ATR"""
+        try:
+            df = self.get_timeframe_data(symbol, timeframe)
+            if df is None:
+                return self.stop_loss_pct  # Retourne le stop-loss par défaut
+
+            atr = self.calculate_atr(df, period=14)
+            price = df["close"][-1]
+
+            # Stop-loss adaptatif : entre 1% et 3% selon l'ATR
+            atr_pct = atr / price
+            dynamic_sl = min(max(atr_pct * 2, 0.01), 0.03)
+
+            return dynamic_sl
+        except Exception as e:
+            self.logger.error(f"Erreur calcul stop-loss dynamique: {e}")
+            return self.stop_loss_pct
+
+    def analyze_correlations(self):
+        """Analyse les corrélations entre paires pour la diversification"""
+        correlations = {}
+        for pair1 in self.pairs_valid:
+            correlations[pair1] = {}
+            for pair2 in self.pairs_valid:
+                if pair1 != pair2:
+                    corr = self.calculate_pair_correlation(pair1, pair2)
+                    correlations[pair1][pair2] = corr
+        return correlations
+
+    def calculate_trade_quality_score(self, trade_data):
+        """Score de qualité des trades basé sur multiples facteurs"""
+        score = 0
+
+        # Timing d'entrée (proximité support/résistance)
+        if self.is_near_key_level(trade_data["symbol"], trade_data["price"]):
+            score += 2
+
+        # Volume au moment de l'entrée
+        if trade_data.get("volume_ratio", 1) > 1.5:
+            score += 1
+
+        # Momentum aligné
+        if self.check_momentum_alignment(trade_data):
+            score += 1
+
+        # Convergence multi-timeframes
+        if self.check_timeframe_alignment(trade_data):
+            score += 2
+
+        return score
 
     def calculate_squeeze_momentum(self, df):
         """
