@@ -5260,30 +5260,34 @@ async def run_clean_bot():
                     action, confidence = bot.aggregate_timeframe_signals(
                         pair, pair_signals
                     )
-                    dominant_tf = "1h"  # Timeframe de référence
+                    dominant_tf = "1h"
 
                     # Récupération des signaux du timeframe dominant
                     dominant_signals = pair_signals.get(dominant_tf, {}).get(
                         "signals", {}
                     )
 
-                    decision = {
-                        "action": "neutral",
-                        "confidence": abs(total_score),
-                        "signals": signals,
-                        "metrics": {
-                            "volatility_factor": volatility_factor,
-                            "market_pressure": market_pressure,
-                            "liquidity_score": liquidity_score,
-                            "thresholds": {
-                                "buy": buy_threshold,
-                                "sell": sell_threshold,
-                            },
-                            "weights": weights,
+                    # Construction de la décision finale avec les bonnes variables
+                    final_decision = {
+                        "pair": pair,
+                        "action": action,
+                        "confidence": confidence,
+                        "signals": {
+                            "technical": dominant_signals.get("technical", {}).get(
+                                "score", 0
+                            ),
+                            "momentum": dominant_signals.get("momentum", {}).get(
+                                "score", 0
+                            ),
+                            "orderflow": dominant_signals.get("orderflow", {}).get(
+                                "score", 0
+                            ),
+                            "ai": dominant_signals.get("ai", 0),
+                            "sentiment": dominant_signals.get("sentiment", 0),
                         },
-                        "timestamp": get_current_time(),  # Ajout ici
-                        "symbol": symbol,
-                        "timeframe": tf,
+                        "metrics": pair_signals.get(dominant_tf, {}).get("metrics", {}),
+                        "timestamp": get_current_time(),
+                        "tf": dominant_tf,
                     }
 
                     trade_decisions.append(final_decision)

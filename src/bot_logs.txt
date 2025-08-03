@@ -137599,3 +137599,40 @@
 2025-08-03T05:56:03.898568 | ✅ Trading en direct: True
 2025-08-03T05:56:03.898613 | ✅ IA activée: True
 2025-08-03T05:56:03.898656 | ✅ Analyse de news activée: True
+2025-08-03T05:58:00.965042 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-03T05:59:24.436531 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0412 | Tendance: 0.0002
+2025-08-03T05:59:24.442151 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-03T05:59:24.475601 |  Démarrage cycle trading
+2025-08-03T05:59:58.407173 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0412 | Tendance: 0.0002
+2025-08-03T05:59:58.418962 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T05:59:58.419060 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:01:11.732212 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1942 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:01:11.898322 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1717 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:01:12.065130 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:01:12.234928 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:01:12.406695 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:01:12.568336 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:01:43.896239 |  Démarrage cycle trading
+2025-08-03T06:02:18.828009 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0405 | Tendance: 0.0009
+2025-08-03T06:02:18.837413 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:02:18.837525 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:03:01.125384 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1922 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:03:01.288690 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1717 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:03:01.454648 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:03:01.619611 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:03:01.785669 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:03:01.947171 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:03:33.678987 |  Démarrage cycle trading
+2025-08-03T06:04:11.479122 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0405 | Tendance: 0.0009
+2025-08-03T06:04:11.490358 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:04:11.490466 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:04:56.787723 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1766 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:04:56.949197 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1717 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:04:57.127216 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:04:57.298562 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:04:57.457166 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:04:57.615292 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:05:29.142881 |  Démarrage cycle trading
+2025-08-03T06:06:06.386725 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:06:06.396266 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:06:06.396493 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
