@@ -137368,3 +137368,7 @@
 2025-08-03T03:24:56.467052 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
 2025-08-03T03:24:58.714674 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-08-03T03:24:58.725989 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-08-03T03:25:00.957452 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:25:00.970020 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-08-03T03:25:03.177460 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:25:03.182170 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)

@@ -972,6 +972,42 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def debug_signals_state(self, pair_key, tf):
+        """Vérifie et affiche l'état des signaux pour un pair/timeframe"""
+        try:
+            if pair_key not in self.market_data:
+                print(f"[DEBUG] Pas de market_data pour {pair_key}")
+                return False
+
+            if tf not in self.market_data[pair_key]:
+                print(f"[DEBUG] Pas de données {tf} pour {pair_key}")
+                return False
+
+            data = self.market_data[pair_key][tf]
+            if not data:
+                print(f"[DEBUG] Données vides pour {pair_key}-{tf}")
+                return False
+
+            # Vérifie les composants essentiels
+            has_ohlcv = all(
+                k in data for k in ["open", "high", "low", "close", "volume"]
+            )
+            has_technical = "technical" in data
+            has_ai = "ai_prediction" in data
+            has_sentiment = "sentiment" in data
+
+            print(f"[DEBUG] État des signaux {pair_key}-{tf}:")
+            print(f"  OHLCV: {'✅' if has_ohlcv else '❌'}")
+            print(f"  Technical: {'✅' if has_technical else '❌'}")
+            print(f"  AI: {'✅' if has_ai else '❌'}")
+            print(f"  Sentiment: {'✅' if has_sentiment else '❌'}")
+
+            return has_ohlcv and (has_technical or has_ai or has_sentiment)
+
+        except Exception as e:
+            print(f"[DEBUG] Erreur vérification signaux {pair_key}-{tf}: {e}")
+            return False
+
     def calculate_correlation_matrix(self):
         """Calcule la matrice de corrélation entre les paires"""
         correlations = {}
@@ -2231,216 +2267,239 @@ class TradingBotM4:
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
-        Analyse complète des signaux de trading basée sur AdvancedIndicators.
-        Intègre les indicateurs réellement disponibles :
-        - Trend (supertrend, vwma, kama, psar, trix)
-        - Momentum (awesome oscillator, williams_r, cci)
-        - Orderflow (delta_volume, imbalance, smart_money_index, liquidity_wave, bid_ask_ratio)
+        Analyse technique complète avec indicateurs avancés.
+        Retourne une décision de trading avec scores et signaux détaillés.
         """
-        current_time = "2025-08-03 02:31:05"
-        current_user = "Patmoorea"
-
-        def is_valid(val):
-            return val is not None and not (
-                isinstance(val, float) and (np.isnan(val) or np.isinf(val))
-            )
-
         try:
-            log_dashboard(f"[{current_time}] {current_user} - Début analyse {symbol}")
+            # Configuration et validation initiale
+            current_time = get_current_time()
+            print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
 
-            # === 1. Initialisation des indicateurs avancés ===
-            advanced_indicators = AdvancedIndicators()
+            def is_valid(val):
+                """Vérifie si une valeur est utilisable pour les calculs"""
+                if val is None:
+                    return False
+                if isinstance(val, (pd.Series, pd.DataFrame)):
+                    return not (val.isnull().all() or val.isin([np.inf, -np.inf]).any())
+                return not (isinstance(val, float) and (np.isnan(val) or np.isinf(val)))
 
-            # === 2. Vérification des données ===
-            if not all(
-                col in ohlcv_df.columns
-                for col in ["open", "high", "low", "close", "volume"]
-            ):
-                log_dashboard(f"[ERROR] Données OHLCV incomplètes pour {symbol}")
+            # Validation des données OHLCV
+            required_columns = ["open", "high", "low", "close", "volume"]
+            if not all(col in ohlcv_df.columns for col in required_columns):
+                print(f"❌ {symbol}: Données OHLCV incomplètes")
                 return {"action": "neutral", "confidence": 0, "signals": {}}
 
-            # === 3. Calcul des indicateurs avancés ===
-            trend_indicators = advanced_indicators.indicators["trend"]
-            momentum_indicators = advanced_indicators.indicators["momentum"]
-            orderflow_indicators = advanced_indicators.indicators["orderflow"]
+            if len(ohlcv_df) < 20:
+                print(f"❌ {symbol}: Données insuffisantes ({len(ohlcv_df)} lignes)")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
 
-            # Calcul des indicateurs de tendance
+            # Initialisation des indicateurs
+            try:
+                advanced_indicators = AdvancedIndicators()
+            except Exception as e:
+                print(f"❌ Erreur initialisation indicateurs: {e}")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
+
+            # === CALCUL DES INDICATEURS ===
+            print(f"\n📊 Calcul indicateurs {symbol}-{tf}")
+
+            # 1. Indicateurs de tendance
+            trend_indicators = advanced_indicators.indicators["trend"]
             supertrend = trend_indicators["supertrend"](ohlcv_df)
             vwma = trend_indicators["vwma"](ohlcv_df)
             kama = trend_indicators["kama"](ohlcv_df)
             psar = trend_indicators["psar"](ohlcv_df)
             trix = trend_indicators["trix"](ohlcv_df)
 
-            # Calcul des indicateurs de momentum
+            # 2. Indicateurs de momentum
+            momentum_indicators = advanced_indicators.indicators["momentum"]
             ao = momentum_indicators["ao"](ohlcv_df)
             williams_r = momentum_indicators["williams_r"](ohlcv_df)
             cci = momentum_indicators["cci"](ohlcv_df)
 
-            # Calcul des indicateurs orderflow
+            # 3. Indicateurs orderflow
+            orderflow_indicators = advanced_indicators.indicators["orderflow"]
             delta_vol = orderflow_indicators["delta_volume"](ohlcv_df)
             imbalance = orderflow_indicators["imbalance"](ohlcv_df)
             smi = orderflow_indicators["smart_money_index"](ohlcv_df)
             liq_wave = orderflow_indicators["liquidity_wave"](ohlcv_df)
             bid_ask = orderflow_indicators["bid_ask_ratio"](ohlcv_df)
-            # === 4. Calcul des scores techniques ===
-            log_dashboard(
-                f"[2025-08-03 02:49:23] {Patmoorea} - Calcul scores techniques {symbol}"
-            )
+
+            # === CALCUL DES SCORES ===
+            print(f"\n💯 Calcul scores {symbol}-{tf}")
+            # === SCORES TECHNIQUES ===
 
             tech_score = 0
             tech_factors = 0
+            tech_details = {}
 
             # Score Supertrend
-            if supertrend and is_valid(supertrend["value"].iloc[-1]):
+            if supertrend and is_valid(supertrend.get("value", pd.Series()).iloc[-1]):
                 tech_factors += 1
-                if supertrend["direction"].iloc[-1] > 0:
-                    tech_score += supertrend["strength"].iloc[-1]
-                else:
-                    tech_score -= supertrend["strength"].iloc[-1]
+                st_direction = supertrend["direction"].iloc[-1]
+                st_strength = supertrend["strength"].iloc[-1]
 
+                if st_direction > 0:
+                    tech_score += st_strength
+                else:
+                    tech_score -= st_strength
+
+                tech_details["supertrend"] = {
+                    "direction": st_direction,
+                    "strength": st_strength,
+                }
                 print(
-                    f"[DEBUG] Supertrend: direction={supertrend['direction'].iloc[-1]} strength={supertrend['strength'].iloc[-1]:.3f}"
+                    f"[TECH] Supertrend: direction={st_direction} strength={st_strength:.3f}"
                 )
 
             # Score VWMA
-            if is_valid(vwma.iloc[-1]) and is_valid(ohlcv_df["close"].iloc[-1]):
+            if is_valid(vwma.iloc[-1]):
                 tech_factors += 1
                 vwma_diff = (ohlcv_df["close"].iloc[-1] - vwma.iloc[-1]) / vwma.iloc[-1]
-                tech_score += np.clip(vwma_diff * 3, -1, 1)
-                print(f"[DEBUG] VWMA diff: {vwma_diff:.3f}")
+                vwma_score = np.clip(vwma_diff * 3, -1, 1)
+                tech_score += vwma_score
+                tech_details["vwma"] = vwma_score
+                print(f"[TECH] VWMA score: {vwma_score:.3f}")
 
             # Score KAMA
-            if is_valid(kama.iloc[-1]) and is_valid(ohlcv_df["close"].iloc[-1]):
+            if is_valid(kama.iloc[-1]):
                 tech_factors += 1
                 kama_diff = (ohlcv_df["close"].iloc[-1] - kama.iloc[-1]) / kama.iloc[-1]
-                tech_score += np.clip(kama_diff * 3, -1, 1)
-                print(f"[DEBUG] KAMA diff: {kama_diff:.3f}")
+                kama_score = np.clip(kama_diff * 3, -1, 1)
+                tech_score += kama_score
+                tech_details["kama"] = kama_score
+                print(f"[TECH] KAMA score: {kama_score:.3f}")
 
             # Score PSAR
-            if psar and is_valid(psar["value"].iloc[-1]):
+            if psar and is_valid(psar.get("value", pd.Series()).iloc[-1]):
                 tech_factors += 1
-                if psar["trend"].iloc[-1] > 0:
-                    tech_score += psar["strength"].iloc[-1]
+                psar_trend = psar["trend"].iloc[-1]
+                psar_strength = psar["strength"].iloc[-1]
+
+                if psar_trend > 0:
+                    tech_score += psar_strength
                 else:
-                    tech_score -= psar["strength"].iloc[-1]
-                print(
-                    f"[DEBUG] PSAR: trend={psar['trend'].iloc[-1]} strength={psar['strength'].iloc[-1]:.3f}"
-                )
+                    tech_score -= psar_strength
+
+                tech_details["psar"] = {"trend": psar_trend, "strength": psar_strength}
+                print(f"[TECH] PSAR: trend={psar_trend} strength={psar_strength:.3f}")
 
             # Score TRIX
             if is_valid(trix.iloc[-1]):
                 tech_factors += 1
-                tech_score += np.clip(trix.iloc[-1] * 0.2, -1, 1)
-                print(f"[DEBUG] TRIX: {trix.iloc[-1]:.3f}")
+                trix_score = np.clip(trix.iloc[-1] * 0.2, -1, 1)
+                tech_score += trix_score
+                tech_details["trix"] = trix_score
+                print(f"[TECH] TRIX score: {trix_score:.3f}")
 
-            # === 5. Calcul des scores momentum ===
+            # === SCORES MOMENTUM ===
             momentum_score = 0
             momentum_factors = 0
+            momentum_details = {}
 
             # Awesome Oscillator
             if is_valid(ao.iloc[-1]):
                 momentum_factors += 1
-                momentum_score += np.sign(ao.iloc[-1]) * min(abs(ao.iloc[-1] * 0.1), 1)
-                print(f"[DEBUG] AO: {ao.iloc[-1]:.3f}")
+                ao_value = ao.iloc[-1]
+                ao_score = np.sign(ao_value) * min(abs(ao_value * 0.1), 1)
+                momentum_score += ao_score
+                momentum_details["ao"] = ao_score
+                print(f"[MOMENTUM] AO score: {ao_score:.3f}")
 
             # Williams %R
             if is_valid(williams_r.iloc[-1]):
                 momentum_factors += 1
-                williams_score = 0
-                if williams_r.iloc[-1] < -80:
-                    williams_score = 1
-                elif williams_r.iloc[-1] > -20:
-                    williams_score = -1
+                wr_value = williams_r.iloc[-1]
+
+                if wr_value < -80:
+                    williams_score = 1  # Survendu
+                elif wr_value > -20:
+                    williams_score = -1  # Suracheté
+                else:
+                    williams_score = 0
+
                 momentum_score += williams_score
-                print(f"[DEBUG] Williams %R: {williams_r.iloc[-1]:.3f}")
+                momentum_details["williams_r"] = williams_score
+                print(f"[MOMENTUM] Williams %R score: {williams_score:.3f}")
 
             # CCI
             if is_valid(cci.iloc[-1]):
                 momentum_factors += 1
                 cci_score = np.clip(cci.iloc[-1] / 100, -1, 1)
                 momentum_score += cci_score
-                print(f"[DEBUG] CCI: {cci.iloc[-1]:.3f}")
+                momentum_details["cci"] = cci_score
+                print(f"[MOMENTUM] CCI score: {cci_score:.3f}")
 
-            # Normalisation du score momentum
-            if momentum_factors > 0:
-                momentum_score /= momentum_factors
-
-            # === 6. Calcul des scores orderflow ===
+            # === SCORES ORDERFLOW ===
             flow_score = 0
             flow_factors = 0
+            flow_details = {}
 
             # Delta Volume
             if is_valid(delta_vol.iloc[-1]):
                 flow_factors += 1
-                flow_score += np.clip(
+                delta_score = np.clip(
                     delta_vol.iloc[-1] / delta_vol.abs().mean(), -1, 1
                 )
-                print(f"[DEBUG] Delta Volume: {delta_vol.iloc[-1]:.3f}")
+                flow_score += delta_score
+                flow_details["delta_volume"] = delta_score
+                print(f"[FLOW] Delta Volume score: {delta_score:.3f}")
 
             # Imbalance
             if is_valid(imbalance.iloc[-1]):
                 flow_factors += 1
-                flow_score += np.clip(
-                    imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1
-                )
-                print(f"[DEBUG] Imbalance: {imbalance.iloc[-1]:.3f}")
+                imb_score = np.clip(imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1)
+                flow_score += imb_score
+                flow_details["imbalance"] = imb_score
+                print(f"[FLOW] Imbalance score: {imb_score:.3f}")
 
             # Smart Money Index
             if is_valid(smi.iloc[-1]):
                 flow_factors += 1
-                flow_score += np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
-                print(f"[DEBUG] SMI: {smi.iloc[-1]:.3f}")
-            # === 7. Fusion des signaux et scores finaux ===
-            log_dashboard(
-                f"[2025-08-03 02:50:06] {Patmoorea} - Fusion des signaux pour {symbol}"
-            )
+                smi_score = np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
+                flow_score += smi_score
+                flow_details["smi"] = smi_score
+                print(f"[FLOW] SMI score: {smi_score:.3f}")
 
-            # Normalisation du score technique
+            # === FUSION DES SIGNAUX ===
+
+            # Normalisation des scores
             if tech_factors > 0:
                 tech_score /= tech_factors
-
-            # Normalisation du score orderflow
+            if momentum_factors > 0:
+                momentum_score /= momentum_factors
             if flow_factors > 0:
                 flow_score /= flow_factors
 
-            # Liquidité et bid/ask
+            # Scores de liquidité et pression du marché
             liquidity_score = 0
             if is_valid(liq_wave.iloc[-1]):
                 liquidity_score = -np.clip(
                     liq_wave.iloc[-1] / liq_wave.abs().mean(), -1, 1
                 )
-                print(f"[DEBUG] Liquidity Wave: {liq_wave.iloc[-1]:.3f}")
+                print(f"[FLOW] Liquidity score: {liquidity_score:.3f}")
 
-            # Bid/Ask ratio comme confirmateur
             market_pressure = 0
             if is_valid(bid_ask):
                 market_pressure = (bid_ask - 0.5) * 2
-                print(f"[DEBUG] Bid/Ask Ratio: {bid_ask:.3f}")
+                print(f"[FLOW] Market pressure: {market_pressure:.3f}")
 
-            # Construction du dictionnaire des signaux
+            # Construction du dictionnaire des signaux complet
             signals = {
                 "technical": {
                     "score": tech_score,
-                    "supertrend": supertrend["direction"].iloc[-1] if supertrend else 0,
-                    "psar": psar["trend"].iloc[-1] if psar else 0,
-                    "trix": trix.iloc[-1] if is_valid(trix.iloc[-1]) else 0,
+                    "details": tech_details,
+                    "factors": tech_factors,
                 },
                 "momentum": {
                     "score": momentum_score,
-                    "ao": ao.iloc[-1] if is_valid(ao.iloc[-1]) else 0,
-                    "williams": (
-                        williams_r.iloc[-1] if is_valid(williams_r.iloc[-1]) else 0
-                    ),
-                    "cci": cci.iloc[-1] if is_valid(cci.iloc[-1]) else 0,
+                    "details": momentum_details,
+                    "factors": momentum_factors,
                 },
                 "orderflow": {
                     "score": flow_score,
-                    "delta_volume": (
-                        delta_vol.iloc[-1] if is_valid(delta_vol.iloc[-1]) else 0
-                    ),
-                    "imbalance": (
-                        imbalance.iloc[-1] if is_valid(imbalance.iloc[-1]) else 0
-                    ),
+                    "details": flow_details,
+                    "factors": flow_factors,
                     "liquidity": liquidity_score,
                     "market_pressure": market_pressure,
                 },
@@ -2449,56 +2508,40 @@ class TradingBotM4:
             # Poids adaptatifs selon la qualité des signaux
             weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
 
-            # Ajustement des poids selon la liquidité
-            if abs(liquidity_score) > 0.7:  # Faible liquidité
+            # Ajustement des poids selon conditions de marché
+            if abs(liquidity_score) > 0.7:
                 weights["orderflow"] *= 1.3
                 weights["technical"] *= 0.7
-                log_dashboard(
-                    f"[2025-08-03 02:50:06] {Patmoorea} - Ajustement poids pour faible liquidité"
-                )
 
-            # Ajustement selon la pression du marché
             if abs(market_pressure) > 0.7:
                 weights["momentum"] *= 1.2
                 weights["technical"] *= 0.8
-                log_dashboard(
-                    f"[2025-08-03 02:50:06] {Patmoorea} - Ajustement poids pour forte pression marché"
-                )
 
-            # Calcul du score total
+            # Calcul score total
             total_score = (
                 signals["technical"]["score"] * weights["technical"]
                 + signals["momentum"]["score"] * weights["momentum"]
                 + signals["orderflow"]["score"] * weights["orderflow"]
             )
-
-            # Normalisation finale
             total_score = np.clip(total_score, -1, 1)
 
-            # === 8. Décision finale et logging ===
-            log_dashboard(
-                f"[2025-08-03 02:52:20] {Patmoorea} - Génération décision finale pour {symbol}"
-            )
+            # === DÉCISION FINALE ===
 
-            # Seuils dynamiques basés sur la volatilité du marché
-            volatility_factor = 1.0
-            if is_valid(liq_wave.iloc[-1]):
-                volatility_factor = 1 + abs(liq_wave.iloc[-1]) * 0.5
+            # Seuils dynamiques
+            volatility_factor = 1.0 + (
+                abs(liquidity_score) * 0.5 if is_valid(liquidity_score) else 0
+            )
 
             buy_threshold = 0.2 * volatility_factor
             sell_threshold = -0.2 * volatility_factor
 
             # Ajustement des seuils selon la pression du marché
             if market_pressure > 0:
-                buy_threshold *= 1 - market_pressure * 0.2  # Plus facile d'acheter
-                sell_threshold *= 1 + market_pressure * 0.2  # Plus difficile de vendre
+                buy_threshold *= 1 - market_pressure * 0.2
+                sell_threshold *= 1 + market_pressure * 0.2
             else:
-                buy_threshold *= (
-                    1 + abs(market_pressure) * 0.2
-                )  # Plus difficile d'acheter
-                sell_threshold *= (
-                    1 - abs(market_pressure) * 0.2
-                )  # Plus facile de vendre
+                buy_threshold *= 1 + abs(market_pressure) * 0.2
+                sell_threshold *= 1 - abs(market_pressure) * 0.2
 
             # Construction de la décision finale
             decision = {
@@ -2512,12 +2555,12 @@ class TradingBotM4:
                     "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
                     "weights": weights,
                 },
-                "timestamp": "2025-08-03 02:52:20",
+                "timestamp": "2025-08-03 03:37:58",
                 "symbol": symbol,
                 "timeframe": tf,
             }
 
-            # Détermination de l'action
+            # Détermination de l'action finale
             if total_score > buy_threshold:
                 decision["action"] = "buy"
                 log_reason = "Signal d'achat"
@@ -2527,60 +2570,42 @@ class TradingBotM4:
             else:
                 log_reason = "Signal neutre"
 
-            # Logging détaillé
+            # Logging détaillé final
             log_msg = (
                 f"[ANALYZE] {symbol} {tf}\n"
-                f"Technical Score: {signals['technical']['score']:.3f}\n"
-                f"Momentum Score: {signals['momentum']['score']:.3f}\n"
-                f"Orderflow Score: {signals['orderflow']['score']:.3f}\n"
+                f"Technical Score: {tech_score:.3f} ({tech_factors} facteurs)\n"
+                f"Momentum Score: {momentum_score:.3f} ({momentum_factors} facteurs)\n"
+                f"Orderflow Score: {flow_score:.3f} ({flow_factors} facteurs)\n"
                 f"Total Score: {total_score:.3f}\n"
+                f"Seuils - Achat: {buy_threshold:.3f}, Vente: {sell_threshold:.3f}\n"
                 f"Action: {decision['action'].upper()} ({decision['confidence']:.3f})\n"
-                f"Reason: {log_reason}"
+                f"Raison: {log_reason}"
             )
 
-            log_dashboard(f"[2025-08-03 02:52:20] {Patmoorea} - {log_msg}")
             print(f"[DEBUG] {log_msg}")
 
-            # Sauvegarde des métriques pour analyse ultérieure
+            # Sauvegarde des métriques
             if hasattr(self, "save_analysis_metrics"):
                 self.save_analysis_metrics(
                     {
                         "symbol": symbol,
                         "timeframe": tf,
-                        "timestamp": "2025-08-03 02:52:20",
+                        "timestamp": "",
                         "user": "Patmoorea",
                         "decision": decision,
                         "raw_signals": {
-                            "supertrend": (
-                                supertrend["direction"].iloc[-1] if supertrend else None
-                            ),
-                            "vwma": vwma.iloc[-1] if is_valid(vwma.iloc[-1]) else None,
-                            "kama": kama.iloc[-1] if is_valid(kama.iloc[-1]) else None,
-                            "psar": psar["trend"].iloc[-1] if psar else None,
-                            "trix": trix.iloc[-1] if is_valid(trix.iloc[-1]) else None,
-                            "ao": ao.iloc[-1] if is_valid(ao.iloc[-1]) else None,
-                            "williams_r": (
-                                williams_r.iloc[-1]
-                                if is_valid(williams_r.iloc[-1])
-                                else None
-                            ),
-                            "cci": cci.iloc[-1] if is_valid(cci.iloc[-1]) else None,
-                            "delta_volume": (
-                                delta_vol.iloc[-1]
-                                if is_valid(delta_vol.iloc[-1])
-                                else None
-                            ),
-                            "imbalance": (
-                                imbalance.iloc[-1]
-                                if is_valid(imbalance.iloc[-1])
-                                else None
-                            ),
-                            "liquidity": (
-                                liq_wave.iloc[-1]
-                                if is_valid(liq_wave.iloc[-1])
-                                else None
-                            ),
-                            "bid_ask": bid_ask if is_valid(bid_ask) else None,
+                            "supertrend": tech_details.get("supertrend"),
+                            "vwma": tech_details.get("vwma"),
+                            "kama": tech_details.get("kama"),
+                            "psar": tech_details.get("psar"),
+                            "trix": tech_details.get("trix"),
+                            "ao": momentum_details.get("ao"),
+                            "williams_r": momentum_details.get("williams_r"),
+                            "cci": momentum_details.get("cci"),
+                            "delta_volume": flow_details.get("delta_volume"),
+                            "imbalance": flow_details.get("imbalance"),
+                            "liquidity": liquidity_score,
+                            "bid_ask": market_pressure,
                         },
                     }
                 )
@@ -2589,7 +2614,6 @@ class TradingBotM4:
 
         except Exception as e:
             error_msg = f"Erreur dans analyze_signals: {str(e)}"
-            log_dashboard(f"[ERROR] [2025-08-03 02:52:20] {Patmoorea} - {error_msg}")
             self.logger.error(error_msg)
             return {"action": "neutral", "confidence": 0, "signals": {}}
 
@@ -4986,9 +5010,12 @@ async def run_clean_bot():
             return None
 
     async def execute_trading_cycle(bot, valid_pairs):
-        """Exécute un cycle complet de trading (fusion multi-timeframe optimisée)"""
+        """Exécute un cycle complet de trading avec fusion multi-timeframe optimisée"""
         try:
-            # 0. Import avancé des indicateurs orderflow
+            print("\n=== DÉBUT CYCLE TRADING ===")
+            log_dashboard(f"[{get_current_time()}] Démarrage cycle trading")
+
+            # 1. Chargement des indicateurs orderflow
             try:
                 from src.analysis.technical.advanced.advanced_indicators import (
                     AdvancedIndicators,
@@ -4996,21 +5023,30 @@ async def run_clean_bot():
 
                 orderflow_indicators = AdvancedIndicators()
             except Exception as e:
+                print(f"[WARNING] Impossible d'importer AdvancedIndicators: {e}")
                 orderflow_indicators = None
-                print("[Orderflow] Impossible d'importer AdvancedIndicators:", e)
 
-            # 1. Injection des données live WS dans market_data
+            # 2. Diagnostic initial des données
+            print("\n=== DIAGNOSTIC DONNÉES ===")
+            for pair in bot.pairs_valid:
+                pair_key = pair.replace("/", "").upper()
+                print(f"\n🔍 Vérification {pair_key}:")
+                bot.debug_signals_state(pair_key, "1h")  # Vérifie l'état des signaux
+
+            # 3. Mise à jour market_data avec données live
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
+
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
-                    # DEBUG: Ajout log sur la taille du DataFrame
                     print(
-                        f"[DEBUG] DataFrame {pair_key}-{tf}: {len(df) if df is not None else 'None'} lignes"
+                        f"[DATA] {pair_key}-{tf}: {len(df) if df is not None else 'None'} lignes"
                     )
+
                     if df is not None and not df.empty:
+                        # OHLCV data
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
                             "high": df["high"].tolist(),
@@ -5022,145 +5058,122 @@ async def run_clean_bot():
                                 for t in df["timestamp"]
                             ],
                         }
-                        # 1bis. Indicateurs orderflow
-                        if orderflow_indicators is not None:
-                            try:
-                                bid_ask = (
-                                    orderflow_indicators._bid_ask_ratio(df)
-                                    if hasattr(orderflow_indicators, "_bid_ask_ratio")
-                                    else None
-                                )
-                                liquidity_wave = (
-                                    orderflow_indicators._liquidity_wave(df)
-                                    if hasattr(orderflow_indicators, "_liquidity_wave")
-                                    else None
-                                )
-                                smart_money = (
-                                    orderflow_indicators._smart_money_index(df)
-                                    if hasattr(
-                                        orderflow_indicators, "_smart_money_index"
-                                    )
-                                    else None
-                                )
-                                bot.market_data[pair_key][tf]["orderflow"] = {
-                                    "bid_ask_ratio": bid_ask,
-                                    "liquidity_wave": liquidity_wave,
-                                    "smart_money_index": smart_money,
-                                }
-                            except Exception as e:
-                                print(f"[Orderflow] Erreur calcul {pair_key} {tf}: {e}")
-                    else:
-                        print(f"[DEBUG] DataFrame vide pour {pair_key} {tf}")
 
-            # 2. Analyse de marché
+                        # Orderflow indicators
+                        if orderflow_indicators:
+                            try:
+                                of_data = {
+                                    "bid_ask_ratio": (
+                                        orderflow_indicators._bid_ask_ratio(df)
+                                        if hasattr(
+                                            orderflow_indicators, "_bid_ask_ratio"
+                                        )
+                                        else None
+                                    ),
+                                    "liquidity_wave": (
+                                        orderflow_indicators._liquidity_wave(df)
+                                        if hasattr(
+                                            orderflow_indicators, "_liquidity_wave"
+                                        )
+                                        else None
+                                    ),
+                                    "smart_money_index": (
+                                        orderflow_indicators._smart_money_index(df)
+                                        if hasattr(
+                                            orderflow_indicators, "_smart_money_index"
+                                        )
+                                        else None
+                                    ),
+                                }
+                                bot.market_data[pair_key][tf]["orderflow"] = of_data
+                            except Exception as e:
+                                print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
+
+            # 4. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie active: {strategy}")
 
-            # 3. Détection d'arbitrage
+            # 5. Détection arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 4. Analyse des paires pour CHAQUE timeframe (génère signaux bruts multi-tf)
-            SHARED_DATA_PATH = "src/shared_data.json"
-            try:
-                with open(SHARED_DATA_PATH, "r") as f:
-                    shared_data = json.load(f)
-                f_params = shared_data.get("filtering_params", {})
-                min_vol = float(f_params.get("min_volatility", 0.01))
-                min_sig = float(f_params.get("min_signal", 0.3))
-                n_top = int(f_params.get("top_n", 5))
-            except Exception:
-                min_vol, min_sig, n_top = 0.01, 0.3, 5
-
-            selected_pairs = bot.pairs_valid
-            # selected_pairs = filter_pairs(
-            # bot, min_volatility=0.0, min_signal=0.0, top_n=10
-            # )
-            print(selected_pairs)
-            print(f"[DYNAMIQUE] Paires sélectionnées ce cycle : {selected_pairs}")
-            ignored_pairs = [p for p in bot.pairs_valid if p not in selected_pairs]
-            if ignored_pairs:
-                print(
-                    f"[DYNAMIQUE] Paires ignorées (pas d'opportunité) : {ignored_pairs}"
-                )
-
+            # 6. Analyse détaillée par paire et timeframe
             trade_decisions = []
-            for pair in selected_pairs:
+
+            for pair in bot.pairs_valid:
+                pair_signals = {}
+
                 for tf in bot.config["TRADING"]["timeframes"]:
-                    df = bot.ws_collector.get_dataframe(
-                        pair.replace("/", "").upper(), tf
-                    )
-                    print(
-                        f"[DEBUG] Analyse {pair}-{tf} : {len(df) if df is not None else 'None'} lignes"
-                    )
-                    indicators_data = (
-                        bot.add_indicators(df)
-                        if df is not None and not df.empty
-                        else {}
-                    )
-                    print(f"[DEBUG] Indicateurs {pair}-{tf} : {indicators_data}")
-                    decision = await market_analysis_cycle(
-                        bot, pair, bot.market_data, tf=tf
-                    )
-                    print(f"[DEBUG] Signal {pair}-{tf} : {decision}")
-                    if decision:
-                        decision["tf"] = tf
-                        trade_decisions.append(decision)
+                    pair_key = pair.replace("/", "").upper()
+                    df = bot.ws_collector.get_dataframe(pair_key, tf)
 
-            # LOG toutes les décisions par timeframe
-            for decision in trade_decisions:
-                signals = decision.get("signals", {})
-                log_dashboard(
-                    f"[TRADE DECISION] {decision['pair']} | TF: {decision.get('tf','?')} | "
-                    f"Action: {decision['action'].upper()} | Confiance: {decision['confidence']:.2f} | "
-                    f"Tech: {signals.get('technical', 0):.2f} | "
-                    f"IA: {signals.get('ai', 0):.2f} | "
-                    f"Sentiment: {signals.get('sentiment', 0):.2f}"
-                )
+                    if df is not None and len(df) >= 20:
+                        # Calcul des indicateurs techniques
+                        indicators_data = bot.add_indicators(df)
 
-            # 5. FUSION multi-timeframe : 1 décision centrale par paire (pondérée)
-            signals_by_pair = {pair: {} for pair in valid_pairs}
-            for decision in trade_decisions:
-                pair = decision["pair"]
-                tf = decision.get("tf")
-                if pair in signals_by_pair and tf:
-                    signals_by_pair[pair][tf] = decision
+                        if indicators_data:
+                            # Analyse des signaux
+                            decision = await bot.analyze_signals(
+                                pair_key, df, indicators_data, tf
+                            )
 
-            final_trade_decisions = []
-            for pair, tf_signals in signals_by_pair.items():
-                action, confidence = bot.aggregate_timeframe_signals(pair, tf_signals)
-                all_details = [
-                    (tf, d["action"], d["confidence"]) for tf, d in tf_signals.items()
-                ]
-                log_dashboard(
-                    f"[FUSION] {pair}: {all_details} => FINAL: {action.upper()} ({confidence:.2f})"
-                )
-                signals_example = next(iter(tf_signals.values()), {})
-                final_trade_decisions.append(
-                    {
+                            if decision and isinstance(decision.get("signals"), dict):
+                                decision["tf"] = tf
+                                pair_signals[tf] = decision
+                                print(
+                                    f"[SIGNAL] {pair}-{tf}: {decision['action']} ({decision['confidence']:.2f})"
+                                )
+                            else:
+                                print(f"[SKIP] Pas de signaux valides pour {pair}-{tf}")
+
+                # Fusion des timeframes si on a des signaux
+                if pair_signals:
+                    action, confidence = bot.aggregate_timeframe_signals(
+                        pair, pair_signals
+                    )
+                    dominant_tf = "1h"  # Timeframe de référence
+
+                    # Récupération des signaux du timeframe dominant
+                    dominant_signals = pair_signals.get(dominant_tf, {}).get(
+                        "signals", {}
+                    )
+
+                    final_decision = {
                         "pair": pair,
                         "action": action,
                         "confidence": confidence,
                         "signals": {
-                            "details": tf_signals,
-                            "technical": signals_example.get("signals", {}).get(
-                                "technical", 0
+                            "technical": dominant_signals.get("technical", {}).get(
+                                "score", 0
                             ),
-                            "ai": signals_example.get("signals", {}).get("ai", 0),
-                            "sentiment": signals_example.get("signals", {}).get(
-                                "sentiment", 0
-                            ),
+                            "ai": dominant_signals.get("ai_prediction", 0),
+                            "sentiment": dominant_signals.get("sentiment", 0),
+                            "details": pair_signals,
                         },
                     }
-                )
 
-            # 6. Exécution des trades FUSIONNÉS (1 seul trade/pair/cycle)
-            await execute_trade_decisions(bot, final_trade_decisions)
+                    trade_decisions.append(final_decision)
 
-            return final_trade_decisions, regime
+                    # Log détaillé
+                    log_dashboard(
+                        f"[DECISION] {pair} | Action: {action.upper()} | "
+                        f"Conf: {confidence:.2f} | "
+                        f"Tech: {final_decision['signals']['technical']:.2f} | "
+                        f"IA: {final_decision['signals']['ai']:.2f} | "
+                        f"Sent: {final_decision['signals']['sentiment']:.2f}"
+                    )
+
+            # 7. Exécution des trades
+            if trade_decisions:
+                await execute_trade_decisions(bot, trade_decisions)
+                log_dashboard(f"✅ {len(trade_decisions)} décisions de trade exécutées")
+            else:
+                log_dashboard("ℹ️ Pas de décisions de trade ce cycle")
+
+            return trade_decisions, regime
 
         except Exception as e:
-            logger.error(f"Erreur cycle trading: {e}")
+            logger.error(f"❌ Erreur cycle trading: {e}")
             raise
 
     async def main():
