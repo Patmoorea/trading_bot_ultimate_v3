@@ -826,14 +826,6 @@ class RiskManager:
                 print(f"[RISK] Orderflow insuffisant: {flow_score:.2f}")
                 return False
 
-            # Score final
-            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
-            total_score = (
-                tech_score * weights["technical"]
-                + mom_score * weights["momentum"]
-                + flow_score * weights["orderflow"]
-            )
-
             if abs(total_score) < 0.25:
                 print(f"[RISK] Score global insuffisant: {total_score:.2f}")
                 return False
@@ -1665,6 +1657,14 @@ class TradingBotM4:
             # Poids adaptatifs selon la qualité des signaux
             weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
 
+            # Calcul score total
+            total_score = (
+                signals["technical"]["score"] * weights["technical"]
+                + signals["momentum"]["score"] * weights["momentum"]
+                + signals["orderflow"]["score"] * weights["orderflow"]
+            )
+            total_score = np.clip(total_score, -1, 1)
+
             # Ajustement des poids selon conditions de marché
             if abs(liquidity_score) > 0.7:
                 weights["orderflow"] *= 1.3
@@ -1679,14 +1679,6 @@ class TradingBotM4:
             if volatility_adv > 0.05:  # Volatilité élevée
                 weights["orderflow"] *= 1.2  # Plus de poids sur l'orderflow
                 weights["technical"] *= 0.8  # Moins sur technique
-
-            # Calcul score total
-            total_score = (
-                signals["technical"]["score"] * weights["technical"]
-                + signals["momentum"]["score"] * weights["momentum"]
-                + signals["orderflow"]["score"] * weights["orderflow"]
-            )
-            total_score = np.clip(total_score, -1, 1)
 
             # Intégration exposition optimisée
             exposure_mult = self.optimize_portfolio_exposure()
