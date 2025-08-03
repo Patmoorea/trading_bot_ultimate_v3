@@ -139897,3 +139897,28 @@
 2025-08-03T19:07:23.789392 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0117 | Tech: 0.01 | AI: 0.85
 2025-08-03T19:07:23.950238 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0805 | Tech: -0.02 | AI: 0.85
 2025-08-03T19:07:24.043594 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0940 | Tech: 0.01 | AI: 0.85
+2025-08-03T19:25:07.843260 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-03T19:25:07.848931 | Initialisation des modèles d'IA...
+2025-08-03T19:25:08.321882 | ✅ Modèles d'IA initialisés avec succès
+2025-08-03T19:25:10.020495 | ✅ PPO Strategy initialized successfully
+2025-08-03T19:25:10.026634 | ✅ Bot initialisé avec Telegram: True
+2025-08-03T19:25:10.026717 | ✅ Trading en direct: True
+2025-08-03T19:25:10.026759 | ✅ IA activée: True
+2025-08-03T19:25:10.026800 | ✅ Analyse de news activée: True
+2025-08-03T19:27:07.554329 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-03T19:28:33.949229 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0201 | Tendance: 0.0025
+2025-08-03T19:28:33.960001 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-03T19:28:33.966705 |  Démarrage cycle trading
+2025-08-03T19:29:08.686365 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0201 | Tendance: 0.0025
+2025-08-03T19:29:08.704333 | 🎯 Stratégie: Range/Scalping
+2025-08-03T19:29:08.704505 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T19:30:45.669434 |  Démarrage cycle trading
+2025-08-03T19:30:45.683960 | 🚫 Cycle bloqué - Pause news active
+2025-08-03T19:38:32.820396 |  Démarrage cycle trading
+2025-08-03T19:38:32.849158 | 🚫 Cycle bloqué - Pause news active
+2025-08-03T19:46:21.343624 |  Démarrage cycle trading
+2025-08-03T19:46:21.384986 | 🚫 Cycle bloqué - Pause news active
+2025-08-03T19:54:03.971420 |  Démarrage cycle trading
+2025-08-03T19:54:04.004381 | 🚫 Cycle bloqué - Pause news active
+2025-08-03T20:01:54.733228 |  Démarrage cycle trading
+2025-08-03T20:01:54.761760 | 🚫 Cycle bloqué - Pause news active
