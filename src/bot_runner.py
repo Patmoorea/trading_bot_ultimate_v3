@@ -95,6 +95,10 @@ from src.risk_tools.news_pause_manager import NewsPauseManager
 
 from src.portfolio.binance_utils import get_avg_entry_price_binance_spot
 
+from cachetools import TTLCache
+
+from src.utils.technical import calculate_atr
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -1035,10 +1039,9 @@ class TradingBotM4:
         Retourne une décision de trading avec scores et signaux détaillés.
         """
         try:
-            # Configuration et validation initiale
-            current_time = get_current_time()
             print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
 
+            # Fonction de validation des données
             def is_valid(val):
                 """Vérifie si une valeur est utilisable pour les calculs"""
                 if val is None:
@@ -1048,21 +1051,64 @@ class TradingBotM4:
                 return not (isinstance(val, float) and (np.isnan(val) or np.isinf(val)))
 
             # Validation des données OHLCV
-            required_columns = ["open", "high", "low", "close", "volume"]
+            required_columns = ["open", "high", "low", "close", "volume", "timestamp"]
             if not all(col in ohlcv_df.columns for col in required_columns):
                 print(f"❌ {symbol}: Données OHLCV incomplètes")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
+                return {
+                    "action": "neutral",
+                    "confidence": 0,
+                    "signals": {
+                        "technical": {"score": 0, "details": {}, "factors": 0},
+                        "momentum": {"score": 0, "details": {}, "factors": 0},
+                        "orderflow": {
+                            "score": 0,
+                            "details": {},
+                            "factors": 0,
+                            "liquidity": 0,
+                            "market_pressure": 0,
+                        },
+                    },
+                }
 
+            # Vérification du nombre minimum de points de données
             if len(ohlcv_df) < 20:
                 print(f"❌ {symbol}: Données insuffisantes ({len(ohlcv_df)} lignes)")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
+                return {
+                    "action": "neutral",
+                    "confidence": 0,
+                    "signals": {
+                        "technical": {"score": 0, "details": {}, "factors": 0},
+                        "momentum": {"score": 0, "details": {}, "factors": 0},
+                        "orderflow": {
+                            "score": 0,
+                            "details": {},
+                            "factors": 0,
+                            "liquidity": 0,
+                            "market_pressure": 0,
+                        },
+                    },
+                }
 
-            # Initialisation des indicateurs
+            # Initialisation des indicateurs avancés
             try:
                 advanced_indicators = AdvancedIndicators()
             except Exception as e:
                 print(f"❌ Erreur initialisation indicateurs: {e}")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
+                return {
+                    "action": "neutral",
+                    "confidence": 0,
+                    "signals": {
+                        "technical": {"score": 0, "details": {}, "factors": 0},
+                        "momentum": {"score": 0, "details": {}, "factors": 0},
+                        "orderflow": {
+                            "score": 0,
+                            "details": {},
+                            "factors": 0,
+                            "liquidity": 0,
+                            "market_pressure": 0,
+                        },
+                    },
+                }
 
             # === CALCUL DES INDICATEURS ===
             print(f"\n📊 Calcul indicateurs {symbol}-{tf}")
@@ -3713,6 +3759,12 @@ class TradingBotM4:
         """
         from collections import defaultdict
 
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            shared_data = {}
+
         # 1. Agrégation pondérée des scores par symbole
         symbol_sentiments = defaultdict(list)
         for item in sentiment_scores:
@@ -3784,6 +3836,19 @@ class TradingBotM4:
                 print(
                     f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}"
                 )
+
+        # Avant la sauvegarde
+        symbol_sentiments_out = {
+            key: data.get("sentiment", 0) for key, data in self.market_data.items()
+        }
+
+        self.safe_update_shared_data(
+            {
+                "last_sentiment_update": time.time(),
+                "sentiment_by_symbol": symbol_sentiments_out,
+            },
+            self.data_file,
+        )
 
         # 5. Sauvegarde tous les sentiments dans shared_data.json
         symbol_sentiments_out = {
@@ -5040,7 +5105,7 @@ async def run_clean_bot():
         """Exécute un cycle complet de trading avec fusion multi-timeframe optimisée"""
         try:
             print("\n=== DÉBUT CYCLE TRADING ===")
-            log_dashboard(f"[{get_current_time()}] Démarrage cycle trading")
+            log_dashboard(f"[2025-08-03 04:44:41] Démarrage cycle trading")
 
             # 1. Chargement des indicateurs orderflow
             try:
@@ -5058,7 +5123,7 @@ async def run_clean_bot():
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 print(f"\n🔍 Vérification {pair_key}:")
-                bot.debug_signals_state(pair_key, "1h")  # Vérifie l'état des signaux
+                bot.debug_signals_state(pair_key, "1h")
 
             # 3. Mise à jour market_data avec données live
             for pair in bot.pairs_valid:
@@ -5073,82 +5138,96 @@ async def run_clean_bot():
                     )
 
                     if df is not None and not df.empty:
-                        # Structure de base complète des signaux
-                        bot.market_data[pair_key][tf] = {
-                            "open": df["open"].tolist(),
-                            "high": df["high"].tolist(),
-                            "low": df["low"].tolist(),
-                            "close": df["close"].tolist(),
-                            "volume": df["volume"].tolist(),
-                            "timestamp": [
-                                int(pd.Timestamp(t).timestamp())
-                                for t in df["timestamp"]
-                            ],
-                            "signals": {
-                                "technical": {"score": 0, "details": {}, "factors": 0},
-                                "momentum": {"score": 0, "details": {}, "factors": 0},
-                                "orderflow": {
-                                    "score": 0,
-                                    "details": {},
-                                    "factors": 0,
-                                    "liquidity": 0,
-                                    "market_pressure": 0,
+                        # Vérification des colonnes requises
+                        required_columns = [
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                            "timestamp",
+                        ]
+                        if all(col in df.columns for col in required_columns):
+                            # Structure de base complète
+                            bot.market_data[pair_key][tf] = {
+                                "open": df["open"].tolist(),
+                                "high": df["high"].tolist(),
+                                "low": df["low"].tolist(),
+                                "close": df["close"].tolist(),
+                                "volume": df["volume"].tolist(),
+                                "timestamp": [
+                                    int(pd.Timestamp(t).timestamp())
+                                    for t in df["timestamp"]
+                                ],
+                                "signals": {
+                                    "technical": {
+                                        "score": 0,
+                                        "details": {},
+                                        "factors": 0,
+                                    },
+                                    "momentum": {
+                                        "score": 0,
+                                        "details": {},
+                                        "factors": 0,
+                                    },
+                                    "orderflow": {
+                                        "score": 0,
+                                        "details": {},
+                                        "factors": 0,
+                                        "liquidity": 0,
+                                        "market_pressure": 0,
+                                    },
+                                    "ai": 0,
+                                    "sentiment": 0,
                                 },
-                                "ai": 0,
-                                "sentiment": 0,
-                            },
-                        }
+                            }
 
-                        # Orderflow indicators
-                        if orderflow_indicators:
-                            try:
-                                of_data = {
-                                    "bid_ask_ratio": (
-                                        orderflow_indicators._bid_ask_ratio(df)
-                                        if hasattr(
-                                            orderflow_indicators, "_bid_ask_ratio"
-                                        )
-                                        else None
-                                    ),
-                                    "liquidity_wave": (
-                                        orderflow_indicators._liquidity_wave(df)
-                                        if hasattr(
-                                            orderflow_indicators, "_liquidity_wave"
-                                        )
-                                        else None
-                                    ),
-                                    "smart_money_index": (
-                                        orderflow_indicators._smart_money_index(df)
-                                        if hasattr(
-                                            orderflow_indicators, "_smart_money_index"
-                                        )
-                                        else None
-                                    ),
-                                }
-                                bot.market_data[pair_key][tf]["orderflow"] = of_data
-                            except Exception as e:
-                                print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
-            # Vérification modèle IA
-            if bot.dl_model and hasattr(bot, "ai_enabled") and bot.ai_enabled:
-                features = await bot._prepare_features_for_ai(pair_key)
-                if features is not None:
-                    ai_prediction = bot.dl_model.predict(features)
-                    bot.market_data[pair_key][tf]["ai_prediction"] = ai_prediction
-                    print(f"[AI] Prédiction pour {pair_key}-{tf}: {ai_prediction:.3f}")
+                            # Calcul des indicateurs orderflow
+                            if orderflow_indicators:
+                                try:
+                                    of_data = {
+                                        "bid_ask_ratio": (
+                                            orderflow_indicators._bid_ask_ratio(df)
+                                            if hasattr(
+                                                orderflow_indicators, "_bid_ask_ratio"
+                                            )
+                                            else None
+                                        ),
+                                        "liquidity_wave": (
+                                            orderflow_indicators._liquidity_wave(df)
+                                            if hasattr(
+                                                orderflow_indicators, "_liquidity_wave"
+                                            )
+                                            else None
+                                        ),
+                                        "smart_money_index": (
+                                            orderflow_indicators._smart_money_index(df)
+                                            if hasattr(
+                                                orderflow_indicators,
+                                                "_smart_money_index",
+                                            )
+                                            else None
+                                        ),
+                                    }
+                                    bot.market_data[pair_key][tf]["orderflow"] = of_data
+                                except Exception as e:
+                                    print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
 
-            if df is not None and not df.empty:
-                # Structure de base des signaux
-                bot.market_data[pair_key][tf] = {
-                    "open": df["open"].tolist(),
-                    "high": df["high"].tolist(),
-                    "low": df["low"].tolist(),
-                    "close": df["close"].tolist(),
-                    "volume": df["volume"].tolist(),
-                    "timestamp": [
-                        int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]
-                    ],
-                    "signals": {"technical": {"score": 0}, "ai": 0, "sentiment": 0},
-                }
+                            # Vérification modèle IA
+                            if (
+                                bot.dl_model
+                                and hasattr(bot, "ai_enabled")
+                                and bot.ai_enabled
+                            ):
+                                features = await bot._prepare_features_for_ai(pair_key)
+                                if features is not None:
+                                    ai_prediction = bot.dl_model.predict(features)
+                                    bot.market_data[pair_key][tf][
+                                        "ai_prediction"
+                                    ] = ai_prediction
+                                    print(
+                                        f"[AI] Prédiction pour {pair_key}-{tf}: {ai_prediction:.3f}"
+                                    )
 
             # 4. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
