@@ -1038,7 +1038,7 @@ class TradingBotM4:
         Analyse technique complète avec indicateurs avancés.
         Retourne une décision de trading avec scores et signaux détaillés.
         """
-        try:
+        try:  # Premier try
             print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
 
             # Fonction de validation des données
@@ -1370,7 +1370,7 @@ class TradingBotM4:
                 "timeframe": tf,
             }
 
-            # Détermination de l'action finale
+                        # Détermination de l'action finale
             if total_score > buy_threshold:
                 decision["action"] = "buy"
                 log_reason = "Signal d'achat"
@@ -1380,7 +1380,7 @@ class TradingBotM4:
             else:
                 log_reason = "Signal neutre"
 
-            # Logging détaillé final
+            # Logging détaillé final (correction de l'indentation ici)
             log_msg = (
                 f"[ANALYZE] {symbol} {tf}\n"
                 f"Technical Score: {tech_score:.3f} ({tech_factors} facteurs)\n"
@@ -1393,6 +1393,14 @@ class TradingBotM4:
             )
 
             print(f"[DEBUG] {log_msg}")
+
+            # Ajout du nouveau log dashboard ici
+            log_dashboard(
+                f"[TRADE-DECISION] {symbol} | Action: {decision['action'].upper()} | "
+                f"Confiance: {decision['confidence']:.2f} | Score: {total_score:.4f} | "
+                f"Tech: {tech_score:.2f} | "
+                f"AI: {self.market_data.get(symbol, {}).get('ai_prediction', 0):.2f}"
+            )
 
             # Sauvegarde des métriques
             if hasattr(self, "save_analysis_metrics"):
@@ -1419,6 +1427,7 @@ class TradingBotM4:
                         },
                     }
                 )
+
             self.market_data[symbol][tf]["signals"] = {
                 "technical": signals["technical"],
                 "momentum": signals["momentum"],
@@ -1427,11 +1436,6 @@ class TradingBotM4:
                 "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
             }
             return decision
-
-        except Exception as e:
-            error_msg = f"Erreur dans analyze_signals: {str(e)}"
-            self.logger.error(error_msg)
-            return {"action": "neutral", "confidence": 0, "signals": {}}
 
     def calculate_atr(self, df, period=14):
         """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
@@ -3753,11 +3757,17 @@ class TradingBotM4:
     async def _update_sentiment_data(self, sentiment_scores):
         """
         Met à jour les données de marché avec le sentiment :
-        - Calcule la moyenne pondérée du sentiment par symbole sur toutes les news du cycle.
-        - Applique le score global sinon.
-        - Enregistre tout dans shared_data.json pour usage persistant.
+        - Calcule la moyenne pondérée du sentiment par symbole sur toutes les news du cycle
+        - Applique le score global sinon
+        - Enregistre tout dans shared_data.json pour usage persistant
         """
         from collections import defaultdict
+
+        # Définition initiale de symbol_sentiments_out
+        symbol_sentiments_out = {
+            key: data.get("sentiment", 0) 
+            for key, data in self.market_data.items()
+        }
 
         try:
             with open(self.data_file, "r") as f:
@@ -3767,104 +3777,83 @@ class TradingBotM4:
 
         # 1. Agrégation pondérée des scores par symbole
         symbol_sentiments = defaultdict(list)
+        
         for item in sentiment_scores:
             symbols = item.get("symbols", [])
             score = item.get("sentiment", 0)
+            
+            # Si pas de symboles spécifiques, appliquer à toutes les paires
             if not symbols:
-                # PATCH: Appliquer le score global à toutes les paires
                 for key in self.market_data:
                     self.market_data[key]["sentiment"] = score
                     self.market_data[key]["sentiment_timestamp"] = time.time()
                 continue
+                
+            # Sinon, appliquer aux paires correspondantes
             for symbol in symbols:
                 symbol = symbol.upper()
                 for key in self.market_data:
                     if symbol in key.upper():
                         self.market_data[key]["sentiment"] = score
                         self.market_data[key]["sentiment_timestamp"] = time.time()
-                        print(
-                            f"[DEBUG SENTIMENT FUZZY ASSIGN] {key} <- {score} via symbol={symbol}"
-                        )
+                        print(f"[DEBUG SENTIMENT] Assigné {score} à {key} via {symbol}")
+                        symbol_sentiments[key].append((score, 1.0))  # Score et poids
 
-        # 2. Applique la moyenne pondérée à chaque paire
+        # 2. Calcul des moyennes pondérées par paire
         for key in self.market_data:
-            # Extrait le ticker principal, ex: "BTCUSDT" -> "BTC", "ETHUSDT" -> "ETH"
             ticker = key.replace("USDT", "").replace("USD", "")
             values = symbol_sentiments.get(ticker, [])
+            
             if values:
-                total = sum(s * i for s, i in values)
-                total_weight = sum(i for _, i in values)
-                avg = total / total_weight if total_weight else 0
-                self.market_data[key]["sentiment"] = avg
+                total_score = sum(score * weight for score, weight in values)
+                total_weight = sum(weight for _, weight in values)
+                avg_sentiment = total_score / total_weight if total_weight else 0
+                
+                self.market_data[key]["sentiment"] = avg_sentiment
                 self.market_data[key]["sentiment_timestamp"] = time.time()
-                print(
-                    f"[DEBUG AGG SENTIMENT] {key} <- {avg:.4f} via {len(values)} news (pondérée)"
-                )
+                print(f"[DEBUG] {key}: sentiment moyen = {avg_sentiment:.4f}")
 
-        # 3. Récupère la valeur globale du sentiment depuis le fichier partagé
+        # 3. Récupération du sentiment global
         try:
-            self.safe_update_shared_data(
-                {
-                    "last_sentiment_update": time.time(),
-                    "sentiment_by_symbol": symbol_sentiments_out,
-                },
-                self.data_file,
-            )
-            news_sentiment = shared_data.get("sentiment", None)
-            if news_sentiment:
-                global_sentiment = news_sentiment.get("overall_sentiment", 0)
-            else:
-                global_sentiment = 0
+            news_sentiment = shared_data.get("sentiment", {})
+            global_sentiment = news_sentiment.get("overall_sentiment", 0)
         except Exception as e:
-            print(f"[DEBUG ERROR] Could not read global sentiment from file: {e}")
+            print(f"[ERROR] Lecture sentiment global: {e}")
             global_sentiment = 0
 
-        print(f"[DEBUG SENTIMENT GLOBAL FINAL] avg_sentiment={global_sentiment}")
-
-        # 4. Applique le score global si aucune news spécifique
+        # 4. Application du sentiment global aux paires sans sentiment spécifique
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
+            
+            # Création de l'entrée si nécessaire
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
-
-            if (
-                "sentiment" not in self.market_data[pair_key]
-                or self.market_data[pair_key]["sentiment"] == 0
-            ):
+                
+            # Application du sentiment global si pas de sentiment spécifique
+            if "sentiment" not in self.market_data[pair_key] or \
+            self.market_data[pair_key]["sentiment"] == 0:
                 self.market_data[pair_key]["sentiment"] = global_sentiment
                 self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                print(
-                    f"[DEBUG PROPAG GLOBAL SENTIMENT] {pair_key} <- {global_sentiment}"
-                )
+                print(f"[DEBUG] {pair_key}: sentiment global appliqué = {global_sentiment}")
 
-        # Avant la sauvegarde
-        symbol_sentiments_out = {
-            key: data.get("sentiment", 0) for key, data in self.market_data.items()
-        }
-
-        self.safe_update_shared_data(
-            {
-                "last_sentiment_update": time.time(),
-                "sentiment_by_symbol": symbol_sentiments_out,
+        # 5. Préparation des données pour la sauvegarde
+        sentiment_data = {
+            "last_sentiment_update": time.time(),
+            "sentiment_by_symbol": {
+                key: data.get("sentiment", 0) 
+                for key, data in self.market_data.items()
             },
-            self.data_file,
-        )
-
-        # 5. Sauvegarde tous les sentiments dans shared_data.json
-        symbol_sentiments_out = {
-            key: data.get("sentiment", 0) for key, data in self.market_data.items()
+            "global_sentiment": global_sentiment
         }
+
+        # 6. Sauvegarde dans shared_data.json
         try:
-            self.safe_update_shared_data(
-                {
-                    "last_sentiment_update": time.time(),
-                    "sentiment_by_symbol": symbol_sentiments_out,
-                },
-                self.data_file,
-            )
-            print("[SENTIMENT SAVE] shared_data.json mis à jour avec les sentiments")
+            self.safe_update_shared_data(sentiment_data, self.data_file)
+            print("[SUCCESS] Données de sentiment sauvegardées")
         except Exception as e:
-            print(f"[SENTIMENT SAVE ERROR] {e}")
+            print(f"[ERROR] Sauvegarde sentiment: {e}")
+
+        return sentiment_data
 
     # Remplace la méthode async def _save_sentiment_data(...) par la version patchée ci-dessous :
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
@@ -5138,15 +5127,31 @@ async def run_clean_bot():
                     )
 
                     if df is not None and not df.empty:
-                        # Vérification des colonnes requises
-                        required_columns = [
-                            "open",
-                            "high",
-                            "low",
-                            "close",
-                            "volume",
-                            "timestamp",
-                        ]
+                        # Vérification des colonnes requises d'abord
+                        required_columns = ["open", "high", "low", "close", "volume", "timestamp"]
+                        if all(col in df.columns for col in required_columns):
+                            # Structure de base complète
+                            bot.market_data[pair_key][tf] = {
+                                "open": df["open"].tolist(),
+                                "high": df["high"].tolist(),
+                                "low": df["low"].tolist(),
+                                "close": df["close"].tolist(),
+                                "volume": df["volume"].tolist(),
+                                "timestamp": [int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]],
+                                "signals": {
+                                    "technical": {"score": 0, "details": {}, "factors": 0},
+                                    "momentum": {"score": 0, "details": {}, "factors": 0},
+                                    "orderflow": {
+                                        "score": 0,
+                                        "details": {},
+                                        "factors": 0,
+                                        "liquidity": 0,
+                                        "market_pressure": 0
+                                    },
+                                    "ai": 0,
+                                    "sentiment": 0
+                                }
+                            }
                         if all(col in df.columns for col in required_columns):
                             # Structure de base complète
                             bot.market_data[pair_key][tf] = {
@@ -5278,18 +5283,20 @@ async def run_clean_bot():
                         "signals", {}
                     )
 
-                    final_decision = {
-                        "pair": pair,
-                        "action": action,
-                        "confidence": confidence,
-                        "signals": {
-                            "technical": dominant_signals.get("technical", {}).get(
-                                "score", 0
-                            ),
-                            "ai": dominant_signals.get("ai_prediction", 0),
-                            "sentiment": dominant_signals.get("sentiment", 0),
-                            "details": pair_signals,
+                    decision = {
+                        "action": "neutral",
+                        "confidence": abs(total_score),
+                        "signals": signals,
+                        "metrics": {
+                            "volatility_factor": volatility_factor,
+                            "market_pressure": market_pressure,
+                            "liquidity_score": liquidity_score,
+                            "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
+                            "weights": weights
                         },
+                        "timestamp": get_current_time(),  # Ajout ici
+                        "symbol": symbol,
+                        "timeframe": tf
                     }
 
                     trade_decisions.append(final_decision)
