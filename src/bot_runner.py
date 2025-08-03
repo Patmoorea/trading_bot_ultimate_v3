@@ -97,8 +97,6 @@ from src.portfolio.binance_utils import get_avg_entry_price_binance_spot
 
 from cachetools import TTLCache
 
-from src.utils.technical import calculate_atr
-
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 

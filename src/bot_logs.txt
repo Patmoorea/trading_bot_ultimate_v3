@@ -137591,3 +137591,11 @@
 2025-08-03T04:18:46.217338 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.06550435453493342
 2025-08-03T04:18:46.222147 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
 2025-08-03T04:18:47.423202 | ✅ 10 décisions de trade exécutées
+2025-08-03T05:56:01.742393 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-03T05:56:01.746767 | Initialisation des modèles d'IA...
+2025-08-03T05:56:02.221655 | ✅ Modèles d'IA initialisés avec succès
+2025-08-03T05:56:03.892630 | ✅ PPO Strategy initialized successfully
+2025-08-03T05:56:03.898504 | ✅ Bot initialisé avec Telegram: True
+2025-08-03T05:56:03.898568 | ✅ Trading en direct: True
+2025-08-03T05:56:03.898613 | ✅ IA activée: True
+2025-08-03T05:56:03.898656 | ✅ Analyse de news activée: True
