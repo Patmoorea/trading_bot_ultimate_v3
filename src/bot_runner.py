@@ -1031,6 +1031,56 @@ class TradingBotM4:
             print(f"❌ Erreur debug {pair_key}-{tf}: {e}")
             return False
 
+    def verify_signals_completeness(self):
+        """Vérifie l'état complet des signaux pour toutes les paires"""
+        print("\n=== VÉRIFICATION COMPLÈTE DES SIGNAUX ===")
+
+        all_ok = True
+
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            print(f"\n🔍 Vérification {pair_key}:")
+
+            # 1. Vérification structure de base
+            if pair_key not in self.market_data:
+                print("  ❌ Pas de données market_data")
+                all_ok = False
+                continue
+
+            # 2. Vérification signaux techniques
+            has_technical = False
+            if "signals" in self.market_data[pair_key]:
+                if "technical" in self.market_data[pair_key]["signals"]:
+                    tech_score = self.market_data[pair_key]["signals"]["technical"].get(
+                        "score"
+                    )
+                    if tech_score is not None:
+                        has_technical = True
+                        print(f"  ✅ Signaux techniques OK (score: {tech_score:.4f})")
+                    else:
+                        print("  ❌ Score technique manquant")
+                else:
+                    print("  ❌ Signaux techniques manquants")
+
+            # 3. Vérification IA
+            has_ai = "ai_prediction" in self.market_data[pair_key]
+            ai_value = self.market_data[pair_key].get("ai_prediction", "manquante")
+            print(f"  {'✅' if has_ai else '❌'} Prédiction IA: {ai_value}")
+
+            # 4. Vérification sentiment
+            has_sentiment = "sentiment" in self.market_data[pair_key]
+            sentiment_value = self.market_data[pair_key].get("sentiment", "manquant")
+            print(f"  {'✅' if has_sentiment else '❌'} Sentiment: {sentiment_value}")
+
+            # Synthèse par paire
+            if not (has_technical and has_ai and has_sentiment):
+                print(f"⚠️ Signaux incomplets pour {pair_key}")
+                all_ok = False
+            else:
+                print(f"✅ Tous les signaux OK pour {pair_key}")
+
+        return all_ok
+
     async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
         Analyse technique complète avec indicateurs avancés.
@@ -3758,34 +3808,32 @@ class TradingBotM4:
             self.logger.error(f"Erreur update métriques: {e}")
 
     async def _update_sentiment_data(self, sentiment_scores):
-        """
-        Met à jour les données de marché avec le sentiment
-        """
-        from collections import defaultdict
+        """Met à jour les données de sentiment du marché"""
+        print("\n=== MISE À JOUR SENTIMENTS ===")
 
-        # Définition initiale et UNIQUE de symbol_sentiments_out
-        symbol_sentiments_out = {
-            key: data.get("sentiment", 0) for key, data in self.market_data.items()
-        }
+        # 1. Validation des scores
+        valid_scores = [
+            item
+            for item in sentiment_scores
+            if isinstance(item, dict)
+            and "sentiment" in item
+            and item["sentiment"] is not None
+        ]
+        print(f"[DEBUG] {len(valid_scores)}/{len(sentiment_scores)} scores valides")
 
-        try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
-        except Exception:
-            shared_data = {}
-
-        # 1. Agrégation pondérée des scores par symbole
+        # 2. Calcul des sentiments par paire
         symbol_sentiments = defaultdict(list)
 
-        for item in sentiment_scores:
-            symbols = item.get("symbols", [])
+        for item in valid_scores:
             score = item.get("sentiment", 0)
+            symbols = item.get("symbols", [])
 
             # Si pas de symboles spécifiques, appliquer à toutes les paires
             if not symbols:
                 for key in self.market_data:
                     self.market_data[key]["sentiment"] = score
                     self.market_data[key]["sentiment_timestamp"] = time.time()
+                    print(f"[DEBUG] Sentiment global {score:.4f} appliqué à {key}")
                 continue
 
             # Sinon, appliquer aux paires correspondantes
@@ -3795,65 +3843,37 @@ class TradingBotM4:
                     if symbol in key.upper():
                         self.market_data[key]["sentiment"] = score
                         self.market_data[key]["sentiment_timestamp"] = time.time()
-                        print(f"[DEBUG SENTIMENT] Assigné {score} à {key} via {symbol}")
-                        symbol_sentiments[key].append((score, 1.0))  # Score et poids
+                        print(
+                            f"[DEBUG] Sentiment {score:.4f} assigné à {key} via {symbol}"
+                        )
+                        symbol_sentiments[key].append(score)
 
-        # 2. Calcul des moyennes pondérées par paire
+        # 3. Calcul sentiment moyen par paire
         for key in self.market_data:
-            ticker = key.replace("USDT", "").replace("USD", "")
-            values = symbol_sentiments.get(ticker, [])
-
-            if values:
-                total_score = sum(score * weight for score, weight in values)
-                total_weight = sum(weight for _, weight in values)
-                avg_sentiment = total_score / total_weight if total_weight else 0
-
+            scores = symbol_sentiments.get(key, [])
+            if scores:
+                avg_sentiment = float(np.mean(scores))
                 self.market_data[key]["sentiment"] = avg_sentiment
-                self.market_data[key]["sentiment_timestamp"] = time.time()
-                print(f"[DEBUG] {key}: sentiment moyen = {avg_sentiment:.4f}")
+                print(f"✅ {key}: sentiment moyen = {avg_sentiment:.4f}")
+            else:
+                print(f"⚠️ {key}: pas de sentiment spécifique")
 
-        # 3. Récupération du sentiment global
+        # 4. Sauvegarde dans shared_data.json
         try:
-            news_sentiment = shared_data.get("sentiment", {})
-            global_sentiment = news_sentiment.get("overall_sentiment", 0)
+            sentiment_data = {
+                "timestamp": get_current_time(),
+                "scores": sentiment_scores,
+                "sentiment_by_symbol": {
+                    key: self.market_data[key].get("sentiment", 0)
+                    for key in self.market_data
+                },
+            }
+
+            self.safe_update_shared_data({"sentiment": sentiment_data}, self.data_file)
+            print("✅ Données de sentiment sauvegardées")
+
         except Exception as e:
-            print(f"[ERROR] Lecture sentiment global: {e}")
-            global_sentiment = 0
-
-        # 4. Application du sentiment global aux paires sans sentiment spécifique
-        for pair in self.pairs_valid:
-            pair_key = pair.replace("/", "").upper()
-
-            # Création de l'entrée si nécessaire
-            if pair_key not in self.market_data:
-                self.market_data[pair_key] = {}
-
-            # Application du sentiment global si pas de sentiment spécifique
-            if (
-                "sentiment" not in self.market_data[pair_key]
-                or self.market_data[pair_key]["sentiment"] == 0
-            ):
-                self.market_data[pair_key]["sentiment"] = global_sentiment
-                self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                print(
-                    f"[DEBUG] {pair_key}: sentiment global appliqué = {global_sentiment}"
-                )
-
-        # 5. Préparation des données pour la sauvegarde
-        sentiment_data = {
-            "last_sentiment_update": time.time(),
-            "sentiment_by_symbol": symbol_sentiments_out,
-            "global_sentiment": global_sentiment,
-        }
-
-        # 6. Sauvegarde dans shared_data.json
-        try:
-            self.safe_update_shared_data(sentiment_data, self.data_file)
-            print("[SUCCESS] Données de sentiment sauvegardées")
-        except Exception as e:
-            print(f"[ERROR] Sauvegarde sentiment: {e}")
-
-        return sentiment_data
+            print(f"❌ Erreur sauvegarde sentiment: {e}")
 
     # Remplace la méthode async def _save_sentiment_data(...) par la version patchée ci-dessous :
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
@@ -4286,99 +4306,90 @@ class TradingBotM4:
             self.logger.error(f"Error fetching market data: {e}")
 
     async def _add_ai_predictions(self):
-        """
-        Ajoute les prédictions des modèles d'IA aux données de marché.
-        Corrige dynamiquement le shape de ppo_features selon le nombre de paires.
-        """
-        # PATCH: Définit les constantes locales nécessaires !
-        N_STEPS = self.N_STEPS
-        N_FEATURES = self.N_FEATURES
-
-        if not self.ai_enabled or not self.dl_model or not self.ppo_strategy:
+        """Ajoute les prédictions IA aux données de marché"""
+        if not self.ai_enabled or not self.dl_model:
+            print("❌ IA désactivée ou modèle non initialisé")
             return
 
-        expected_shape = (self.get_input_dim(),)
-        num_pairs = len(self.pairs_valid)
+        print("\n=== AJOUT PRÉDICTIONS IA ===")
 
-        ppo_features_list = []
         dl_predictions = {}
+        ppo_features_list = []
 
+        # 1. Prédictions CNN-LSTM pour chaque paire
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
+            print(f"\n[DEBUG] Préparation features IA pour {pair_key}")
+
             features = await self._prepare_features_for_ai(pair_key)
-            if features is not None:
-                try:
-                    # Prédiction du CNN-LSTM
-                    dl_prediction = self.dl_model.predict(features)
-                    dl_predictions[pair_key] = dl_prediction
+            if features is None:
+                print(f"❌ Échec préparation features pour {pair_key}")
+                continue
 
-                    # Correction NaN/inf
-                    for k in features:
-                        arr = features[k]
-                        if isinstance(arr, np.ndarray):
-                            if np.isnan(arr).any() or np.isinf(arr).any():
-                                print(
-                                    f"[WARN] NaN/inf détecté dans {k}, correction appliquée"
-                                )
-                                features[k] = np.nan_to_num(arr)
-                        else:
-                            if np.isnan(features[k]) or np.isinf(features[k]):
-                                print(
-                                    f"[WARN] NaN/inf détecté dans {k}, correction appliquée"
-                                )
-                                features[k] = float(np.nan_to_num(features[k]))
+            print(f"✅ Features prêtes pour {pair_key}")
 
-                    # Construction du vecteur feature
-                    vec = np.concatenate(
-                        [
-                            (
-                                features[k]
-                                if isinstance(features[k], np.ndarray)
-                                else np.full(N_STEPS, features[k])
-                            )
-                            for k in [
-                                "close",
-                                "high",
-                                "low",
-                                "volume",
-                                "rsi",
-                                "macd",
-                                "volatility",
-                                "vol_ratio",
-                            ]
-                        ]
-                    )
-                    if vec.shape != (N_FEATURES * N_STEPS,):
-                        print(
-                            f"[SKIP PPO] {pair_key}, shape {vec.shape}, pas assez de data"
+            try:
+                # Prédiction CNN-LSTM
+                dl_prediction = self.dl_model.predict(features)
+                dl_predictions[pair_key] = dl_prediction
+                print(f"✅ Prédiction CNN-LSTM pour {pair_key}: {dl_prediction:.4f}")
+
+                # Construction vecteur pour PPO
+                vec = np.concatenate(
+                    [
+                        (
+                            features[k]
+                            if isinstance(features[k], np.ndarray)
+                            else np.full(self.N_STEPS, features[k])
                         )
-                        continue
-                    ppo_features_list.append(vec)
-                except Exception as e:
-                    self.logger.error(f"Error preparing AI features for {pair}: {e}")
+                        for k in [
+                            "close",
+                            "high",
+                            "low",
+                            "volume",
+                            "rsi",
+                            "macd",
+                            "volatility",
+                            "vol_ratio",
+                        ]
+                    ]
+                )
 
-        if not ppo_features_list:
-            print("[SKIP PPO] Aucun vecteur de features disponible pour PPO.")
-            return
-        ppo_features = np.concatenate(ppo_features_list)
-        expected_shape = (N_FEATURES * N_STEPS * num_pairs,)
-        print(
-            f"[DEBUG] Shape du vecteur features PPO : {ppo_features.shape}, attendu : {expected_shape}"
-        )
-        if ppo_features.shape != expected_shape:
-            print(f"[SKIP PPO] Shape {ppo_features.shape}, attendu: {expected_shape}")
-            return
+                if vec.shape != (self.N_FEATURES * self.N_STEPS,):
+                    print(f"❌ Mauvais shape features PPO pour {pair_key}")
+                    continue
 
-        print("PPO features shape:", ppo_features.shape)
+                ppo_features_list.append(vec)
 
-        try:
-            ppo_action = self.ppo_strategy.get_action(ppo_features)
-            for i, pair in enumerate(self.pairs_valid):
-                pair_key = pair.replace("/", "").upper()
-                dl_pred = dl_predictions.get(pair_key, 0)
-                await self._merge_signals(pair_key, dl_pred, ppo_action)
-        except Exception as e:
-            self.logger.error(f"Error getting PPO action: {e}")
+            except Exception as e:
+                print(f"❌ Erreur prédiction IA pour {pair_key}: {e}")
+                continue
+
+        # 2. Prédiction PPO globale
+        if ppo_features_list:
+            try:
+                ppo_features = np.concatenate(ppo_features_list)
+                expected_shape = (
+                    self.N_FEATURES * self.N_STEPS * len(self.pairs_valid),
+                )
+
+                if ppo_features.shape == expected_shape:
+                    ppo_action = self.ppo_strategy.get_action(ppo_features)
+                    print(f"✅ Prédiction PPO globale: {ppo_action:.4f}")
+
+                    # 3. Fusion des signaux pour chaque paire
+                    for pair in self.pairs_valid:
+                        pair_key = pair.replace("/", "").upper()
+                        dl_pred = dl_predictions.get(pair_key, 0)
+                        await self._merge_signals(pair_key, dl_pred, ppo_action)
+
+                else:
+                    print(
+                        f"❌ Shape PPO incorrect: {ppo_features.shape}, attendu: {expected_shape}"
+                    )
+
+            except Exception as e:
+                print(f"❌ Erreur prédiction PPO: {e}")
 
     async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
         """Étudie le marché sur une période définie et établit un plan de trading"""
@@ -5046,48 +5057,56 @@ async def run_clean_bot():
             return None, None
 
     async def market_analysis_cycle(bot, pair, market_data, tf="1h"):
+        """Analyse le marché pour une paire et un timeframe donnés"""
         try:
             pair_key = pair.replace("/", "").upper()
+            print(f"\n[DEBUG] Analyse de {pair_key} sur {tf}")
+
+            # 1. Vérification données marché
             if not market_data or pair_key not in market_data:
+                print(f"❌ Pas de données market_data pour {pair_key}")
                 return None
 
+            # 2. Récupération OHLCV
             ohlcv_df = bot.ws_collector.get_dataframe(pair_key, tf)
-            if ohlcv_df is None or len(ohlcv_df) < 20:
+            if ohlcv_df is None:
+                print(f"❌ Pas de données OHLCV pour {pair_key}-{tf}")
                 return None
 
+            if len(ohlcv_df) < 20:
+                print(
+                    f"❌ Données insuffisantes pour {pair_key}-{tf}: {len(ohlcv_df)} points"
+                )
+                return None
+
+            # 3. Calcul des indicateurs techniques
+            print(f"[DEBUG] Calcul indicateurs pour {pair_key}-{tf}")
             indicators_data = bot.add_indicators(ohlcv_df)
 
-            # === PATCH AUTO-STRATEGIE ===
-            if hasattr(bot, "auto_strategy_config") and bot.auto_strategy_config:
-                auto_cfg = bot.auto_strategy_config
-                if (
-                    pair_key.upper() == auto_cfg["pair"].upper()
-                    and tf == auto_cfg["timeframe"]
-                ):
-                    action = appliquer_config_strategy(ohlcv_df, auto_cfg["config"])
-                    signal = {"action": action, "confidence": 1.0}
-                else:
-                    # Appel standard
-                    signal = await bot.analyze_signals(
-                        pair_key, ohlcv_df, indicators_data, tf=tf
-                    )
-                    signal["pair"] = pair
-                    signal["tf"] = tf
-                    return signal
-            else:
-                # Appel standard
-                signal = await bot.analyze_signals(
-                    pair_key, ohlcv_df, indicators_data, tf=tf
-                )
+            if indicators_data is None:
+                print(f"❌ Échec calcul indicateurs pour {pair_key}-{tf}")
+                return None
+
+            print(
+                f"✅ Indicateurs calculés pour {pair_key}-{tf}: {list(indicators_data.keys())}"
+            )
+
+            # 4. Analyse des signaux avec les indicateurs
+            signal = await bot.analyze_signals(
+                pair_key, ohlcv_df, indicators_data, tf=tf
+            )
+
+            if signal and isinstance(signal.get("signals"), dict):
                 signal["pair"] = pair
                 signal["tf"] = tf
+                print(f"✅ Signaux analysés pour {pair_key}-{tf}")
                 return signal
-            # === FIN PATCH AUTO-STRATEGIE ===
-
-            return signal
+            else:
+                print(f"❌ Analyse des signaux échouée pour {pair_key}-{tf}")
+                return None
 
         except Exception as e:
-            logger.error(f"Erreur analyse {pair}: {e}")
+            print(f"❌ Erreur analyse {pair}-{tf}: {str(e)}")
             return None
 
     async def execute_trading_cycle(bot, valid_pairs):
@@ -5127,7 +5146,7 @@ async def run_clean_bot():
                     )
 
                     if df is not None and not df.empty:
-                        # Vérification des colonnes requises d'abord
+                        # Vérification des colonnes requises
                         required_columns = [
                             "open",
                             "high",
@@ -5137,7 +5156,7 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_columns):
-                            # Structure de base complète (UNE SEULE FOIS)
+                            # Structure de base complète
                             bot.market_data[pair_key][tf] = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -5171,7 +5190,7 @@ async def run_clean_bot():
                                 },
                             }
 
-                            # Calcul des indicateurs orderflow ensuite
+                            # Calcul des indicateurs orderflow
                             if orderflow_indicators:
                                 try:
                                     of_data = {
@@ -5223,10 +5242,15 @@ async def run_clean_bot():
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie active: {strategy}")
 
-            # 5. Détection arbitrage
+            # 5. Vérification complète des signaux
+            signals_ok = bot.verify_signals_completeness()
+            if not signals_ok:
+                log_dashboard("⚠️ Attention: Certains signaux sont incomplets")
+
+            # 6. Détection arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 6. Analyse détaillée par paire et timeframe
+            # 7. Analyse détaillée par paire et timeframe
             trade_decisions = []
 
             for pair in bot.pairs_valid:
@@ -5267,7 +5291,7 @@ async def run_clean_bot():
                         "signals", {}
                     )
 
-                    # Construction de la décision finale avec les bonnes variables
+                    # Construction de la décision finale
                     final_decision = {
                         "pair": pair,
                         "action": action,
@@ -5301,10 +5325,12 @@ async def run_clean_bot():
                         f"Sent: {final_decision['signals']['sentiment']:.2f}"
                     )
 
-            # 7. Exécution des trades
-            if trade_decisions:
+            # 8. Exécution des trades (uniquement si les signaux sont complets)
+            if signals_ok and trade_decisions:
                 await execute_trade_decisions(bot, trade_decisions)
                 log_dashboard(f"✅ {len(trade_decisions)} décisions de trade exécutées")
+            elif not signals_ok:
+                log_dashboard("🚫 Exécution des trades bloquée - signaux incomplets")
             else:
                 log_dashboard("ℹ️ Pas de décisions de trade ce cycle")
 

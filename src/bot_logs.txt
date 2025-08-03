@@ -137636,3 +137636,93 @@
 2025-08-03T06:06:06.386725 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
 2025-08-03T06:06:06.396266 | 🎯 Stratégie active: Range/Scalping
 2025-08-03T06:06:06.396493 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:06:57.522124 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1894 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:06:57.693488 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: 0.2177 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:06:57.858828 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:06:58.023009 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:06:58.185728 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:06:58.351367 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:07:29.575330 |  Démarrage cycle trading
+2025-08-03T06:08:05.828476 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:08:05.837642 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:08:05.837712 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:08:46.949447 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0425 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:08:47.119927 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: 0.2177 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:08:47.288610 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:08:47.451346 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:08:47.609270 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:08:47.769401 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:09:19.407411 |  Démarrage cycle trading
+2025-08-03T06:09:56.032582 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0405 | Tendance: 0.0009
+2025-08-03T06:09:56.044909 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:09:56.045034 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:10:39.275111 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0527 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:10:39.440947 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1747 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:10:39.600821 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:10:39.768938 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:10:39.933269 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:10:40.118562 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:11:11.687485 |  Démarrage cycle trading
+2025-08-03T06:11:49.085886 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:11:49.097035 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:11:49.097161 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:12:40.920486 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0874 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:12:41.088718 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1747 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:12:41.247933 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:12:41.416486 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:12:41.583500 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:12:41.743598 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:13:12.930461 |  Démarrage cycle trading
+2025-08-03T06:13:50.469295 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:13:50.480703 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:13:50.480795 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:14:31.294884 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1084 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:14:31.462092 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1747 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:14:31.654570 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1663 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:14:31.819802 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:14:31.980387 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:14:32.145438 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:15:03.727424 |  Démarrage cycle trading
+2025-08-03T06:15:38.773970 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:15:38.782064 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:15:38.782220 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:16:20.550686 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1128 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:16:20.767607 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1580 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:16:20.936861 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:16:21.099413 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:16:21.267738 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:16:21.431639 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:16:53.002827 |  Démarrage cycle trading
+2025-08-03T06:17:28.694197 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0407 | Tendance: 0.0009
+2025-08-03T06:17:28.703043 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:17:28.703356 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:18:17.051191 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0933 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:18:17.217765 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1580 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:18:17.378585 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:18:17.549032 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:18:17.721686 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:18:17.888792 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:18:49.115914 |  Démarrage cycle trading
+2025-08-03T06:19:26.034970 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:19:26.045985 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:19:26.046113 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:20:08.446124 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1047 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:20:08.619757 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1892 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:20:08.786131 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:20:08.950780 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:20:09.111513 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:20:09.271841 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:20:40.880048 |  Démarrage cycle trading
+2025-08-03T06:21:15.487213 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:21:15.499860 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:21:15.499986 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:21:57.090493 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0941 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:21:57.268444 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1892 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:21:57.431809 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:21:57.606171 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:21:57.772999 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:21:57.941496 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:22:29.506851 |  Démarrage cycle trading
+2025-08-03T06:23:03.942545 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:23:03.953168 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:23:03.953266 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
