@@ -2221,16 +2221,14 @@ class TradingBotM4:
 
     async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
         """
-        Analyse complète des signaux de trading avec :
-        - Analyse technique avancée avec 12+ indicateurs
-        - Intégration IA et apprentissage profond
-        - Sentiment des news et impact marché
-        - Analyse volume, liquidité et orderflow
-        - Structure de marché et niveaux clés
-        - Fusion pondérée intelligente des signaux
-        - Multi-timeframe confirmation
-        - Monitoring système et performance
+        Analyse complète des signaux de trading basée sur AdvancedIndicators.
+        Intègre les indicateurs réellement disponibles :
+        - Trend (supertrend, vwma, kama, psar, trix)
+        - Momentum (awesome oscillator, williams_r, cci)
+        - Orderflow (delta_volume, imbalance, smart_money_index, liquidity_wave, bid_ask_ratio)
         """
+        current_time = "2025-08-03 02:31:05"
+        current_user = "Patmoorea"
 
         def is_valid(val):
             return val is not None and not (
@@ -2238,634 +2236,351 @@ class TradingBotM4:
             )
 
         try:
-            # === 1. Monitoring système ===
-            system_metrics = (
-                self.monitor_system_health()
-                if hasattr(self, "monitor_system_health")
-                else {}
-            )
+            log_dashboard(f"[{current_time}] {current_user} - Début analyse {symbol}")
 
-            # Ajout du monitoring avancé (code mort intégré)
-            cpu_usage = system_metrics.get("cpu_usage", 0)
-            memory_usage = system_metrics.get("memory_usage", 0)
-            api_latency = system_metrics.get("api_latency", 0)
-            ws_status = system_metrics.get("ws_status", True)
-            disk_usage = system_metrics.get("disk_usage", 0)
-            network_status = system_metrics.get("network_status", True)
+            # === 1. Initialisation des indicateurs avancés ===
+            advanced_indicators = AdvancedIndicators()
 
-            risk_multiplier = 1.0
-
-            if cpu_usage > 90 or memory_usage > 90:
-                log_dashboard(
-                    f"⚠️ Surcharge système détectée sur {symbol}, réduction risque!"
-                )
-                risk_multiplier *= 0.5
-
-            if api_latency > 1000:  # Latence > 1s
-                log_dashboard(f"⚠️ Latence API élevée sur {symbol}")
-                risk_multiplier *= 0.7
-
-            if not ws_status:
-                log_dashboard(f"⚠️ WebSocket déconnecté sur {symbol}")
-                risk_multiplier *= 0.5
-
-            if disk_usage > 90:
-                log_dashboard(f"⚠️ Espace disque critique sur {symbol}")
-                risk_multiplier *= 0.8
-
-            if not network_status:
-                log_dashboard(f"⚠️ Problèmes réseau détectés sur {symbol}")
-                risk_multiplier *= 0.6
-            # === 2. Validation et logs initiaux ===
-            print(
-                f"[DEBUG OHLVC] {symbol} {tf} close: {ohlcv_df['close'].tail(5).tolist() if 'close' in ohlcv_df else 'NO CLOSE'}"
-            )
-            print(f"[DEBUG INDICATORS] {symbol} {tf}: {indicators}")
-
-            # Validation avancée des données (code mort intégré)
+            # === 2. Vérification des données ===
             if not all(
-                col in ohlcv_df.columns for col in ["close", "high", "low", "volume"]
+                col in ohlcv_df.columns
+                for col in ["open", "high", "low", "close", "volume"]
             ):
                 log_dashboard(f"[ERROR] Données OHLCV incomplètes pour {symbol}")
                 return {"action": "neutral", "confidence": 0, "signals": {}}
 
-            # Vérification de la qualité des données
-            data_quality = {
-                "missing_values": ohlcv_df.isnull().sum().sum(),
-                "zero_volumes": (ohlcv_df["volume"] == 0).sum(),
-                "duplicated_timestamps": (
-                    ohlcv_df.index.duplicated().sum()
-                    if hasattr(ohlcv_df.index, "duplicated")
-                    else 0
-                ),
-            }
+            # === 3. Calcul des indicateurs avancés ===
+            trend_indicators = advanced_indicators.indicators["trend"]
+            momentum_indicators = advanced_indicators.indicators["momentum"]
+            orderflow_indicators = advanced_indicators.indicators["orderflow"]
 
-            if (
-                data_quality["missing_values"] > len(ohlcv_df) * 0.1
-            ):  # Plus de 10% de données manquantes
-                log_dashboard(f"⚠️ Qualité des données insuffisante pour {symbol}")
-                risk_multiplier *= 0.7
+            # Calcul des indicateurs de tendance
+            supertrend = trend_indicators["supertrend"](ohlcv_df)
+            vwma = trend_indicators["vwma"](ohlcv_df)
+            kama = trend_indicators["kama"](ohlcv_df)
+            psar = trend_indicators["psar"](ohlcv_df)
+            trix = trend_indicators["trix"](ohlcv_df)
 
-            # === 3. Configuration stratégie et paramètres ===
-            params = getattr(self, "signal_fusion_params", None)
-            if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
-                log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE pour {symbol}")
-                auto_cfg = self.auto_strategy_config
+            # Calcul des indicateurs de momentum
+            ao = momentum_indicators["ao"](ohlcv_df)
+            williams_r = momentum_indicators["williams_r"](ohlcv_df)
+            cci = momentum_indicators["cci"](ohlcv_df)
 
-                # Paramètres auto-stratégie (code mort intégré)
-                strategy_params = {
-                    "use_machine_learning": auto_cfg.get("use_ml", True),
-                    "adapt_to_volatility": auto_cfg.get("adaptive", True),
-                    "risk_profile": auto_cfg.get("risk_profile", "moderate"),
-                    "timeframe_weights": auto_cfg.get(
-                        "tf_weights", {"1h": 0.4, "4h": 0.4, "1d": 0.2}
-                    ),
-                    "indicator_weights": auto_cfg.get("ind_weights", {}),
-                }
-            else:
-                log_dashboard(f"[STRATEGY] Stratégie STANDARD")
-                strategy_params = {
-                    "use_machine_learning": True,
-                    "adapt_to_volatility": True,
-                    "risk_profile": "moderate",
-                }
+            # Calcul des indicateurs orderflow
+            delta_vol = orderflow_indicators["delta_volume"](ohlcv_df)
+            imbalance = orderflow_indicators["imbalance"](ohlcv_df)
+            smi = orderflow_indicators["smart_money_index"](ohlcv_df)
+            liq_wave = orderflow_indicators["liquidity_wave"](ohlcv_df)
+            bid_ask = orderflow_indicators["bid_ask_ratio"](ohlcv_df)
+            # === 4. Calcul des scores techniques ===
+            log_dashboard(
+                f"[2025-08-03 02:49:23] {Patmoorea} - Calcul scores techniques {symbol}"
+            )
 
-            # === 4. Extraction et validation des indicateurs ===
-            indics = {
-                "close": (
-                    ohlcv_df["close"].iloc[-1]
-                    if "close" in ohlcv_df and len(ohlcv_df) > 0
-                    else None
-                ),
-                "prev_close": (
-                    ohlcv_df["close"].iloc[-2]
-                    if "close" in ohlcv_df and len(ohlcv_df) >= 2
-                    else None
-                ),
-                "open": (
-                    ohlcv_df["open"].iloc[-1]
-                    if "open" in ohlcv_df and len(ohlcv_df) > 0
-                    else None
-                ),
-                "high": (
-                    ohlcv_df["high"].iloc[-1]
-                    if "high" in ohlcv_df and len(ohlcv_df) > 0
-                    else None
-                ),
-                "low": (
-                    ohlcv_df["low"].iloc[-1]
-                    if "low" in ohlcv_df and len(ohlcv_df) > 0
-                    else None
-                ),
-                "volume": (
-                    ohlcv_df["volume"].iloc[-1]
-                    if "volume" in ohlcv_df and len(ohlcv_df) > 0
-                    else None
-                ),
-                "sma_20": indicators.get("sma_20"),
-                "sma_50": indicators.get("sma_50"),
-                "ema_20": indicators.get("ema_20"),
-                "rsi_14": indicators.get("rsi_14"),
-                "macd": indicators.get("macd"),
-                "macd_signal": indicators.get("macd_signal"),
-                "macd_hist": indicators.get("macd_hist"),
-                "bb_upper": indicators.get("bb_upper"),
-                "bb_lower": indicators.get("bb_lower"),
-                "psar": indicators.get("psar"),
-                "momentum_10": indicators.get("momentum_10"),
-                "zscore_20": indicators.get("zscore_20"),
-                "stochrsi": indicators.get("stochrsi"),
-                "kc_upper": indicators.get("kc_upper"),
-                "kc_lower": indicators.get("kc_lower"),
-                "vwap": indicators.get("vwap"),
-            }
-
-            # Indicateurs avancés supplémentaires (code mort intégré)
-            advanced_indics = {
-                "atr": (
-                    self.calculate_atr(ohlcv_df, period=14)
-                    if len(ohlcv_df) >= 14
-                    else None
-                ),
-                "supertrend": (
-                    self.calculate_supertrend(ohlcv_df)
-                    if hasattr(self, "calculate_supertrend")
-                    else None
-                ),
-                "volume_profile_vah": None,  # Volume Area High
-                "volume_profile_val": None,  # Volume Area Low
-                "volume_profile_poc": None,  # Point of Control
-            }
-
-            # === 5. Analyses avancées ===
-            # Volume et liquidité
-            volume_profile = self.analyze_volume_profile(symbol, tf)
-            if volume_profile:
-                advanced_indics["volume_profile_vah"] = volume_profile.get("vah")
-                advanced_indics["volume_profile_val"] = volume_profile.get("val")
-                advanced_indics["volume_profile_poc"] = volume_profile.get("poc")
-
-            order_pressure = self.analyze_order_pressure(symbol)
-
-            # Structure de marché avancée (code mort intégré)
-            market_struct = self.identify_market_structure(ohlcv_df)
-            if market_struct:
-                market_struct.update(
-                    {
-                        "support_levels": self._identify_key_levels(
-                            ohlcv_df, "support"
-                        ),
-                        "resistance_levels": self._identify_key_levels(
-                            ohlcv_df, "resistance"
-                        ),
-                        "breakout_zones": (
-                            self.identify_breakout_zones(ohlcv_df)
-                            if hasattr(self, "identify_breakout_zones")
-                            else []
-                        ),
-                        "market_regime": (
-                            self.determine_market_regime(ohlcv_df)
-                            if hasattr(self, "determine_market_regime")
-                            else "unknown"
-                        ),
-                    }
-                )
-
-            # Momentum et volatilité avancés
-            squeeze_data = self.calculate_squeeze_momentum(ohlcv_df)
-            if squeeze_data:
-                squeeze_data.update(
-                    {
-                        "squeeze_intensity": (
-                            self.calculate_squeeze_intensity(ohlcv_df)
-                            if hasattr(self, "calculate_squeeze_intensity")
-                            else None
-                        ),
-                        "momentum_divergence": (
-                            self.check_momentum_divergence(ohlcv_df)
-                            if hasattr(self, "check_momentum_divergence")
-                            else None
-                        ),
-                    }
-                )
-
-            # Order flow et delta volume avancés
-            flow_analysis = self.analyze_order_flow(ohlcv_df)
-            if flow_analysis:
-                flow_analysis.update(
-                    {
-                        "delta_volume": (
-                            self.calculate_delta_volume(ohlcv_df)
-                            if hasattr(self, "calculate_delta_volume")
-                            else None
-                        ),
-                        "cumulative_delta": (
-                            self.calculate_cumulative_delta(ohlcv_df)
-                            if hasattr(self, "calculate_cumulative_delta")
-                            else None
-                        ),
-                        "absorption_ratio": (
-                            self.calculate_absorption_ratio(ohlcv_df)
-                            if hasattr(self, "calculate_absorption_ratio")
-                            else None
-                        ),
-                    }
-                )
-
-            # === 6. Score technique avec ajouts ===
             tech_score = 0
             tech_factors = 0
 
-            # Moyennes mobiles avec adaptation dynamique
-            ma_weights = {
-                "sma_20": (
-                    indics["sma_20"],
-                    2.0 * (1 + abs(market_struct.get("trend_strength", 0))),
-                ),
-                "sma_50": (
-                    indics["sma_50"],
-                    1.5 * (1 + abs(market_struct.get("trend_strength", 0))),
-                ),
-                "ema_20": (
-                    indics["ema_20"],
-                    2.5 * (1 + abs(market_struct.get("trend_strength", 0))),
-                ),
-            }
-
-            for ma_type, (price, weight) in ma_weights.items():
-                if is_valid(indics["close"]) and is_valid(price):
-                    tech_factors += 1
-                    pct_diff = (indics["close"] - price) / price * 100
-                    tech_score += np.clip(pct_diff * weight, -1, 1)
-
-            # RSI avec zones dynamiques
-            if is_valid(indics["rsi_14"]):
+            # Score Supertrend
+            if supertrend and is_valid(supertrend["value"].iloc[-1]):
                 tech_factors += 1
-                vol_adj = market_struct.get("volatility", 0.5) if market_struct else 0.5
-                upper_thresh = 70 + (vol_adj * 10)  # Max 80
-                lower_thresh = 30 - (vol_adj * 10)  # Min 20
-
-                if indics["rsi_14"] > upper_thresh:
-                    tech_score -= 0.8 * (1 + vol_adj)
-                elif indics["rsi_14"] < lower_thresh:
-                    tech_score += 0.8 * (1 + vol_adj)
+                if supertrend["direction"].iloc[-1] > 0:
+                    tech_score += supertrend["strength"].iloc[-1]
                 else:
-                    tech_score += (indics["rsi_14"] - 50) / 25
+                    tech_score -= supertrend["strength"].iloc[-1]
 
-            # MACD avec confirmation volume
-            if is_valid(indics["macd"]) and is_valid(indics["macd_signal"]):
-                tech_factors += 1
-                macd_diff = indics["macd"] - indics["macd_signal"]
-                volume_conf = (
-                    volume_profile.get("buy_volume_ratio", 1) if volume_profile else 1
+                print(
+                    f"[DEBUG] Supertrend: direction={supertrend['direction'].iloc[-1]} strength={supertrend['strength'].iloc[-1]:.3f}"
                 )
-                tech_score += np.clip(macd_diff * 10 * volume_conf, -1, 1)
 
-            if is_valid(indics["macd_hist"]):
+            # Score VWMA
+            if is_valid(vwma.iloc[-1]) and is_valid(ohlcv_df["close"].iloc[-1]):
                 tech_factors += 1
-                tech_score += np.clip(indics["macd_hist"] * 15, -1, 1)
+                vwma_diff = (ohlcv_df["close"].iloc[-1] - vwma.iloc[-1]) / vwma.iloc[-1]
+                tech_score += np.clip(vwma_diff * 3, -1, 1)
+                print(f"[DEBUG] VWMA diff: {vwma_diff:.3f}")
 
-            # Bollinger Bands avec squeeze detection
-            if all(is_valid(indics[x]) for x in ["bb_upper", "bb_lower", "close"]):
+            # Score KAMA
+            if is_valid(kama.iloc[-1]) and is_valid(ohlcv_df["close"].iloc[-1]):
                 tech_factors += 1
-                bb_position = (indics["close"] - indics["bb_lower"]) / (
-                    indics["bb_upper"] - indics["bb_lower"]
-                )
-                if squeeze_data and squeeze_data.get("squeeze_on"):
-                    if bb_position < 0.2:
-                        tech_score += 0.8
-                    elif bb_position > 0.8:
-                        tech_score -= 0.8
+                kama_diff = (ohlcv_df["close"].iloc[-1] - kama.iloc[-1]) / kama.iloc[-1]
+                tech_score += np.clip(kama_diff * 3, -1, 1)
+                print(f"[DEBUG] KAMA diff: {kama_diff:.3f}")
+
+            # Score PSAR
+            if psar and is_valid(psar["value"].iloc[-1]):
+                tech_factors += 1
+                if psar["trend"].iloc[-1] > 0:
+                    tech_score += psar["strength"].iloc[-1]
                 else:
-                    if bb_position < 0.2:
-                        tech_score += 0.6
-                    elif bb_position > 0.8:
-                        tech_score -= 0.6
+                    tech_score -= psar["strength"].iloc[-1]
+                print(
+                    f"[DEBUG] PSAR: trend={psar['trend'].iloc[-1]} strength={psar['strength'].iloc[-1]:.3f}"
+                )
 
-            # PSAR avec confirmation structure
-            if all(
-                is_valid(x)
-                for x in [indics["psar"], indics["prev_close"], indics["close"]]
-            ):
+            # Score TRIX
+            if is_valid(trix.iloc[-1]):
                 tech_factors += 1
-                structure_conf = 1 + abs(market_struct.get("trend_strength", 0))
-                if (
-                    indics["prev_close"] < indics["psar"]
-                    and indics["close"] > indics["psar"]
-                ):
-                    tech_score += 0.8 * structure_conf
-                elif (
-                    indics["prev_close"] > indics["psar"]
-                    and indics["close"] < indics["psar"]
-                ):
-                    tech_score -= 0.8 * structure_conf
+                tech_score += np.clip(trix.iloc[-1] * 0.2, -1, 1)
+                print(f"[DEBUG] TRIX: {trix.iloc[-1]:.3f}")
 
-            # Momentum et Z-Score
-            if is_valid(indics["momentum_10"]) and is_valid(indics["close"]):
-                tech_factors += 1
-                momentum_pct = indics["momentum_10"] / indics["close"] * 100
-                tech_score += np.clip(momentum_pct * 5, -1, 1)
+            # === 5. Calcul des scores momentum ===
+            momentum_score = 0
+            momentum_factors = 0
 
-            if is_valid(indics["zscore_20"]):
-                tech_factors += 1
-                tech_score += np.clip(indics["zscore_20"] * 0.5, -1, 1)
+            # Awesome Oscillator
+            if is_valid(ao.iloc[-1]):
+                momentum_factors += 1
+                momentum_score += np.sign(ao.iloc[-1]) * min(abs(ao.iloc[-1] * 0.1), 1)
+                print(f"[DEBUG] AO: {ao.iloc[-1]:.3f}")
 
-            # Normalisation score technique
+            # Williams %R
+            if is_valid(williams_r.iloc[-1]):
+                momentum_factors += 1
+                williams_score = 0
+                if williams_r.iloc[-1] < -80:
+                    williams_score = 1
+                elif williams_r.iloc[-1] > -20:
+                    williams_score = -1
+                momentum_score += williams_score
+                print(f"[DEBUG] Williams %R: {williams_r.iloc[-1]:.3f}")
+
+            # CCI
+            if is_valid(cci.iloc[-1]):
+                momentum_factors += 1
+                cci_score = np.clip(cci.iloc[-1] / 100, -1, 1)
+                momentum_score += cci_score
+                print(f"[DEBUG] CCI: {cci.iloc[-1]:.3f}")
+
+            # Normalisation du score momentum
+            if momentum_factors > 0:
+                momentum_score /= momentum_factors
+
+            # === 6. Calcul des scores orderflow ===
+            flow_score = 0
+            flow_factors = 0
+
+            # Delta Volume
+            if is_valid(delta_vol.iloc[-1]):
+                flow_factors += 1
+                flow_score += np.clip(
+                    delta_vol.iloc[-1] / delta_vol.abs().mean(), -1, 1
+                )
+                print(f"[DEBUG] Delta Volume: {delta_vol.iloc[-1]:.3f}")
+
+            # Imbalance
+            if is_valid(imbalance.iloc[-1]):
+                flow_factors += 1
+                flow_score += np.clip(
+                    imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1
+                )
+                print(f"[DEBUG] Imbalance: {imbalance.iloc[-1]:.3f}")
+
+            # Smart Money Index
+            if is_valid(smi.iloc[-1]):
+                flow_factors += 1
+                flow_score += np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
+                print(f"[DEBUG] SMI: {smi.iloc[-1]:.3f}")
+            # === 7. Fusion des signaux et scores finaux ===
+            log_dashboard(
+                f"[2025-08-03 02:50:06] {Patmoorea} - Fusion des signaux pour {symbol}"
+            )
+
+            # Normalisation du score technique
             if tech_factors > 0:
-                tech_score = tech_score / tech_factors
-                if abs(tech_score) > 0.3:
-                    tech_score *= 1.2
+                tech_score /= tech_factors
 
-            # === 7. Scores avancés avec améliorations ===
-            # Volume Profile Score avec analyse complète
-            volume_score = 0
-            if volume_profile:
-                acc_dist = volume_profile.get("accumulation_score", 0)
-                vol_ratio = volume_profile.get("buy_volume_ratio", 0.5)
-                poc_distance = volume_profile.get("poc_distance", 0)
+            # Normalisation du score orderflow
+            if flow_factors > 0:
+                flow_score /= flow_factors
 
-                volume_score = (
-                    0.4
-                    if volume_profile.get("is_accumulation") and acc_dist > 0
-                    else (
-                        -0.4
-                        if volume_profile.get("is_distribution") and acc_dist < 0
-                        else 0.3 if vol_ratio > 0.6 else -0.3 if vol_ratio < 0.4 else 0
-                    )
+            # Liquidité et bid/ask
+            liquidity_score = 0
+            if is_valid(liq_wave.iloc[-1]):
+                liquidity_score = -np.clip(
+                    liq_wave.iloc[-1] / liq_wave.abs().mean(), -1, 1
                 )
+                print(f"[DEBUG] Liquidity Wave: {liq_wave.iloc[-1]:.3f}")
 
-                # Ajustement selon distance au POC
-                if abs(poc_distance) < 0.01:  # Prix proche du POC
-                    volume_score *= 1.2
+            # Bid/Ask ratio comme confirmateur
+            market_pressure = 0
+            if is_valid(bid_ask):
+                market_pressure = (bid_ask - 0.5) * 2
+                print(f"[DEBUG] Bid/Ask Ratio: {bid_ask:.3f}")
 
-            # Order Pressure Score avec imbalance
-            pressure_score = 0
-            if order_pressure:
-                pressure_ratio = order_pressure.get("pressure_ratio", 1)
-                imbalance = order_pressure.get("imbalance", 0)
-                absorption = order_pressure.get("absorption_ratio", 1)
-
-                pressure_score = (
-                    (pressure_ratio - 1) * 0.5
-                    + imbalance * 0.3
-                    + (absorption - 1) * 0.2
-                )
-
-            # Market Structure Score avec niveaux clés
-            structure_score = 0
-            if market_struct:
-                trend_strength = market_struct.get("trend_strength", 0)
-                structure_score = trend_strength
-
-                # Ajustement selon proximité aux niveaux clés
-                support_levels = market_struct.get("support_levels", [])
-                resistance_levels = market_struct.get("resistance_levels", [])
-
-                for level in support_levels + resistance_levels:
-                    if (
-                        abs(indics["close"] - level) / indics["close"] < 0.01
-                    ):  # 1% de proximité
-                        structure_score *= 1.2
-                        break
-
-                if market_struct.get("volatility", 0) > 0.8:
-                    tech_score *= 0.8
-
-            # Squeeze Momentum Score amélioré
-            squeeze_score = 0
-            if squeeze_data and squeeze_data.get("squeeze_on"):
-                momentum = squeeze_data.get("momentum", 0)
-                intensity = squeeze_data.get("squeeze_intensity", 1)
-                squeeze_score = 0.3 * intensity if momentum > 0 else -0.3 * intensity
-
-            # === 8. Score IA avec features avancées ===
-            ai_score = 0
-            if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
-                try:
-                    features = await self._prepare_features_for_ai(symbol)
-                    if features is not None:
-                        # Enrichissement des features
-                        features.update(
-                            {
-                                "market_struct": market_struct.get("trend_strength", 0),
-                                "volume_profile": volume_score,
-                                "squeeze_status": (
-                                    1 if squeeze_data.get("squeeze_on") else 0
-                                ),
-                            }
-                        )
-                        ai_score = float(self.dl_model.predict(features))
-                except Exception as e:
-                    self.logger.warning(f"Erreur IA: {e}")
-
-            # === 9. Score Sentiment avec impact marché ===
-            sentiment_score = 0
-            sentiment_impact = 1.0
-            pair_key = symbol.replace("/", "").upper()
-
-            if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
-                try:
-                    # Sentiment spécifique au symbole
-                    sentiment_score = await self.news_analyzer.get_symbol_sentiment(
-                        pair_key
-                    )
-
-                    # Impact des news sur le marché
-                    news_impact = self.news_analyzer.get_news_impact(pair_key)
-                    if news_impact:
-                        sentiment_impact = news_impact.get("impact_score", 1.0)
-
-                    # Si pas de sentiment spécifique, utiliser le sentiment global
-                    if sentiment_score == 0:
-                        sentiment_score = (
-                            self.news_analyzer.get_sentiment_summary().get(
-                                "sentiment_global", 0.0
-                            )
-                        )
-
-                    # Ajustement selon l'impact
-                    sentiment_score *= sentiment_impact
-
-                except Exception as e:
-                    self.logger.error(f"Erreur sentiment {pair_key}: {e}")
-
-            # === 10. Fusion pondérée des signaux avec adaptation ===
-            # Calcul des corrélations
-            correlations = self.analyze_correlations()
-            correlation_factor = 1.0
-            if symbol in correlations:
-                correlation_factor = 1 - max(correlations[symbol].values()) * 0.3
-
-            # Qualité du trade
-            trade_quality = self.calculate_trade_quality_score(
-                {
-                    "symbol": symbol,
-                    "price": indics["close"],
-                    "volume_ratio": (
-                        volume_profile.get("buy_volume_ratio", 1)
-                        if volume_profile
-                        else 1
-                    ),
-                    "market_structure": market_struct,
-                }
-            )
-
+            # Construction du dictionnaire des signaux
             signals = {
-                "technical": tech_score,
-                "ai": ai_score,
-                "sentiment": sentiment_score,
-                "volume": volume_score,
-                "pressure": pressure_score,
-                "structure": structure_score,
-                "squeeze": squeeze_score,
-                "quality": trade_quality / 5.0,
-                "correlation": correlation_factor - 0.5,
+                "technical": {
+                    "score": tech_score,
+                    "supertrend": supertrend["direction"].iloc[-1] if supertrend else 0,
+                    "psar": psar["trend"].iloc[-1] if psar else 0,
+                    "trix": trix.iloc[-1] if is_valid(trix.iloc[-1]) else 0,
+                },
+                "momentum": {
+                    "score": momentum_score,
+                    "ao": ao.iloc[-1] if is_valid(ao.iloc[-1]) else 0,
+                    "williams": (
+                        williams_r.iloc[-1] if is_valid(williams_r.iloc[-1]) else 0
+                    ),
+                    "cci": cci.iloc[-1] if is_valid(cci.iloc[-1]) else 0,
+                },
+                "orderflow": {
+                    "score": flow_score,
+                    "delta_volume": (
+                        delta_vol.iloc[-1] if is_valid(delta_vol.iloc[-1]) else 0
+                    ),
+                    "imbalance": (
+                        imbalance.iloc[-1] if is_valid(imbalance.iloc[-1]) else 0
+                    ),
+                    "liquidity": liquidity_score,
+                    "market_pressure": market_pressure,
+                },
             }
 
-            # Poids adaptatifs selon le régime de marché
-            regime = market_struct.get("market_regime", "unknown")
-            weights = {
-                "technical": 0.3,
-                "ai": 0.2,
-                "sentiment": 0.15,
-                "volume": 0.15,
-                "pressure": 0.1,
-                "structure": 0.05,
-                "squeeze": 0.05,
-            }
+            # Poids adaptatifs selon la qualité des signaux
+            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
 
-            # Ajustement des poids selon le régime
-            if regime == "trending":
-                weights["technical"] *= 1.2
-                weights["structure"] *= 1.2
-            elif regime == "ranging":
-                weights["volume"] *= 1.2
-                weights["pressure"] *= 1.2
-            elif regime == "volatile":
-                weights["ai"] *= 1.2
-                weights["sentiment"] *= 1.2
+            # Ajustement des poids selon la liquidité
+            if abs(liquidity_score) > 0.7:  # Faible liquidité
+                weights["orderflow"] *= 1.3
+                weights["technical"] *= 0.7
+                log_dashboard(
+                    f"[2025-08-03 02:50:06] {Patmoorea} - Ajustement poids pour faible liquidité"
+                )
 
-            total_score = sum(
-                score * weights[signal_type] for signal_type, score in signals.items()
+            # Ajustement selon la pression du marché
+            if abs(market_pressure) > 0.7:
+                weights["momentum"] *= 1.2
+                weights["technical"] *= 0.8
+                log_dashboard(
+                    f"[2025-08-03 02:50:06] {Patmoorea} - Ajustement poids pour forte pression marché"
+                )
+
+            # Calcul du score total
+            total_score = (
+                signals["technical"]["score"] * weights["technical"]
+                + signals["momentum"]["score"] * weights["momentum"]
+                + signals["orderflow"]["score"] * weights["orderflow"]
             )
 
-            # Ajustements finaux
-            total_score *= risk_multiplier  # Système
-            total_score *= correlation_factor  # Corrélations
-            total_score *= 1 + trade_quality * 0.1  # Qualité
+            # Normalisation finale
+            total_score = np.clip(total_score, -1, 1)
 
-            # === 11. Multi-timeframe confirmation avancée ===
-            if tf in ["1h", "4h"]:
-                try:
-                    mtp_analysis = self.multi_timeframe_analysis(
-                        symbol, ["15m", "1h", "4h"]
-                    )
-
-                    # Analyse enrichie multi-timeframe
-                    confirmation = self.calculate_confirmation_score(
-                        {
-                            "market_structure": market_struct,
-                            "volume_profile": volume_profile,
-                            "squeeze_momentum": squeeze_data,
-                            "order_flow": order_pressure,
-                            "support_levels": market_struct.get("support_levels", []),
-                            "resistance_levels": market_struct.get(
-                                "resistance_levels", []
-                            ),
-                        },
-                        mtp_analysis,
-                    )
-
-                    # Ajustement selon force de la confirmation
-                    if confirmation > 0.8:
-                        total_score *= 1.2
-                    elif confirmation < 0.2:
-                        total_score *= 0.8
-
-                except Exception as e:
-                    self.logger.error(f"Erreur confirmation multi-TF: {e}")
-
-            # === 12. Décision finale avec seuils adaptatifs ===
-            volatility = market_struct.get("volatility", 1) if market_struct else 1
-            market_quality = (
-                self.get_market_quality_score(symbol)
-                if hasattr(self, "get_market_quality_score")
-                else 1
+            # === 8. Décision finale et logging ===
+            log_dashboard(
+                f"[2025-08-03 02:52:20] {Patmoorea} - Génération décision finale pour {symbol}"
             )
 
-            # Seuils dynamiques
-            buy_threshold = (
-                params.get("buy_threshold", 0.2) * (1 + volatility) * market_quality
-            )
-            sell_threshold = (
-                params.get("sell_threshold", -0.2) * (1 + volatility) * market_quality
-            )
+            # Seuils dynamiques basés sur la volatilité du marché
+            volatility_factor = 1.0
+            if is_valid(liq_wave.iloc[-1]):
+                volatility_factor = 1 + abs(liq_wave.iloc[-1]) * 0.5
 
-            # Ajustement des seuils selon qualité du trade
-            buy_threshold *= 1 + trade_quality * 0.1
-            sell_threshold *= 1 + trade_quality * 0.1
+            buy_threshold = 0.2 * volatility_factor
+            sell_threshold = -0.2 * volatility_factor
 
+            # Ajustement des seuils selon la pression du marché
+            if market_pressure > 0:
+                buy_threshold *= 1 - market_pressure * 0.2  # Plus facile d'acheter
+                sell_threshold *= 1 + market_pressure * 0.2  # Plus difficile de vendre
+            else:
+                buy_threshold *= (
+                    1 + abs(market_pressure) * 0.2
+                )  # Plus difficile d'acheter
+                sell_threshold *= (
+                    1 - abs(market_pressure) * 0.2
+                )  # Plus facile de vendre
+
+            # Construction de la décision finale
             decision = {
                 "action": "neutral",
                 "confidence": abs(total_score),
                 "signals": signals,
                 "metrics": {
-                    "volume_profile": volume_profile,
-                    "order_pressure": order_pressure,
-                    "market_structure": market_struct,
-                    "squeeze": squeeze_data,
-                    "flow": flow_analysis,
-                    "quality": trade_quality,
-                    "correlation": correlation_factor,
-                    "system_health": system_metrics,
-                    "market_quality": market_quality,
-                    "confirmation_score": (
-                        confirmation if "confirmation" in locals() else None
-                    ),
+                    "volatility_factor": volatility_factor,
+                    "market_pressure": market_pressure,
+                    "liquidity_score": liquidity_score,
+                    "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
+                    "weights": weights,
                 },
+                "timestamp": "2025-08-03 02:52:20",
+                "symbol": symbol,
+                "timeframe": tf,
             }
 
+            # Détermination de l'action
             if total_score > buy_threshold:
                 decision["action"] = "buy"
+                log_reason = "Signal d'achat"
             elif total_score < sell_threshold:
                 decision["action"] = "sell"
+                log_reason = "Signal de vente"
+            else:
+                log_reason = "Signal neutre"
 
-            # === 13. Logs détaillés enrichis ===
+            # Logging détaillé
             log_msg = (
-                f"[ANALYZE] {symbol} {tf} |\n"
-                f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sent: {sentiment_score:.3f}\n"
-                f"Vol: {volume_score:.3f} | Press: {pressure_score:.3f} | Struct: {structure_score:.3f}\n"
-                f"Qual: {trade_quality:.2f} | Corr: {correlation_factor:.2f} | Risk: {risk_multiplier:.2f}\n"
-                f"Total: {total_score:.3f} | {decision['action'].upper()} ({decision['confidence']:.3f})"
+                f"[ANALYZE] {symbol} {tf}\n"
+                f"Technical Score: {signals['technical']['score']:.3f}\n"
+                f"Momentum Score: {signals['momentum']['score']:.3f}\n"
+                f"Orderflow Score: {signals['orderflow']['score']:.3f}\n"
+                f"Total Score: {total_score:.3f}\n"
+                f"Action: {decision['action'].upper()} ({decision['confidence']:.3f})\n"
+                f"Reason: {log_reason}"
             )
-            log_dashboard(log_msg)
+
+            log_dashboard(f"[2025-08-03 02:52:20] {Patmoorea} - {log_msg}")
             print(f"[DEBUG] {log_msg}")
 
-            # === 14. Backup et monitoring ===
-            if hasattr(self, "current_cycle") and self.current_cycle % 100 == 0:
-                self.backup_critical_data()
-
-                # Monitoring des performances
-                self.monitor_signal_quality(decision, symbol)
-                self.update_strategy_metrics(signals, decision)
-
-                # Sauvegarde des métriques
-                if hasattr(self, "save_analysis_metrics"):
-                    self.save_analysis_metrics(
-                        {
-                            "symbol": symbol,
-                            "timeframe": tf,
-                            "signals": signals,
-                            "decision": decision,
-                            "metrics": decision["metrics"],
-                            "timestamp": datetime.now().isoformat(),
-                        }
-                    )
+            # Sauvegarde des métriques pour analyse ultérieure
+            if hasattr(self, "save_analysis_metrics"):
+                self.save_analysis_metrics(
+                    {
+                        "symbol": symbol,
+                        "timeframe": tf,
+                        "timestamp": "2025-08-03 02:52:20",
+                        "user": "Patmoorea",
+                        "decision": decision,
+                        "raw_signals": {
+                            "supertrend": (
+                                supertrend["direction"].iloc[-1] if supertrend else None
+                            ),
+                            "vwma": vwma.iloc[-1] if is_valid(vwma.iloc[-1]) else None,
+                            "kama": kama.iloc[-1] if is_valid(kama.iloc[-1]) else None,
+                            "psar": psar["trend"].iloc[-1] if psar else None,
+                            "trix": trix.iloc[-1] if is_valid(trix.iloc[-1]) else None,
+                            "ao": ao.iloc[-1] if is_valid(ao.iloc[-1]) else None,
+                            "williams_r": (
+                                williams_r.iloc[-1]
+                                if is_valid(williams_r.iloc[-1])
+                                else None
+                            ),
+                            "cci": cci.iloc[-1] if is_valid(cci.iloc[-1]) else None,
+                            "delta_volume": (
+                                delta_vol.iloc[-1]
+                                if is_valid(delta_vol.iloc[-1])
+                                else None
+                            ),
+                            "imbalance": (
+                                imbalance.iloc[-1]
+                                if is_valid(imbalance.iloc[-1])
+                                else None
+                            ),
+                            "liquidity": (
+                                liq_wave.iloc[-1]
+                                if is_valid(liq_wave.iloc[-1])
+                                else None
+                            ),
+                            "bid_ask": bid_ask if is_valid(bid_ask) else None,
+                        },
+                    }
+                )
 
             return decision
 
         except Exception as e:
-            self.logger.error(f"Erreur analyze_signals: {e}")
+            error_msg = f"Erreur dans analyze_signals: {str(e)}"
+            log_dashboard(f"[ERROR] [2025-08-03 02:52:20] {Patmoorea} - {error_msg}")
+            self.logger.error(error_msg)
             return {"action": "neutral", "confidence": 0, "signals": {}}
 
     def get_binance_real_balance(self, asset="USDC"):
