@@ -1029,6 +1029,863 @@ class TradingBotM4:
             print(f"❌ Erreur debug {pair_key}-{tf}: {e}")
             return False
 
+    async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
+        """
+        Analyse technique complète avec indicateurs avancés.
+        Retourne une décision de trading avec scores et signaux détaillés.
+        """
+        try:
+            # Configuration et validation initiale
+            current_time = get_current_time()
+            print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
+
+            def is_valid(val):
+                """Vérifie si une valeur est utilisable pour les calculs"""
+                if val is None:
+                    return False
+                if isinstance(val, (pd.Series, pd.DataFrame)):
+                    return not (val.isnull().all() or val.isin([np.inf, -np.inf]).any())
+                return not (isinstance(val, float) and (np.isnan(val) or np.isinf(val)))
+
+            # Validation des données OHLCV
+            required_columns = ["open", "high", "low", "close", "volume"]
+            if not all(col in ohlcv_df.columns for col in required_columns):
+                print(f"❌ {symbol}: Données OHLCV incomplètes")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
+
+            if len(ohlcv_df) < 20:
+                print(f"❌ {symbol}: Données insuffisantes ({len(ohlcv_df)} lignes)")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
+
+            # Initialisation des indicateurs
+            try:
+                advanced_indicators = AdvancedIndicators()
+            except Exception as e:
+                print(f"❌ Erreur initialisation indicateurs: {e}")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
+
+            # === CALCUL DES INDICATEURS ===
+            print(f"\n📊 Calcul indicateurs {symbol}-{tf}")
+
+            # 1. Indicateurs de tendance
+            trend_indicators = advanced_indicators.indicators["trend"]
+            supertrend = trend_indicators["supertrend"](ohlcv_df)
+            vwma = trend_indicators["vwma"](ohlcv_df)
+            kama = trend_indicators["kama"](ohlcv_df)
+            psar = trend_indicators["psar"](ohlcv_df)
+            trix = trend_indicators["trix"](ohlcv_df)
+
+            # 2. Indicateurs de momentum
+            momentum_indicators = advanced_indicators.indicators["momentum"]
+            ao = momentum_indicators["ao"](ohlcv_df)
+            williams_r = momentum_indicators["williams_r"](ohlcv_df)
+            cci = momentum_indicators["cci"](ohlcv_df)
+
+            # 3. Indicateurs orderflow
+            orderflow_indicators = advanced_indicators.indicators["orderflow"]
+            delta_vol = orderflow_indicators["delta_volume"](ohlcv_df)
+            imbalance = orderflow_indicators["imbalance"](ohlcv_df)
+            smi = orderflow_indicators["smart_money_index"](ohlcv_df)
+            liq_wave = orderflow_indicators["liquidity_wave"](ohlcv_df)
+            bid_ask = orderflow_indicators["bid_ask_ratio"](ohlcv_df)
+
+            # === CALCUL DES SCORES ===
+            print(f"\n💯 Calcul scores {symbol}-{tf}")
+            # === SCORES TECHNIQUES ===
+
+            tech_score = 0
+            tech_factors = 0
+            tech_details = {}
+
+            # Score Supertrend
+            if supertrend and is_valid(supertrend.get("value", pd.Series()).iloc[-1]):
+                tech_factors += 1
+                st_direction = supertrend["direction"].iloc[-1]
+                st_strength = supertrend["strength"].iloc[-1]
+
+                if st_direction > 0:
+                    tech_score += st_strength
+                else:
+                    tech_score -= st_strength
+
+                tech_details["supertrend"] = {
+                    "direction": st_direction,
+                    "strength": st_strength,
+                }
+                print(
+                    f"[TECH] Supertrend: direction={st_direction} strength={st_strength:.3f}"
+                )
+
+            # Score VWMA
+            if is_valid(vwma.iloc[-1]):
+                tech_factors += 1
+                vwma_diff = (ohlcv_df["close"].iloc[-1] - vwma.iloc[-1]) / vwma.iloc[-1]
+                vwma_score = np.clip(vwma_diff * 3, -1, 1)
+                tech_score += vwma_score
+                tech_details["vwma"] = vwma_score
+                print(f"[TECH] VWMA score: {vwma_score:.3f}")
+
+            # Score KAMA
+            if is_valid(kama.iloc[-1]):
+                tech_factors += 1
+                kama_diff = (ohlcv_df["close"].iloc[-1] - kama.iloc[-1]) / kama.iloc[-1]
+                kama_score = np.clip(kama_diff * 3, -1, 1)
+                tech_score += kama_score
+                tech_details["kama"] = kama_score
+                print(f"[TECH] KAMA score: {kama_score:.3f}")
+
+            # Score PSAR
+            if psar and is_valid(psar.get("value", pd.Series()).iloc[-1]):
+                tech_factors += 1
+                psar_trend = psar["trend"].iloc[-1]
+                psar_strength = psar["strength"].iloc[-1]
+
+                if psar_trend > 0:
+                    tech_score += psar_strength
+                else:
+                    tech_score -= psar_strength
+
+                tech_details["psar"] = {"trend": psar_trend, "strength": psar_strength}
+                print(f"[TECH] PSAR: trend={psar_trend} strength={psar_strength:.3f}")
+
+            # Score TRIX
+            if is_valid(trix.iloc[-1]):
+                tech_factors += 1
+                trix_score = np.clip(trix.iloc[-1] * 0.2, -1, 1)
+                tech_score += trix_score
+                tech_details["trix"] = trix_score
+                print(f"[TECH] TRIX score: {trix_score:.3f}")
+
+            # === SCORES MOMENTUM ===
+            momentum_score = 0
+            momentum_factors = 0
+            momentum_details = {}
+
+            # Awesome Oscillator
+            if is_valid(ao.iloc[-1]):
+                momentum_factors += 1
+                ao_value = ao.iloc[-1]
+                ao_score = np.sign(ao_value) * min(abs(ao_value * 0.1), 1)
+                momentum_score += ao_score
+                momentum_details["ao"] = ao_score
+                print(f"[MOMENTUM] AO score: {ao_score:.3f}")
+
+            # Williams %R
+            if is_valid(williams_r.iloc[-1]):
+                momentum_factors += 1
+                wr_value = williams_r.iloc[-1]
+
+                if wr_value < -80:
+                    williams_score = 1  # Survendu
+                elif wr_value > -20:
+                    williams_score = -1  # Suracheté
+                else:
+                    williams_score = 0
+
+                momentum_score += williams_score
+                momentum_details["williams_r"] = williams_score
+                print(f"[MOMENTUM] Williams %R score: {williams_score:.3f}")
+
+            # CCI
+            if is_valid(cci.iloc[-1]):
+                momentum_factors += 1
+                cci_score = np.clip(cci.iloc[-1] / 100, -1, 1)
+                momentum_score += cci_score
+                momentum_details["cci"] = cci_score
+                print(f"[MOMENTUM] CCI score: {cci_score:.3f}")
+
+            # === SCORES ORDERFLOW ===
+            flow_score = 0
+            flow_factors = 0
+            flow_details = {}
+
+            # Delta Volume
+            if is_valid(delta_vol.iloc[-1]):
+                flow_factors += 1
+                delta_score = np.clip(
+                    delta_vol.iloc[-1] / delta_vol.abs().mean(), -1, 1
+                )
+                flow_score += delta_score
+                flow_details["delta_volume"] = delta_score
+                print(f"[FLOW] Delta Volume score: {delta_score:.3f}")
+
+            # Imbalance
+            if is_valid(imbalance.iloc[-1]):
+                flow_factors += 1
+                imb_score = np.clip(imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1)
+                flow_score += imb_score
+                flow_details["imbalance"] = imb_score
+                print(f"[FLOW] Imbalance score: {imb_score:.3f}")
+
+            # Smart Money Index
+            if is_valid(smi.iloc[-1]):
+                flow_factors += 1
+                smi_score = np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
+                flow_score += smi_score
+                flow_details["smi"] = smi_score
+                print(f"[FLOW] SMI score: {smi_score:.3f}")
+
+            # === FUSION DES SIGNAUX ===
+
+            # Normalisation des scores
+            if tech_factors > 0:
+                tech_score /= tech_factors
+            if momentum_factors > 0:
+                momentum_score /= momentum_factors
+            if flow_factors > 0:
+                flow_score /= flow_factors
+
+            # Scores de liquidité et pression du marché
+            liquidity_score = 0
+            if is_valid(liq_wave.iloc[-1]):
+                liquidity_score = -np.clip(
+                    liq_wave.iloc[-1] / liq_wave.abs().mean(), -1, 1
+                )
+                print(f"[FLOW] Liquidity score: {liquidity_score:.3f}")
+
+            market_pressure = 0
+            if is_valid(bid_ask):
+                market_pressure = (bid_ask - 0.5) * 2
+                print(f"[FLOW] Market pressure: {market_pressure:.3f}")
+
+            # Construction du dictionnaire des signaux complet
+            signals = {
+                "technical": {
+                    "score": tech_score,
+                    "details": tech_details,
+                    "factors": tech_factors,
+                },
+                "momentum": {
+                    "score": momentum_score,
+                    "details": momentum_details,
+                    "factors": momentum_factors,
+                },
+                "orderflow": {
+                    "score": flow_score,
+                    "details": flow_details,
+                    "factors": flow_factors,
+                    "liquidity": liquidity_score,
+                    "market_pressure": market_pressure,
+                },
+            }
+
+            # Poids adaptatifs selon la qualité des signaux
+            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
+
+            # Ajustement des poids selon conditions de marché
+            if abs(liquidity_score) > 0.7:
+                weights["orderflow"] *= 1.3
+                weights["technical"] *= 0.7
+
+            if abs(market_pressure) > 0.7:
+                weights["momentum"] *= 1.2
+                weights["technical"] *= 0.8
+
+            # Calcul score total
+            total_score = (
+                signals["technical"]["score"] * weights["technical"]
+                + signals["momentum"]["score"] * weights["momentum"]
+                + signals["orderflow"]["score"] * weights["orderflow"]
+            )
+            total_score = np.clip(total_score, -1, 1)
+
+            # === DÉCISION FINALE ===
+
+            # Seuils dynamiques
+            volatility_factor = 1.0 + (
+                abs(liquidity_score) * 0.5 if is_valid(liquidity_score) else 0
+            )
+
+            buy_threshold = 0.2 * volatility_factor
+            sell_threshold = -0.2 * volatility_factor
+
+            # Ajustement des seuils selon la pression du marché
+            if market_pressure > 0:
+                buy_threshold *= 1 - market_pressure * 0.2
+                sell_threshold *= 1 + market_pressure * 0.2
+            else:
+                buy_threshold *= 1 + abs(market_pressure) * 0.2
+                sell_threshold *= 1 - abs(market_pressure) * 0.2
+
+            # Construction de la décision finale
+            decision = {
+                "action": "neutral",
+                "confidence": abs(total_score),
+                "signals": signals,
+                "metrics": {
+                    "volatility_factor": volatility_factor,
+                    "market_pressure": market_pressure,
+                    "liquidity_score": liquidity_score,
+                    "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
+                    "weights": weights,
+                },
+                "timestamp": "2025-08-03 03:37:58",
+                "symbol": symbol,
+                "timeframe": tf,
+            }
+
+            # Détermination de l'action finale
+            if total_score > buy_threshold:
+                decision["action"] = "buy"
+                log_reason = "Signal d'achat"
+            elif total_score < sell_threshold:
+                decision["action"] = "sell"
+                log_reason = "Signal de vente"
+            else:
+                log_reason = "Signal neutre"
+
+            # Logging détaillé final
+            log_msg = (
+                f"[ANALYZE] {symbol} {tf}\n"
+                f"Technical Score: {tech_score:.3f} ({tech_factors} facteurs)\n"
+                f"Momentum Score: {momentum_score:.3f} ({momentum_factors} facteurs)\n"
+                f"Orderflow Score: {flow_score:.3f} ({flow_factors} facteurs)\n"
+                f"Total Score: {total_score:.3f}\n"
+                f"Seuils - Achat: {buy_threshold:.3f}, Vente: {sell_threshold:.3f}\n"
+                f"Action: {decision['action'].upper()} ({decision['confidence']:.3f})\n"
+                f"Raison: {log_reason}"
+            )
+
+            print(f"[DEBUG] {log_msg}")
+
+            # Sauvegarde des métriques
+            if hasattr(self, "save_analysis_metrics"):
+                self.save_analysis_metrics(
+                    {
+                        "symbol": symbol,
+                        "timeframe": tf,
+                        "timestamp": "",
+                        "user": "Patmoorea",
+                        "decision": decision,
+                        "raw_signals": {
+                            "supertrend": tech_details.get("supertrend"),
+                            "vwma": tech_details.get("vwma"),
+                            "kama": tech_details.get("kama"),
+                            "psar": tech_details.get("psar"),
+                            "trix": tech_details.get("trix"),
+                            "ao": momentum_details.get("ao"),
+                            "williams_r": momentum_details.get("williams_r"),
+                            "cci": momentum_details.get("cci"),
+                            "delta_volume": flow_details.get("delta_volume"),
+                            "imbalance": flow_details.get("imbalance"),
+                            "liquidity": liquidity_score,
+                            "bid_ask": market_pressure,
+                        },
+                    }
+                )
+            self.market_data[symbol][tf]["signals"] = {
+                "technical": signals["technical"],
+                "momentum": signals["momentum"],
+                "orderflow": signals["orderflow"],
+                "ai": self.market_data.get(symbol, {}).get("ai_prediction", 0),
+                "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
+            }
+            return decision
+
+        except Exception as e:
+            error_msg = f"Erreur dans analyze_signals: {str(e)}"
+            self.logger.error(error_msg)
+            return {"action": "neutral", "confidence": 0, "signals": {}}
+
+    def calculate_atr(self, df, period=14):
+        """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
+        try:
+            high = np.array(df["high"])
+            low = np.array(df["low"])
+            close = np.array(df["close"])
+
+            if len(high) < 2 or len(low) < 2 or len(close) < 2:
+                return 0.01
+
+            tr = np.maximum(
+                high[1:] - low[1:],
+                np.abs(high[1:] - close[:-1]),
+                np.abs(low[1:] - close[:-1]),
+            )
+
+            atr = pd.Series(tr).rolling(window=period).mean()
+            return float(atr.iloc[-1]) if len(atr) > 0 else 0.01
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul ATR: {e}")
+            return 0.01
+
+    def add_indicators(self, df):
+        """
+        Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
+        Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
+        (Version enrichie avec indicateurs avancés)
+        Corrige définitivement le warning VWAP/VWMA not datetime ordered de pandas-ta !
+        """
+        import pandas as pd
+        import numpy as np
+
+        try:
+            # --- Conversion stricte et tri ---
+            # Si df est une liste, transforme-le en DataFrame
+            if isinstance(df, list):
+                if len(df) == 0:
+                    self.logger.error("add_indicators: Liste reçue vide")
+                    return None
+                if isinstance(df[0], dict):
+                    df = pd.DataFrame(df)
+                elif isinstance(df[0], (list, tuple)):
+                    columns = ["timestamp", "open", "high", "low", "close", "volume"]
+                    df = pd.DataFrame(df, columns=columns)
+                else:
+                    self.logger.error(
+                        "add_indicators: Format de liste non pris en charge"
+                    )
+                    return None
+
+            if not isinstance(df, pd.DataFrame):
+                self.logger.error("add_indicators: df n'est pas un DataFrame")
+                return None
+
+            # --- Vérification et correction colonne timestamp ---
+            if "timestamp" not in df.columns:
+                self.logger.error("add_indicators: colonne 'timestamp' manquante")
+                return None
+
+            # --- Conversion stricte timestamp ---
+            try:
+                # Si timestamp n'est pas datetime, convertis-le
+                if not np.issubdtype(df["timestamp"].dtype, np.datetime64):
+                    # Si c'est en ms, convertis-le
+                    # Heuristique: timestamp > 1e12 => probablement en ms
+                    if df["timestamp"].max() > 1e12:
+                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+                    else:
+                        df["timestamp"] = pd.to_datetime(df["timestamp"])
+            except Exception as e:
+                self.logger.error(f"add_indicators: Erreur conversion timestamp: {e}")
+                return None
+
+            # --- Tri strict ---
+            df = df.drop_duplicates(subset="timestamp", keep="last")
+            df = df.sort_values("timestamp")
+            df = df.reset_index(drop=True)
+
+            required_cols = {"open", "high", "low", "close", "volume"}
+            if not required_cols.issubset(df.columns):
+                self.logger.error(
+                    f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
+                )
+                return None
+
+            MIN_LEN = 30
+            if df is None or len(df) < MIN_LEN:
+                self.logger.warning(
+                    f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
+                )
+                return None
+
+            if df.empty:
+                self.logger.warning(
+                    "DataFrame vide, impossible de calculer les indicateurs"
+                )
+                print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
+                return None
+
+            try:
+                df_ta = df.copy()
+
+                # Tri STRICT + SET INDEX avant CHAQUE calcul d'indicateur avancé (VWMA, VWAP, OBV, etc.)
+                def strict_sort_and_index(df):
+                    if "timestamp" in df.columns:
+                        df = df.drop_duplicates(subset="timestamp", keep="last")
+                        df = df.sort_values("timestamp")
+                        df = df.set_index("timestamp")
+                    return df
+
+                # Calcul des indicateurs classiques (index classique)
+                sma_20 = df_ta.ta.sma(length=20, append=False)
+                if sma_20 is not None and not sma_20.empty:
+                    if isinstance(sma_20, pd.Series):
+                        df_ta["sma_20"] = sma_20
+                    elif "SMA_20" in sma_20:
+                        df_ta["sma_20"] = sma_20["SMA_20"]
+
+                sma_50 = df_ta.ta.sma(length=50, append=False)
+                if sma_50 is not None and not sma_50.empty:
+                    if isinstance(sma_50, pd.Series):
+                        df_ta["sma_50"] = sma_50
+                    elif "SMA_50" in sma_50:
+                        df_ta["sma_50"] = sma_50["SMA_50"]
+
+                ema_20 = df_ta.ta.ema(length=20, append=False)
+                if ema_20 is not None and not ema_20.empty:
+                    if isinstance(ema_20, pd.Series):
+                        df_ta["ema_20"] = ema_20
+                    elif "EMA_20" in ema_20:
+                        df_ta["ema_20"] = ema_20["EMA_20"]
+
+                rsi_14 = df_ta.ta.rsi(length=14, append=False)
+                if rsi_14 is not None and not rsi_14.empty:
+                    if isinstance(rsi_14, pd.Series):
+                        df_ta["rsi_14"] = rsi_14
+                    elif "RSI_14" in rsi_14:
+                        df_ta["rsi_14"] = rsi_14["RSI_14"]
+
+                macd = df_ta.ta.macd()
+                if macd is not None and not macd.empty:
+                    if "MACD_12_26_9" in macd:
+                        df_ta["macd"] = macd["MACD_12_26_9"]
+                    if "MACDs_12_26_9" in macd:
+                        df_ta["macd_signal"] = macd["MACDs_12_26_9"]
+                    if "MACDh_12_26_9" in macd:
+                        df_ta["macd_hist"] = macd["MACDh_12_26_9"]
+
+                bb = df_ta.ta.bbands(length=20, std=2.0)
+                if bb is not None and not bb.empty:
+                    if "BBL_20_2.0" in bb:
+                        df_ta["bb_lower"] = bb["BBL_20_2.0"]
+                    if "BBU_20_2.0" in bb:
+                        df_ta["bb_upper"] = bb["BBU_20_2.0"]
+
+                df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
+                df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
+
+                psar = df_ta.ta.psar()
+                if psar is not None and not psar.empty:
+                    key = [col for col in psar.columns if col.startswith("PSAR")][0]
+                    df_ta["psar"] = psar[key]
+
+                mom_10 = df_ta.ta.mom(length=10, append=False)
+                if mom_10 is not None and not mom_10.empty:
+                    if isinstance(mom_10, pd.Series):
+                        df_ta["momentum_10"] = mom_10
+                    elif "MOM_10" in mom_10:
+                        df_ta["momentum_10"] = mom_10["MOM_10"]
+
+                df_ta["zscore_20"] = (
+                    df_ta["close"] - df_ta["close"].rolling(20).mean()
+                ) / df_ta["close"].rolling(20).std()
+
+                # Indicateurs avancés supplémentaires : TRI + SET INDEX obligatoire pour pandas-ta VWAP/VWMA/OBV
+                try:
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    vwma = df_ta_idx.ta.vwma(length=20)
+                    # On remet l'index timestamp dans la colonne pour rester compatible
+                    df_ta["vwma_20"] = vwma.values
+                except Exception:
+                    df_ta["vwma_20"] = np.nan
+                try:
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    obv = df_ta_idx.ta.obv()
+                    df_ta["obv"] = obv.values
+                except Exception:
+                    df_ta["obv"] = np.nan
+                try:
+                    df_ta_idx = strict_sort_and_index(df_ta)
+                    vwap = df_ta_idx.ta.vwap()
+                    df_ta["vwap"] = vwap.values
+                except Exception:
+                    df_ta["vwap"] = np.nan
+                try:
+                    stochrsi = df_ta.ta.stochrsi()
+                    if stochrsi is not None and not stochrsi.empty:
+                        df_ta["stochrsi"] = stochrsi.iloc[:, 0]
+                except Exception:
+                    df_ta["stochrsi"] = np.nan
+                try:
+                    kc = df_ta.ta.kc()
+                    if kc is not None and not kc.empty:
+                        df_ta["kc_upper"] = kc["KCUpper_20_2_10"]
+                        df_ta["kc_lower"] = kc["KCLower_20_2_10"]
+                except Exception:
+                    df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
+                try:
+                    supertrend = df_ta.ta.supertrend(length=7, multiplier=3.0)
+                    if supertrend is not None and not supertrend.empty:
+                        df_ta["supertrend"] = supertrend.iloc[:, 0]
+                except Exception:
+                    pass
+                try:
+                    ichimoku = df_ta.ta.ichimoku()
+                    if ichimoku is not None and not ichimoku.empty:
+                        df_ta["ichimoku_a"] = ichimoku["ISA_9"]
+                        df_ta["ichimoku_b"] = ichimoku["ISB_26"]
+                except Exception:
+                    pass
+                try:
+                    keltner = df_ta.ta.kc()
+                    if keltner is not None and not keltner.empty:
+                        df_ta["keltner_upper"] = keltner["KCUpper_20_2_10"]
+                        df_ta["keltner_lower"] = keltner["KCLower_20_2_10"]
+                except Exception:
+                    pass
+                try:
+                    accdist = df_ta.ta.accdist()
+                    df_ta["accumulation"] = accdist
+                except Exception:
+                    pass
+
+                all_indics = [
+                    "sma_20",
+                    "sma_50",
+                    "ema_20",
+                    "rsi_14",
+                    "macd",
+                    "macd_signal",
+                    "macd_hist",
+                    "bb_lower",
+                    "bb_upper",
+                    "donchian_high",
+                    "donchian_low",
+                    "psar",
+                    "momentum_10",
+                    "zscore_20",
+                    "vwma_20",
+                    "obv",
+                    "vwap",
+                    "stochrsi",
+                    "kc_upper",
+                    "kc_lower",
+                ]
+
+                indicators = {}
+                for col in all_indics:
+                    if col in df_ta.columns:
+                        last_valid = df_ta[col].dropna()
+                        indicators[col] = (
+                            last_valid.iloc[-1] if not last_valid.empty else None
+                        )
+                    else:
+                        indicators[col] = None
+
+            except Exception as e:
+                self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
+                indicators = {}
+
+            n_valid = len([v for v in indicators.values() if v is not None])
+            self.logger.info(
+                f"✅ {n_valid} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
+            )
+            print(
+                f"[DEBUG add_indicators] {n_valid} indicateurs extraits: {list(indicators.keys())[:5]}"
+            )
+            return indicators
+
+        except Exception as e:
+            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
+            return None
+
+    def analyze_order_flow(self, df):
+        """
+        Analyse avancée du flux d'ordres pour détecter la pression acheteur/vendeur.
+        """
+        try:
+            # Calcul de l'absorption
+            buying_pressure = (
+                (df["close"] - df["low"]) / (df["high"] - df["low"])
+            ) * df["volume"]
+            selling_pressure = (
+                (df["high"] - df["close"]) / (df["high"] - df["low"])
+            ) * df["volume"]
+
+            # CVD (Cumulative Volume Delta)
+            cvd = (buying_pressure - selling_pressure).cumsum()
+
+            # Imbalance Detection
+            imbalance = (
+                abs(buying_pressure.mean() - selling_pressure.mean())
+                / selling_pressure.mean()
+            )
+
+            return {
+                "buying_pressure": buying_pressure.iloc[-1],
+                "selling_pressure": selling_pressure.iloc[-1],
+                "cvd": cvd.iloc[-1],
+                "imbalance": imbalance,
+                "pressure_ratio": (
+                    buying_pressure.iloc[-1] / selling_pressure.iloc[-1]
+                    if selling_pressure.iloc[-1] != 0
+                    else 1
+                ),
+            }
+        except Exception as e:
+            self.logger.error(f"Erreur analyse order flow: {e}")
+            return {
+                "buying_pressure": 0,
+                "selling_pressure": 0,
+                "cvd": 0,
+                "imbalance": 0,
+                "pressure_ratio": 1,
+            }
+
+    def analyze_volume_profile(self, symbol, timeframe="1h"):
+        """Analyse avancée du volume profile"""
+        df = self.get_timeframe_data(symbol, timeframe)
+        if df is None:
+            return None
+
+        # Calcul des points d'accumulation/distribution
+        volume_nodes = self.calculate_volume_nodes(df)
+
+        # Détection des zones de haute liquidité
+        liquidity_zones = self.identify_liquidity_zones(df)
+
+        return {
+            "volume_nodes": volume_nodes,
+            "liquidity_zones": liquidity_zones,
+            "poc_price": self.calculate_poc_price(df),
+        }
+
+    async def _prepare_features_for_ai(self, symbol):
+        """
+        Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
+        ATTENTION: Retourne TOUJOURS un dict avec les clés
+        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
+        Si besoin pour PPO, ajoute aussi 'vol_ratio'.
+        """
+        try:
+            N_STEPS = self.N_STEPS
+
+            ohlcv = self.market_data.get(symbol, {}).get("1h", {})
+            if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
+                return None
+
+            closes = np.array(ohlcv.get("close", []))
+            highs = np.array(ohlcv.get("high", []))
+            lows = np.array(ohlcv.get("low", []))
+            volumes = np.array(ohlcv.get("volume", []))
+
+            # --- Vérification stricte sur la taille
+            if (
+                len(closes) < N_STEPS
+                or len(highs) < N_STEPS
+                or len(lows) < N_STEPS
+                or len(volumes) < N_STEPS
+            ):
+                return None
+
+            closes = closes[-N_STEPS:]
+            highs = highs[-N_STEPS:]
+            lows = lows[-N_STEPS:]
+            volumes = volumes[-N_STEPS:]
+
+            # RSI (14)
+            delta = np.diff(closes)
+            gain = (delta > 0) * delta
+            loss = (delta < 0) * -delta
+            avg_gain = np.mean(gain[-14:]) if len(gain) >= 14 else 0
+            avg_loss = np.mean(loss[-14:]) if len(loss) >= 14 else 0.001
+            rs = avg_gain / avg_loss if avg_loss > 0 else 0
+            rsi = 100 - (100 / (1 + rs))
+
+            # MACD: EMA12 - EMA26
+            ema12 = np.mean(closes[-12:]) if len(closes) >= 12 else closes[-1]
+            ema26 = np.mean(closes[-26:]) if len(closes) >= 26 else closes[-1]
+            macd = ema12 - ema26
+
+            # Volatility: std des returns
+            if len(closes) >= N_STEPS:
+                returns = np.diff(np.log(closes))
+                volatility = float(np.std(returns[-14:])) if len(returns) >= 14 else 0
+            else:
+                volatility = 0
+
+            avg_volume = np.mean(volumes) if np.mean(volumes) > 0 else 1
+            vol_ratio = float(volumes[-1]) / avg_volume if avg_volume > 0 else 1
+            vol_ratio = min(1, vol_ratio / 3)
+
+            features = {
+                "close": closes / closes[0],
+                "high": highs / highs[0] if highs[0] > 0 else highs,
+                "low": lows / lows[0] if lows[0] > 0 else lows,
+                "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
+                "rsi": float(rsi) / 100,
+                "macd": float(macd) / 100,
+                "volatility": float(volatility),
+                "vol_ratio": float(vol_ratio),
+            }
+
+            # Correction NaN/inf
+            for k in features:
+                arr = features[k]
+                if isinstance(arr, np.ndarray):
+                    if np.isnan(arr).any() or np.isinf(arr).any():
+                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                        features[k] = np.nan_to_num(arr)
+                else:
+                    if np.isnan(features[k]) or np.isinf(features[k]):
+                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
+                        features[k] = float(np.nan_to_num(features[k]))
+
+            required_keys = [
+                "close",
+                "high",
+                "low",
+                "volume",
+                "rsi",
+                "macd",
+                "volatility",
+            ]
+            for k in required_keys:
+                if k not in features:
+                    self.logger.error(
+                        f"[AI FEATURES] Clé manquante dans features : {k}"
+                    )
+                    return None
+            for k in ["close", "high", "low", "volume"]:
+                if not (
+                    isinstance(features[k], np.ndarray)
+                    and features[k].shape == (N_STEPS,)
+                ):
+                    self.logger.error(
+                        f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}"
+                    )
+                    return None
+            for k in ["rsi", "macd", "volatility", "vol_ratio"]:
+                if not isinstance(features[k], (int, float, np.floating, np.integer)):
+                    self.logger.error(
+                        f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}"
+                    )
+                    return None
+
+            return features
+
+        except Exception as e:
+            self.logger.error(f"Error preparing AI features: {e}")
+            return None
+
+    async def _merge_signals(self, symbol, dl_prediction, ppo_action):
+        try:
+            # Vérification poids
+            ai_weight = float(getattr(self, "ai_weight", 0.4))
+            tech_weight = 1.0 - ai_weight
+
+            # Init structures
+            if symbol not in self.market_data:
+                self.market_data[symbol] = {}
+
+            defaults = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
+            signals = self.market_data[symbol].get("signals", defaults.copy())
+
+            # Conversion valeurs
+            dl_val = float(
+                dl_prediction if isinstance(dl_prediction, (int, float)) else 0
+            )
+            ppo_val = float(ppo_action if isinstance(ppo_action, (int, float)) else 0)
+
+            ai_signal = dl_val * 0.7 + ppo_val * 0.3
+
+            # Fusion
+            merged = {
+                k: (v * tech_weight + ai_signal * ai_weight) for k, v in signals.items()
+            }
+
+            # Sauvegarde
+            self.market_data[symbol]["signals"] = merged
+            self.market_data[symbol]["ai_prediction"] = ai_signal
+
+            return merged
+
+        except Exception as e:
+            self.logger.error(f"Erreur fusion signaux: {e}")
+            return defaults.copy()
+
     def calculate_correlation_matrix(self):
         """Calcule la matrice de corrélation entre les paires"""
         correlations = {}
@@ -1135,24 +1992,6 @@ class TradingBotM4:
         except Exception as e:
             self.logger.error(f"Erreur monitoring système: {e}")
             return {}
-
-    def analyze_volume_profile(self, symbol, timeframe="1h"):
-        """Analyse avancée du volume profile"""
-        df = self.get_timeframe_data(symbol, timeframe)
-        if df is None:
-            return None
-
-        # Calcul des points d'accumulation/distribution
-        volume_nodes = self.calculate_volume_nodes(df)
-
-        # Détection des zones de haute liquidité
-        liquidity_zones = self.identify_liquidity_zones(df)
-
-        return {
-            "volume_nodes": volume_nodes,
-            "liquidity_zones": liquidity_zones,
-            "poc_price": self.calculate_poc_price(df),
-        }
 
     def analyze_order_pressure(self, symbol):
         """Analyse de la pression des ordres limites"""
@@ -1308,49 +2147,6 @@ class TradingBotM4:
                 "is_accumulation": False,
                 "is_distribution": False,
                 "buy_volume_ratio": 0.5,
-            }
-
-    def analyze_order_flow(self, df):
-        """
-        Analyse avancée du flux d'ordres pour détecter la pression acheteur/vendeur.
-        """
-        try:
-            # Calcul de l'absorption
-            buying_pressure = (
-                (df["close"] - df["low"]) / (df["high"] - df["low"])
-            ) * df["volume"]
-            selling_pressure = (
-                (df["high"] - df["close"]) / (df["high"] - df["low"])
-            ) * df["volume"]
-
-            # CVD (Cumulative Volume Delta)
-            cvd = (buying_pressure - selling_pressure).cumsum()
-
-            # Imbalance Detection
-            imbalance = (
-                abs(buying_pressure.mean() - selling_pressure.mean())
-                / selling_pressure.mean()
-            )
-
-            return {
-                "buying_pressure": buying_pressure.iloc[-1],
-                "selling_pressure": selling_pressure.iloc[-1],
-                "cvd": cvd.iloc[-1],
-                "imbalance": imbalance,
-                "pressure_ratio": (
-                    buying_pressure.iloc[-1] / selling_pressure.iloc[-1]
-                    if selling_pressure.iloc[-1] != 0
-                    else 1
-                ),
-            }
-        except Exception as e:
-            self.logger.error(f"Erreur analyse order flow: {e}")
-            return {
-                "buying_pressure": 0,
-                "selling_pressure": 0,
-                "cvd": 0,
-                "imbalance": 0,
-                "pressure_ratio": 1,
             }
 
     def identify_market_structure(self, df):
@@ -1651,29 +2447,6 @@ class TradingBotM4:
         if current_price < max_price * (1 - trailing_pct):
             return True, max_price
         return False, max_price
-
-    def calculate_atr(self, df, period=14):
-        """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
-        try:
-            high = np.array(df["high"])
-            low = np.array(df["low"])
-            close = np.array(df["close"])
-
-            if len(high) < 2 or len(low) < 2 or len(close) < 2:
-                return 0.01
-
-            tr = np.maximum(
-                high[1:] - low[1:],
-                np.abs(high[1:] - close[:-1]),
-                np.abs(low[1:] - close[:-1]),
-            )
-
-            atr = pd.Series(tr).rolling(window=period).mean()
-            return float(atr.iloc[-1]) if len(atr) > 0 else 0.01
-
-        except Exception as e:
-            self.logger.error(f"Erreur calcul ATR: {e}")
-            return 0.01
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
@@ -2285,364 +3058,6 @@ class TradingBotM4:
                 self.logger.error(f"News analysis error: {e}")
 
             await asyncio.sleep(self.news_update_interval)
-
-    async def analyze_signals(self, symbol, ohlcv_df, indicators, tf="1h"):
-        """
-        Analyse technique complète avec indicateurs avancés.
-        Retourne une décision de trading avec scores et signaux détaillés.
-        """
-        try:
-            # Configuration et validation initiale
-            current_time = get_current_time()
-            print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
-
-            def is_valid(val):
-                """Vérifie si une valeur est utilisable pour les calculs"""
-                if val is None:
-                    return False
-                if isinstance(val, (pd.Series, pd.DataFrame)):
-                    return not (val.isnull().all() or val.isin([np.inf, -np.inf]).any())
-                return not (isinstance(val, float) and (np.isnan(val) or np.isinf(val)))
-
-            # Validation des données OHLCV
-            required_columns = ["open", "high", "low", "close", "volume"]
-            if not all(col in ohlcv_df.columns for col in required_columns):
-                print(f"❌ {symbol}: Données OHLCV incomplètes")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
-
-            if len(ohlcv_df) < 20:
-                print(f"❌ {symbol}: Données insuffisantes ({len(ohlcv_df)} lignes)")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
-
-            # Initialisation des indicateurs
-            try:
-                advanced_indicators = AdvancedIndicators()
-            except Exception as e:
-                print(f"❌ Erreur initialisation indicateurs: {e}")
-                return {"action": "neutral", "confidence": 0, "signals": {}}
-
-            # === CALCUL DES INDICATEURS ===
-            print(f"\n📊 Calcul indicateurs {symbol}-{tf}")
-
-            # 1. Indicateurs de tendance
-            trend_indicators = advanced_indicators.indicators["trend"]
-            supertrend = trend_indicators["supertrend"](ohlcv_df)
-            vwma = trend_indicators["vwma"](ohlcv_df)
-            kama = trend_indicators["kama"](ohlcv_df)
-            psar = trend_indicators["psar"](ohlcv_df)
-            trix = trend_indicators["trix"](ohlcv_df)
-
-            # 2. Indicateurs de momentum
-            momentum_indicators = advanced_indicators.indicators["momentum"]
-            ao = momentum_indicators["ao"](ohlcv_df)
-            williams_r = momentum_indicators["williams_r"](ohlcv_df)
-            cci = momentum_indicators["cci"](ohlcv_df)
-
-            # 3. Indicateurs orderflow
-            orderflow_indicators = advanced_indicators.indicators["orderflow"]
-            delta_vol = orderflow_indicators["delta_volume"](ohlcv_df)
-            imbalance = orderflow_indicators["imbalance"](ohlcv_df)
-            smi = orderflow_indicators["smart_money_index"](ohlcv_df)
-            liq_wave = orderflow_indicators["liquidity_wave"](ohlcv_df)
-            bid_ask = orderflow_indicators["bid_ask_ratio"](ohlcv_df)
-
-            # === CALCUL DES SCORES ===
-            print(f"\n💯 Calcul scores {symbol}-{tf}")
-            # === SCORES TECHNIQUES ===
-
-            tech_score = 0
-            tech_factors = 0
-            tech_details = {}
-
-            # Score Supertrend
-            if supertrend and is_valid(supertrend.get("value", pd.Series()).iloc[-1]):
-                tech_factors += 1
-                st_direction = supertrend["direction"].iloc[-1]
-                st_strength = supertrend["strength"].iloc[-1]
-
-                if st_direction > 0:
-                    tech_score += st_strength
-                else:
-                    tech_score -= st_strength
-
-                tech_details["supertrend"] = {
-                    "direction": st_direction,
-                    "strength": st_strength,
-                }
-                print(
-                    f"[TECH] Supertrend: direction={st_direction} strength={st_strength:.3f}"
-                )
-
-            # Score VWMA
-            if is_valid(vwma.iloc[-1]):
-                tech_factors += 1
-                vwma_diff = (ohlcv_df["close"].iloc[-1] - vwma.iloc[-1]) / vwma.iloc[-1]
-                vwma_score = np.clip(vwma_diff * 3, -1, 1)
-                tech_score += vwma_score
-                tech_details["vwma"] = vwma_score
-                print(f"[TECH] VWMA score: {vwma_score:.3f}")
-
-            # Score KAMA
-            if is_valid(kama.iloc[-1]):
-                tech_factors += 1
-                kama_diff = (ohlcv_df["close"].iloc[-1] - kama.iloc[-1]) / kama.iloc[-1]
-                kama_score = np.clip(kama_diff * 3, -1, 1)
-                tech_score += kama_score
-                tech_details["kama"] = kama_score
-                print(f"[TECH] KAMA score: {kama_score:.3f}")
-
-            # Score PSAR
-            if psar and is_valid(psar.get("value", pd.Series()).iloc[-1]):
-                tech_factors += 1
-                psar_trend = psar["trend"].iloc[-1]
-                psar_strength = psar["strength"].iloc[-1]
-
-                if psar_trend > 0:
-                    tech_score += psar_strength
-                else:
-                    tech_score -= psar_strength
-
-                tech_details["psar"] = {"trend": psar_trend, "strength": psar_strength}
-                print(f"[TECH] PSAR: trend={psar_trend} strength={psar_strength:.3f}")
-
-            # Score TRIX
-            if is_valid(trix.iloc[-1]):
-                tech_factors += 1
-                trix_score = np.clip(trix.iloc[-1] * 0.2, -1, 1)
-                tech_score += trix_score
-                tech_details["trix"] = trix_score
-                print(f"[TECH] TRIX score: {trix_score:.3f}")
-
-            # === SCORES MOMENTUM ===
-            momentum_score = 0
-            momentum_factors = 0
-            momentum_details = {}
-
-            # Awesome Oscillator
-            if is_valid(ao.iloc[-1]):
-                momentum_factors += 1
-                ao_value = ao.iloc[-1]
-                ao_score = np.sign(ao_value) * min(abs(ao_value * 0.1), 1)
-                momentum_score += ao_score
-                momentum_details["ao"] = ao_score
-                print(f"[MOMENTUM] AO score: {ao_score:.3f}")
-
-            # Williams %R
-            if is_valid(williams_r.iloc[-1]):
-                momentum_factors += 1
-                wr_value = williams_r.iloc[-1]
-
-                if wr_value < -80:
-                    williams_score = 1  # Survendu
-                elif wr_value > -20:
-                    williams_score = -1  # Suracheté
-                else:
-                    williams_score = 0
-
-                momentum_score += williams_score
-                momentum_details["williams_r"] = williams_score
-                print(f"[MOMENTUM] Williams %R score: {williams_score:.3f}")
-
-            # CCI
-            if is_valid(cci.iloc[-1]):
-                momentum_factors += 1
-                cci_score = np.clip(cci.iloc[-1] / 100, -1, 1)
-                momentum_score += cci_score
-                momentum_details["cci"] = cci_score
-                print(f"[MOMENTUM] CCI score: {cci_score:.3f}")
-
-            # === SCORES ORDERFLOW ===
-            flow_score = 0
-            flow_factors = 0
-            flow_details = {}
-
-            # Delta Volume
-            if is_valid(delta_vol.iloc[-1]):
-                flow_factors += 1
-                delta_score = np.clip(
-                    delta_vol.iloc[-1] / delta_vol.abs().mean(), -1, 1
-                )
-                flow_score += delta_score
-                flow_details["delta_volume"] = delta_score
-                print(f"[FLOW] Delta Volume score: {delta_score:.3f}")
-
-            # Imbalance
-            if is_valid(imbalance.iloc[-1]):
-                flow_factors += 1
-                imb_score = np.clip(imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1)
-                flow_score += imb_score
-                flow_details["imbalance"] = imb_score
-                print(f"[FLOW] Imbalance score: {imb_score:.3f}")
-
-            # Smart Money Index
-            if is_valid(smi.iloc[-1]):
-                flow_factors += 1
-                smi_score = np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
-                flow_score += smi_score
-                flow_details["smi"] = smi_score
-                print(f"[FLOW] SMI score: {smi_score:.3f}")
-
-            # === FUSION DES SIGNAUX ===
-
-            # Normalisation des scores
-            if tech_factors > 0:
-                tech_score /= tech_factors
-            if momentum_factors > 0:
-                momentum_score /= momentum_factors
-            if flow_factors > 0:
-                flow_score /= flow_factors
-
-            # Scores de liquidité et pression du marché
-            liquidity_score = 0
-            if is_valid(liq_wave.iloc[-1]):
-                liquidity_score = -np.clip(
-                    liq_wave.iloc[-1] / liq_wave.abs().mean(), -1, 1
-                )
-                print(f"[FLOW] Liquidity score: {liquidity_score:.3f}")
-
-            market_pressure = 0
-            if is_valid(bid_ask):
-                market_pressure = (bid_ask - 0.5) * 2
-                print(f"[FLOW] Market pressure: {market_pressure:.3f}")
-
-            # Construction du dictionnaire des signaux complet
-            signals = {
-                "technical": {
-                    "score": tech_score,
-                    "details": tech_details,
-                    "factors": tech_factors,
-                },
-                "momentum": {
-                    "score": momentum_score,
-                    "details": momentum_details,
-                    "factors": momentum_factors,
-                },
-                "orderflow": {
-                    "score": flow_score,
-                    "details": flow_details,
-                    "factors": flow_factors,
-                    "liquidity": liquidity_score,
-                    "market_pressure": market_pressure,
-                },
-            }
-
-            # Poids adaptatifs selon la qualité des signaux
-            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
-
-            # Ajustement des poids selon conditions de marché
-            if abs(liquidity_score) > 0.7:
-                weights["orderflow"] *= 1.3
-                weights["technical"] *= 0.7
-
-            if abs(market_pressure) > 0.7:
-                weights["momentum"] *= 1.2
-                weights["technical"] *= 0.8
-
-            # Calcul score total
-            total_score = (
-                signals["technical"]["score"] * weights["technical"]
-                + signals["momentum"]["score"] * weights["momentum"]
-                + signals["orderflow"]["score"] * weights["orderflow"]
-            )
-            total_score = np.clip(total_score, -1, 1)
-
-            # === DÉCISION FINALE ===
-
-            # Seuils dynamiques
-            volatility_factor = 1.0 + (
-                abs(liquidity_score) * 0.5 if is_valid(liquidity_score) else 0
-            )
-
-            buy_threshold = 0.2 * volatility_factor
-            sell_threshold = -0.2 * volatility_factor
-
-            # Ajustement des seuils selon la pression du marché
-            if market_pressure > 0:
-                buy_threshold *= 1 - market_pressure * 0.2
-                sell_threshold *= 1 + market_pressure * 0.2
-            else:
-                buy_threshold *= 1 + abs(market_pressure) * 0.2
-                sell_threshold *= 1 - abs(market_pressure) * 0.2
-
-            # Construction de la décision finale
-            decision = {
-                "action": "neutral",
-                "confidence": abs(total_score),
-                "signals": signals,
-                "metrics": {
-                    "volatility_factor": volatility_factor,
-                    "market_pressure": market_pressure,
-                    "liquidity_score": liquidity_score,
-                    "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
-                    "weights": weights,
-                },
-                "timestamp": "2025-08-03 03:37:58",
-                "symbol": symbol,
-                "timeframe": tf,
-            }
-
-            # Détermination de l'action finale
-            if total_score > buy_threshold:
-                decision["action"] = "buy"
-                log_reason = "Signal d'achat"
-            elif total_score < sell_threshold:
-                decision["action"] = "sell"
-                log_reason = "Signal de vente"
-            else:
-                log_reason = "Signal neutre"
-
-            # Logging détaillé final
-            log_msg = (
-                f"[ANALYZE] {symbol} {tf}\n"
-                f"Technical Score: {tech_score:.3f} ({tech_factors} facteurs)\n"
-                f"Momentum Score: {momentum_score:.3f} ({momentum_factors} facteurs)\n"
-                f"Orderflow Score: {flow_score:.3f} ({flow_factors} facteurs)\n"
-                f"Total Score: {total_score:.3f}\n"
-                f"Seuils - Achat: {buy_threshold:.3f}, Vente: {sell_threshold:.3f}\n"
-                f"Action: {decision['action'].upper()} ({decision['confidence']:.3f})\n"
-                f"Raison: {log_reason}"
-            )
-
-            print(f"[DEBUG] {log_msg}")
-
-            # Sauvegarde des métriques
-            if hasattr(self, "save_analysis_metrics"):
-                self.save_analysis_metrics(
-                    {
-                        "symbol": symbol,
-                        "timeframe": tf,
-                        "timestamp": "",
-                        "user": "Patmoorea",
-                        "decision": decision,
-                        "raw_signals": {
-                            "supertrend": tech_details.get("supertrend"),
-                            "vwma": tech_details.get("vwma"),
-                            "kama": tech_details.get("kama"),
-                            "psar": tech_details.get("psar"),
-                            "trix": tech_details.get("trix"),
-                            "ao": momentum_details.get("ao"),
-                            "williams_r": momentum_details.get("williams_r"),
-                            "cci": momentum_details.get("cci"),
-                            "delta_volume": flow_details.get("delta_volume"),
-                            "imbalance": flow_details.get("imbalance"),
-                            "liquidity": liquidity_score,
-                            "bid_ask": market_pressure,
-                        },
-                    }
-                )
-            self.market_data[symbol][tf]["signals"] = {
-                "technical": signals["technical"],
-                "momentum": signals["momentum"],
-                "orderflow": signals["orderflow"],
-                "ai": self.market_data.get(symbol, {}).get("ai_prediction", 0),
-                "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
-            }
-            return decision
-
-        except Exception as e:
-            error_msg = f"Erreur dans analyze_signals: {str(e)}"
-            self.logger.error(error_msg)
-            return {"action": "neutral", "confidence": 0, "signals": {}}
 
     def get_binance_real_balance(self, asset="USDC"):
         if self.is_live_trading and self.binance_client:
@@ -3288,160 +3703,6 @@ class TradingBotM4:
 
         except Exception as e:
             self.logger.error(f"Erreur update métriques: {e}")
-
-    async def _prepare_features_for_ai(self, symbol):
-        """
-        Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
-        ATTENTION: Retourne TOUJOURS un dict avec les clés
-        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
-        Si besoin pour PPO, ajoute aussi 'vol_ratio'.
-        """
-        try:
-            N_STEPS = self.N_STEPS
-
-            ohlcv = self.market_data.get(symbol, {}).get("1h", {})
-            if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
-                return None
-
-            closes = np.array(ohlcv.get("close", []))
-            highs = np.array(ohlcv.get("high", []))
-            lows = np.array(ohlcv.get("low", []))
-            volumes = np.array(ohlcv.get("volume", []))
-
-            # --- Vérification stricte sur la taille
-            if (
-                len(closes) < N_STEPS
-                or len(highs) < N_STEPS
-                or len(lows) < N_STEPS
-                or len(volumes) < N_STEPS
-            ):
-                return None
-
-            closes = closes[-N_STEPS:]
-            highs = highs[-N_STEPS:]
-            lows = lows[-N_STEPS:]
-            volumes = volumes[-N_STEPS:]
-
-            # RSI (14)
-            delta = np.diff(closes)
-            gain = (delta > 0) * delta
-            loss = (delta < 0) * -delta
-            avg_gain = np.mean(gain[-14:]) if len(gain) >= 14 else 0
-            avg_loss = np.mean(loss[-14:]) if len(loss) >= 14 else 0.001
-            rs = avg_gain / avg_loss if avg_loss > 0 else 0
-            rsi = 100 - (100 / (1 + rs))
-
-            # MACD: EMA12 - EMA26
-            ema12 = np.mean(closes[-12:]) if len(closes) >= 12 else closes[-1]
-            ema26 = np.mean(closes[-26:]) if len(closes) >= 26 else closes[-1]
-            macd = ema12 - ema26
-
-            # Volatility: std des returns
-            if len(closes) >= N_STEPS:
-                returns = np.diff(np.log(closes))
-                volatility = float(np.std(returns[-14:])) if len(returns) >= 14 else 0
-            else:
-                volatility = 0
-
-            avg_volume = np.mean(volumes) if np.mean(volumes) > 0 else 1
-            vol_ratio = float(volumes[-1]) / avg_volume if avg_volume > 0 else 1
-            vol_ratio = min(1, vol_ratio / 3)
-
-            features = {
-                "close": closes / closes[0],
-                "high": highs / highs[0] if highs[0] > 0 else highs,
-                "low": lows / lows[0] if lows[0] > 0 else lows,
-                "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
-                "rsi": float(rsi) / 100,
-                "macd": float(macd) / 100,
-                "volatility": float(volatility),
-                "vol_ratio": float(vol_ratio),
-            }
-
-            # Correction NaN/inf
-            for k in features:
-                arr = features[k]
-                if isinstance(arr, np.ndarray):
-                    if np.isnan(arr).any() or np.isinf(arr).any():
-                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
-                        features[k] = np.nan_to_num(arr)
-                else:
-                    if np.isnan(features[k]) or np.isinf(features[k]):
-                        print(f"[WARN] NaN/inf détecté dans {k}, correction appliquée")
-                        features[k] = float(np.nan_to_num(features[k]))
-
-            required_keys = [
-                "close",
-                "high",
-                "low",
-                "volume",
-                "rsi",
-                "macd",
-                "volatility",
-            ]
-            for k in required_keys:
-                if k not in features:
-                    self.logger.error(
-                        f"[AI FEATURES] Clé manquante dans features : {k}"
-                    )
-                    return None
-            for k in ["close", "high", "low", "volume"]:
-                if not (
-                    isinstance(features[k], np.ndarray)
-                    and features[k].shape == (N_STEPS,)
-                ):
-                    self.logger.error(
-                        f"[AI FEATURES] Mauvais shape pour {k}: {type(features[k])}, shape={getattr(features[k], 'shape', None)}"
-                    )
-                    return None
-            for k in ["rsi", "macd", "volatility", "vol_ratio"]:
-                if not isinstance(features[k], (int, float, np.floating, np.integer)):
-                    self.logger.error(
-                        f"[AI FEATURES] Mauvais type pour {k}: {type(features[k])}"
-                    )
-                    return None
-
-            return features
-
-        except Exception as e:
-            self.logger.error(f"Error preparing AI features: {e}")
-            return None
-
-    async def _merge_signals(self, symbol, dl_prediction, ppo_action):
-        try:
-            # Vérification poids
-            ai_weight = float(getattr(self, "ai_weight", 0.4))
-            tech_weight = 1.0 - ai_weight
-
-            # Init structures
-            if symbol not in self.market_data:
-                self.market_data[symbol] = {}
-
-            defaults = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
-            signals = self.market_data[symbol].get("signals", defaults.copy())
-
-            # Conversion valeurs
-            dl_val = float(
-                dl_prediction if isinstance(dl_prediction, (int, float)) else 0
-            )
-            ppo_val = float(ppo_action if isinstance(ppo_action, (int, float)) else 0)
-
-            ai_signal = dl_val * 0.7 + ppo_val * 0.3
-
-            # Fusion
-            merged = {
-                k: (v * tech_weight + ai_signal * ai_weight) for k, v in signals.items()
-            }
-
-            # Sauvegarde
-            self.market_data[symbol]["signals"] = merged
-            self.market_data[symbol]["ai_prediction"] = ai_signal
-
-            return merged
-
-        except Exception as e:
-            self.logger.error(f"Erreur fusion signaux: {e}")
-            return defaults.copy()
 
     async def _update_sentiment_data(self, sentiment_scores):
         """
@@ -4452,267 +4713,6 @@ class TradingBotM4:
 
         return data
 
-    def add_indicators(self, df):
-        """
-        Calcule tous les indicateurs nécessaires pour les stratégies du dossier 'strategies'.
-        Retourne un dictionnaire {nom_indicateur: dernière_valeur non-NaN ou None}
-        (Version enrichie avec indicateurs avancés)
-        Corrige définitivement le warning VWAP/VWMA not datetime ordered de pandas-ta !
-        """
-        import pandas as pd
-        import numpy as np
-
-        try:
-            # --- Conversion stricte et tri ---
-            # Si df est une liste, transforme-le en DataFrame
-            if isinstance(df, list):
-                if len(df) == 0:
-                    self.logger.error("add_indicators: Liste reçue vide")
-                    return None
-                if isinstance(df[0], dict):
-                    df = pd.DataFrame(df)
-                elif isinstance(df[0], (list, tuple)):
-                    columns = ["timestamp", "open", "high", "low", "close", "volume"]
-                    df = pd.DataFrame(df, columns=columns)
-                else:
-                    self.logger.error(
-                        "add_indicators: Format de liste non pris en charge"
-                    )
-                    return None
-
-            if not isinstance(df, pd.DataFrame):
-                self.logger.error("add_indicators: df n'est pas un DataFrame")
-                return None
-
-            # --- Vérification et correction colonne timestamp ---
-            if "timestamp" not in df.columns:
-                self.logger.error("add_indicators: colonne 'timestamp' manquante")
-                return None
-
-            # --- Conversion stricte timestamp ---
-            try:
-                # Si timestamp n'est pas datetime, convertis-le
-                if not np.issubdtype(df["timestamp"].dtype, np.datetime64):
-                    # Si c'est en ms, convertis-le
-                    # Heuristique: timestamp > 1e12 => probablement en ms
-                    if df["timestamp"].max() > 1e12:
-                        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-                    else:
-                        df["timestamp"] = pd.to_datetime(df["timestamp"])
-            except Exception as e:
-                self.logger.error(f"add_indicators: Erreur conversion timestamp: {e}")
-                return None
-
-            # --- Tri strict ---
-            df = df.drop_duplicates(subset="timestamp", keep="last")
-            df = df.sort_values("timestamp")
-            df = df.reset_index(drop=True)
-
-            required_cols = {"open", "high", "low", "close", "volume"}
-            if not required_cols.issubset(df.columns):
-                self.logger.error(
-                    f"add_indicators: Colonnes manquantes: {required_cols - set(df.columns)} | Colonnes actuelles: {df.columns.tolist()}"
-                )
-                return None
-
-            MIN_LEN = 30
-            if df is None or len(df) < MIN_LEN:
-                self.logger.warning(
-                    f"DataFrame vide ou insuffisant ({0 if df is None else len(df)}) lignes"
-                )
-                return None
-
-            if df.empty:
-                self.logger.warning(
-                    "DataFrame vide, impossible de calculer les indicateurs"
-                )
-                print("[DEBUG add_indicators] DataFrame vide après tri/formatage")
-                return None
-
-            try:
-                df_ta = df.copy()
-
-                # Tri STRICT + SET INDEX avant CHAQUE calcul d'indicateur avancé (VWMA, VWAP, OBV, etc.)
-                def strict_sort_and_index(df):
-                    if "timestamp" in df.columns:
-                        df = df.drop_duplicates(subset="timestamp", keep="last")
-                        df = df.sort_values("timestamp")
-                        df = df.set_index("timestamp")
-                    return df
-
-                # Calcul des indicateurs classiques (index classique)
-                sma_20 = df_ta.ta.sma(length=20, append=False)
-                if sma_20 is not None and not sma_20.empty:
-                    if isinstance(sma_20, pd.Series):
-                        df_ta["sma_20"] = sma_20
-                    elif "SMA_20" in sma_20:
-                        df_ta["sma_20"] = sma_20["SMA_20"]
-
-                sma_50 = df_ta.ta.sma(length=50, append=False)
-                if sma_50 is not None and not sma_50.empty:
-                    if isinstance(sma_50, pd.Series):
-                        df_ta["sma_50"] = sma_50
-                    elif "SMA_50" in sma_50:
-                        df_ta["sma_50"] = sma_50["SMA_50"]
-
-                ema_20 = df_ta.ta.ema(length=20, append=False)
-                if ema_20 is not None and not ema_20.empty:
-                    if isinstance(ema_20, pd.Series):
-                        df_ta["ema_20"] = ema_20
-                    elif "EMA_20" in ema_20:
-                        df_ta["ema_20"] = ema_20["EMA_20"]
-
-                rsi_14 = df_ta.ta.rsi(length=14, append=False)
-                if rsi_14 is not None and not rsi_14.empty:
-                    if isinstance(rsi_14, pd.Series):
-                        df_ta["rsi_14"] = rsi_14
-                    elif "RSI_14" in rsi_14:
-                        df_ta["rsi_14"] = rsi_14["RSI_14"]
-
-                macd = df_ta.ta.macd()
-                if macd is not None and not macd.empty:
-                    if "MACD_12_26_9" in macd:
-                        df_ta["macd"] = macd["MACD_12_26_9"]
-                    if "MACDs_12_26_9" in macd:
-                        df_ta["macd_signal"] = macd["MACDs_12_26_9"]
-                    if "MACDh_12_26_9" in macd:
-                        df_ta["macd_hist"] = macd["MACDh_12_26_9"]
-
-                bb = df_ta.ta.bbands(length=20, std=2.0)
-                if bb is not None and not bb.empty:
-                    if "BBL_20_2.0" in bb:
-                        df_ta["bb_lower"] = bb["BBL_20_2.0"]
-                    if "BBU_20_2.0" in bb:
-                        df_ta["bb_upper"] = bb["BBU_20_2.0"]
-
-                df_ta["donchian_high"] = df_ta["high"].rolling(window=20).max()
-                df_ta["donchian_low"] = df_ta["low"].rolling(window=20).min()
-
-                psar = df_ta.ta.psar()
-                if psar is not None and not psar.empty:
-                    key = [col for col in psar.columns if col.startswith("PSAR")][0]
-                    df_ta["psar"] = psar[key]
-
-                mom_10 = df_ta.ta.mom(length=10, append=False)
-                if mom_10 is not None and not mom_10.empty:
-                    if isinstance(mom_10, pd.Series):
-                        df_ta["momentum_10"] = mom_10
-                    elif "MOM_10" in mom_10:
-                        df_ta["momentum_10"] = mom_10["MOM_10"]
-
-                df_ta["zscore_20"] = (
-                    df_ta["close"] - df_ta["close"].rolling(20).mean()
-                ) / df_ta["close"].rolling(20).std()
-
-                # Indicateurs avancés supplémentaires : TRI + SET INDEX obligatoire pour pandas-ta VWAP/VWMA/OBV
-                try:
-                    df_ta_idx = strict_sort_and_index(df_ta)
-                    vwma = df_ta_idx.ta.vwma(length=20)
-                    # On remet l'index timestamp dans la colonne pour rester compatible
-                    df_ta["vwma_20"] = vwma.values
-                except Exception:
-                    df_ta["vwma_20"] = np.nan
-                try:
-                    df_ta_idx = strict_sort_and_index(df_ta)
-                    obv = df_ta_idx.ta.obv()
-                    df_ta["obv"] = obv.values
-                except Exception:
-                    df_ta["obv"] = np.nan
-                try:
-                    df_ta_idx = strict_sort_and_index(df_ta)
-                    vwap = df_ta_idx.ta.vwap()
-                    df_ta["vwap"] = vwap.values
-                except Exception:
-                    df_ta["vwap"] = np.nan
-                try:
-                    stochrsi = df_ta.ta.stochrsi()
-                    if stochrsi is not None and not stochrsi.empty:
-                        df_ta["stochrsi"] = stochrsi.iloc[:, 0]
-                except Exception:
-                    df_ta["stochrsi"] = np.nan
-                try:
-                    kc = df_ta.ta.kc()
-                    if kc is not None and not kc.empty:
-                        df_ta["kc_upper"] = kc["KCUpper_20_2_10"]
-                        df_ta["kc_lower"] = kc["KCLower_20_2_10"]
-                except Exception:
-                    df_ta["kc_upper"] = df_ta["kc_lower"] = np.nan
-                try:
-                    supertrend = df_ta.ta.supertrend(length=7, multiplier=3.0)
-                    if supertrend is not None and not supertrend.empty:
-                        df_ta["supertrend"] = supertrend.iloc[:, 0]
-                except Exception:
-                    pass
-                try:
-                    ichimoku = df_ta.ta.ichimoku()
-                    if ichimoku is not None and not ichimoku.empty:
-                        df_ta["ichimoku_a"] = ichimoku["ISA_9"]
-                        df_ta["ichimoku_b"] = ichimoku["ISB_26"]
-                except Exception:
-                    pass
-                try:
-                    keltner = df_ta.ta.kc()
-                    if keltner is not None and not keltner.empty:
-                        df_ta["keltner_upper"] = keltner["KCUpper_20_2_10"]
-                        df_ta["keltner_lower"] = keltner["KCLower_20_2_10"]
-                except Exception:
-                    pass
-                try:
-                    accdist = df_ta.ta.accdist()
-                    df_ta["accumulation"] = accdist
-                except Exception:
-                    pass
-
-                all_indics = [
-                    "sma_20",
-                    "sma_50",
-                    "ema_20",
-                    "rsi_14",
-                    "macd",
-                    "macd_signal",
-                    "macd_hist",
-                    "bb_lower",
-                    "bb_upper",
-                    "donchian_high",
-                    "donchian_low",
-                    "psar",
-                    "momentum_10",
-                    "zscore_20",
-                    "vwma_20",
-                    "obv",
-                    "vwap",
-                    "stochrsi",
-                    "kc_upper",
-                    "kc_lower",
-                ]
-
-                indicators = {}
-                for col in all_indics:
-                    if col in df_ta.columns:
-                        last_valid = df_ta[col].dropna()
-                        indicators[col] = (
-                            last_valid.iloc[-1] if not last_valid.empty else None
-                        )
-                    else:
-                        indicators[col] = None
-
-            except Exception as e:
-                self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
-                indicators = {}
-
-            n_valid = len([v for v in indicators.values() if v is not None])
-            self.logger.info(
-                f"✅ {n_valid} indicateurs extraits automatiquement sur {df.shape[0]} lignes"
-            )
-            print(
-                f"[DEBUG add_indicators] {n_valid} indicateurs extraits: {list(indicators.keys())[:5]}"
-            )
-            return indicators
-
-        except Exception as e:
-            self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            return None
-
     def train_cnn_lstm_on_live(self, pair="BTCUSDT", tf="1h"):
         """
         Entraîne le modèle CNN-LSTM sur les données live de ws_collector pour la paire/timeframe donnée,
@@ -5073,7 +5073,7 @@ async def run_clean_bot():
                     )
 
                     if df is not None and not df.empty:
-                        # OHLCV data
+                        # Structure de base complète des signaux
                         bot.market_data[pair_key][tf] = {
                             "open": df["open"].tolist(),
                             "high": df["high"].tolist(),
@@ -5084,6 +5084,19 @@ async def run_clean_bot():
                                 int(pd.Timestamp(t).timestamp())
                                 for t in df["timestamp"]
                             ],
+                            "signals": {
+                                "technical": {"score": 0, "details": {}, "factors": 0},
+                                "momentum": {"score": 0, "details": {}, "factors": 0},
+                                "orderflow": {
+                                    "score": 0,
+                                    "details": {},
+                                    "factors": 0,
+                                    "liquidity": 0,
+                                    "market_pressure": 0,
+                                },
+                                "ai": 0,
+                                "sentiment": 0,
+                            },
                         }
 
                         # Orderflow indicators
