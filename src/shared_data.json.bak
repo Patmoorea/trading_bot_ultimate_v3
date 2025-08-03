@@ -4,7 +4,7 @@
     "min_signal": 0.3,
     "top_n": 5
   },
-  "last_sentiment_update": 1754201870.355299,
+  "last_sentiment_update": 1754202208.9220521,
   "sentiment_by_symbol": {
     "BTCUSDC": 0,
     "ETHUSDC": 0,
@@ -18,7 +18,7 @@
     "SUIUSDC": 0
   },
   "sentiment": {
-    "timestamp": "2025-08-02T20:17:50.380815",
+    "timestamp": "2025-08-02T20:23:28.946131",
     "scores": [
       {
         "title": "Comment acheter des cryptomonnaies avec MoonPay ? Guide 2025",
@@ -1916,6 +1916,20 @@
         "processed": true
       },
       {
+        "title": "Over 1-M Ethereum Withdrawn From Exchanges In 2 Weeks: Supply Shock Incoming?",
+        "text": "Ethereum is undergoing a notable correction after an explosive rally that saw its price surge over 85% since late June. After reaching a local high near $3,940, ETH has pulled back approximately 13%, sparking debate among analysts about whether this is a healthy consolidation or a shift in market momentum. While some view the retracement as a natural pause after a rapid uptrend, others caution that selling pressure and macroeconomic uncertainty could trigger deeper downside moves. Related Reading: Exchanges Receive 21,400 Bitcoin At A Loss From Short-Term Holders \u2013 Retail Capitulation? However, on-chain data from CryptoQuant paints a different picture beneath the surface. Despite the recent price drop, a massive amount of Ethereum has been consistently withdrawn from exchanges over the past few weeks. This trend suggests aggressive accumulation by investors moving their holdings into cold storage, reducing the liquid supply on trading platforms. Such outflows are often interpreted as a bullish signal, indicating that holders are positioning for long-term gains rather than preparing to sell. As Ethereum continues to lead in areas like DeFi, stablecoins, and Real-World Asset (RWA) tokenization, this structural demand could provide a strong foundation for price stability and future rallies. Ethereum Bullish Accumulation Trend Continues Analyst Ali Martinez has revealed that over 1 million Ethereum (ETH) have been withdrawn from exchanges in the past two weeks, signaling a strong accumulation trend among investors. This massive outflow reduces the liquid supply of ETH available for trading, which historically correlates with long-term bullish price action. Despite Ethereum facing a 13% correction from its recent high of $3,940, the consistent withdrawal of coins suggests that investors are positioning for the next leg up. This accumulation trend mirrors the investor behavior seen in Bitcoin over the past year. BTC experienced a similar pattern of exchange outflows throughout 2024, which laid the groundwork for its massive bull cycle. Analysts now believe that Ethereum could follow a comparable trajectory, as the fundamentals supporting ETH remain robust, including its dominance in DeFi, stablecoins, and Real-World Asset (RWA) tokenization. While the market sentiment remains broadly bullish, some risks persist. Recent US job data released on Friday sparked short-term panic, injecting volatility across crypto and traditional markets. However, many analysts view Ethereum&#8217;s current correction as a healthy retracement and an opportunity to accumulate ETH at a discount before the market resumes its upward trend. Related Reading: Ethereum New Addresses Surge To Nearly 257K In A Day, Matching 2017 And 2021 Bull Markets ETH Testing Key Support After Sharp Correction Ethereum (ETH) is currently trading around $3,391 after a sharp correction from its recent high of $3,940. The 12-hour chart reveals that ETH has broken below its short-term support and is now testing the 50-day SMA at $3,462, which could act as a near-term support level. If bulls fail to defend this zone, the next critical support is located around $2,852, a key level that previously acted as strong resistance in late June. Volume spikes during the breakdown suggest increased selling pressure, which aligns with recent profit-taking activities by short-term holders. However, despite this drop, Ethereum\u2019s price structure remains in an overall uptrend, with higher highs and higher lows intact on the broader timeframe. Related Reading: Bitcoin Advanced Sentiment Index Reaches Bearish Levels: Futures Traders Show Caution The correction appears to be a retest of previous breakout levels, as ETH had surged over 85% since late June. Maintaining the $3,350-$3,450 range is crucial for bulls to regain control and attempt another move toward the $3,860 resistance zone. Failure to hold could trigger a deeper correction towards the 100-day SMA at $2,972. Featured image from Dall-E, chart from TradingView",
+        "source": "NewsBTC",
+        "timestamp": 1754229626,
+        "url": "https://www.newsbtc.com/news/ethereum/over-1-m-ethereum-withdrawn-from-exchanges-in-2-weeks-supply-shock-incoming/",
+        "symbols": [
+          "ETH",
+          "BTC"
+        ],
+        "source_weight": 0.7,
+        "sentiment": -0.010426076129078865,
+        "impact_score": 1.0
+      },
+      {
         "title": "Ethereum Price Pulls Back To $3,500, But MVRV Signals Uptrend Continuation Likely",
         "text": "A breach of the $4,000 mark for the Ethereum price has looked almost like a certainty over the past two weeks, with the altcoin hovering around $3,900 in the last few days. However, this almost-certain event took a different turn after the price of ETH suddenly succumbed to severe bearish pressure. On Friday, August 1, the Ethereum price suffered a significant downturn, briefly falling below the $3,500 mark. While this has cast doubts on the likelihood of ETH returning above the psychological $4,000 level and perhaps reaching a new all-time high, recent on-chain indicators suggest that the \u201cking of altcoins\u201d might not be done just yet. ETH MVRV Ratio In 7-Year Downtrend\u00a0 In a Friday post on the X platform, crypto analyst Burak Kesmeci said\u00a0that the Ethereum price might still have something in the tank despite its struggles going into the weekend. This evaluation is based on the MVRV ratio, which measures the ratio between an asset\u2019s market capitalization and realized capitalization. Related Reading: XRP Is Set To Move Trillions \u2014 Banking CEO Drops Bombshell On Ripple\u2019s Role In Tokenizing Finance The Market Value to Realized Value (MVRV) ratio, as the name suggests, is typically used to evaluate whether a cryptocurrency (ETH, in this case) is overvalued or not. According to on-chain analytics firm CryptoQuant, an overvalued asset usually has an MVRV ratio greater than 3.7 while a ratio below 1 indicates undervaluation. Kesmeci explained in his post that the ETH MVRV has been in a downtrend since 2018 and may be close to breaking it. However, as shown in the chart, Ether\u2019s MVRV recently suffered rejection at a long-term resistance level \u2014 which explains the level of profit-taking seen in the past few days. Nonetheless, Kesmeci still expects Ethereum to still break this seven-year resistance level, considering the institutional interest being enjoyed by ETH at the moment. For instance, as the on-chain analyst duly noted, the US-based spot ETH ETFs have seen a record amount of capital inflows in the past few weeks. As for the altcoin\u2019s movement, Kesmeci expects the Ethereum price to resume its upward trend as long as the MVRV ratio stays above the 365-day simple moving average (white). If this remains the case, a return above $4,000 for the second-largest cryptocurrency might then come sooner rather than later. Ethereum Price At A Glance As of this writing, the price of ETH stands at around $3,523, reflecting a 5% decline in the past 24 hours. Related Reading: XRP Blows Cold: Price Crash To $2.15 Still Possible If Buyers Falter Featured image from iStock, chart from TradingView",
         "source": "NewsBTC",
@@ -2047,21 +2061,6 @@
         ],
         "source_weight": 0.7,
         "sentiment": 0.19389891624450684,
-        "impact_score": 1.0,
-        "processed": true
-      },
-      {
-        "title": "Exchanges Receive 21,400 Bitcoin At A Loss From Short-Term Holders \u2013 Retail Capitulation?",
-        "text": "Bitcoin has broken below the critical $115K support level, reaching a new local low of approximately $112,700. After spending over two weeks consolidating in a tight range, BTC has now exited this phase with bearish momentum, raising concerns across the market. Traders and analysts are closely watching to see if Bitcoin can find strong demand around current levels to stabilize the price and prevent a deeper correction. Related Reading: Ethereum Taker Sell Volume Hits $335M In Just 2 Minutes: Panic Or Profit-Taking? Key data from CryptoQuant reveals that Short-Term Holders (STHs) are selling their Bitcoin at a loss, a typical pattern observed during retail capitulation events. Over the past 24 hours, a significant volume of BTC has been sent to exchanges at negative profit margins, signaling that weaker hands are being shaken out of the market. This selling pressure often marks the final stages of a correction phase, where panic-driven exits by STHs create potential accumulation opportunities for long-term investors. The next few sessions will be crucial, as Bitcoin needs to reclaim the $115K level to regain bullish structure. Otherwise, bears may attempt to drive prices lower, targeting the $110K zone. The market now looks for institutional demand or fresh capital inflows to absorb the ongoing retail-driven sell-off and stabilize the price. Short-Term Holders Sell Bitcoin At A Loss According to top analyst Maartunn, over the past 24 hours, 21,400 BTC were sent to exchanges at a loss by Short-Term Holders (STHs). This behavior is typical during Bitcoin drawdowns, where retail investors, driven by fear and emotional reactions to price swings, tend to sell their holdings at a loss. These capitulation events often amplify volatility, as panic selling creates sharp, short-term supply spikes on exchanges. However, despite this surge in loss-driven selling, on-chain data reveals a contrasting narrative among institutional players. The supply of Bitcoin in Over-The-Counter (OTC) desks continues to shrink, suggesting that large investors are actively buying during this correction. This divergence between retail capitulation and institutional accumulation points to a healthy market reset, where weaker hands exit while stronger hands build positions. Bitcoin\u2019s momentum is now shifting from bullish caution to bearish fear. The recent breakdown below $115K raises the probability of further downside, with analysts eyeing the $112K level as a key support area. This level holds historical significance as the previous all-time high (ATH) set in May. If BTC finds strong demand at this zone, it could establish a solid foundation for the next bullish leg. Related Reading: Bitcoin Advanced Sentiment Index Reaches Bearish Levels: Futures Traders Show Caution BTC Price Analysis: Breakdown Below Key Support Levels Bitcoin (BTC) has broken down from its multi-week consolidation range, currently trading at $113,737 after losing the critical $115,724 support level. The chart shows a clear rejection at the $122,077 resistance zone, where multiple attempts to break higher failed over the past two weeks. This rejection led to an increase in bearish momentum, pushing the price below the 50 and 100-period SMAs, which are now acting as resistance at $117,853 and $114,838, respectively. BTC is now hovering just above the 200-period SMA at $110,308, which could act as a last line of defense for bulls. If this level holds, a potential bounce back to retest the $115K region might occur. However, if the price fails to find strong demand soon, the next downside target sits around $112K, which aligns with the previous all-time high from May. Related Reading: Bitcoin New Investor Dominance Rises \u2013 No Signs of Mass Profit-Taking Yet Volume spikes accompanying this breakdown indicate significant selling pressure, likely driven by short-term holders capitulating at a loss. Despite the bearish technical structure in the short term, broader market sentiment remains cautiously optimistic, as institutional accumulation continues in the background. The coming sessions will be critical to determine whether BTC can reclaim $115K or if further downside toward $110K becomes inevitable. Featured image from Dall-E, chart from TradingView",
-        "source": "NewsBTC",
-        "timestamp": 1754182855,
-        "url": "https://www.newsbtc.com/bitcoin-news/exchanges-receive-21400-bitcoin-at-a-loss-from-short-term-holders-retail-capitulation/",
-        "symbols": [
-          "ETH",
-          "BTC"
-        ],
-        "source_weight": 0.7,
-        "sentiment": -0.2421865016222,
         "impact_score": 1.0,
         "processed": true
       },
@@ -2344,8 +2343,8 @@
       "The Daily: Bitcoin records highest monthly close, Coinbase re-enters top 10 public treasury companies with 2,509 BTC buy, and more",
       " Here\u2019s what happened in crypto today "
     ],
-    "overall_sentiment": 0.27624516173294095,
-    "impact_score": 0.5341739166415099,
+    "overall_sentiment": 0.2776497703722932,
+    "impact_score": 0.5327693080021576,
     "major_events": "Bitcoin Miner Profits Hit Highest Monthly Mark Since Halving: JP Morgan; Why This SharpLink Whale Holds Millions in SBET\u2014But Not Ethereum;  Crypto treasuries top $100B for Ethereum\u2019s 10th anniversary: Finance Redefined ",
     "top_symbols": [
       "UNI",
