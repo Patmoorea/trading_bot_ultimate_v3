@@ -5105,7 +5105,7 @@ async def run_clean_bot():
         """Exécute un cycle complet de trading avec fusion multi-timeframe optimisée"""
         try:
             print("\n=== DÉBUT CYCLE TRADING ===")
-            log_dashboard(f"[2025-08-03 04:44:41] Démarrage cycle trading")
+            log_dashboard(f" Démarrage cycle trading")
 
             # 1. Chargement des indicateurs orderflow
             try:
