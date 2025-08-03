@@ -4360,24 +4360,27 @@ class TradingBotM4:
                 )
 
                 if ppo_features.shape == expected_shape:
+                    raw_action = self.ppo_strategy.get_action(ppo_features)
+                    # Extraction de la valeur numérique si c'est un dict
                     ppo_action = float(
-                        self.ppo_strategy.get_action(ppo_features)
-                    )  # Cast en float
+                        raw_action["action"]
+                        if isinstance(raw_action, dict)
+                        else raw_action
+                    )
                     print(f"✅ Prédiction PPO globale: {ppo_action:.4f}")
 
-                    # 3. Fusion des signaux pour chaque paire
                     for pair in self.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
+                        if pair_key not in self.market_data:
+                            self.market_data[pair_key] = {}
                         dl_pred = dl_predictions.get(pair_key, 0)
                         await self._merge_signals(pair_key, dl_pred, ppo_action)
-
                 else:
                     print(
                         f"❌ Shape PPO incorrect: {ppo_features.shape}, attendu: {expected_shape}"
                     )
-
             except Exception as e:
-                print(f"❌ Erreur prédiction PPO: {e}")
+                print(f"❌ Erreur prédiction PPO: {str(e)}")
 
     async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
         """Étudie le marché sur une période définie et établit un plan de trading"""
@@ -5114,14 +5117,32 @@ async def run_clean_bot():
                 print(f"[WARNING] Impossible d'importer AdvancedIndicators: {e}")
                 orderflow_indicators = None
 
-            # 2. Diagnostic initial des données
+            # 2. Initialisation des sentiments par défaut pour toutes les paires
+            for pair in bot.pairs_valid:
+                pair_key = pair.replace("/", "").upper()
+                if pair_key not in bot.market_data:
+                    bot.market_data[pair_key] = {}
+                bot.market_data[pair_key]["sentiment"] = 0
+                bot.market_data[pair_key]["sentiment_timestamp"] = time.time()
+
+            # 3. Mise à jour des sentiments depuis shared_data
+            try:
+                with open(bot.data_file, "r") as f:
+                    shared_data = json.load(f)
+                sentiment_scores = shared_data.get("sentiment", {}).get("scores", [])
+                if sentiment_scores:
+                    await bot._update_sentiment_data(sentiment_scores)
+            except Exception as e:
+                print(f"[ERROR] Erreur mise à jour sentiments : {e}")
+
+            # 4. Diagnostic initial des données
             print("\n=== DIAGNOSTIC DONNÉES ===")
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 print(f"\n🔍 Vérification {pair_key}:")
                 bot.debug_signals_state(pair_key, "1h")
 
-            # 3. Mise à jour market_data avec données live
+            # 5. Mise à jour market_data avec données live
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
@@ -5173,8 +5194,12 @@ async def run_clean_bot():
                                         "liquidity": 0,
                                         "market_pressure": 0,
                                     },
-                                    "ai": 0,
-                                    "sentiment": 0,
+                                    "ai": bot.market_data[pair_key].get(
+                                        "ai_prediction", 0
+                                    ),
+                                    "sentiment": bot.market_data[pair_key].get(
+                                        "sentiment", 0
+                                    ),
                                 },
                             }
 
@@ -5209,7 +5234,7 @@ async def run_clean_bot():
                                 except Exception as e:
                                     print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
 
-                            # Vérification modèle IA
+                            # Vérification et mise à jour des prédictions IA
                             if (
                                 bot.dl_model
                                 and hasattr(bot, "ai_enabled")
@@ -5218,27 +5243,31 @@ async def run_clean_bot():
                                 features = await bot._prepare_features_for_ai(pair_key)
                                 if features is not None:
                                     ai_prediction = bot.dl_model.predict(features)
-                                    bot.market_data[pair_key][tf][
+                                    # Mise à jour à deux endroits
+                                    bot.market_data[pair_key][
                                         "ai_prediction"
+                                    ] = ai_prediction
+                                    bot.market_data[pair_key][tf]["signals"][
+                                        "ai"
                                     ] = ai_prediction
                                     print(
                                         f"[AI] Prédiction pour {pair_key}-{tf}: {ai_prediction:.3f}"
                                     )
 
-            # 4. Analyse de marché
+            # 6. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie active: {strategy}")
 
-            # 5. Vérification complète des signaux
+            # 7. Vérification complète des signaux
             signals_ok = bot.verify_signals_completeness()
             if not signals_ok:
                 log_dashboard("⚠️ Attention: Certains signaux sont incomplets")
 
-            # 6. Détection arbitrage
+            # 8. Détection arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 7. Analyse détaillée par paire et timeframe
+            # 9. Analyse détaillée par paire et timeframe
             trade_decisions = []
 
             for pair in bot.pairs_valid:
@@ -5279,7 +5308,8 @@ async def run_clean_bot():
                         "signals", {}
                     )
 
-                    # Construction de la décision finale
+                    # Construction de la décision finale avec propagation correcte des signaux
+                    pair_key = pair.replace("/", "").upper()
                     final_decision = {
                         "pair": pair,
                         "action": action,
@@ -5294,8 +5324,8 @@ async def run_clean_bot():
                             "orderflow": dominant_signals.get("orderflow", {}).get(
                                 "score", 0
                             ),
-                            "ai": dominant_signals.get("ai", 0),
-                            "sentiment": dominant_signals.get("sentiment", 0),
+                            "ai": bot.market_data[pair_key].get("ai_prediction", 0),
+                            "sentiment": bot.market_data[pair_key].get("sentiment", 0),
                         },
                         "metrics": pair_signals.get(dominant_tf, {}).get("metrics", {}),
                         "timestamp": get_current_time(),
@@ -5313,7 +5343,7 @@ async def run_clean_bot():
                         f"Sent: {final_decision['signals']['sentiment']:.2f}"
                     )
 
-            # 8. Exécution des trades (uniquement si les signaux sont complets)
+            # 10. Exécution des trades (uniquement si les signaux sont complets)
             if signals_ok and trade_decisions:
                 await execute_trade_decisions(bot, trade_decisions)
                 log_dashboard(f"✅ {len(trade_decisions)} décisions de trade exécutées")
