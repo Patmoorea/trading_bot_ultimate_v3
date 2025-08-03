@@ -5588,12 +5588,12 @@ async def run_clean_bot():
                 print(f"[WARNING] Erreur init indicators: {e}")
                 orderflow_indicators = None
 
-            # Reset des sentiments par défaut
+            # === CORRECTION 1: Initialisation sentiment avec 0.5 au lieu de 0 ===
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
-                bot.market_data[pair_key]["sentiment"] = 0
+                bot.market_data[pair_key]["sentiment"] = 0.5  # <-- Changé de 0 à 0.5
                 bot.market_data[pair_key]["sentiment_timestamp"] = time.time()
 
             # Mise à jour sentiments depuis shared_data
@@ -5695,6 +5695,7 @@ async def run_clean_bot():
                                 except Exception as e:
                                     print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
 
+                            # === CORRECTION 2: Bloc IA amélioré ===
                             if (
                                 bot.dl_model
                                 and hasattr(bot, "ai_enabled")
@@ -5702,13 +5703,25 @@ async def run_clean_bot():
                             ):
                                 features = await bot._prepare_features_for_ai(pair_key)
                                 if features is not None:
-                                    ai_prediction = bot.dl_model.predict(features)
-                                    bot.market_data[pair_key][
-                                        "ai_prediction"
-                                    ] = ai_prediction
-                                    bot.market_data[pair_key][tf]["signals"][
-                                        "ai"
-                                    ] = ai_prediction
+                                    try:
+                                        ai_prediction = float(
+                                            bot.dl_model.predict(features)
+                                        )
+                                        bot.market_data[pair_key][
+                                            "ai_prediction"
+                                        ] = ai_prediction
+                                        bot.market_data[pair_key][tf]["signals"][
+                                            "ai"
+                                        ] = ai_prediction
+                                    except Exception as e:
+                                        print(f"[AI] Erreur prédiction {pair_key}: {e}")
+                                        bot.market_data[pair_key]["ai_prediction"] = 0.5
+                                        bot.market_data[pair_key][tf]["signals"][
+                                            "ai"
+                                        ] = 0.5
+                            else:
+                                bot.market_data[pair_key]["ai_prediction"] = 0.5
+                                bot.market_data[pair_key][tf]["signals"]["ai"] = 0.5
 
             # Analyse marché
             regime, market_data, indicators = await bot.study_market("7d")
@@ -5746,7 +5759,19 @@ async def run_clean_bot():
 
                     if df is not None and len(df) >= 20:
                         indicators_data = bot.add_indicators(df)
+                        # === CORRECTION 3: Ajout des scores techniques ===
                         if indicators_data:
+                            # Mise à jour des signaux techniques dans market_data
+                            bot.market_data[pair_key][tf]["signals"]["technical"][
+                                "score"
+                            ] = float(indicators_data.get("technical_score", 0.5))
+                            bot.market_data[pair_key][tf]["signals"]["technical"][
+                                "details"
+                            ] = indicators_data
+                            bot.market_data[pair_key][tf]["signals"]["technical"][
+                                "factors"
+                            ] = len(indicators_data)
+
                             decision = await bot.analyze_signals(
                                 pair_key, df, indicators_data, tf
                             )
