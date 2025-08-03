@@ -137372,3 +137372,222 @@
 2025-08-03T03:25:00.970020 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
 2025-08-03T03:25:03.177460 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
 2025-08-03T03:25:03.182170 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-03T03:43:11.113920 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-03T03:43:11.120698 | Initialisation des modèles d'IA...
+2025-08-03T03:43:11.581540 | ✅ Modèles d'IA initialisés avec succès
+2025-08-03T03:43:13.101720 | ✅ PPO Strategy initialized successfully
+2025-08-03T03:43:13.110196 | ✅ Bot initialisé avec Telegram: True
+2025-08-03T03:43:13.110309 | ✅ Trading en direct: True
+2025-08-03T03:43:13.110360 | ✅ IA activée: True
+2025-08-03T03:43:13.110408 | ✅ Analyse de news activée: True
+2025-08-03T03:45:07.491598 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-03T03:46:33.351307 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0412 | Tendance: -0.0021
+2025-08-03T03:46:33.366529 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-03T03:46:33.373057 | [2025-08-02 17:46:33] Démarrage cycle trading
+2025-08-03T03:47:09.354088 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0412 | Tendance: -0.0021
+2025-08-03T03:47:09.364500 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T03:47:09.364701 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T03:48:31.542079 | [DECISION] BTC/USDC | Action: NEUTRAL | Conf: 0.04 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:32.498341 | [DECISION] ETH/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:33.456341 | [DECISION] LTC/USDC | Action: NEUTRAL | Conf: 0.04 | Tech: 0.03 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:34.412131 | [DECISION] XRP/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: -0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:35.320307 | [DECISION] DOGE/USDC | Action: NEUTRAL | Conf: 0.02 | Tech: 0.07 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:36.296254 | [DECISION] BNB/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:37.255713 | [DECISION] ADA/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:38.218541 | [DECISION] SOL/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:39.173578 | [DECISION] TRX/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.00 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:40.068832 | [DECISION] SUI/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:48:41.197595 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.04085253118713645
+2025-08-03T03:48:41.215907 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-08-03T03:48:43.777654 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:48:43.796237 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-08-03T03:48:46.042195 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.039191291187857503
+2025-08-03T03:48:46.047888 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-08-03T03:48:48.269351 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:48:48.287554 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-08-03T03:48:50.497491 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.024685101378956527
+2025-08-03T03:48:50.514630 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-08-03T03:48:52.766243 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:48:52.784254 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-08-03T03:48:54.981446 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:48:54.998863 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-08-03T03:48:57.286769 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.10188445410061277
+2025-08-03T03:48:57.305885 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-08-03T03:48:59.524052 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:48:59.544087 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-08-03T03:49:01.742038 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:49:01.761149 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-03T03:49:02.845220 | ✅ 10 décisions de trade exécutées
+2025-08-03T03:50:22.670361 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.04085253118713645
+2025-08-03T03:50:22.691696 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-08-03T03:50:25.327441 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:25.346001 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-08-03T03:50:27.610155 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.039191291187857503
+2025-08-03T03:50:27.629419 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-08-03T03:50:29.946507 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:29.960854 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-08-03T03:50:32.239158 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.024685101378956527
+2025-08-03T03:50:32.260279 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-08-03T03:50:34.559479 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:34.577548 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-08-03T03:50:36.842259 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:36.860783 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-08-03T03:50:39.124595 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.10188445410061277
+2025-08-03T03:50:39.142043 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-08-03T03:50:40.234928 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:40.240941 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-08-03T03:50:41.330027 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:50:41.347081 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-03T03:57:22.863999 | [2025-08-02 17:57:22] Démarrage cycle trading
+2025-08-03T03:57:58.018577 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0411 | Tendance: -0.0021
+2025-08-03T03:57:58.029366 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T03:57:58.029464 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T03:58:46.518211 | [DECISION] BTC/USDC | Action: NEUTRAL | Conf: 0.04 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:47.490347 | [DECISION] ETH/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:48.443243 | [DECISION] LTC/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.03 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:49.410560 | [DECISION] XRP/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: -0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:50.322744 | [DECISION] DOGE/USDC | Action: NEUTRAL | Conf: 0.02 | Tech: 0.07 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:51.276990 | [DECISION] BNB/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:52.255312 | [DECISION] ADA/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:53.216735 | [DECISION] SOL/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:54.180346 | [DECISION] TRX/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.00 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:55.093184 | [DECISION] SUI/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T03:58:56.211567 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.04085253118713645
+2025-08-03T03:58:56.230328 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:58:58.776543 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:58:58.795215 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:00.997249 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:01.015675 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:03.200323 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:03.218705 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:05.423849 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.024685101378956527
+2025-08-03T03:59:05.428133 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:07.634310 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:07.651897 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:09.836417 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:09.853237 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:12.012211 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.10188445410061277
+2025-08-03T03:59:12.032272 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:14.211194 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:14.228066 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:16.432898 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T03:59:16.450576 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-08-03T03:59:17.509955 | ✅ 10 décisions de trade exécutées
+2025-08-03T04:07:07.288652 | [2025-08-02 18:07:07] Démarrage cycle trading
+2025-08-03T04:07:42.732100 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0411 | Tendance: -0.0010
+2025-08-03T04:07:42.745471 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T04:07:42.745574 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T04:08:29.711043 | [DECISION] BTC/USDC | Action: NEUTRAL | Conf: 0.13 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:30.701226 | [DECISION] ETH/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:31.698191 | [DECISION] LTC/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.03 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:32.676873 | [DECISION] XRP/USDC | Action: NEUTRAL | Conf: 0.08 | Tech: -0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:33.595480 | [DECISION] DOGE/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.07 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:34.584144 | [DECISION] BNB/USDC | Action: NEUTRAL | Conf: 0.19 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:35.564697 | [DECISION] ADA/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:36.540939 | [DECISION] SOL/USDC | Action: NEUTRAL | Conf: 0.11 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:37.521737 | [DECISION] TRX/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.00 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:38.432307 | [DECISION] SUI/USDC | Action: NEUTRAL | Conf: 0.07 | Tech: 0.02 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:08:39.593753 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.13333037172665935
+2025-08-03T04:08:39.612839 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:42.782032 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0991341365168039
+2025-08-03T04:08:42.797131 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:45.192222 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:08:45.208082 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:47.570790 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.07994269005734085
+2025-08-03T04:08:47.584153 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:49.968668 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.10281269827080478
+2025-08-03T04:08:49.983052 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:52.324210 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.19299124444593044
+2025-08-03T04:08:52.340541 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:54.713565 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:08:54.731750 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:57.561900 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.11486533389440635
+2025-08-03T04:08:57.578395 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:08:59.870342 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:08:59.884977 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:09:02.154823 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.06550435453493342
+2025-08-03T04:09:02.167464 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:09:03.309197 | ✅ 10 décisions de trade exécutées
+2025-08-03T04:16:55.883618 | [2025-08-02 18:16:55] Démarrage cycle trading
+2025-08-03T04:17:32.477886 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0411 | Tendance: -0.0010
+2025-08-03T04:17:32.488296 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T04:17:32.488423 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T04:18:15.021555 | [DECISION] BTC/USDC | Action: NEUTRAL | Conf: 0.13 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:16.028371 | [DECISION] ETH/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:17.004677 | [DECISION] LTC/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.03 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:17.998572 | [DECISION] XRP/USDC | Action: NEUTRAL | Conf: 0.08 | Tech: -0.06 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:18.984224 | [DECISION] DOGE/USDC | Action: NEUTRAL | Conf: 0.10 | Tech: 0.07 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:20.059071 | [DECISION] BNB/USDC | Action: NEUTRAL | Conf: 0.19 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:21.180625 | [DECISION] ADA/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.05 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:22.203408 | [DECISION] SOL/USDC | Action: NEUTRAL | Conf: 0.11 | Tech: 0.01 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:23.289711 | [DECISION] TRX/USDC | Action: NEUTRAL | Conf: 0.00 | Tech: 0.00 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:24.220214 | [DECISION] SUI/USDC | Action: NEUTRAL | Conf: 0.07 | Tech: 0.02 | IA: 0.00 | Sent: 0.00
+2025-08-03T04:18:24.225662 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto, actions, RWA, dérivés et même paris : Coinbase veut tout vendre !
+2025-08-03T04:18:24.225715 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quels sont les token unlocks à surveiller au mois d'août 2025 ?
+2025-08-03T04:18:24.225780 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Strategy a-t-elle vraiment réalisé 10 milliards de dollars de bénéfices au 2e tr
+2025-08-03T04:18:24.225836 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane de Donald Trump : récapitulatif de ce qui change dès le 7 août
+2025-08-03T04:18:24.225903 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 127 Mds de bons du Trésor : Tether dépasse la Corée du Sud… et flirte avec l’Ara
+2025-08-03T04:18:24.225934 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Taux de la Fed : Donald Trump appelle les gouverneurs à renverser « le crétin tê
+2025-08-03T04:18:24.225967 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Face à un bilan morose, Coinbase annonce le trading d'actions tokenisées
+2025-08-03T04:18:24.225997 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quelles sont les dates à ne pas louper dans la crypto en août 2025 ?
+2025-08-03T04:18:24.226028 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hack CoinDCX : un ingénieur arrêté après un vol de 43 millions de dollars
+2025-08-03T04:18:24.226113 | [NEWS CHECK] ⚠️ News sans champ 'symbols': La SEC lance le « Projet Crypto » pour mettre les marchés américains sur la bloc
+2025-08-03T04:18:24.226166 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Projet Crypto » de la SEC aux USA : Les 6 priorités de Paul Atkins
+2025-08-03T04:18:24.226205 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Project Crypto » : la SEC lance une révolution réglementaire pro blockchain au
+2025-08-03T04:18:24.226239 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Trop stupide » : Donald Trump insulte le président de la Fed pour ne pas avoir
+2025-08-03T04:18:24.226271 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Les trésoreries crypto d'entreprises accumulent désormais 100 milliards de dolla
+2025-08-03T04:18:24.226297 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L’ENA d’Ethena continue de superformer : 17 % de hausse en 24 heures
+2025-08-03T04:18:24.226347 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto victim loses $908K in sophisticated phishing attack 
+2025-08-03T04:18:24.226377 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Creative leverage solves the impermanent loss problem — Curve founder 
+2025-08-03T04:18:24.226409 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big stage, bigger scams? 5 shady crypto projects that made it to the spotlight 
+2025-08-03T04:18:24.226454 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How to use ChatGPT Agent for crypto trading in 2025 
+2025-08-03T04:18:24.226482 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  China’s crypto liquidation plans reveal its grand strategy 
+2025-08-03T04:18:24.226528 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ARK Invest scoops up Coinbase, BitMine shares amid stock dips 
+2025-08-03T04:18:24.226568 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Can Google Gemini really help plan crypto trades? 
+2025-08-03T04:18:24.226610 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  DeFi Education Fund urges Senate to strengthen crypto dev protections in draft 
+2025-08-03T04:18:24.226653 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC Chair Aktins calls to ‘reshore crypto’ as companies move back to the US 
+2025-08-03T04:18:24.226681 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC’s crypto task force to hit the road with 10 roundtables across the US 
+2025-08-03T04:18:24.226752 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Hong Kong stablecoin stocks slide as new rules take effect, experts see healthy
+2025-08-03T04:18:24.226790 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  As Trump challenges Fed independence, key FOMC member resigns 
+2025-08-03T04:18:24.226827 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  OpenAI raises $8.3B at $300B valuation 
+2025-08-03T04:18:24.226861 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto exchange Gate launches spot trading services in the US 
+2025-08-03T04:18:24.226897 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-03T04:18:24.226931 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-03T04:18:24.226960 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-03T04:18:24.227005 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-03T04:18:24.227034 | [NEWS CHECK] ⚠️ News sans champ 'symbols': FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-03T04:18:24.227078 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-03T04:18:24.227118 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong Kicks Off Stablecoin Licensing Regime With Eye on Global Hub
+2025-08-03T04:18:24.227149 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase Stock Dives as Company Misses Q2 Revenue Forecasts
+2025-08-03T04:18:24.227190 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Reports Q2 Profit of $4.9 Billion, CEO Teases U.S. Venture
+2025-08-03T04:18:24.227213 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SEC Chair Paul Atkins Unveils Project Crypto, Greenlighting ICOs, Airdrops and M
+2025-08-03T04:18:24.227235 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Robinhood’s CEO Touted Tokenization 11 Times on Its Q2 Earning Call
+2025-08-03T04:18:24.227256 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Former OpenSea Manager Has Conviction Overturned in First-Ever Crypto Insider Tr
+2025-08-03T04:18:24.227278 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Tokenized Stocks are Important: A Breakdown
+2025-08-03T04:18:24.227301 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase’s Q2 earnings point to shrinking USDC margins for Circle, Mizuho says
+2025-08-03T04:18:24.227323 | [NEWS CHECK] ⚠️ News sans champ 'symbols': US crypto ETFs best Vanguard’s S&P 500 fund with record-high $12.8 billion of in
+2025-08-03T04:18:24.227344 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pantera Capital leads $20 million funding round into Subzero Labs as developer-f
+2025-08-03T04:18:24.227365 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bernstein says Q2 is the ‘quarter that doesn’t matter’ for Coinbase as stock tum
+2025-08-03T04:18:24.227385 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ‘The market has evolved’: UK financial regulator to open retail access to crypto
+2025-08-03T04:18:24.227405 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 30 key crypto hires, moves and exits: July 2025
+2025-08-03T04:18:25.349327 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.13333037172665935
+2025-08-03T04:18:25.366070 | [NEWS PAUSE] Trade NEUTRAL sur BTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:28.034493 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0991341365168039
+2025-08-03T04:18:28.051000 | [NEWS PAUSE] Trade NEUTRAL sur ETH/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:30.240685 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:18:30.257310 | [NEWS PAUSE] Trade NEUTRAL sur LTC/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:32.464608 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.07994269005734085
+2025-08-03T04:18:32.478024 | [NEWS PAUSE] Trade NEUTRAL sur XRP/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:34.670388 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.10281269827080478
+2025-08-03T04:18:34.684707 | [NEWS PAUSE] Trade NEUTRAL sur DOGE/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:36.881402 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.19299124444593044
+2025-08-03T04:18:36.897551 | [NEWS PAUSE] Trade NEUTRAL sur BNB/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:39.182090 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:18:39.199547 | [NEWS PAUSE] Trade NEUTRAL sur ADA/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:41.418472 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.11486533389440635
+2025-08-03T04:18:41.431980 | [NEWS PAUSE] Trade NEUTRAL sur SOL/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:43.802655 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.0
+2025-08-03T04:18:43.819072 | [NEWS PAUSE] Trade NEUTRAL sur TRX/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:46.217338 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.06550435453493342
+2025-08-03T04:18:46.222147 | [NEWS PAUSE] Trade NEUTRAL sur SUI/USDC bloqué (news critique/pause en cours)
+2025-08-03T04:18:47.423202 | ✅ 10 décisions de trade exécutées

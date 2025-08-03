@@ -973,39 +973,60 @@ class TradingBotM4:
         self.sync_positions_with_binance()
 
     def debug_signals_state(self, pair_key, tf):
-        """Vérifie et affiche l'état des signaux pour un pair/timeframe"""
+        """Vérifie et affiche l'état détaillé des signaux"""
         try:
             if pair_key not in self.market_data:
-                print(f"[DEBUG] Pas de market_data pour {pair_key}")
+                print(f"❌ Pas de market_data pour {pair_key}")
                 return False
 
-            if tf not in self.market_data[pair_key]:
-                print(f"[DEBUG] Pas de données {tf} pour {pair_key}")
-                return False
-
-            data = self.market_data[pair_key][tf]
+            data = self.market_data[pair_key].get(tf, {})
             if not data:
-                print(f"[DEBUG] Données vides pour {pair_key}-{tf}")
+                print(f"❌ Pas de données {tf} pour {pair_key}")
                 return False
 
-            # Vérifie les composants essentiels
+            # Vérification OHLCV
             has_ohlcv = all(
                 k in data for k in ["open", "high", "low", "close", "volume"]
             )
-            has_technical = "technical" in data
-            has_ai = "ai_prediction" in data
-            has_sentiment = "sentiment" in data
 
-            print(f"[DEBUG] État des signaux {pair_key}-{tf}:")
-            print(f"  OHLCV: {'✅' if has_ohlcv else '❌'}")
+            # Vérification technique
+            has_technical = (
+                "signals" in data
+                and "technical" in data["signals"]
+                and data["signals"]["technical"].get("score") is not None
+            )
+
+            # Vérification IA
+            has_ai = "ai_prediction" in data or (
+                "signals" in data and "ai" in data["signals"]
+            )
+
+            # Vérification sentiment
+            has_sentiment = "sentiment" in data or (
+                "signals" in data and "sentiment" in data["signals"]
+            )
+
+            print(f"\n📊 État des signaux {pair_key}-{tf}:")
+            print(
+                f"  OHLCV: {'✅' if has_ohlcv else '❌'} ({len(data.get('close', [])) if has_ohlcv else 0} points)"
+            )
             print(f"  Technical: {'✅' if has_technical else '❌'}")
             print(f"  AI: {'✅' if has_ai else '❌'}")
             print(f"  Sentiment: {'✅' if has_sentiment else '❌'}")
 
-            return has_ohlcv and (has_technical or has_ai or has_sentiment)
+            if not has_technical or not has_ai or not has_sentiment:
+                print("\n🔍 Diagnostic approfondi:")
+                if not has_technical:
+                    print("  - Signaux techniques manquants")
+                if not has_ai:
+                    print("  - Prédictions IA non calculées")
+                if not has_sentiment:
+                    print("  - Analyse sentiment non effectuée")
+
+            return has_ohlcv
 
         except Exception as e:
-            print(f"[DEBUG] Erreur vérification signaux {pair_key}-{tf}: {e}")
+            print(f"❌ Erreur debug {pair_key}-{tf}: {e}")
             return False
 
     def calculate_correlation_matrix(self):
@@ -2609,7 +2630,13 @@ class TradingBotM4:
                         },
                     }
                 )
-
+            self.market_data[symbol][tf]["signals"] = {
+                "technical": signals["technical"],
+                "momentum": signals["momentum"],
+                "orderflow": signals["orderflow"],
+                "ai": self.market_data.get(symbol, {}).get("ai_prediction", 0),
+                "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
+            }
             return decision
 
         except Exception as e:
@@ -5088,6 +5115,27 @@ async def run_clean_bot():
                                 bot.market_data[pair_key][tf]["orderflow"] = of_data
                             except Exception as e:
                                 print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
+            # Vérification modèle IA
+            if bot.dl_model and hasattr(bot, "ai_enabled") and bot.ai_enabled:
+                features = await bot._prepare_features_for_ai(pair_key)
+                if features is not None:
+                    ai_prediction = bot.dl_model.predict(features)
+                    bot.market_data[pair_key][tf]["ai_prediction"] = ai_prediction
+                    print(f"[AI] Prédiction pour {pair_key}-{tf}: {ai_prediction:.3f}")
+
+            if df is not None and not df.empty:
+                # Structure de base des signaux
+                bot.market_data[pair_key][tf] = {
+                    "open": df["open"].tolist(),
+                    "high": df["high"].tolist(),
+                    "low": df["low"].tolist(),
+                    "close": df["close"].tolist(),
+                    "volume": df["volume"].tolist(),
+                    "timestamp": [
+                        int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]
+                    ],
+                    "signals": {"technical": {"score": 0}, "ai": 0, "sentiment": 0},
+                }
 
             # 4. Analyse de marché
             regime, market_data, indicators = await bot.study_market("7d")
