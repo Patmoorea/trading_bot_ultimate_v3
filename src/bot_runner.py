@@ -5523,29 +5523,36 @@ async def run_clean_bot():
             return None
 
     async def execute_trading_cycle(bot, valid_pairs):
-        """Exécute un cycle complet de trading avec fusion multi-timeframe optimisée"""
         try:
             print("\n=== DÉBUT CYCLE TRADING ===")
             log_dashboard(f" Démarrage cycle trading")
 
-            # 1. Vérification des news critiques et gestion des pauses
+            # Vérification immédiate des pauses actives
+            if (
+                bot.news_pause_manager
+                and bot.news_pause_manager.global_cycles_remaining > 0
+            ):
+                bot.safe_update_shared_data(
+                    {"active_pauses": bot.news_pause_manager.get_active_pauses()},
+                    bot.data_file,
+                )
+                log_dashboard("🚫 Cycle bloqué - Pause news active")
+                return [], bot.regime
+
+            # Vérification des news critiques
             try:
                 with open(bot.data_file, "r") as f:
                     shared_data = json.load(f)
                 news_sentiment = shared_data.get("sentiment", {})
                 news_list = news_sentiment.get("scores", [])
 
-                # Analyse des news non traitées pour pause potentielle
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
                 if unprocessed_news:
-                    # Scan et activation pause si nécessaire
                     if bot.news_pause_manager.scan_news(unprocessed_news):
                         print("🚨 Pause trading activée suite à news critique")
-                        # Marque les news comme traitées
                         for n in unprocessed_news:
                             n["processed"] = True
 
-                        # Sauvegarde état des news et pauses
                         bot.safe_update_shared_data(
                             {
                                 "sentiment": {**news_sentiment, "scores": news_list},
@@ -5554,10 +5561,13 @@ async def run_clean_bot():
                             bot.data_file,
                         )
 
+                        if bot.news_pause_manager.global_cycles_remaining > 0:
+                            return [], bot.regime
+
             except Exception as e:
                 print(f"[WARNING] Erreur analyse news: {e}")
 
-            # 2. Initialisation orderflow indicators
+            # Initialisation orderflow indicators
             try:
                 from src.analysis.technical.advanced.advanced_indicators import (
                     AdvancedIndicators,
@@ -5568,7 +5578,7 @@ async def run_clean_bot():
                 print(f"[WARNING] Erreur init indicators: {e}")
                 orderflow_indicators = None
 
-            # 3. Reset des sentiments par défaut
+            # Reset des sentiments par défaut
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
@@ -5576,7 +5586,7 @@ async def run_clean_bot():
                 bot.market_data[pair_key]["sentiment"] = 0
                 bot.market_data[pair_key]["sentiment_timestamp"] = time.time()
 
-            # 4. Mise à jour sentiments depuis shared_data
+            # Mise à jour sentiments depuis shared_data
             try:
                 sentiment_scores = shared_data.get("sentiment", {}).get("scores", [])
                 if sentiment_scores:
@@ -5584,13 +5594,13 @@ async def run_clean_bot():
             except Exception as e:
                 print(f"[ERROR] Erreur update sentiments: {e}")
 
-            # 5. Diagnostic données
+            # Diagnostic données
             print("\n=== DIAGNOSTIC DONNÉES ===")
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 bot.debug_signals_state(pair_key, "1h")
 
-            # 6. Mise à jour market_data
+            # Mise à jour market_data
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
@@ -5599,7 +5609,6 @@ async def run_clean_bot():
                 for tf in bot.config["TRADING"]["timeframes"]:
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
                     if df is not None and not df.empty:
-                        # Vérification colonnes
                         required_cols = [
                             "open",
                             "high",
@@ -5609,7 +5618,6 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_cols):
-                            # Structure complète
                             bot.market_data[pair_key][tf] = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -5647,7 +5655,6 @@ async def run_clean_bot():
                                 },
                             }
 
-                            # Calcul orderflow
                             if orderflow_indicators:
                                 try:
                                     of_data = {
@@ -5678,7 +5685,6 @@ async def run_clean_bot():
                                 except Exception as e:
                                     print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
 
-                            # Update IA
                             if (
                                 bot.dl_model
                                 and hasattr(bot, "ai_enabled")
@@ -5694,22 +5700,32 @@ async def run_clean_bot():
                                         "ai"
                                     ] = ai_prediction
 
-            # 7. Analyse marché
+            # Analyse marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie: {strategy}")
 
-            # 8. Vérification signaux
+            # Vérification signaux
             signals_ok = bot.verify_signals_completeness()
             if not signals_ok:
                 log_dashboard("⚠️ Signaux incomplets")
 
-            # 9. Arbitrage
+            # Arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # 10. Analyse par paire
+            # Analyse par paire
             trade_decisions = []
             decisions_for_dashboard = {}
+
+            # Initialisation dashboard pour toutes les paires
+            for pair in bot.pairs_valid:
+                decisions_for_dashboard[pair] = {
+                    "action": "neutral",
+                    "confidence": 0.0,
+                    "tech": 0.0,
+                    "ai": 0.0,
+                    "sentiment": 0.0,
+                }
 
             for pair in bot.pairs_valid:
                 pair_signals = {}
@@ -5728,7 +5744,6 @@ async def run_clean_bot():
                                 decision["tf"] = tf
                                 pair_signals[tf] = decision
 
-                # Fusion timeframes
                 if pair_signals:
                     dominant_tf = "1h"
                     dominant_signals = pair_signals.get(dominant_tf, {}).get(
@@ -5744,20 +5759,26 @@ async def run_clean_bot():
                         final_decision = {
                             "pair": pair,
                             "action": action,
-                            "confidence": confidence,
+                            "confidence": float(confidence),
                             "signals": {
-                                "technical": dominant_signals.get("technical", {}).get(
-                                    "score", 0
+                                "technical": float(
+                                    dominant_signals.get("technical", {}).get(
+                                        "score", 0
+                                    )
                                 ),
-                                "momentum": dominant_signals.get("momentum", {}).get(
-                                    "score", 0
+                                "momentum": float(
+                                    dominant_signals.get("momentum", {}).get("score", 0)
                                 ),
-                                "orderflow": dominant_signals.get("orderflow", {}).get(
-                                    "score", 0
+                                "orderflow": float(
+                                    dominant_signals.get("orderflow", {}).get(
+                                        "score", 0
+                                    )
                                 ),
-                                "ai": bot.market_data[pair_key].get("ai_prediction", 0),
-                                "sentiment": bot.market_data[pair_key].get(
-                                    "sentiment", 0
+                                "ai": float(
+                                    bot.market_data[pair_key].get("ai_prediction", 0)
+                                ),
+                                "sentiment": float(
+                                    bot.market_data[pair_key].get("sentiment", 0)
                                 ),
                             },
                             "metrics": pair_signals.get(dominant_tf, {}).get(
@@ -5767,7 +5788,6 @@ async def run_clean_bot():
                             "tf": dominant_tf,
                         }
 
-                        # Score global
                         signal_score = (
                             final_decision["signals"]["technical"] * 0.3
                             + final_decision["signals"]["momentum"] * 0.2
@@ -5776,7 +5796,6 @@ async def run_clean_bot():
                             + final_decision["signals"]["sentiment"] * 0.1
                         )
 
-                        # Critères validation
                         if (
                             signal_score >= 0.6
                             and confidence >= 0.7
@@ -5789,31 +5808,33 @@ async def run_clean_bot():
                             )
                             trade_decisions.append(final_decision)
 
-                            # Stockage pour dashboard
                             decisions_for_dashboard[pair] = {
-                                "action": action,
-                                "confidence": confidence,
-                                "tech": final_decision["signals"]["technical"],
-                                "ai": final_decision["signals"]["ai"],
-                                "sentiment": final_decision["signals"]["sentiment"],
+                                "action": str(action),
+                                "confidence": float(confidence),
+                                "tech": float(final_decision["signals"]["technical"]),
+                                "ai": float(final_decision["signals"]["ai"]),
+                                "sentiment": float(
+                                    final_decision["signals"]["sentiment"]
+                                ),
                             }
 
-            # 11. Sauvegarde pour dashboard
+            # Sauvegarde pour dashboard avec market_data
             bot.safe_update_shared_data(
                 {
                     "trade_decisions": decisions_for_dashboard,
+                    "market_data": bot.market_data,
                     "active_pauses": bot.news_pause_manager.get_active_pauses(),
                 },
                 bot.data_file,
             )
 
-            # 12. Exécution si pas de pause
+            # Vérification finale des pauses
             if bot.news_pause_manager.global_cycles_remaining > 0:
                 log_dashboard("🚫 Exécution bloquée - Pause active")
                 return trade_decisions, regime
 
+            # Exécution si pas de pause
             if signals_ok and trade_decisions:
-                # Vérification exposition
                 current_exposure = sum(
                     float(pos.get("amount", 0)) * float(pos.get("entry_price", 0))
                     for pos in bot.positions.values()
