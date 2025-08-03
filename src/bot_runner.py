@@ -977,6 +977,52 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def validate_trade(self, signals):
+        """Valide si un trade peut être pris selon les critères de risque"""
+        try:
+            # Récupération des scores
+            technical_score = signals.get("technical", {}).get("score", 0)
+            momentum_score = signals.get("momentum", {}).get("score", 0)
+            orderflow_score = signals.get("orderflow", {}).get("score", 0)
+
+            # Calcul du score global
+            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
+
+            total_score = (
+                technical_score * weights["technical"]
+                + momentum_score * weights["momentum"]
+                + orderflow_score * weights["orderflow"]
+            )
+
+            # Vérification critères minimums
+            if total_score < self.min_score_required:
+                print(
+                    f"[RISK] Score insuffisant: {total_score:.2f} < {self.min_score_required}"
+                )
+                return False
+
+            # Vérification momentum
+            if abs(momentum_score) < 0.3:
+                print("[RISK] Momentum trop faible")
+                return False
+
+            # Vérification orderflow
+            if abs(orderflow_score) < 0.2:
+                print("[RISK] Orderflow insuffisant")
+                return False
+
+            # Vérification liquidité
+            liquidity = signals.get("orderflow", {}).get("liquidity", 0)
+            if abs(liquidity) > 0.7:
+                print("[RISK] Liquidité anormale")
+                return False
+
+            return True
+
+        except Exception as e:
+            print(f"[RISK] Erreur validation trade: {e}")
+            return False
+
     def calculate_pair_correlation(self, pair1, pair2, window=20, tf="1h"):
         """
         Calcule la corrélation entre deux paires sur une fenêtre donnée.
@@ -1497,7 +1543,7 @@ class TradingBotM4:
                 weights["technical"] *= 0.8
 
             # Intégration volatilité avancée
-            volatility_adv = self.calculate_volatility_advanced(df)
+            volatility_adv = self.calculate_volatility_advanced(ohlcv_df)
             if volatility_adv > 0.05:  # Volatilité élevée
                 weights["orderflow"] *= 1.2  # Plus de poids sur l'orderflow
                 weights["technical"] *= 0.8  # Moins sur technique
@@ -1507,7 +1553,7 @@ class TradingBotM4:
             total_score *= exposure_mult
 
             # Intégration divergences
-            divergence_score = self.check_volume_divergence(df)
+            divergence_score = self.check_volume_divergence(ohlcv_df)
             if abs(divergence_score) > 0.5:  # Divergence significative
                 if divergence_score > 0:  # Divergence positive
                     total_score *= 1.2
