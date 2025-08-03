@@ -7,8 +7,17 @@ class ExitManager:
         tp_levels: Liste de tuples (target_pct, fraction) ex: [(0.03, 0.3), (0.07, 0.3)]
         trailing_pct: Pourcentage du trailing stop (ex: 0.03 = 3%)
         """
+        self.tp_levels = [
+            {"level": 1.02, "size": 0.3},  # +2% -> vend 30%
+            {"level": 1.035, "size": 0.3},  # +3.5% -> vend 30%
+            {"level": 1.05, "size": 0.4},  # +5% -> vend 40%
+        ]
+        self.trailing_activation = 1.03  # Active trailing à +3%
+        self.trailing_stop_distance = 0.015  # Stop suiveur à 1.5%
+        self.max_loss = 0.02  # Stop loss à -2%
+
         # Par défaut : 30% à +3%, 30% à +7%, 40% trailing
-        self.tp_levels = tp_levels or [(0.03, 0.3), (0.07, 0.3)]
+        # self.tp_levels = tp_levels or [(0.03, 0.3), (0.07, 0.3)]
         self.trailing_pct = trailing_pct
 
     def get_tp_targets(self, entry_price):

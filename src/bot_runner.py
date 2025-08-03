@@ -97,6 +97,8 @@ from src.portfolio.binance_utils import get_avg_entry_price_binance_spot
 
 from cachetools import TTLCache
 
+from src.risk_tools.enhanced_risk_manager import EnhancedRiskManager
+
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
@@ -834,6 +836,7 @@ class TradingBotM4:
                 },
             },
         }
+        self.risk_manager = EnhancedRiskManager()
 
         self.last_correlation_check = 0
         self.correlation_cache = {}
@@ -5298,55 +5301,123 @@ async def run_clean_bot():
 
                 # Fusion des timeframes si on a des signaux
                 if pair_signals:
-                    action, confidence = bot.aggregate_timeframe_signals(
-                        pair, pair_signals
-                    )
+                    # Vérification avec le risk manager avant la construction de la décision
                     dominant_tf = "1h"
-
-                    # Récupération des signaux du timeframe dominant
                     dominant_signals = pair_signals.get(dominant_tf, {}).get(
                         "signals", {}
                     )
 
-                    # Construction de la décision finale avec propagation correcte des signaux
-                    pair_key = pair.replace("/", "").upper()
-                    final_decision = {
-                        "pair": pair,
-                        "action": action,
-                        "confidence": confidence,
-                        "signals": {
-                            "technical": dominant_signals.get("technical", {}).get(
-                                "score", 0
-                            ),
-                            "momentum": dominant_signals.get("momentum", {}).get(
-                                "score", 0
-                            ),
-                            "orderflow": dominant_signals.get("orderflow", {}).get(
-                                "score", 0
-                            ),
-                            "ai": bot.market_data[pair_key].get("ai_prediction", 0),
-                            "sentiment": bot.market_data[pair_key].get("sentiment", 0),
-                        },
-                        "metrics": pair_signals.get(dominant_tf, {}).get("metrics", {}),
-                        "timestamp": get_current_time(),
-                        "tf": dominant_tf,
-                    }
+                    # Nouvelle vérification avec le risk manager
+                    if bot.risk_manager.validate_trade(dominant_signals):
+                        action, confidence = bot.aggregate_timeframe_signals(
+                            pair, pair_signals
+                        )
 
-                    trade_decisions.append(final_decision)
+                        # Construction de la décision finale
+                        pair_key = pair.replace("/", "").upper()
+                        final_decision = {
+                            "pair": pair,
+                            "action": action,
+                            "confidence": confidence,
+                            "signals": {
+                                "technical": dominant_signals.get("technical", {}).get(
+                                    "score", 0
+                                ),
+                                "momentum": dominant_signals.get("momentum", {}).get(
+                                    "score", 0
+                                ),
+                                "orderflow": dominant_signals.get("orderflow", {}).get(
+                                    "score", 0
+                                ),
+                                "ai": bot.market_data[pair_key].get("ai_prediction", 0),
+                                "sentiment": bot.market_data[pair_key].get(
+                                    "sentiment", 0
+                                ),
+                            },
+                            "metrics": pair_signals.get(dominant_tf, {}).get(
+                                "metrics", {}
+                            ),
+                            "timestamp": get_current_time(),
+                            "tf": dominant_tf,
+                        }
 
-                    # Log détaillé
-                    log_dashboard(
-                        f"[DECISION] {pair} | Action: {action.upper()} | "
-                        f"Conf: {confidence:.2f} | "
-                        f"Tech: {final_decision['signals']['technical']:.2f} | "
-                        f"IA: {final_decision['signals']['ai']:.2f} | "
-                        f"Sent: {final_decision['signals']['sentiment']:.2f}"
-                    )
+                        # Calcul du score global
+                        signal_score = (
+                            final_decision["signals"]["technical"] * 0.3
+                            + final_decision["signals"]["momentum"] * 0.2
+                            + final_decision["signals"]["orderflow"] * 0.2
+                            + final_decision["signals"]["ai"] * 0.2
+                            + final_decision["signals"]["sentiment"] * 0.1
+                        )
 
-            # 10. Exécution des trades (uniquement si les signaux sont complets)
+                        # Vérification des critères minimums
+                        min_score_required = 0.6
+                        min_confidence_required = 0.7
+
+                        if (
+                            signal_score >= min_score_required
+                            and confidence >= min_confidence_required
+                        ):
+                            trade_decisions.append(final_decision)
+                            log_dashboard(
+                                f"[DECISION] {pair} | Action: {action.upper()} | "
+                                f"Conf: {confidence:.2f} | "
+                                f"Tech: {final_decision['signals']['technical']:.2f} | "
+                                f"IA: {final_decision['signals']['ai']:.2f} | "
+                                f"Sent: {final_decision['signals']['sentiment']:.2f} | "
+                                f"Score Global: {signal_score:.2f}"
+                            )
+                        else:
+                            log_dashboard(
+                                f"[REJECTED] {pair} - Score insuffisant "
+                                f"(Score: {signal_score:.2f}, Conf: {confidence:.2f})"
+                            )
+                    else:
+                        log_dashboard(
+                            f"[REJECTED] {pair} - Critères risk manager non respectés"
+                        )
+
+            # 10. Exécution des trades (DÉPLACÉ EN DEHORS DE LA BOUCLE DES PAIRES)
             if signals_ok and trade_decisions:
-                await execute_trade_decisions(bot, trade_decisions)
-                log_dashboard(f"✅ {len(trade_decisions)} décisions de trade exécutées")
+                # Vérification exposition totale
+                current_exposure = sum(
+                    float(pos.get("amount", 0)) * float(pos.get("entry_price", 0))
+                    for pos in bot.positions.values()
+                ) / bot.get_performance_metrics().get("balance", 1)
+
+                if (
+                    current_exposure
+                    < bot.risk_manager.position_limits["max_total_exposure"]
+                ):
+                    # Filtre final des décisions selon volatilité
+                    filtered_decisions = []
+                    for decision in trade_decisions:
+                        pair_key = decision["pair"].replace("/", "").upper()
+                        volatility = bot.calculate_volatility(
+                            bot.market_data.get(pair_key, {}).get("1h", {})
+                        )
+
+                        if volatility <= 0.08:  # Max 8% de volatilité
+                            filtered_decisions.append(decision)
+                        else:
+                            log_dashboard(
+                                f"[REJECTED] {decision['pair']} - "
+                                f"Volatilité trop élevée ({volatility:.1%})"
+                            )
+
+                    if filtered_decisions:
+                        await execute_trade_decisions(bot, filtered_decisions)
+                        log_dashboard(
+                            f"✅ {len(filtered_decisions)}/{len(trade_decisions)} "
+                            "décisions de trade exécutées après filtrage"
+                        )
+                    else:
+                        log_dashboard("ℹ️ Toutes les décisions rejetées après filtrage")
+                else:
+                    log_dashboard(
+                        f"🚫 Exposition totale ({current_exposure:.1%}) > "
+                        f"limite ({bot.risk_manager.position_limits['max_total_exposure']:.1%})"
+                    )
             elif not signals_ok:
                 log_dashboard("🚫 Exécution des trades bloquée - signaux incomplets")
             else:

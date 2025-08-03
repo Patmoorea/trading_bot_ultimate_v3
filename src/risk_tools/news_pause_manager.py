@@ -8,8 +8,8 @@ from datetime import datetime
 class NewsPauseManager:
     # Criticité : mot-clé associé à une durée de pause par défaut (en cycles)
     CRITICAL_KEYWORDS = {
-        "hack": 20,
-        "exploit": 20,
+        "hack": 30,
+        "exploit": 30,
         "theft": 20,
         "attack": 15,
         "scam": 15,
@@ -23,11 +23,11 @@ class NewsPauseManager:
         "insolvency": 10,
         "lawsuit": 8,
         "investigation": 8,
-        "ban": 8,
+        "ban": 15,
         "delist": 8,
         "paused": 6,
         "halted": 6,
-        "regulation": 6,
+        "regulation": 10,
         "suspension": 6,
     }
 
