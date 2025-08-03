@@ -2244,30 +2244,91 @@ class TradingBotM4:
                 if hasattr(self, "monitor_system_health")
                 else {}
             )
-            if (
-                system_metrics.get("cpu_usage", 0) > 90
-                or system_metrics.get("memory_usage", 0) > 90
-            ):
+
+            # Ajout du monitoring avancé (code mort intégré)
+            cpu_usage = system_metrics.get("cpu_usage", 0)
+            memory_usage = system_metrics.get("memory_usage", 0)
+            api_latency = system_metrics.get("api_latency", 0)
+            ws_status = system_metrics.get("ws_status", True)
+            disk_usage = system_metrics.get("disk_usage", 0)
+            network_status = system_metrics.get("network_status", True)
+
+            risk_multiplier = 1.0
+
+            if cpu_usage > 90 or memory_usage > 90:
                 log_dashboard(
                     f"⚠️ Surcharge système détectée sur {symbol}, réduction risque!"
                 )
-                risk_multiplier = 0.5
-            else:
-                risk_multiplier = 1.0
+                risk_multiplier *= 0.5
 
+            if api_latency > 1000:  # Latence > 1s
+                log_dashboard(f"⚠️ Latence API élevée sur {symbol}")
+                risk_multiplier *= 0.7
+
+            if not ws_status:
+                log_dashboard(f"⚠️ WebSocket déconnecté sur {symbol}")
+                risk_multiplier *= 0.5
+
+            if disk_usage > 90:
+                log_dashboard(f"⚠️ Espace disque critique sur {symbol}")
+                risk_multiplier *= 0.8
+
+            if not network_status:
+                log_dashboard(f"⚠️ Problèmes réseau détectés sur {symbol}")
+                risk_multiplier *= 0.6
             # === 2. Validation et logs initiaux ===
             print(
                 f"[DEBUG OHLVC] {symbol} {tf} close: {ohlcv_df['close'].tail(5).tolist() if 'close' in ohlcv_df else 'NO CLOSE'}"
             )
             print(f"[DEBUG INDICATORS] {symbol} {tf}: {indicators}")
 
+            # Validation avancée des données (code mort intégré)
+            if not all(
+                col in ohlcv_df.columns for col in ["close", "high", "low", "volume"]
+            ):
+                log_dashboard(f"[ERROR] Données OHLCV incomplètes pour {symbol}")
+                return {"action": "neutral", "confidence": 0, "signals": {}}
+
+            # Vérification de la qualité des données
+            data_quality = {
+                "missing_values": ohlcv_df.isnull().sum().sum(),
+                "zero_volumes": (ohlcv_df["volume"] == 0).sum(),
+                "duplicated_timestamps": (
+                    ohlcv_df.index.duplicated().sum()
+                    if hasattr(ohlcv_df.index, "duplicated")
+                    else 0
+                ),
+            }
+
+            if (
+                data_quality["missing_values"] > len(ohlcv_df) * 0.1
+            ):  # Plus de 10% de données manquantes
+                log_dashboard(f"⚠️ Qualité des données insuffisante pour {symbol}")
+                risk_multiplier *= 0.7
+
             # === 3. Configuration stratégie et paramètres ===
             params = getattr(self, "signal_fusion_params", None)
             if hasattr(self, "auto_strategy_config") and self.auto_strategy_config:
                 log_dashboard(f"[STRATEGY] Stratégie AUTO-GÉNÉRÉE pour {symbol}")
                 auto_cfg = self.auto_strategy_config
+
+                # Paramètres auto-stratégie (code mort intégré)
+                strategy_params = {
+                    "use_machine_learning": auto_cfg.get("use_ml", True),
+                    "adapt_to_volatility": auto_cfg.get("adaptive", True),
+                    "risk_profile": auto_cfg.get("risk_profile", "moderate"),
+                    "timeframe_weights": auto_cfg.get(
+                        "tf_weights", {"1h": 0.4, "4h": 0.4, "1d": 0.2}
+                    ),
+                    "indicator_weights": auto_cfg.get("ind_weights", {}),
+                }
             else:
                 log_dashboard(f"[STRATEGY] Stratégie STANDARD")
+                strategy_params = {
+                    "use_machine_learning": True,
+                    "adapt_to_volatility": True,
+                    "risk_profile": "moderate",
+                }
 
             # === 4. Extraction et validation des indicateurs ===
             indics = {
@@ -2319,82 +2380,185 @@ class TradingBotM4:
                 "vwap": indicators.get("vwap"),
             }
 
+            # Indicateurs avancés supplémentaires (code mort intégré)
+            advanced_indics = {
+                "atr": (
+                    self.calculate_atr(ohlcv_df, period=14)
+                    if len(ohlcv_df) >= 14
+                    else None
+                ),
+                "supertrend": (
+                    self.calculate_supertrend(ohlcv_df)
+                    if hasattr(self, "calculate_supertrend")
+                    else None
+                ),
+                "volume_profile_vah": None,  # Volume Area High
+                "volume_profile_val": None,  # Volume Area Low
+                "volume_profile_poc": None,  # Point of Control
+            }
+
             # === 5. Analyses avancées ===
             # Volume et liquidité
             volume_profile = self.analyze_volume_profile(symbol, tf)
+            if volume_profile:
+                advanced_indics["volume_profile_vah"] = volume_profile.get("vah")
+                advanced_indics["volume_profile_val"] = volume_profile.get("val")
+                advanced_indics["volume_profile_poc"] = volume_profile.get("poc")
+
             order_pressure = self.analyze_order_pressure(symbol)
 
-            # Structure de marché
+            # Structure de marché avancée (code mort intégré)
             market_struct = self.identify_market_structure(ohlcv_df)
+            if market_struct:
+                market_struct.update(
+                    {
+                        "support_levels": self._identify_key_levels(
+                            ohlcv_df, "support"
+                        ),
+                        "resistance_levels": self._identify_key_levels(
+                            ohlcv_df, "resistance"
+                        ),
+                        "breakout_zones": (
+                            self.identify_breakout_zones(ohlcv_df)
+                            if hasattr(self, "identify_breakout_zones")
+                            else []
+                        ),
+                        "market_regime": (
+                            self.determine_market_regime(ohlcv_df)
+                            if hasattr(self, "determine_market_regime")
+                            else "unknown"
+                        ),
+                    }
+                )
 
-            # Momentum et volatilité
+            # Momentum et volatilité avancés
             squeeze_data = self.calculate_squeeze_momentum(ohlcv_df)
+            if squeeze_data:
+                squeeze_data.update(
+                    {
+                        "squeeze_intensity": (
+                            self.calculate_squeeze_intensity(ohlcv_df)
+                            if hasattr(self, "calculate_squeeze_intensity")
+                            else None
+                        ),
+                        "momentum_divergence": (
+                            self.check_momentum_divergence(ohlcv_df)
+                            if hasattr(self, "check_momentum_divergence")
+                            else None
+                        ),
+                    }
+                )
 
-            # Order flow et delta volume
+            # Order flow et delta volume avancés
             flow_analysis = self.analyze_order_flow(ohlcv_df)
+            if flow_analysis:
+                flow_analysis.update(
+                    {
+                        "delta_volume": (
+                            self.calculate_delta_volume(ohlcv_df)
+                            if hasattr(self, "calculate_delta_volume")
+                            else None
+                        ),
+                        "cumulative_delta": (
+                            self.calculate_cumulative_delta(ohlcv_df)
+                            if hasattr(self, "calculate_cumulative_delta")
+                            else None
+                        ),
+                        "absorption_ratio": (
+                            self.calculate_absorption_ratio(ohlcv_df)
+                            if hasattr(self, "calculate_absorption_ratio")
+                            else None
+                        ),
+                    }
+                )
 
-            # === 6. Score technique ===
+            # === 6. Score technique avec ajouts ===
             tech_score = 0
             tech_factors = 0
 
-            # Moyennes mobiles
-            for ma_type, (price, weight) in {
-                "sma_20": (indics["sma_20"], 2.0),
-                "sma_50": (indics["sma_50"], 1.5),
-                "ema_20": (indics["ema_20"], 2.5),
-            }.items():
+            # Moyennes mobiles avec adaptation dynamique
+            ma_weights = {
+                "sma_20": (
+                    indics["sma_20"],
+                    2.0 * (1 + abs(market_struct.get("trend_strength", 0))),
+                ),
+                "sma_50": (
+                    indics["sma_50"],
+                    1.5 * (1 + abs(market_struct.get("trend_strength", 0))),
+                ),
+                "ema_20": (
+                    indics["ema_20"],
+                    2.5 * (1 + abs(market_struct.get("trend_strength", 0))),
+                ),
+            }
+
+            for ma_type, (price, weight) in ma_weights.items():
                 if is_valid(indics["close"]) and is_valid(price):
                     tech_factors += 1
                     pct_diff = (indics["close"] - price) / price * 100
                     tech_score += np.clip(pct_diff * weight, -1, 1)
 
-            # RSI
+            # RSI avec zones dynamiques
             if is_valid(indics["rsi_14"]):
                 tech_factors += 1
-                if indics["rsi_14"] > 70:
-                    tech_score -= 0.8
-                elif indics["rsi_14"] < 30:
-                    tech_score += 0.8
+                vol_adj = market_struct.get("volatility", 0.5) if market_struct else 0.5
+                upper_thresh = 70 + (vol_adj * 10)  # Max 80
+                lower_thresh = 30 - (vol_adj * 10)  # Min 20
+
+                if indics["rsi_14"] > upper_thresh:
+                    tech_score -= 0.8 * (1 + vol_adj)
+                elif indics["rsi_14"] < lower_thresh:
+                    tech_score += 0.8 * (1 + vol_adj)
                 else:
                     tech_score += (indics["rsi_14"] - 50) / 25
 
-            # MACD
+            # MACD avec confirmation volume
             if is_valid(indics["macd"]) and is_valid(indics["macd_signal"]):
                 tech_factors += 1
                 macd_diff = indics["macd"] - indics["macd_signal"]
-                tech_score += np.clip(macd_diff * 10, -1, 1)
+                volume_conf = (
+                    volume_profile.get("buy_volume_ratio", 1) if volume_profile else 1
+                )
+                tech_score += np.clip(macd_diff * 10 * volume_conf, -1, 1)
 
             if is_valid(indics["macd_hist"]):
                 tech_factors += 1
                 tech_score += np.clip(indics["macd_hist"] * 15, -1, 1)
 
-            # Bollinger Bands
+            # Bollinger Bands avec squeeze detection
             if all(is_valid(indics[x]) for x in ["bb_upper", "bb_lower", "close"]):
                 tech_factors += 1
                 bb_position = (indics["close"] - indics["bb_lower"]) / (
                     indics["bb_upper"] - indics["bb_lower"]
                 )
-                if bb_position < 0.2:
-                    tech_score += 0.6
-                elif bb_position > 0.8:
-                    tech_score -= 0.6
+                if squeeze_data and squeeze_data.get("squeeze_on"):
+                    if bb_position < 0.2:
+                        tech_score += 0.8
+                    elif bb_position > 0.8:
+                        tech_score -= 0.8
+                else:
+                    if bb_position < 0.2:
+                        tech_score += 0.6
+                    elif bb_position > 0.8:
+                        tech_score -= 0.6
 
-            # PSAR
+            # PSAR avec confirmation structure
             if all(
                 is_valid(x)
                 for x in [indics["psar"], indics["prev_close"], indics["close"]]
             ):
                 tech_factors += 1
+                structure_conf = 1 + abs(market_struct.get("trend_strength", 0))
                 if (
                     indics["prev_close"] < indics["psar"]
                     and indics["close"] > indics["psar"]
                 ):
-                    tech_score += 0.8
+                    tech_score += 0.8 * structure_conf
                 elif (
                     indics["prev_close"] > indics["psar"]
                     and indics["close"] < indics["psar"]
                 ):
-                    tech_score -= 0.8
+                    tech_score -= 0.8 * structure_conf
 
             # Momentum et Z-Score
             if is_valid(indics["momentum_10"]) and is_valid(indics["close"]):
@@ -2412,65 +2576,140 @@ class TradingBotM4:
                 if abs(tech_score) > 0.3:
                     tech_score *= 1.2
 
-            # === 7. Scores avancés ===
-            # Volume Profile Score
+            # === 7. Scores avancés avec améliorations ===
+            # Volume Profile Score avec analyse complète
             volume_score = 0
             if volume_profile:
-                volume_score = (
-                    0.3
-                    if volume_profile.get("is_accumulation")
-                    else -0.3 if volume_profile.get("is_distribution") else 0
-                )
-                if volume_profile.get("buy_volume_ratio", 0.5) > 0.6:
-                    tech_score *= 1.2
+                acc_dist = volume_profile.get("accumulation_score", 0)
+                vol_ratio = volume_profile.get("buy_volume_ratio", 0.5)
+                poc_distance = volume_profile.get("poc_distance", 0)
 
-            # Order Pressure Score
+                volume_score = (
+                    0.4
+                    if volume_profile.get("is_accumulation") and acc_dist > 0
+                    else (
+                        -0.4
+                        if volume_profile.get("is_distribution") and acc_dist < 0
+                        else 0.3 if vol_ratio > 0.6 else -0.3 if vol_ratio < 0.4 else 0
+                    )
+                )
+
+                # Ajustement selon distance au POC
+                if abs(poc_distance) < 0.01:  # Prix proche du POC
+                    volume_score *= 1.2
+
+            # Order Pressure Score avec imbalance
             pressure_score = 0
             if order_pressure:
-                pressure_score = order_pressure.get(
-                    "imbalance", 0
-                ) * order_pressure.get("pressure_ratio", 1)
+                pressure_ratio = order_pressure.get("pressure_ratio", 1)
+                imbalance = order_pressure.get("imbalance", 0)
+                absorption = order_pressure.get("absorption_ratio", 1)
 
-            # Market Structure Score
+                pressure_score = (
+                    (pressure_ratio - 1) * 0.5
+                    + imbalance * 0.3
+                    + (absorption - 1) * 0.2
+                )
+
+            # Market Structure Score avec niveaux clés
             structure_score = 0
             if market_struct:
-                structure_score = market_struct.get("trend_strength", 0)
+                trend_strength = market_struct.get("trend_strength", 0)
+                structure_score = trend_strength
+
+                # Ajustement selon proximité aux niveaux clés
+                support_levels = market_struct.get("support_levels", [])
+                resistance_levels = market_struct.get("resistance_levels", [])
+
+                for level in support_levels + resistance_levels:
+                    if (
+                        abs(indics["close"] - level) / indics["close"] < 0.01
+                    ):  # 1% de proximité
+                        structure_score *= 1.2
+                        break
+
                 if market_struct.get("volatility", 0) > 0.8:
                     tech_score *= 0.8
 
-            # Squeeze Momentum Score
+            # Squeeze Momentum Score amélioré
             squeeze_score = 0
             if squeeze_data and squeeze_data.get("squeeze_on"):
-                squeeze_score = 0.3 if squeeze_data.get("momentum", 0) > 0 else -0.3
+                momentum = squeeze_data.get("momentum", 0)
+                intensity = squeeze_data.get("squeeze_intensity", 1)
+                squeeze_score = 0.3 * intensity if momentum > 0 else -0.3 * intensity
 
-            # === 8. Score IA ===
+            # === 8. Score IA avec features avancées ===
             ai_score = 0
             if self.ai_enabled and hasattr(self, "dl_model") and self.dl_model:
                 try:
                     features = await self._prepare_features_for_ai(symbol)
                     if features is not None:
+                        # Enrichissement des features
+                        features.update(
+                            {
+                                "market_struct": market_struct.get("trend_strength", 0),
+                                "volume_profile": volume_score,
+                                "squeeze_status": (
+                                    1 if squeeze_data.get("squeeze_on") else 0
+                                ),
+                            }
+                        )
                         ai_score = float(self.dl_model.predict(features))
                 except Exception as e:
                     self.logger.warning(f"Erreur IA: {e}")
 
-            # === 9. Score Sentiment ===
+            # === 9. Score Sentiment avec impact marché ===
             sentiment_score = 0
+            sentiment_impact = 1.0
             pair_key = symbol.replace("/", "").upper()
+
             if getattr(self, "news_enabled", False) and hasattr(self, "news_analyzer"):
                 try:
+                    # Sentiment spécifique au symbole
                     sentiment_score = await self.news_analyzer.get_symbol_sentiment(
                         pair_key
                     )
+
+                    # Impact des news sur le marché
+                    news_impact = self.news_analyzer.get_news_impact(pair_key)
+                    if news_impact:
+                        sentiment_impact = news_impact.get("impact_score", 1.0)
+
+                    # Si pas de sentiment spécifique, utiliser le sentiment global
                     if sentiment_score == 0:
                         sentiment_score = (
                             self.news_analyzer.get_sentiment_summary().get(
                                 "sentiment_global", 0.0
                             )
                         )
+
+                    # Ajustement selon l'impact
+                    sentiment_score *= sentiment_impact
+
                 except Exception as e:
                     self.logger.error(f"Erreur sentiment {pair_key}: {e}")
 
-            # === 10. Fusion pondérée des signaux ===
+            # === 10. Fusion pondérée des signaux avec adaptation ===
+            # Calcul des corrélations
+            correlations = self.analyze_correlations()
+            correlation_factor = 1.0
+            if symbol in correlations:
+                correlation_factor = 1 - max(correlations[symbol].values()) * 0.3
+
+            # Qualité du trade
+            trade_quality = self.calculate_trade_quality_score(
+                {
+                    "symbol": symbol,
+                    "price": indics["close"],
+                    "volume_ratio": (
+                        volume_profile.get("buy_volume_ratio", 1)
+                        if volume_profile
+                        else 1
+                    ),
+                    "market_structure": market_struct,
+                }
+            )
+
             signals = {
                 "technical": tech_score,
                 "ai": ai_score,
@@ -2479,8 +2718,12 @@ class TradingBotM4:
                 "pressure": pressure_score,
                 "structure": structure_score,
                 "squeeze": squeeze_score,
+                "quality": trade_quality / 5.0,
+                "correlation": correlation_factor - 0.5,
             }
 
+            # Poids adaptatifs selon le régime de marché
+            regime = market_struct.get("market_regime", "unknown")
             weights = {
                 "technical": 0.3,
                 "ai": 0.2,
@@ -2491,27 +2734,49 @@ class TradingBotM4:
                 "squeeze": 0.05,
             }
 
+            # Ajustement des poids selon le régime
+            if regime == "trending":
+                weights["technical"] *= 1.2
+                weights["structure"] *= 1.2
+            elif regime == "ranging":
+                weights["volume"] *= 1.2
+                weights["pressure"] *= 1.2
+            elif regime == "volatile":
+                weights["ai"] *= 1.2
+                weights["sentiment"] *= 1.2
+
             total_score = sum(
                 score * weights[signal_type] for signal_type, score in signals.items()
             )
-            total_score *= risk_multiplier  # Ajustement selon charge système
 
-            # === 11. Multi-timeframe confirmation ===
+            # Ajustements finaux
+            total_score *= risk_multiplier  # Système
+            total_score *= correlation_factor  # Corrélations
+            total_score *= 1 + trade_quality * 0.1  # Qualité
+
+            # === 11. Multi-timeframe confirmation avancée ===
             if tf in ["1h", "4h"]:
                 try:
                     mtp_analysis = self.multi_timeframe_analysis(
                         symbol, ["15m", "1h", "4h"]
                     )
+
+                    # Analyse enrichie multi-timeframe
                     confirmation = self.calculate_confirmation_score(
                         {
                             "market_structure": market_struct,
                             "volume_profile": volume_profile,
                             "squeeze_momentum": squeeze_data,
                             "order_flow": order_pressure,
+                            "support_levels": market_struct.get("support_levels", []),
+                            "resistance_levels": market_struct.get(
+                                "resistance_levels", []
+                            ),
                         },
                         mtp_analysis,
                     )
 
+                    # Ajustement selon force de la confirmation
                     if confirmation > 0.8:
                         total_score *= 1.2
                     elif confirmation < 0.2:
@@ -2520,10 +2785,25 @@ class TradingBotM4:
                 except Exception as e:
                     self.logger.error(f"Erreur confirmation multi-TF: {e}")
 
-            # === 12. Décision finale ===
+            # === 12. Décision finale avec seuils adaptatifs ===
             volatility = market_struct.get("volatility", 1) if market_struct else 1
-            buy_threshold = params.get("buy_threshold", 0.2) * (1 + volatility)
-            sell_threshold = params.get("sell_threshold", -0.2) * (1 + volatility)
+            market_quality = (
+                self.get_market_quality_score(symbol)
+                if hasattr(self, "get_market_quality_score")
+                else 1
+            )
+
+            # Seuils dynamiques
+            buy_threshold = (
+                params.get("buy_threshold", 0.2) * (1 + volatility) * market_quality
+            )
+            sell_threshold = (
+                params.get("sell_threshold", -0.2) * (1 + volatility) * market_quality
+            )
+
+            # Ajustement des seuils selon qualité du trade
+            buy_threshold *= 1 + trade_quality * 0.1
+            sell_threshold *= 1 + trade_quality * 0.1
 
             decision = {
                 "action": "neutral",
@@ -2534,7 +2814,11 @@ class TradingBotM4:
                     "order_pressure": order_pressure,
                     "market_structure": market_struct,
                     "squeeze": squeeze_data,
+                    "flow": flow_analysis,
+                    "quality": trade_quality,
+                    "correlation": correlation_factor,
                     "system_health": system_metrics,
+                    "market_quality": market_quality,
                     "confirmation_score": (
                         confirmation if "confirmation" in locals() else None
                     ),
@@ -2546,19 +2830,37 @@ class TradingBotM4:
             elif total_score < sell_threshold:
                 decision["action"] = "sell"
 
-            # === 13. Logs détaillés ===
+            # === 13. Logs détaillés enrichis ===
             log_msg = (
                 f"[ANALYZE] {symbol} {tf} |\n"
                 f"Tech: {tech_score:.3f} | AI: {ai_score:.3f} | Sent: {sentiment_score:.3f}\n"
                 f"Vol: {volume_score:.3f} | Press: {pressure_score:.3f} | Struct: {structure_score:.3f}\n"
+                f"Qual: {trade_quality:.2f} | Corr: {correlation_factor:.2f} | Risk: {risk_multiplier:.2f}\n"
                 f"Total: {total_score:.3f} | {decision['action'].upper()} ({decision['confidence']:.3f})"
             )
             log_dashboard(log_msg)
             print(f"[DEBUG] {log_msg}")
 
-            # === 14. Backup automatique (tous les 100 cycles) ===
+            # === 14. Backup et monitoring ===
             if hasattr(self, "current_cycle") and self.current_cycle % 100 == 0:
                 self.backup_critical_data()
+
+                # Monitoring des performances
+                self.monitor_signal_quality(decision, symbol)
+                self.update_strategy_metrics(signals, decision)
+
+                # Sauvegarde des métriques
+                if hasattr(self, "save_analysis_metrics"):
+                    self.save_analysis_metrics(
+                        {
+                            "symbol": symbol,
+                            "timeframe": tf,
+                            "signals": signals,
+                            "decision": decision,
+                            "metrics": decision["metrics"],
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
 
             return decision
 
