@@ -138734,3 +138734,8 @@
 2025-08-03T07:38:20.041096 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
 2025-08-03T07:38:22.335915 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0.07361952230885109
 2025-08-03T07:38:22.348551 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-03T07:45:11.386317 |  Démarrage cycle trading
+2025-08-03T07:45:46.999080 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0405 | Tendance: 0.0017
+2025-08-03T07:45:47.008968 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T07:45:47.009085 | ⚠️ Attention: Certains signaux sont incomplets
+2025-08-03T07:45:47.009139 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…

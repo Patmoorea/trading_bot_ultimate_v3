@@ -977,6 +977,131 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def calculate_pair_correlation(self, pair1, pair2, window=20, tf="1h"):
+        """
+        Calcule la corrélation entre deux paires sur une fenêtre donnée.
+        Utilise les données du timeframe spécifié (par défaut 1h).
+        """
+        try:
+            # Obtenir les données des deux paires
+            pair1_key = pair1.replace("/", "").upper()
+            pair2_key = pair2.replace("/", "").upper()
+
+            # Vérifier si les données existent
+            if (
+                pair1_key not in self.market_data
+                or pair2_key not in self.market_data
+                or tf not in self.market_data[pair1_key]
+                or tf not in self.market_data[pair2_key]
+            ):
+                return 0.0  # Pas de corrélation par défaut si données manquantes
+
+            # Récupérer les prix de clôture
+            closes1 = self.market_data[pair1_key][tf].get("close", [])[-window:]
+            closes2 = self.market_data[pair2_key][tf].get("close", [])[-window:]
+
+            # Vérifier la longueur des données
+            if len(closes1) < window or len(closes2) < window:
+                return 0.0
+
+            # Calculer les rendements
+            returns1 = np.diff(np.log(closes1))
+            returns2 = np.diff(np.log(closes2))
+
+            # Calculer la corrélation
+            correlation = np.corrcoef(returns1, returns2)[0, 1]
+
+            # Gérer les valeurs NaN/inf
+            if np.isnan(correlation) or np.isinf(correlation):
+                return 0.0
+
+            return float(correlation)
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul corrélation {pair1}-{pair2}: {e}")
+            return 0.0  # Valeur par défaut en cas d'erreur
+
+    def get_market_correlation(self, symbol):
+        """Calcule la corrélation moyenne avec le marché global (BTC)"""
+        try:
+            if "BTC" in symbol.upper():
+                return 1.0
+
+            # Utilise BTC comme référence marché
+            correlation = self.calculate_pair_correlation(symbol, "BTC/USDC")
+            return abs(correlation)  # On prend la valeur absolue pour le sizing
+
+        except Exception as e:
+            self.logger.error(f"Erreur corrélation marché pour {symbol}: {e}")
+            return 0.5  # Valeur moyenne par défaut
+
+    def get_liquidity_score(self, symbol):
+        """Calcule un score de liquidité entre 0 et 1"""
+        try:
+            # Récupère le volume moyen sur 24h
+            symbol_key = symbol.replace("/", "").upper()
+            if symbol_key in self.market_data and "1h" in self.market_data[symbol_key]:
+                volumes = self.market_data[symbol_key]["1h"].get("volume", [])[-24:]
+                if volumes:
+                    avg_volume = np.mean(volumes)
+                    # Normalisation entre 0 et 1 avec seuil min/max
+                    return min(1.0, max(0.1, avg_volume / 1000000))
+            return 0.5  # Score moyen par défaut
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul liquidité pour {symbol}: {e}")
+            return 0.5
+
+    def get_average_spread(self, symbol):
+        """Calcule le spread moyen"""
+        try:
+            bid, ask = self.get_ws_orderbook(symbol.replace("/", ""))
+            if bid and ask:
+                return (ask - bid) / ((ask + bid) / 2)
+            return 0.001  # Spread par défaut de 0.1%
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul spread pour {symbol}: {e}")
+            return 0.001
+
+    def get_key_levels(self, symbol):
+        """Retourne les niveaux clés (support/résistance)"""
+        try:
+            symbol_key = symbol.replace("/", "").upper()
+            if symbol_key in self.market_data and "1h" in self.market_data[symbol_key]:
+                df = pd.DataFrame(self.market_data[symbol_key]["1h"])
+                return self._identify_key_levels(df)
+            return []
+
+        except Exception as e:
+            self.logger.error(f"Erreur niveaux clés pour {symbol}: {e}")
+            return []
+
+    def is_near_key_level(self, symbol, price=None, threshold=0.01):
+        """Vérifie si le prix est proche d'un niveau clé"""
+        try:
+            key_levels = self.get_key_levels(symbol)
+            if not price:
+                symbol_key = symbol.replace("/", "").upper()
+                if (
+                    symbol_key in self.market_data
+                    and "1h" in self.market_data[symbol_key]
+                ):
+                    closes = self.market_data[symbol_key]["1h"].get("close", [])
+                    if closes:
+                        price = closes[-1]
+
+            if price and key_levels:
+                for level in key_levels:
+                    level_price = level["price"]
+                    if abs(price - level_price) / price < threshold:
+                        return True
+            return False
+
+        except Exception as e:
+            self.logger.error(f"Erreur vérification niveaux clés pour {symbol}: {e}")
+            return False
+
     def debug_signals_state(self, pair_key, tf):
         """Vérifie et affiche l'état détaillé des signaux"""
         try:
@@ -1044,39 +1169,32 @@ class TradingBotM4:
             pair_key = pair.replace("/", "").upper()
             print(f"\n🔍 Vérification {pair_key}:")
 
-            # 1. Vérification structure de base
+            # Initialisation du market_data si nécessaire
             if pair_key not in self.market_data:
-                print("  ❌ Pas de données market_data")
-                all_ok = False
-                continue
+                self.market_data[pair_key] = {}
 
-            # 2. Vérification signaux techniques
-            has_technical = False
-            if "signals" in self.market_data[pair_key]:
-                if "technical" in self.market_data[pair_key]["signals"]:
-                    tech_score = self.market_data[pair_key]["signals"]["technical"].get(
-                        "score"
-                    )
-                    if tech_score is not None:
-                        has_technical = True
-                        print(f"  ✅ Signaux techniques OK (score: {tech_score:.4f})")
-                    else:
-                        print("  ❌ Score technique manquant")
-                else:
-                    print("  ❌ Signaux techniques manquants")
+            # Initialisation du sentiment avec valeur par défaut si manquant
+            if "sentiment" not in self.market_data[pair_key]:
+                self.market_data[pair_key]["sentiment"] = 0.0
+                self.market_data[pair_key]["sentiment_timestamp"] = time.time()
+                print(f"  ℹ️ Sentiment initialisé à 0.0 (neutre)")
+            else:
+                print(f"  ✅ Sentiment: {self.market_data[pair_key]['sentiment']:.4f}")
 
-            # 3. Vérification IA
+            # Vérification IA
             has_ai = "ai_prediction" in self.market_data[pair_key]
-            ai_value = self.market_data[pair_key].get("ai_prediction", "manquante")
-            print(f"  {'✅' if has_ai else '❌'} Prédiction IA: {ai_value}")
+            if has_ai:
+                print(
+                    f"  ✅ Prédiction IA: {self.market_data[pair_key]['ai_prediction']}"
+                )
+            else:
+                print("  ❌ Prédiction IA manquante")
+                all_ok = False
 
-            # 4. Vérification sentiment
+            # On considère maintenant qu'un sentiment à 0.0 est valide (neutre)
             has_sentiment = "sentiment" in self.market_data[pair_key]
-            sentiment_value = self.market_data[pair_key].get("sentiment", "manquant")
-            print(f"  {'✅' if has_sentiment else '❌'} Sentiment: {sentiment_value}")
 
-            # Synthèse par paire
-            if not (has_technical and has_ai and has_sentiment):
+            if not (has_ai and has_sentiment):
                 print(f"⚠️ Signaux incomplets pour {pair_key}")
                 all_ok = False
             else:
@@ -1377,6 +1495,24 @@ class TradingBotM4:
             if abs(market_pressure) > 0.7:
                 weights["momentum"] *= 1.2
                 weights["technical"] *= 0.8
+
+            # Intégration volatilité avancée
+            volatility_adv = self.calculate_volatility_advanced(df)
+            if volatility_adv > 0.05:  # Volatilité élevée
+                weights["orderflow"] *= 1.2  # Plus de poids sur l'orderflow
+                weights["technical"] *= 0.8  # Moins sur technique
+
+            # Intégration exposition optimisée
+            exposure_mult = self.optimize_portfolio_exposure()
+            total_score *= exposure_mult
+
+            # Intégration divergences
+            divergence_score = self.check_volume_divergence(df)
+            if abs(divergence_score) > 0.5:  # Divergence significative
+                if divergence_score > 0:  # Divergence positive
+                    total_score *= 1.2
+                else:  # Divergence négative
+                    total_score *= 0.8
 
             # Calcul score total
             total_score = (
@@ -1838,6 +1974,35 @@ class TradingBotM4:
             "poc_price": self.calculate_poc_price(df),
         }
 
+    def check_volume_divergence(self, df):
+        """Détecte les divergences prix/volume"""
+        try:
+            if not isinstance(df, pd.DataFrame) or len(df) < 20:
+                return 0
+
+            # Calcul des tendances
+            price_trend = pd.Series(df["close"]).pct_change(20)
+            volume_trend = pd.Series(df["volume"]).pct_change(20)
+
+            # Corrélation prix/volume
+            correlation = price_trend.corr(volume_trend)
+
+            # Divergence score
+            if pd.isna(correlation):
+                return 0
+
+            # Normalisation entre -1 et 1
+            divergence_score = -correlation  # Inverse de la corrélation
+
+            # Log pour debugging
+            print(f"[DIVERGENCE] Score: {divergence_score:.2f}")
+
+            return divergence_score
+
+        except Exception as e:
+            print(f"Erreur calcul divergence: {e}")
+            return 0
+
     async def _prepare_features_for_ai(self, symbol):
         """
         Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
@@ -2000,6 +2165,43 @@ class TradingBotM4:
                 correlation = self.calculate_pair_correlation(pair1, pair2)
                 correlations[f"{pair1}-{pair2}"] = correlation
         return correlations
+
+    def optimize_portfolio_exposure(self):
+        """Optimise l'exposition du portefeuille selon les corrélations"""
+        try:
+            # Si pas de positions ouvertes
+            if not self.positions:
+                return 1.0
+
+            correlations = self.calculate_correlation_matrix()
+            high_corr_pairs = 0
+            total_pairs = 0
+
+            # Compte les paires fortement corrélées
+            for pair1 in self.positions:
+                for pair2 in self.positions:
+                    if pair1 != pair2:
+                        corr_key = f"{pair1}-{pair2}"
+                        corr = correlations.get(corr_key, 0)
+                        if abs(corr) > 0.7:
+                            high_corr_pairs += 1
+                        total_pairs += 1
+
+            if total_pairs == 0:
+                return 1.0
+
+            # Réduction progressive de l'exposition
+            corr_ratio = high_corr_pairs / total_pairs
+            exposure_multiplier = 1.0 - (corr_ratio * 0.3)  # Max 30% reduction
+
+            print(
+                f"[EXPOSURE] Multiplicateur: {exposure_multiplier:.2f} (corrélations élevées: {high_corr_pairs})"
+            )
+            return max(0.5, exposure_multiplier)  # Minimum 50% exposition
+
+        except Exception as e:
+            print(f"Erreur optimisation exposition: {e}")
+            return 1.0
 
     def adjust_position_sizing(self, base_size, correlation_factor):
         """Ajuste le sizing selon les corrélations"""
@@ -3811,10 +4013,10 @@ class TradingBotM4:
             self.logger.error(f"Erreur update métriques: {e}")
 
     async def _update_sentiment_data(self, sentiment_scores):
-        """Met à jour les données de sentiment du marché"""
+        """Met à jour les données de sentiment du marché avec une meilleure gestion des valeurs par défaut"""
         print("\n=== MISE À JOUR SENTIMENTS ===")
 
-        # Validation des scores
+        # Validation et filtrage des scores valides
         valid_scores = [
             item
             for item in sentiment_scores
@@ -3824,40 +4026,47 @@ class TradingBotM4:
         ]
         print(f"[DEBUG] {len(valid_scores)}/{len(sentiment_scores)} scores valides")
 
-        # Initialisation/MAJ pour TOUTES les paires
+        # Initialisation avec valeur neutre pour toutes les paires
+        default_sentiment = 0.0
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
 
-            # Valeur par défaut
-            self.market_data[pair_key]["sentiment"] = 0
+            # Initialisation explicite du sentiment avec timestamp
+            self.market_data[pair_key]["sentiment"] = default_sentiment
             self.market_data[pair_key]["sentiment_timestamp"] = time.time()
+            print(f"[INIT] {pair_key} sentiment initialisé à {default_sentiment}")
 
-        # Traitement des scores valides
+        # Application des scores valides
         for item in valid_scores:
-            score = item.get("sentiment", 0)
+            score = item.get("sentiment", default_sentiment)
             symbols = item.get("symbols", [])
 
-            if not symbols:  # Score global
+            if not symbols:
+                # Score global - appliqué à toutes les paires
                 for pair_key in self.market_data:
                     self.market_data[pair_key]["sentiment"] = score
-                    print(f"[DEBUG] Sentiment global {score:.4f} appliqué à {pair_key}")
-            else:  # Scores spécifiques
+                    print(f"[UPDATE] Sentiment global {score:.4f} → {pair_key}")
+            else:
+                # Scores spécifiques par symbole
                 for symbol in symbols:
                     symbol = symbol.upper()
                     for pair_key in self.market_data:
                         if symbol in pair_key:
                             self.market_data[pair_key]["sentiment"] = score
-                            print(f"[DEBUG] Sentiment {score:.4f} assigné à {pair_key}")
+                            print(
+                                f"[UPDATE] Sentiment spécifique {score:.4f} → {pair_key}"
+                            )
 
-        # Vérification finale
+        # Vérification finale et logging
+        print("\n=== ÉTAT FINAL DES SENTIMENTS ===")
         for pair_key in self.market_data:
-            print(
-                f"✅ {pair_key}: sentiment final = {self.market_data[pair_key].get('sentiment', 0):.4f}"
+            sentiment_value = self.market_data[pair_key].get(
+                "sentiment", default_sentiment
             )
+            print(f"✅ {pair_key}: sentiment = {sentiment_value:.4f}")
 
-    # Remplace la méthode async def _save_sentiment_data(...) par la version patchée ci-dessous :
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
@@ -4097,6 +4306,30 @@ class TradingBotM4:
             print("DEBUG calculate_volatility error:", e)
             return 0.0
 
+    def calculate_volatility_advanced(self, df, window=20):
+        """Calcul de volatilité avancé avec prise en compte des gaps"""
+        try:
+            if not isinstance(df, pd.DataFrame):
+                return 0.02
+
+            if "close" not in df.columns:
+                return 0.02
+
+            returns = np.log(df["close"] / df["close"].shift(1))
+            # Détection et gestion des gaps
+            gaps = df["low"] > df["high"].shift(1)  # Gap haussier
+            gaps |= df["high"] < df["low"].shift(1)  # Gap baissier
+
+            # Ajustement volatilité selon gaps
+            vol = returns.std() * np.sqrt(252)
+            if gaps.any():
+                vol *= 1.2  # Augmentation si présence de gaps
+
+            return float(vol)
+        except Exception as e:
+            print(f"Erreur calcul volatilité avancée: {e}")
+            return 0.02
+
     def calculate_volume_profile(self, data):
         try:
             if isinstance(data, dict) and "volume" in data:
@@ -4288,7 +4521,7 @@ class TradingBotM4:
             self.logger.error(f"Error fetching market data: {e}")
 
     async def _add_ai_predictions(self):
-        """Ajoute les prédictions IA aux données de marché"""
+        """Ajoute les prédictions IA aux données de marché avec gestion améliorée des erreurs"""
         if not self.ai_enabled or not self.dl_model:
             print("❌ IA désactivée ou modèle non initialisé")
             return
@@ -4303,10 +4536,11 @@ class TradingBotM4:
             pair_key = pair.replace("/", "").upper()
             print(f"\n[DEBUG] Préparation features IA pour {pair_key}")
 
-            # Initialisation de la structure si nécessaire
+            # Initialisation/vérification structure
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
 
+            # Préparation des features
             features = await self._prepare_features_for_ai(pair_key)
             if features is None:
                 print(f"❌ Échec préparation features pour {pair_key}")
@@ -4318,12 +4552,21 @@ class TradingBotM4:
                 # Prédiction CNN-LSTM
                 dl_prediction = self.dl_model.predict(features)
                 dl_predictions[pair_key] = dl_prediction
-
-                # IMPORTANT: Sauvegarde directe dans market_data
                 self.market_data[pair_key]["ai_prediction"] = dl_prediction
                 print(f"✅ Prédiction CNN-LSTM pour {pair_key}: {dl_prediction:.4f}")
 
-                # Construction vecteur pour PPO
+                # Préparation des features PPO
+                feature_keys = [
+                    "close",
+                    "high",
+                    "low",
+                    "volume",
+                    "rsi",
+                    "macd",
+                    "volatility",
+                    "vol_ratio",
+                ]
+
                 vec = np.concatenate(
                     [
                         (
@@ -4331,16 +4574,7 @@ class TradingBotM4:
                             if isinstance(features[k], np.ndarray)
                             else np.full(self.N_STEPS, features[k])
                         )
-                        for k in [
-                            "close",
-                            "high",
-                            "low",
-                            "volume",
-                            "rsi",
-                            "macd",
-                            "volatility",
-                            "vol_ratio",
-                        ]
+                        for k in feature_keys
                     ]
                 )
 
@@ -4354,7 +4588,7 @@ class TradingBotM4:
                 print(f"❌ Erreur prédiction IA pour {pair_key}: {e}")
                 continue
 
-        # 2. Prédiction PPO globale avec gestion d'erreur améliorée
+        # 2. Prédiction PPO globale
         if ppo_features_list:
             try:
                 ppo_features = np.concatenate(ppo_features_list)
@@ -4364,26 +4598,40 @@ class TradingBotM4:
 
                 if ppo_features.shape == expected_shape:
                     raw_action = self.ppo_strategy.get_action(ppo_features)
-                    # Extraction de la valeur numérique si c'est un dict
-                    ppo_action = float(
-                        raw_action["action"]
-                        if isinstance(raw_action, dict)
-                        else raw_action
-                    )
+
+                    # Conversion intelligente de l'action
+                    if isinstance(raw_action, dict):
+                        ppo_action = float(raw_action.get("value", 0.5))
+                    elif isinstance(raw_action, str):
+                        # Mapping des actions textuelles
+                        action_map = {"BUY": 1.0, "SELL": 0.0, "HOLD": 0.5}
+                        ppo_action = action_map.get(raw_action, 0.5)
+                    else:
+                        ppo_action = float(raw_action)
+
                     print(f"✅ Prédiction PPO globale: {ppo_action:.4f}")
 
+                    # Application des signaux fusionnés
                     for pair in self.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
                         if pair_key not in self.market_data:
                             self.market_data[pair_key] = {}
-                        dl_pred = dl_predictions.get(pair_key, 0)
+                        dl_pred = dl_predictions.get(pair_key, 0.5)
                         await self._merge_signals(pair_key, dl_pred, ppo_action)
                 else:
                     print(
                         f"❌ Shape PPO incorrect: {ppo_features.shape}, attendu: {expected_shape}"
                     )
+
             except Exception as e:
                 print(f"❌ Erreur prédiction PPO: {str(e)}")
+                # Utilisation des prédictions CNN-LSTM seules en cas d'erreur PPO
+                for pair in self.pairs_valid:
+                    pair_key = pair.replace("/", "").upper()
+                    if pair_key in dl_predictions:
+                        await self._merge_signals(
+                            pair_key, dl_predictions[pair_key], 0.5
+                        )
 
     async def study_market_period(self, symbol, start_time, end_time, timeframe="1h"):
         """Étudie le marché sur une période définie et établit un plan de trading"""
@@ -5354,11 +5602,26 @@ async def run_clean_bot():
                         min_score_required = 0.6
                         min_confidence_required = 0.7
 
+                        # Vérification des conditions avancées
+                        exposure_mult = bot.optimize_portfolio_exposure()
+                        volatility_check = (
+                            bot.calculate_volatility_advanced(df) <= 0.08
+                        )  # Max 8% vol
+                        divergence_ok = (
+                            abs(bot.check_volume_divergence(df)) <= 0.7
+                        )  # Max 70% divergence
+
                         if (
                             signal_score >= min_score_required
                             and confidence >= min_confidence_required
+                            and volatility_check
+                            and divergence_ok
                         ):
+
+                            # Ajustement du sizing selon exposition
+                            final_decision["sizing_multiplier"] = exposure_mult
                             trade_decisions.append(final_decision)
+
                             log_dashboard(
                                 f"[DECISION] {pair} | Action: {action.upper()} | "
                                 f"Conf: {confidence:.2f} | "
