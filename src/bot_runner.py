@@ -97,7 +97,7 @@ from src.portfolio.binance_utils import get_avg_entry_price_binance_spot
 
 from cachetools import TTLCache
 
-from src.risk_tools.enhanced_risk_manager import EnhancedRiskManager
+# from src.risk_tools.enhanced_risk_manager import EnhancedRiskManager
 
 # Charger les variables d'environnement depuis .env
 load_dotenv()
@@ -938,11 +938,14 @@ class TradingBotM4:
         }
         # Initialisation explicite du risk manager
         try:
-            self.risk_manager = EnhancedRiskManager()
-            print("✅ EnhancedRiskManager initialisé")
+            self.risk_manager = RiskManager()
+            if hasattr(self.risk_manager, "validate_trade"):
+                print("✅ Risk Manager initialisé avec succès")
+            else:
+                print("❌ Risk Manager mal initialisé")
         except Exception as e:
             print(f"❌ Erreur initialisation risk manager: {e}")
-            # Créer une instance minimale en cas d'erreur
+            # Fallback sur un gestionnaire minimal
             self.risk_manager = type(
                 "DummyRiskManager",
                 (),
@@ -951,9 +954,7 @@ class TradingBotM4:
                     "calculate_position_size": lambda *args: 0.0,
                 },
             )()
-        # Initialisation directe du RiskManager (ajouter cette partie)
-        # Initialisation explicite du risk manager
-        self.risk_manager = RiskManager()
+
         if hasattr(self.risk_manager, "validate_trade"):
             print("✅ Risk Manager initialisé avec succès")
         else:
@@ -1679,6 +1680,14 @@ class TradingBotM4:
                 weights["orderflow"] *= 1.2  # Plus de poids sur l'orderflow
                 weights["technical"] *= 0.8  # Moins sur technique
 
+            # Calcul score total
+            total_score = (
+                signals["technical"]["score"] * weights["technical"]
+                + signals["momentum"]["score"] * weights["momentum"]
+                + signals["orderflow"]["score"] * weights["orderflow"]
+            )
+            total_score = np.clip(total_score, -1, 1)
+
             # Intégration exposition optimisée
             exposure_mult = self.optimize_portfolio_exposure()
             total_score *= exposure_mult
@@ -1791,13 +1800,6 @@ class TradingBotM4:
                 "ai": self.market_data.get(symbol, {}).get("ai_prediction", 0),
                 "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
             }
-            # Calcul score total
-            total_score = (
-                signals["technical"]["score"] * weights["technical"]
-                + signals["momentum"]["score"] * weights["momentum"]
-                + signals["orderflow"]["score"] * weights["orderflow"]
-            )
-            total_score = np.clip(total_score, -1, 1)
 
             return decision
 
