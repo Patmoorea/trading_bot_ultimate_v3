@@ -137743,3 +137743,22 @@
 2025-08-03T06:25:40.403743 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
 2025-08-03T06:25:40.569052 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
 2025-08-03T06:26:12.131913 |  Démarrage cycle trading
+2025-08-03T06:26:47.573152 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0405 | Tendance: 0.0009
+2025-08-03T06:26:47.583397 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:26:47.583626 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:27:28.008675 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0660 | Tech: 0.00 | AI: 0.67
+2025-08-03T06:27:28.179118 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: 0.2028 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:27:28.339944 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:27:28.502699 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:27:28.664780 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:27:28.826514 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67
+2025-08-03T06:28:00.443308 |  Démarrage cycle trading
+2025-08-03T06:28:34.951855 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0406 | Tendance: 0.0009
+2025-08-03T06:28:34.963481 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T06:28:34.963640 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T06:29:25.811563 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0185 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:29:25.985519 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: 0.2028 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:29:26.151142 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1536 | Tech: -0.01 | AI: 0.67
+2025-08-03T06:29:26.317975 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0731 | Tech: 0.01 | AI: 0.67
+2025-08-03T06:29:26.483706 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.39 | Score: -0.3866 | Tech: -0.00 | AI: 0.67
+2025-08-03T06:29:26.647306 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3471 | Tech: 0.06 | AI: 0.67

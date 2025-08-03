@@ -3511,9 +3511,9 @@ class TradingBotM4:
             if price is None:
                 return False
 
-            # Calcul ATR sur 1h pour stop dynamique
+            # Utilisation de self.calculate_atr au lieu de calculate_atr
             df_ohlcv = pd.DataFrame(self.market_data[symbol_ws]["1h"])
-            atr = calculate_atr(df_ohlcv, period=14)
+            atr = self.calculate_atr(df_ohlcv, period=14)  # <- Modification ici
             dynamic_stop_pct = max(0.01, min(atr / entry, 0.10))  # Entre 1% et 10% max
 
             loss = (price - entry) / entry
