@@ -1280,6 +1280,36 @@ class TradingBotM4:
                 k in data for k in ["open", "high", "low", "close", "volume"]
             )
 
+            # Création de la structure signals si manquante
+            if "signals" not in data:
+                data["signals"] = {
+                    "technical": {"score": 0, "details": {}, "factors": 0},
+                    "momentum": {"score": 0, "details": {}, "factors": 0},
+                    "orderflow": {
+                        "score": 0,
+                        "details": {},
+                        "factors": 0,
+                        "liquidity": 0,
+                        "market_pressure": 0,
+                    },
+                    "ai": self.market_data[pair_key].get("ai_prediction", 0),
+                    "sentiment": self.market_data[pair_key].get("sentiment", 0.5),
+                }
+
+            # Vérification des indicateurs techniques
+            if has_ohlcv:
+                df = self.ws_collector.get_dataframe(pair_key, tf)
+                if df is not None and not df.empty:
+                    indicators = self.add_indicators(df)
+                    if indicators:
+                        data["signals"]["technical"].update(
+                            {
+                                "score": float(indicators.get("technical_score", 0)),
+                                "details": indicators,
+                                "factors": len(indicators),
+                            }
+                        )
+
             # Vérification technique
             has_technical = (
                 "signals" in data
@@ -1288,13 +1318,17 @@ class TradingBotM4:
             )
 
             # Vérification IA
-            has_ai = "ai_prediction" in data or (
-                "signals" in data and "ai" in data["signals"]
+            has_ai = (
+                "signals" in data
+                and "ai" in data["signals"]
+                and data["signals"]["ai"] is not None
             )
 
             # Vérification sentiment
-            has_sentiment = "sentiment" in data or (
-                "signals" in data and "sentiment" in data["signals"]
+            has_sentiment = (
+                "signals" in data
+                and "sentiment" in data["signals"]
+                and data["signals"]["sentiment"] is not None
             )
 
             print(f"\n📊 État des signaux {pair_key}-{tf}:")
@@ -1305,7 +1339,7 @@ class TradingBotM4:
             print(f"  AI: {'✅' if has_ai else '❌'}")
             print(f"  Sentiment: {'✅' if has_sentiment else '❌'}")
 
-            if not has_technical or not has_ai or not has_sentiment:
+            if not (has_technical and has_ai and has_sentiment):
                 print("\n🔍 Diagnostic approfondi:")
                 if not has_technical:
                     print("  - Signaux techniques manquants")
@@ -5628,6 +5662,10 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_cols):
+                            # Calcul des indicateurs techniques
+                            indicators_data = bot.add_indicators(df)
+
+                            # Construction de la structure market_data
                             bot.market_data[pair_key][tf] = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -5640,9 +5678,17 @@ async def run_clean_bot():
                                 ],
                                 "signals": {
                                     "technical": {
-                                        "score": 0,
-                                        "details": {},
-                                        "factors": 0,
+                                        "score": float(
+                                            indicators_data.get("technical_score", 0)
+                                        ),
+                                        "details": (
+                                            indicators_data if indicators_data else {}
+                                        ),
+                                        "factors": (
+                                            len(indicators_data)
+                                            if indicators_data
+                                            else 0
+                                        ),
                                     },
                                     "momentum": {
                                         "score": 0,
@@ -5660,11 +5706,12 @@ async def run_clean_bot():
                                         "ai_prediction", 0
                                     ),
                                     "sentiment": bot.market_data[pair_key].get(
-                                        "sentiment", 0
+                                        "sentiment", 0.5
                                     ),
                                 },
                             }
 
+                            # Ajout des indicateurs orderflow
                             if orderflow_indicators:
                                 try:
                                     of_data = {
@@ -5691,11 +5738,31 @@ async def run_clean_bot():
                                             else None
                                         ),
                                     }
-                                    bot.market_data[pair_key][tf]["orderflow"] = of_data
+                                    # Mise à jour des signaux orderflow
+                                    bot.market_data[pair_key][tf]["signals"][
+                                        "orderflow"
+                                    ].update(
+                                        {
+                                            "details": of_data,
+                                            "score": sum(
+                                                x
+                                                for x in of_data.values()
+                                                if x is not None
+                                            )
+                                            / len(of_data),
+                                            "factors": len(
+                                                [
+                                                    x
+                                                    for x in of_data.values()
+                                                    if x is not None
+                                                ]
+                                            ),
+                                        }
+                                    )
                                 except Exception as e:
                                     print(f"[Orderflow] Erreur {pair_key}-{tf}: {e}")
 
-                            # === CORRECTION 2: Bloc IA amélioré ===
+                            # Mise à jour des signaux IA
                             if (
                                 bot.dl_model
                                 and hasattr(bot, "ai_enabled")
@@ -5719,9 +5786,22 @@ async def run_clean_bot():
                                         bot.market_data[pair_key][tf]["signals"][
                                             "ai"
                                         ] = 0.5
-                            else:
-                                bot.market_data[pair_key]["ai_prediction"] = 0.5
-                                bot.market_data[pair_key][tf]["signals"]["ai"] = 0.5
+                                else:
+                                    bot.market_data[pair_key]["ai_prediction"] = 0.5
+                                    bot.market_data[pair_key][tf]["signals"]["ai"] = 0.5
+
+                            # Mise à jour des signaux momentum
+                            if indicators_data and "rsi_14" in indicators_data:
+                                bot.market_data[pair_key][tf]["signals"][
+                                    "momentum"
+                                ].update(
+                                    {
+                                        "score": (float(indicators_data["rsi_14"]) - 50)
+                                        / 50,
+                                        "details": {"rsi": indicators_data["rsi_14"]},
+                                        "factors": 1,
+                                    }
+                                )
 
             # Analyse marché
             regime, market_data, indicators = await bot.study_market("7d")
