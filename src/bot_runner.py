@@ -783,6 +783,110 @@ class PerformanceMonitor:
             self.add_alert("Excessive drawdown", severity="critical")
 
 
+class RiskManager:
+    def __init__(self):
+        self.max_drawdown_limit = 0.15
+        self.position_limits = {"max_per_trade": 0.05, "max_total_exposure": 0.25}
+        self.min_confidence = 0.8
+        self.validation_thresholds = {
+            "technical": 0.3,
+            "momentum": 0.2,
+            "orderflow": 0.2,
+            "liquidity": 0.7,
+            "pressure": 0.8,
+        }
+
+    def validate_trade(self, signals):
+        """Valide si un trade respecte les critères de risque"""
+        try:
+            if not signals or not isinstance(signals, dict):
+                print("[RISK] Signaux invalides")
+                return False
+
+            # Extraction des composantes
+            technical = signals.get("technical", {})
+            momentum = signals.get("momentum", {})
+            orderflow = signals.get("orderflow", {})
+
+            if not all([technical, momentum, orderflow]):
+                print("[RISK] Composantes manquantes")
+                return False
+
+            # Validation technique
+            tech_score = float(technical.get("score", 0))
+            if abs(tech_score) < self.validation_thresholds["technical"]:
+                print(f"[RISK] Score technique insuffisant: {tech_score:.2f}")
+                return False
+
+            # Validation momentum
+            mom_score = float(momentum.get("score", 0))
+            if abs(mom_score) < self.validation_thresholds["momentum"]:
+                print(f"[RISK] Momentum insuffisant: {mom_score:.2f}")
+                return False
+
+            # Validation orderflow
+            flow_score = float(orderflow.get("score", 0))
+            if abs(flow_score) < self.validation_thresholds["orderflow"]:
+                print(f"[RISK] Orderflow insuffisant: {flow_score:.2f}")
+                return False
+
+            # Score final
+            weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
+            total_score = (
+                tech_score * weights["technical"]
+                + mom_score * weights["momentum"]
+                + flow_score * weights["orderflow"]
+            )
+
+            if abs(total_score) < 0.25:
+                print(f"[RISK] Score global insuffisant: {total_score:.2f}")
+                return False
+
+            print(f"[RISK] ✅ Trade validé - Score: {total_score:.2f}")
+            return True
+
+        except Exception as e:
+            print(f"[RISK] Erreur validation: {e}")
+            return False
+
+    def calculate_position_size(self, equity, confidence, volatility=0.02):
+        """Calcul intelligent de la taille de position"""
+        try:
+            if confidence < self.min_confidence:
+                print(f"[RISK] Confiance insuffisante: {confidence:.2f}")
+                return 0
+
+            base_size = float(equity) * self.position_limits["max_per_trade"]
+            vol_adj = max(0.3, 1 - (volatility * 2))
+            final_size = min(
+                base_size * vol_adj,
+                float(equity) * self.position_limits["max_per_trade"],
+            )
+
+            print(f"[RISK] Taille position: {final_size:.2f} USDC")
+            return final_size
+
+        except Exception as e:
+            print(f"[RISK] Erreur calcul position: {str(e)}")
+            return 0
+
+    def check_exposure_limit(self, current_positions, new_position_size):
+        """Vérifie les limites d'exposition"""
+        try:
+            total_exposure = sum(
+                float(pos.get("size", 0)) for pos in current_positions.values()
+            )
+            new_total = total_exposure + float(new_position_size)
+            is_valid = new_total <= self.position_limits["max_total_exposure"]
+
+            print(f"[RISK] Exposition totale: {new_total:.2%}")
+            return is_valid
+
+        except Exception as e:
+            print(f"[RISK] Erreur vérification exposition: {e}")
+            return False
+
+
 class TradingBotM4:
     def __init__(self):
         # Configuration de base existante...
@@ -851,6 +955,9 @@ class TradingBotM4:
                     "calculate_position_size": lambda *args: 0.0,
                 },
             )()
+        # Initialisation directe du RiskManager (ajouter cette partie)
+        self.risk_manager = RiskManager()
+        print("✅ Risk Manager initialisé")
 
         self.last_correlation_check = 0
         self.correlation_cache = {}
@@ -1269,6 +1376,12 @@ class TradingBotM4:
         """
         try:  # Premier try
             print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
+
+            # Initialisation des variables au début
+            total_score = 0
+            volatility_adv = 0
+            exposure_mult = 1.0
+            divergence_score = 0
 
             # Fonction de validation des données
             def is_valid(val):
@@ -6196,62 +6309,107 @@ async def handle_arbitrage_opportunities(bot):
 async def execute_trade_decisions(bot, trade_decisions):
     """
     Exécute toutes les décisions de trade du cycle.
-    Intègre la gestion avancée de pause news par asset/action.
-    Vérifie que les news contiennent bien les champs "symbols" et "sentiment".
+    Intègre la gestion avancée de pause news par asset/action
+    et la validation par le RiskManager.
     """
-    # Vérification et warning sur les news du cycle (depuis le dernier batch d'analyse)
+    # Vérification des news du cycle
     news_list = []
     try:
-        # On récupère les dernières news utilisées pour la pause
         with open(bot.data_file, "r") as f:
             shared_data = json.load(f)
         news_sentiment = shared_data.get("sentiment", {})
         news_list = news_sentiment.get("scores", [])
-    except Exception:
+    except Exception as e:
+        print(f"[WARNING] Erreur chargement news: {e}")
         news_list = []
 
-    # Vérification des champs "symbols" et "sentiment" dans les news
+    # Validation des champs obligatoires des news
     for news in news_list:
         if "symbols" not in news or not news["symbols"]:
             log_dashboard(
-                f"[NEWS CHECK] ⚠️ News sans champ 'symbols': {news.get('title', '')[:80]}"
+                f"[NEWS CHECK] ⚠️ News sans symboles: {news.get('title', '')[:80]}"
             )
         if "sentiment" not in news:
             log_dashboard(
-                f"[NEWS CHECK] ⚠️ News sans champ 'sentiment': {news.get('title', '')[:80]}"
+                f"[NEWS CHECK] ⚠️ News sans sentiment: {news.get('title', '')[:80]}"
             )
 
+    # Traitement des décisions de trade
     for decision in trade_decisions:
-        pair = decision.get("pair")
-        action = decision.get("action")
-        confidence = decision.get("confidence", 0)
-        amount = calculate_position_size(
-            bot, decision
-        )  # Utilise la fonction déjà présente
+        try:
+            pair = decision.get("pair")
+            action = decision.get("action")
+            confidence = decision.get("confidence", 0)
 
-        # Log avant exécution
-        log_dashboard(
-            f"[EXECUTE TRADE] {pair} | Action: {action.upper()} | Amount: {amount} | Confidence: {confidence}"
-        )
+            # Vérification pause news
+            active_pauses = bot.news_pause_manager.get_active_pauses()
+            if any(
+                p.get("asset") == pair or p.get("asset") == "GLOBAL"
+                for p in active_pauses
+            ):
+                log_dashboard(
+                    f"[NEWS PAUSE] Trade {action.upper()} sur {pair} bloqué (pause news)"
+                )
+                await bot.telegram.send_message(
+                    f"🚨 Trading {action.upper()} sur {pair} bloqué (pause news)"
+                )
+                continue
 
-        # ----- PATCH : Gestion de la pause news avancée -----
-        # On vérifie si la pause news s'applique à cette paire et action
-        active_pauses = bot.news_pause_manager.get_active_pauses()
-        if any(
-            p.get("asset") == pair or p.get("asset") == "GLOBAL" for p in active_pauses
-        ):
+            # Validation par le RiskManager
+            if not bot.risk_manager.validate_trade(decision.get("signals", {})):
+                log_dashboard(
+                    f"[RISK] Trade {action.upper()} sur {pair} rejeté "
+                    "(critères de risque non respectés)"
+                )
+                continue
+
+            # Calcul de la taille de position
+            balance = bot.get_performance_metrics().get("balance", 0)
+            volatility = bot.calculate_volatility_advanced(
+                bot.market_data.get(pair.replace("/", "").upper(), {}).get("1h", {})
+            )
+
+            amount = bot.risk_manager.calculate_position_size(
+                equity=balance, confidence=confidence, volatility=volatility
+            )
+
+            if amount <= 0:
+                log_dashboard(f"[RISK] Taille position nulle pour {pair}, trade ignoré")
+                continue
+
+            # Vérification exposition totale
+            if not bot.risk_manager.check_exposure_limit(bot.positions, amount):
+                log_dashboard(
+                    f"[RISK] Limite d'exposition dépassée pour {pair}, trade ignoré"
+                )
+                continue
+
+            # Log pré-exécution
             log_dashboard(
-                f"[NEWS PAUSE] Trade {action.upper()} sur {pair} bloqué (news critique/pause en cours)"
+                f"[EXECUTE] {pair} | {action.upper()} | "
+                f"Amount: {amount:.2f} | Conf: {confidence:.2f}"
             )
-            await bot.telegram.send_message(
-                f"🚨 Trading {action.upper()} sur {pair} bloqué à cause d'une news critique !"
-            )
-            continue  # On skip ce trade
 
-        # Exécution réelle
-        trade_result = await bot.execute_trade(pair, action, amount)
-        # Notification Telegram
-        await send_trade_notification(bot, decision, trade_result, amount)
+            # Exécution du trade
+            trade_result = await bot.execute_trade(
+                symbol=pair, side=action, amount=amount
+            )
+
+            # Notification du résultat
+            if trade_result and trade_result.get("status") == "completed":
+                await send_trade_notification(
+                    bot=bot, decision=decision, trade_result=trade_result, amount=amount
+                )
+                log_dashboard(f"[SUCCESS] Trade exécuté sur {pair}")
+            else:
+                log_dashboard(
+                    f"[ERROR] Échec exécution trade sur {pair}: "
+                    f"{trade_result.get('reason', 'raison inconnue')}"
+                )
+
+        except Exception as e:
+            log_dashboard(f"[ERROR] Erreur exécution trade {pair}: {str(e)}")
+            continue
 
 
 def save_best_params(best_params, path="config/best_hyperparams.json"):
