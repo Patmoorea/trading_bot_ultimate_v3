@@ -136802,3 +136802,223 @@
 2025-08-03T02:55:48.897329 | ✅ IA activée: True
 2025-08-03T02:55:48.897372 | ✅ Analyse de news activée: True
 2025-08-03T02:57:48.641617 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-03T02:58:26.478992 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-03T02:58:26.484471 | Initialisation des modèles d'IA...
+2025-08-03T02:58:26.958734 | ✅ Modèles d'IA initialisés avec succès
+2025-08-03T02:58:28.458126 | ✅ PPO Strategy initialized successfully
+2025-08-03T02:58:28.464061 | ✅ Bot initialisé avec Telegram: True
+2025-08-03T02:58:28.464174 | ✅ Trading en direct: True
+2025-08-03T02:58:28.464209 | ✅ IA activée: True
+2025-08-03T02:58:28.464244 | ✅ Analyse de news activée: True
+2025-08-03T03:00:29.831716 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-03T03:01:57.257889 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0408 | Tendance: -0.0022
+2025-08-03T03:01:57.268349 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-03T03:02:33.723781 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0408 | Tendance: -0.0022
+2025-08-03T03:02:33.738428 | 🎯 Stratégie active: Range/Scalping
+2025-08-03T03:02:33.738541 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-03T03:03:53.192279 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:53.446044 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:53.717378 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:53.947525 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:54.169187 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:54.394443 | [2025-08-03 02:31:05] Patmoorea - Début analyse BTCUSDC
+2025-08-03T03:03:54.621998 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:54.846769 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:55.073124 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:55.302570 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:55.531322 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:55.753351 | [2025-08-03 02:31:05] Patmoorea - Début analyse ETHUSDC
+2025-08-03T03:03:55.978473 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:56.202920 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:56.433045 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:56.657638 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:56.882726 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:57.106992 | [2025-08-03 02:31:05] Patmoorea - Début analyse LTCUSDC
+2025-08-03T03:03:57.337272 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:57.559492 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:57.785729 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:58.012993 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:58.242013 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:58.468597 | [2025-08-03 02:31:05] Patmoorea - Début analyse XRPUSDC
+2025-08-03T03:03:58.694564 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:58.920164 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:59.149956 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:59.377355 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:59.603875 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:59.791503 | [2025-08-03 02:31:05] Patmoorea - Début analyse DOGEUSDC
+2025-08-03T03:03:59.976744 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:00.199143 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:00.426052 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:00.651840 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:00.881004 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:01.106336 | [2025-08-03 02:31:05] Patmoorea - Début analyse BNBUSDC
+2025-08-03T03:04:01.332363 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:01.557452 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:01.786799 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:02.013276 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:02.236675 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:02.462808 | [2025-08-03 02:31:05] Patmoorea - Début analyse ADAUSDC
+2025-08-03T03:04:02.692432 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:02.917595 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:03.140759 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:03.364753 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:03.595481 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:03.853168 | [2025-08-03 02:31:05] Patmoorea - Début analyse SOLUSDC
+2025-08-03T03:04:04.073576 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:04.296654 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:04.521822 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:04.747509 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:04.976700 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:05.202569 | [2025-08-03 02:31:05] Patmoorea - Début analyse TRXUSDC
+2025-08-03T03:04:05.432758 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:05.662565 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:05.893432 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:06.124496 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:06.355165 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:06.540274 | [2025-08-03 02:31:05] Patmoorea - Début analyse SUIUSDC
+2025-08-03T03:04:06.602196 | [FUSION] BTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.605918 | [FUSION] ETH/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606093 | [FUSION] LTC/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606132 | [FUSION] XRP/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606165 | [FUSION] DOGE/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606216 | [FUSION] BNB/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606252 | [FUSION] ADA/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606284 | [FUSION] SOL/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606324 | [FUSION] TRX/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.606361 | [FUSION] SUI/USDC: [] => FINAL: NEUTRAL (0.00)
+2025-08-03T03:04:06.610046 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto, actions, RWA, dérivés et même paris : Coinbase veut tout vendre !
+2025-08-03T03:04:06.610090 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quels sont les token unlocks à surveiller au mois d'août 2025 ?
+2025-08-03T03:04:06.610124 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Strategy a-t-elle vraiment réalisé 10 milliards de dollars de bénéfices au 2e tr
+2025-08-03T03:04:06.610151 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane de Donald Trump : récapitulatif de ce qui change dès le 7 août
+2025-08-03T03:04:06.610208 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 127 Mds de bons du Trésor : Tether dépasse la Corée du Sud… et flirte avec l’Ara
+2025-08-03T03:04:06.610238 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Taux de la Fed : Donald Trump appelle les gouverneurs à renverser « le crétin tê
+2025-08-03T03:04:06.610266 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Face à un bilan morose, Coinbase annonce le trading d'actions tokenisées
+2025-08-03T03:04:06.610293 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quelles sont les dates à ne pas louper dans la crypto en août 2025 ?
+2025-08-03T03:04:06.610320 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hack CoinDCX : un ingénieur arrêté après un vol de 43 millions de dollars
+2025-08-03T03:04:06.610346 | [NEWS CHECK] ⚠️ News sans champ 'symbols': La SEC lance le « Projet Crypto » pour mettre les marchés américains sur la bloc
+2025-08-03T03:04:06.610372 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Projet Crypto » de la SEC aux USA : Les 6 priorités de Paul Atkins
+2025-08-03T03:04:06.610398 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Project Crypto » : la SEC lance une révolution réglementaire pro blockchain au
+2025-08-03T03:04:06.610425 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Trop stupide » : Donald Trump insulte le président de la Fed pour ne pas avoir
+2025-08-03T03:04:06.610451 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Les trésoreries crypto d'entreprises accumulent désormais 100 milliards de dolla
+2025-08-03T03:04:06.610477 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L’ENA d’Ethena continue de superformer : 17 % de hausse en 24 heures
+2025-08-03T03:04:06.610502 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto victim loses $908K in sophisticated phishing attack 
+2025-08-03T03:04:06.610527 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Creative leverage solves the impermanent loss problem — Curve founder 
+2025-08-03T03:04:06.610552 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big stage, bigger scams? 5 shady crypto projects that made it to the spotlight 
+2025-08-03T03:04:06.610578 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How to use ChatGPT Agent for crypto trading in 2025 
+2025-08-03T03:04:06.610602 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  China’s crypto liquidation plans reveal its grand strategy 
+2025-08-03T03:04:06.610628 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ARK Invest scoops up Coinbase, BitMine shares amid stock dips 
+2025-08-03T03:04:06.610653 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Can Google Gemini really help plan crypto trades? 
+2025-08-03T03:04:06.610678 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  DeFi Education Fund urges Senate to strengthen crypto dev protections in draft 
+2025-08-03T03:04:06.610703 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC Chair Aktins calls to ‘reshore crypto’ as companies move back to the US 
+2025-08-03T03:04:06.610728 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC’s crypto task force to hit the road with 10 roundtables across the US 
+2025-08-03T03:04:06.610753 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Hong Kong stablecoin stocks slide as new rules take effect, experts see healthy
+2025-08-03T03:04:06.610777 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  As Trump challenges Fed independence, key FOMC member resigns 
+2025-08-03T03:04:06.610805 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  OpenAI raises $8.3B at $300B valuation 
+2025-08-03T03:04:06.610831 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto exchange Gate launches spot trading services in the US 
+2025-08-03T03:04:06.610856 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-03T03:04:06.610880 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-03T03:04:06.610904 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-03T03:04:06.610929 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-03T03:04:06.610954 | [NEWS CHECK] ⚠️ News sans champ 'symbols': FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-03T03:04:06.610979 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-03T03:04:06.611004 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong Kicks Off Stablecoin Licensing Regime With Eye on Global Hub
+2025-08-03T03:04:06.611028 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase Stock Dives as Company Misses Q2 Revenue Forecasts
+2025-08-03T03:04:06.611053 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Reports Q2 Profit of $4.9 Billion, CEO Teases U.S. Venture
+2025-08-03T03:04:06.611078 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SEC Chair Paul Atkins Unveils Project Crypto, Greenlighting ICOs, Airdrops and M
+2025-08-03T03:04:06.611103 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Robinhood’s CEO Touted Tokenization 11 Times on Its Q2 Earning Call
+2025-08-03T03:04:06.611127 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Former OpenSea Manager Has Conviction Overturned in First-Ever Crypto Insider Tr
+2025-08-03T03:04:06.611152 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Tokenized Stocks are Important: A Breakdown
+2025-08-03T03:04:06.611177 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase’s Q2 earnings point to shrinking USDC margins for Circle, Mizuho says
+2025-08-03T03:04:06.611209 | [NEWS CHECK] ⚠️ News sans champ 'symbols': US crypto ETFs best Vanguard’s S&P 500 fund with record-high $12.8 billion of in
+2025-08-03T03:04:06.611233 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pantera Capital leads $20 million funding round into Subzero Labs as developer-f
+2025-08-03T03:04:06.611258 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bernstein says Q2 is the ‘quarter that doesn’t matter’ for Coinbase as stock tum
+2025-08-03T03:04:06.611281 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ‘The market has evolved’: UK financial regulator to open retail access to crypto
+2025-08-03T03:04:06.611306 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 30 key crypto hires, moves and exits: July 2025
+2025-08-03T03:04:08.131602 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:08.142382 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-08-03T03:04:10.745263 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:10.757387 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-08-03T03:04:13.417294 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:13.426973 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-08-03T03:04:15.661080 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:15.665470 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-08-03T03:04:17.924286 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:17.940285 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-08-03T03:04:21.039367 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:21.055427 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-08-03T03:04:23.324423 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:23.339875 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-08-03T03:04:25.606790 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:25.623949 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-08-03T03:04:27.850732 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:27.866562 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-08-03T03:04:30.108953 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:04:30.125170 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
+2025-08-03T03:05:45.078574 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Crypto, actions, RWA, dérivés et même paris : Coinbase veut tout vendre !
+2025-08-03T03:05:45.085173 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quels sont les token unlocks à surveiller au mois d'août 2025 ?
+2025-08-03T03:05:45.085212 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Strategy a-t-elle vraiment réalisé 10 milliards de dollars de bénéfices au 2e tr
+2025-08-03T03:05:45.085242 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Droits de douane de Donald Trump : récapitulatif de ce qui change dès le 7 août
+2025-08-03T03:05:45.085267 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 127 Mds de bons du Trésor : Tether dépasse la Corée du Sud… et flirte avec l’Ara
+2025-08-03T03:05:45.085292 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Taux de la Fed : Donald Trump appelle les gouverneurs à renverser « le crétin tê
+2025-08-03T03:05:45.085315 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Face à un bilan morose, Coinbase annonce le trading d'actions tokenisées
+2025-08-03T03:05:45.085337 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Quelles sont les dates à ne pas louper dans la crypto en août 2025 ?
+2025-08-03T03:05:45.085358 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hack CoinDCX : un ingénieur arrêté après un vol de 43 millions de dollars
+2025-08-03T03:05:45.085380 | [NEWS CHECK] ⚠️ News sans champ 'symbols': La SEC lance le « Projet Crypto » pour mettre les marchés américains sur la bloc
+2025-08-03T03:05:45.085400 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Projet Crypto » de la SEC aux USA : Les 6 priorités de Paul Atkins
+2025-08-03T03:05:45.085421 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Project Crypto » : la SEC lance une révolution réglementaire pro blockchain au
+2025-08-03T03:05:45.085446 | [NEWS CHECK] ⚠️ News sans champ 'symbols': « Trop stupide » : Donald Trump insulte le président de la Fed pour ne pas avoir
+2025-08-03T03:05:45.085466 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Les trésoreries crypto d'entreprises accumulent désormais 100 milliards de dolla
+2025-08-03T03:05:45.085486 | [NEWS CHECK] ⚠️ News sans champ 'symbols': L’ENA d’Ethena continue de superformer : 17 % de hausse en 24 heures
+2025-08-03T03:05:45.085512 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto victim loses $908K in sophisticated phishing attack 
+2025-08-03T03:05:45.085533 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Creative leverage solves the impermanent loss problem — Curve founder 
+2025-08-03T03:05:45.085555 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Big stage, bigger scams? 5 shady crypto projects that made it to the spotlight 
+2025-08-03T03:05:45.085575 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  How to use ChatGPT Agent for crypto trading in 2025 
+2025-08-03T03:05:45.085594 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  China’s crypto liquidation plans reveal its grand strategy 
+2025-08-03T03:05:45.085614 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  ARK Invest scoops up Coinbase, BitMine shares amid stock dips 
+2025-08-03T03:05:45.085633 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Can Google Gemini really help plan crypto trades? 
+2025-08-03T03:05:45.085653 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  DeFi Education Fund urges Senate to strengthen crypto dev protections in draft 
+2025-08-03T03:05:45.085672 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC Chair Aktins calls to ‘reshore crypto’ as companies move back to the US 
+2025-08-03T03:05:45.085691 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  SEC’s crypto task force to hit the road with 10 roundtables across the US 
+2025-08-03T03:05:45.085928 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Hong Kong stablecoin stocks slide as new rules take effect, experts see healthy
+2025-08-03T03:05:45.085950 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  As Trump challenges Fed independence, key FOMC member resigns 
+2025-08-03T03:05:45.085974 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  OpenAI raises $8.3B at $300B valuation 
+2025-08-03T03:05:45.085998 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Crypto exchange Gate launches spot trading services in the US 
+2025-08-03T03:05:45.086020 | [NEWS CHECK] ⚠️ News sans champ 'symbols':  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-03T03:05:45.086043 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-03T03:05:45.086066 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-03T03:05:45.086090 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-03T03:05:45.086112 | [NEWS CHECK] ⚠️ News sans champ 'symbols': FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-03T03:05:45.086134 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-03T03:05:45.086158 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Hong Kong Kicks Off Stablecoin Licensing Regime With Eye on Global Hub
+2025-08-03T03:05:45.086182 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase Stock Dives as Company Misses Q2 Revenue Forecasts
+2025-08-03T03:05:45.086205 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Tether Reports Q2 Profit of $4.9 Billion, CEO Teases U.S. Venture
+2025-08-03T03:05:45.086227 | [NEWS CHECK] ⚠️ News sans champ 'symbols': SEC Chair Paul Atkins Unveils Project Crypto, Greenlighting ICOs, Airdrops and M
+2025-08-03T03:05:45.086248 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Robinhood’s CEO Touted Tokenization 11 Times on Its Q2 Earning Call
+2025-08-03T03:05:45.086270 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Former OpenSea Manager Has Conviction Overturned in First-Ever Crypto Insider Tr
+2025-08-03T03:05:45.086293 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Why Tokenized Stocks are Important: A Breakdown
+2025-08-03T03:05:45.086316 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Coinbase’s Q2 earnings point to shrinking USDC margins for Circle, Mizuho says
+2025-08-03T03:05:45.086338 | [NEWS CHECK] ⚠️ News sans champ 'symbols': US crypto ETFs best Vanguard’s S&P 500 fund with record-high $12.8 billion of in
+2025-08-03T03:05:45.086360 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Pantera Capital leads $20 million funding round into Subzero Labs as developer-f
+2025-08-03T03:05:45.086383 | [NEWS CHECK] ⚠️ News sans champ 'symbols': Bernstein says Q2 is the ‘quarter that doesn’t matter’ for Coinbase as stock tum
+2025-08-03T03:05:45.086404 | [NEWS CHECK] ⚠️ News sans champ 'symbols': ‘The market has evolved’: UK financial regulator to open retail access to crypto
+2025-08-03T03:05:45.086425 | [NEWS CHECK] ⚠️ News sans champ 'symbols': 30 key crypto hires, moves and exits: July 2025
+2025-08-03T03:05:46.270817 | [EXECUTE TRADE] BTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:46.275354 | [ORDER] Tentative d'exécution: neutral 5 BTC/USDC (iceberg: False)
+2025-08-03T03:05:49.126424 | [EXECUTE TRADE] ETH/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:49.141640 | [ORDER] Tentative d'exécution: neutral 5 ETH/USDC (iceberg: False)
+2025-08-03T03:05:51.517564 | [EXECUTE TRADE] LTC/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:51.533697 | [ORDER] Tentative d'exécution: neutral 5 LTC/USDC (iceberg: False)
+2025-08-03T03:05:53.933732 | [EXECUTE TRADE] XRP/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:53.949022 | [ORDER] Tentative d'exécution: neutral 5 XRP/USDC (iceberg: False)
+2025-08-03T03:05:56.398794 | [EXECUTE TRADE] DOGE/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:56.403275 | [ORDER] Tentative d'exécution: neutral 5 DOGE/USDC (iceberg: False)
+2025-08-03T03:05:58.628520 | [EXECUTE TRADE] BNB/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:05:58.643671 | [ORDER] Tentative d'exécution: neutral 5 BNB/USDC (iceberg: False)
+2025-08-03T03:06:00.897855 | [EXECUTE TRADE] ADA/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:06:00.914228 | [ORDER] Tentative d'exécution: neutral 5 ADA/USDC (iceberg: False)
+2025-08-03T03:06:03.133733 | [EXECUTE TRADE] SOL/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:06:03.149928 | [ORDER] Tentative d'exécution: neutral 5 SOL/USDC (iceberg: False)
+2025-08-03T03:06:05.462532 | [EXECUTE TRADE] TRX/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:06:05.479820 | [ORDER] Tentative d'exécution: neutral 5 TRX/USDC (iceberg: False)
+2025-08-03T03:06:07.997355 | [EXECUTE TRADE] SUI/USDC | Action: NEUTRAL | Amount: 5 | Confidence: 0
+2025-08-03T03:06:08.013942 | [ORDER] Tentative d'exécution: neutral 5 SUI/USDC (iceberg: False)
