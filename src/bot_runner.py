@@ -1595,18 +1595,28 @@ class TradingBotM4:
             return True, max_price
         return False, max_price
 
-    def calculate_atr(df, period=14):
+    def calculate_atr(self, df, period=14):
         """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
-        high = np.array(df["high"])
-        low = np.array(df["low"])
-        close = np.array(df["close"])
-        tr = np.maximum(
-            high[1:] - low[1:],
-            np.abs(high[1:] - close[:-1]),
-            np.abs(low[1:] - close[:-1]),
-        )
-        atr = pd.Series(tr).rolling(window=period).mean()
-        return float(atr.iloc[-1]) if len(atr) > 0 else 0.01
+        try:
+            high = np.array(df["high"])
+            low = np.array(df["low"])
+            close = np.array(df["close"])
+
+            if len(high) < 2 or len(low) < 2 or len(close) < 2:
+                return 0.01
+
+            tr = np.maximum(
+                high[1:] - low[1:],
+                np.abs(high[1:] - close[:-1]),
+                np.abs(low[1:] - close[:-1]),
+            )
+
+            atr = pd.Series(tr).rolling(window=period).mean()
+            return float(atr.iloc[-1]) if len(atr) > 0 else 0.01
+
+        except Exception as e:
+            self.logger.error(f"Erreur calcul ATR: {e}")
+            return 0.01
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
         closed_position = {
@@ -3184,69 +3194,49 @@ class TradingBotM4:
             return {"status": "error", "reason": str(e)}
 
     def _update_performance_metrics(self, trade_result):
-        """Met à jour les métriques de performance après un trade réel"""
         try:
+            if not trade_result or "status" not in trade_result:
+                return
+
+            perf = self.get_performance_metrics()
+
+            # MAJ statistiques
+            perf["total_trades"] += 1
+
+            # Calcul P&L
+            if trade_result["status"] == "completed":
+                amount = float(trade_result["filled_amount"])
+                price = float(trade_result["avg_price"])
+                side = trade_result["side"]
+
+                if side.upper() == "SELL":
+                    entry = trade_result.get("entry_price", 0)
+                    if entry > 0:
+                        pnl = (price - entry) * amount
+                        perf["balance"] += pnl
+
+                        if pnl > 0:
+                            perf["wins"] += 1
+                        else:
+                            perf["losses"] += 1
+
+                        perf["win_rate"] = perf["wins"] / perf["total_trades"]
+
+                        perf["total_profit"] += max(0, pnl)
+                        perf["total_loss"] += max(0, -pnl)
+
+                        if perf["total_loss"] > 0:
+                            perf["profit_factor"] = (
+                                perf["total_profit"] / perf["total_loss"]
+                            )
+
+            # Sauvegarde métriques
             self.safe_update_shared_data(
-                {"bot_status": {"performance": performance}}, self.data_file
-            )
-
-            performance = data["bot_status"]["performance"]
-
-            # Mise à jour des statistiques
-            performance["total_trades"] += 1
-
-            # Calcul du profit/perte
-            filled_amount = float(trade_result["filled_amount"])
-            avg_price = float(trade_result["avg_price"])
-            side = trade_result["side"]  # <-- side est une string
-
-            if side == "buy":
-                # Pour un achat, on ne sait pas encore si c'est gagnant
-                pass
-            elif side == "sell":
-                # Pour une vente, on peut calculer le profit par rapport au prix d'achat moyen
-                entry_price = trade_result.get("entry_price", 0)
-                if entry_price > 0:
-                    profit_pct = (
-                        (avg_price / entry_price - 1) * 100
-                        if side == "sell"
-                        else (1 - avg_price / entry_price) * 100
-                    )
-                    profit_amount = filled_amount * avg_price * profit_pct / 100
-
-                    # Mise à jour de la balance
-                    performance["balance"] += profit_amount
-
-                    # Mise à jour du win_rate
-                    if profit_amount > 0:
-                        performance["wins"] = performance.get("wins", 0) + 1
-                    else:
-                        performance["losses"] = performance.get("losses", 0) + 1
-
-                    performance["win_rate"] = (
-                        performance.get("wins", 0) / performance["total_trades"]
-                    )
-
-                    # Mise à jour du profit factor
-                    performance["total_profit"] = performance.get(
-                        "total_profit", 0
-                    ) + max(0, profit_amount)
-                    performance["total_loss"] = performance.get("total_loss", 0) + max(
-                        0, -profit_amount
-                    )
-
-                    if performance["total_loss"] > 0:
-                        performance["profit_factor"] = (
-                            performance["total_profit"] / performance["total_loss"]
-                        )
-
-            # Sauvegarde des données mises à jour
-            self.safe_update_shared_data(
-                {"bot_status": {"performance": performance}}, self.data_file
+                {"bot_status": {"performance": perf}}, self.data_file
             )
 
         except Exception as e:
-            self.logger.error(f"Error updating performance metrics: {e}")
+            self.logger.error(f"Erreur update métriques: {e}")
 
     async def _prepare_features_for_ai(self, symbol):
         """
@@ -3368,86 +3358,39 @@ class TradingBotM4:
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         try:
-            # 1. Vérification et initialisation des poids
-            if not hasattr(self, "ai_weight"):
-                self.ai_weight = 0.4  # Valeur par défaut
+            # Vérification poids
+            ai_weight = float(getattr(self, "ai_weight", 0.4))
+            tech_weight = 1.0 - ai_weight
 
-            # Conversion robuste du ai_weight si nécessaire
-            try:
-                ai_weight = float(self.ai_weight)
-            except (TypeError, ValueError):
-                self.logger.error(
-                    "ai_weight invalide, utilisation de la valeur par défaut 0.4"
-                )
-                ai_weight = 0.4
-
-            technical_weight = 1.0 - ai_weight
-
-            # 2. Initialisation des structures
+            # Init structures
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
-            default_signals = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
+            defaults = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
+            signals = self.market_data[symbol].get("signals", defaults.copy())
 
-            current_signals = self.market_data[symbol].get(
-                "signals", default_signals.copy()
+            # Conversion valeurs
+            dl_val = float(
+                dl_prediction if isinstance(dl_prediction, (int, float)) else 0
             )
+            ppo_val = float(ppo_action if isinstance(ppo_action, (int, float)) else 0)
 
-            # 3. Fonction de conversion universelle
-            def safe_float(value, context=""):
-                """Convertit n'importe quelle entrée en float de manière sécurisée"""
-                if isinstance(value, (float, int)):
-                    return float(value)
+            ai_signal = dl_val * 0.7 + ppo_val * 0.3
 
-                if isinstance(value, dict):
-                    # Extraction depuis les dictionnaires
-                    for key in ["value", "action", "score", "prediction", "weight"]:
-                        if key in value:
-                            try:
-                                return float(value[key])
-                            except (TypeError, ValueError):
-                                continue
-
-                    # Fallback: premier float trouvé
-                    for v in value.values():
-                        try:
-                            return float(v)
-                        except (TypeError, ValueError):
-                            continue
-
-                # Fallback final
-                self.logger.warning(
-                    f"Conversion impossible pour {context}, utilisation de 0.0"
-                )
-                return 0.0
-
-            # 4. Conversion des entrées
-            dl_value = safe_float(dl_prediction, "dl_prediction")
-            ppo_value = safe_float(ppo_action, "ppo_action")
-            ai_signal = dl_value * 0.7 + ppo_value * 0.3
-
-            # 5. Nettoyage des signaux existants
-            clean_signals = {
-                k: safe_float(v, f"signal {k}")
-                for k, v in current_signals.items()
-                if k in default_signals
+            # Fusion
+            merged = {
+                k: (v * tech_weight + ai_signal * ai_weight) for k, v in signals.items()
             }
 
-            # 6. Fusion finale
-            merged_signals = {
-                k: (v * technical_weight + ai_signal * ai_weight)
-                for k, v in clean_signals.items()
-            }
-
-            # 7. Sauvegarde des résultats
-            self.market_data[symbol]["signals"] = merged_signals
+            # Sauvegarde
+            self.market_data[symbol]["signals"] = merged
             self.market_data[symbol]["ai_prediction"] = ai_signal
 
-            return merged_signals
+            return merged
 
         except Exception as e:
-            self.logger.error(f"ERREUR dans _merge_signals: {str(e)}", exc_info=True)
-            return default_signals.copy()
+            self.logger.error(f"Erreur fusion signaux: {e}")
+            return defaults.copy()
 
     async def _update_sentiment_data(self, sentiment_scores):
         """
@@ -5911,17 +5854,6 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
 
 
 async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
-    """
-    Envoi des rapports de fin de cycle avec :
-    - Résumé des trades
-    - Analyse complète
-    - Métriques avancées
-    - Alertes de risque
-    """
-    import json
-    import numpy as np
-    from datetime import datetime
-
     try:
         # 1. Rapport des trades du cycle
         await send_trade_summary(bot, trade_decisions)
@@ -5932,14 +5864,15 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         # 3. Sauvegarde des données
         await save_cycle_data(bot, analysis_data)
 
-        # 4. Envoi du rapport complet
-        await send_analysis_report(bot, analysis_data)
+        # 4. Rapport d'analyse complet
+        analysis_report = await bot.generate_market_analysis_report()
+        await bot.telegram.send_message(analysis_report)
 
-        # 5. Alertes de risque avancées
+        # 5. Alertes de risque
         await check_risk_alerts(bot, analysis_data)
 
     except Exception as e:
-        logging.error(f"Erreur envoi rapports: {e}")
+        bot.logger.error(f"Erreur envoi rapports: {e}")
 
 
 async def send_trade_summary(bot, trade_decisions):
