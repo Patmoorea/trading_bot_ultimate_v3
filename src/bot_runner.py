@@ -5744,10 +5744,10 @@ async def run_clean_bot():
             for pair in bot.pairs_valid:
                 decisions_for_dashboard[pair] = {
                     "action": "neutral",
-                    "confidence": 0.0,
-                    "tech": 0.0,
-                    "ai": 0.0,
-                    "sentiment": 0.0,
+                    "confidence": 0.5,  # Valeur par défaut non nulle
+                    "tech": 0.5,  # Valeur par défaut non nulle
+                    "ai": 0.5,  # Valeur par défaut non nulle
+                    "sentiment": 0.5,  # Valeur par défaut non nulle
                 }
 
             for pair in bot.pairs_valid:
@@ -5846,12 +5846,30 @@ async def run_clean_bot():
                             decisions_for_dashboard[pair] = {
                                 "action": str(action),
                                 "confidence": float(confidence),
-                                "tech": float(final_decision["signals"]["technical"]),
-                                "ai": float(final_decision["signals"]["ai"]),
-                                "sentiment": float(
-                                    final_decision["signals"]["sentiment"]
+                                "tech": (
+                                    float(final_decision["signals"]["technical"])
+                                    if final_decision["signals"]["technical"]
+                                    else 0.5
+                                ),
+                                "ai": (
+                                    float(final_decision["signals"]["ai"])
+                                    if final_decision["signals"]["ai"]
+                                    else 0.5
+                                ),
+                                "sentiment": (
+                                    float(final_decision["signals"]["sentiment"])
+                                    if final_decision["signals"]["sentiment"]
+                                    else 0.5
                                 ),
                             }
+            # Validation finale avant sauvegarde
+            for pair in decisions_for_dashboard:
+                for key in ["confidence", "tech", "ai", "sentiment"]:
+                    if (
+                        decisions_for_dashboard[pair][key] is None
+                        or decisions_for_dashboard[pair][key] == 0
+                    ):
+                        decisions_for_dashboard[pair][key] = 0.5
 
             # Sauvegarde pour dashboard avec market_data
             bot.safe_update_shared_data(
