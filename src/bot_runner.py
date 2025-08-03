@@ -2067,9 +2067,17 @@ class TradingBotM4:
                     else:
                         indicators[col] = None
 
+                # === AJOUT IMPORTANT : Calcul du score technique ===
+                rsi_value = indicators.get("rsi_14")
+                if rsi_value is not None:
+                    tech_score = float(rsi_value) / 100.0  # Normalisation entre 0 et 1
+                else:
+                    tech_score = 0.5  # Valeur par défaut
+                indicators["technical_score"] = tech_score
+
             except Exception as e:
                 self.logger.warning(f"Erreur pandas-ta indicateurs principaux : {e}")
-                indicators = {}
+                indicators = {"technical_score": 0.5}  # Au minimum le score technique
 
             n_valid = len([v for v in indicators.values() if v is not None])
             self.logger.info(
@@ -2082,7 +2090,9 @@ class TradingBotM4:
 
         except Exception as e:
             self.logger.error(f"❌ Erreur calcul indicateurs: {e}")
-            return None
+            return {
+                "technical_score": 0.5
+            }  # Toujours retourner au moins le score technique
 
     def analyze_order_flow(self, df):
         """
