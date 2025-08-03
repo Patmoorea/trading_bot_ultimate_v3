@@ -836,7 +836,21 @@ class TradingBotM4:
                 },
             },
         }
-        self.risk_manager = EnhancedRiskManager()
+        # Initialisation explicite du risk manager
+        try:
+            self.risk_manager = EnhancedRiskManager()
+            print("✅ EnhancedRiskManager initialisé")
+        except Exception as e:
+            print(f"❌ Erreur initialisation risk manager: {e}")
+            # Créer une instance minimale en cas d'erreur
+            self.risk_manager = type(
+                "DummyRiskManager",
+                (),
+                {
+                    "validate_trade": lambda x: True,
+                    "calculate_position_size": lambda *args: 0.0,
+                },
+            )()
 
         self.last_correlation_check = 0
         self.correlation_cache = {}
