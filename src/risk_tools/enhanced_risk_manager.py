@@ -17,29 +17,52 @@ class EnhancedRiskManager:
             "liquidity": 0.7,  # Seuil liquidité maximum
             "pressure": 0.8,  # Seuil pression marché maximum
         }
+        # Nouveaux seuils techniques
+        self.tech_thresholds = {
+            "trend_score": 0.7,
+            "volume_score": 0.6,
+            "momentum_score": 0.6,
+            "sr_score": 0.7,
+        }
 
     def validate_trade(self, signals):
-        """Validation complète d'un trade selon tous les critères"""
+        """Validation complète incluant les signaux techniques"""
         try:
             if not signals or not isinstance(signals, dict):
                 print("[RISK] Signaux invalides")
                 return False
 
-            # Extraction des scores
+            # Extraction et validation des composantes principales
             technical = signals.get("technical", {})
             momentum = signals.get("momentum", {})
             orderflow = signals.get("orderflow", {})
 
             if not all([technical, momentum, orderflow]):
-                print("[RISK] Signaux incomplets")
+                print("[RISK] Composantes de signal manquantes")
                 return False
 
-            # Scores principaux
+            # Scores techniques
             tech_score = float(technical.get("score", 0))
-            momentum_score = float(momentum.get("score", 0))
-            flow_score = float(orderflow.get("score", 0))
+            tech_factors = technical.get("factors", 0)
 
-            # Score global pondéré
+            # Validation technique améliorée
+            if abs(tech_score) < 0.3 or tech_factors < 2:
+                print(f"[RISK] Score technique insuffisant: {tech_score:.2f}")
+                return False
+
+            # Validation momentum
+            momentum_score = float(momentum.get("score", 0))
+            if abs(momentum_score) < 0.2:
+                print(f"[RISK] Momentum insuffisant: {momentum_score:.2f}")
+                return False
+
+            # Validation orderflow
+            flow_score = float(orderflow.get("score", 0))
+            if abs(flow_score) < 0.2:
+                print(f"[RISK] Orderflow insuffisant: {flow_score:.2f}")
+                return False
+
+            # Score global
             weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
             total_score = (
                 tech_score * weights["technical"]
@@ -47,36 +70,7 @@ class EnhancedRiskManager:
                 + flow_score * weights["orderflow"]
             )
 
-            # === VALIDATION DES CRITÈRES ===
-
-            # 1. Score technique
-            if abs(tech_score) < self.validation_thresholds["technical"]:
-                print(f"[RISK] Score technique insuffisant: {tech_score:.2f}")
-                return False
-
-            # 2. Momentum
-            if abs(momentum_score) < self.validation_thresholds["momentum"]:
-                print(f"[RISK] Momentum faible: {momentum_score:.2f}")
-                return False
-
-            # 3. Orderflow
-            if abs(flow_score) < self.validation_thresholds["orderflow"]:
-                print(f"[RISK] Orderflow insuffisant: {flow_score:.2f}")
-                return False
-
-            # 4. Liquidité
-            liquidity = float(orderflow.get("liquidity", 0))
-            if abs(liquidity) > self.validation_thresholds["liquidity"]:
-                print(f"[RISK] Liquidité anormale: {liquidity:.2f}")
-                return False
-
-            # 5. Pression marché
-            pressure = float(orderflow.get("market_pressure", 0))
-            if abs(pressure) > self.validation_thresholds["pressure"]:
-                print(f"[RISK] Pression marché excessive: {pressure:.2f}")
-                return False
-
-            # Score global minimum
+            # Validation finale
             if abs(total_score) < 0.25:
                 print(f"[RISK] Score global insuffisant: {total_score:.2f}")
                 return False
@@ -91,28 +85,22 @@ class EnhancedRiskManager:
     def calculate_position_size(self, equity, confidence, volatility, correlation):
         """Calcul intelligent de la taille de position"""
         try:
-            # Vérification confiance minimum
             if confidence < self.min_confidence:
                 print(f"[RISK] Confiance insuffisante: {confidence:.2f}")
                 return 0
 
-            # Taille de base
             base_size = equity * self.position_limits["max_per_trade"]
 
             # Ajustements
-            vol_adj = max(0.3, 1 - (volatility * 2))  # Réduction si volatilité élevée
-            corr_adj = max(0.3, 1 - correlation)  # Réduction si corrélation élevée
+            vol_adj = max(0.3, 1 - (volatility * 2))
+            corr_adj = max(0.3, 1 - correlation)
 
-            # Application des ajustements
+            # Calcul final
             size = base_size * vol_adj * corr_adj
-
-            # Respect de la limite max par trade
             final_size = min(size, equity * self.position_limits["max_per_trade"])
 
-            print(
-                f"[RISK] Taille calculée: {final_size:.2f} (vol_adj={vol_adj:.2f}, corr_adj={corr_adj:.2f})"
-            )
-            return final_size
+            print(f"[RISK] Taille calculée: {final_size:.2f} USDC")
+            return float(final_size)
 
         except Exception as e:
             print(f"[RISK] Erreur calcul position: {e}")
@@ -121,14 +109,13 @@ class EnhancedRiskManager:
     def check_exposure_limit(self, current_positions, new_position_size):
         """Vérification des limites d'exposition"""
         try:
-            # Calcul exposition totale
-            total_exposure = sum(pos["size"] for pos in current_positions.values())
-            new_total = total_exposure + new_position_size
-
-            # Vérification limite
+            total_exposure = sum(
+                float(pos.get("size", 0)) for pos in current_positions.values()
+            )
+            new_total = total_exposure + float(new_position_size)
             is_valid = new_total <= self.position_limits["max_total_exposure"]
 
-            print(f"[RISK] Exposition: {new_total:.2%} {'✅' if is_valid else '❌'}")
+            print(f"[RISK] Exposition totale: {new_total:.2%}")
             return is_valid
 
         except Exception as e:
