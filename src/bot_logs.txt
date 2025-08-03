@@ -139922,3 +139922,5 @@
 2025-08-03T19:54:04.004381 | 🚫 Cycle bloqué - Pause news active
 2025-08-03T20:01:54.733228 |  Démarrage cycle trading
 2025-08-03T20:01:54.761760 | 🚫 Cycle bloqué - Pause news active
+2025-08-03T20:09:47.820264 |  Démarrage cycle trading
+2025-08-03T20:09:47.857059 | 🚫 Cycle bloqué - Pause news active
