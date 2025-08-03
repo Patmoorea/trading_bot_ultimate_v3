@@ -1370,7 +1370,7 @@ class TradingBotM4:
                 "timeframe": tf,
             }
 
-                        # Détermination de l'action finale
+            # Détermination de l'action finale
             if total_score > buy_threshold:
                 decision["action"] = "buy"
                 log_reason = "Signal d'achat"
@@ -1436,6 +1436,11 @@ class TradingBotM4:
                 "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
             }
             return decision
+
+        except Exception as e:
+            error_msg = f"Erreur dans analyze_signals: {str(e)}"
+            self.logger.error(error_msg)
+            return {"action": "neutral", "confidence": 0, "signals": {}}
 
     def calculate_atr(self, df, period=14):
         """Calcul de l'Average True Range (ATR) pour stop-loss dynamique."""
@@ -3756,17 +3761,13 @@ class TradingBotM4:
 
     async def _update_sentiment_data(self, sentiment_scores):
         """
-        Met à jour les données de marché avec le sentiment :
-        - Calcule la moyenne pondérée du sentiment par symbole sur toutes les news du cycle
-        - Applique le score global sinon
-        - Enregistre tout dans shared_data.json pour usage persistant
+        Met à jour les données de marché avec le sentiment
         """
         from collections import defaultdict
 
-        # Définition initiale de symbol_sentiments_out
+        # Définition initiale et UNIQUE de symbol_sentiments_out
         symbol_sentiments_out = {
-            key: data.get("sentiment", 0) 
-            for key, data in self.market_data.items()
+            key: data.get("sentiment", 0) for key, data in self.market_data.items()
         }
 
         try:
@@ -3777,18 +3778,18 @@ class TradingBotM4:
 
         # 1. Agrégation pondérée des scores par symbole
         symbol_sentiments = defaultdict(list)
-        
+
         for item in sentiment_scores:
             symbols = item.get("symbols", [])
             score = item.get("sentiment", 0)
-            
+
             # Si pas de symboles spécifiques, appliquer à toutes les paires
             if not symbols:
                 for key in self.market_data:
                     self.market_data[key]["sentiment"] = score
                     self.market_data[key]["sentiment_timestamp"] = time.time()
                 continue
-                
+
             # Sinon, appliquer aux paires correspondantes
             for symbol in symbols:
                 symbol = symbol.upper()
@@ -3803,12 +3804,12 @@ class TradingBotM4:
         for key in self.market_data:
             ticker = key.replace("USDT", "").replace("USD", "")
             values = symbol_sentiments.get(ticker, [])
-            
+
             if values:
                 total_score = sum(score * weight for score, weight in values)
                 total_weight = sum(weight for _, weight in values)
                 avg_sentiment = total_score / total_weight if total_weight else 0
-                
+
                 self.market_data[key]["sentiment"] = avg_sentiment
                 self.market_data[key]["sentiment_timestamp"] = time.time()
                 print(f"[DEBUG] {key}: sentiment moyen = {avg_sentiment:.4f}")
@@ -3824,26 +3825,27 @@ class TradingBotM4:
         # 4. Application du sentiment global aux paires sans sentiment spécifique
         for pair in self.pairs_valid:
             pair_key = pair.replace("/", "").upper()
-            
+
             # Création de l'entrée si nécessaire
             if pair_key not in self.market_data:
                 self.market_data[pair_key] = {}
-                
+
             # Application du sentiment global si pas de sentiment spécifique
-            if "sentiment" not in self.market_data[pair_key] or \
-            self.market_data[pair_key]["sentiment"] == 0:
+            if (
+                "sentiment" not in self.market_data[pair_key]
+                or self.market_data[pair_key]["sentiment"] == 0
+            ):
                 self.market_data[pair_key]["sentiment"] = global_sentiment
                 self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-                print(f"[DEBUG] {pair_key}: sentiment global appliqué = {global_sentiment}")
+                print(
+                    f"[DEBUG] {pair_key}: sentiment global appliqué = {global_sentiment}"
+                )
 
         # 5. Préparation des données pour la sauvegarde
         sentiment_data = {
             "last_sentiment_update": time.time(),
-            "sentiment_by_symbol": {
-                key: data.get("sentiment", 0) 
-                for key, data in self.market_data.items()
-            },
-            "global_sentiment": global_sentiment
+            "sentiment_by_symbol": symbol_sentiments_out,
+            "global_sentiment": global_sentiment,
         }
 
         # 6. Sauvegarde dans shared_data.json
@@ -5128,32 +5130,16 @@ async def run_clean_bot():
 
                     if df is not None and not df.empty:
                         # Vérification des colonnes requises d'abord
-                        required_columns = ["open", "high", "low", "close", "volume", "timestamp"]
+                        required_columns = [
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                            "timestamp",
+                        ]
                         if all(col in df.columns for col in required_columns):
-                            # Structure de base complète
-                            bot.market_data[pair_key][tf] = {
-                                "open": df["open"].tolist(),
-                                "high": df["high"].tolist(),
-                                "low": df["low"].tolist(),
-                                "close": df["close"].tolist(),
-                                "volume": df["volume"].tolist(),
-                                "timestamp": [int(pd.Timestamp(t).timestamp()) for t in df["timestamp"]],
-                                "signals": {
-                                    "technical": {"score": 0, "details": {}, "factors": 0},
-                                    "momentum": {"score": 0, "details": {}, "factors": 0},
-                                    "orderflow": {
-                                        "score": 0,
-                                        "details": {},
-                                        "factors": 0,
-                                        "liquidity": 0,
-                                        "market_pressure": 0
-                                    },
-                                    "ai": 0,
-                                    "sentiment": 0
-                                }
-                            }
-                        if all(col in df.columns for col in required_columns):
-                            # Structure de base complète
+                            # Structure de base complète (UNE SEULE FOIS)
                             bot.market_data[pair_key][tf] = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -5187,7 +5173,7 @@ async def run_clean_bot():
                                 },
                             }
 
-                            # Calcul des indicateurs orderflow
+                            # Calcul des indicateurs orderflow ensuite
                             if orderflow_indicators:
                                 try:
                                     of_data = {
@@ -5291,12 +5277,15 @@ async def run_clean_bot():
                             "volatility_factor": volatility_factor,
                             "market_pressure": market_pressure,
                             "liquidity_score": liquidity_score,
-                            "thresholds": {"buy": buy_threshold, "sell": sell_threshold},
-                            "weights": weights
+                            "thresholds": {
+                                "buy": buy_threshold,
+                                "sell": sell_threshold,
+                            },
+                            "weights": weights,
                         },
                         "timestamp": get_current_time(),  # Ajout ici
                         "symbol": symbol,
-                        "timeframe": tf
+                        "timeframe": tf,
                     }
 
                     trade_decisions.append(final_decision)
