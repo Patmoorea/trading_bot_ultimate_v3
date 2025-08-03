@@ -3811,7 +3811,7 @@ class TradingBotM4:
         """Met à jour les données de sentiment du marché"""
         print("\n=== MISE À JOUR SENTIMENTS ===")
 
-        # 1. Validation des scores
+        # Validation des scores
         valid_scores = [
             item
             for item in sentiment_scores
@@ -3821,59 +3821,38 @@ class TradingBotM4:
         ]
         print(f"[DEBUG] {len(valid_scores)}/{len(sentiment_scores)} scores valides")
 
-        # 2. Calcul des sentiments par paire
-        symbol_sentiments = defaultdict(list)
+        # Initialisation/MAJ pour TOUTES les paires
+        for pair in self.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            if pair_key not in self.market_data:
+                self.market_data[pair_key] = {}
 
+            # Valeur par défaut
+            self.market_data[pair_key]["sentiment"] = 0
+            self.market_data[pair_key]["sentiment_timestamp"] = time.time()
+
+        # Traitement des scores valides
         for item in valid_scores:
             score = item.get("sentiment", 0)
             symbols = item.get("symbols", [])
 
-            # Si pas de symboles spécifiques, appliquer à toutes les paires
-            if not symbols:
-                for key in self.market_data:
-                    self.market_data[key]["sentiment"] = score
-                    self.market_data[key]["sentiment_timestamp"] = time.time()
-                    print(f"[DEBUG] Sentiment global {score:.4f} appliqué à {key}")
-                continue
+            if not symbols:  # Score global
+                for pair_key in self.market_data:
+                    self.market_data[pair_key]["sentiment"] = score
+                    print(f"[DEBUG] Sentiment global {score:.4f} appliqué à {pair_key}")
+            else:  # Scores spécifiques
+                for symbol in symbols:
+                    symbol = symbol.upper()
+                    for pair_key in self.market_data:
+                        if symbol in pair_key:
+                            self.market_data[pair_key]["sentiment"] = score
+                            print(f"[DEBUG] Sentiment {score:.4f} assigné à {pair_key}")
 
-            # Sinon, appliquer aux paires correspondantes
-            for symbol in symbols:
-                symbol = symbol.upper()
-                for key in self.market_data:
-                    if symbol in key.upper():
-                        self.market_data[key]["sentiment"] = score
-                        self.market_data[key]["sentiment_timestamp"] = time.time()
-                        print(
-                            f"[DEBUG] Sentiment {score:.4f} assigné à {key} via {symbol}"
-                        )
-                        symbol_sentiments[key].append(score)
-
-        # 3. Calcul sentiment moyen par paire
-        for key in self.market_data:
-            scores = symbol_sentiments.get(key, [])
-            if scores:
-                avg_sentiment = float(np.mean(scores))
-                self.market_data[key]["sentiment"] = avg_sentiment
-                print(f"✅ {key}: sentiment moyen = {avg_sentiment:.4f}")
-            else:
-                print(f"⚠️ {key}: pas de sentiment spécifique")
-
-        # 4. Sauvegarde dans shared_data.json
-        try:
-            sentiment_data = {
-                "timestamp": get_current_time(),
-                "scores": sentiment_scores,
-                "sentiment_by_symbol": {
-                    key: self.market_data[key].get("sentiment", 0)
-                    for key in self.market_data
-                },
-            }
-
-            self.safe_update_shared_data({"sentiment": sentiment_data}, self.data_file)
-            print("✅ Données de sentiment sauvegardées")
-
-        except Exception as e:
-            print(f"❌ Erreur sauvegarde sentiment: {e}")
+        # Vérification finale
+        for pair_key in self.market_data:
+            print(
+                f"✅ {pair_key}: sentiment final = {self.market_data[pair_key].get('sentiment', 0):.4f}"
+            )
 
     # Remplace la méthode async def _save_sentiment_data(...) par la version patchée ci-dessous :
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
@@ -4321,6 +4300,10 @@ class TradingBotM4:
             pair_key = pair.replace("/", "").upper()
             print(f"\n[DEBUG] Préparation features IA pour {pair_key}")
 
+            # Initialisation de la structure si nécessaire
+            if pair_key not in self.market_data:
+                self.market_data[pair_key] = {}
+
             features = await self._prepare_features_for_ai(pair_key)
             if features is None:
                 print(f"❌ Échec préparation features pour {pair_key}")
@@ -4332,6 +4315,9 @@ class TradingBotM4:
                 # Prédiction CNN-LSTM
                 dl_prediction = self.dl_model.predict(features)
                 dl_predictions[pair_key] = dl_prediction
+
+                # IMPORTANT: Sauvegarde directe dans market_data
+                self.market_data[pair_key]["ai_prediction"] = dl_prediction
                 print(f"✅ Prédiction CNN-LSTM pour {pair_key}: {dl_prediction:.4f}")
 
                 # Construction vecteur pour PPO
@@ -4365,7 +4351,7 @@ class TradingBotM4:
                 print(f"❌ Erreur prédiction IA pour {pair_key}: {e}")
                 continue
 
-        # 2. Prédiction PPO globale
+        # 2. Prédiction PPO globale avec gestion d'erreur améliorée
         if ppo_features_list:
             try:
                 ppo_features = np.concatenate(ppo_features_list)
@@ -4374,7 +4360,9 @@ class TradingBotM4:
                 )
 
                 if ppo_features.shape == expected_shape:
-                    ppo_action = self.ppo_strategy.get_action(ppo_features)
+                    ppo_action = float(
+                        self.ppo_strategy.get_action(ppo_features)
+                    )  # Cast en float
                     print(f"✅ Prédiction PPO globale: {ppo_action:.4f}")
 
                     # 3. Fusion des signaux pour chaque paire
