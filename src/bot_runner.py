@@ -808,10 +808,6 @@ class RiskManager:
             momentum = signals.get("momentum", {})
             orderflow = signals.get("orderflow", {})
 
-            if not all([technical, momentum, orderflow]):
-                print("[RISK] Composantes manquantes")
-                return False
-
             # Validation technique
             tech_score = float(technical.get("score", 0))
             if abs(tech_score) < self.validation_thresholds["technical"]:
@@ -956,7 +952,12 @@ class TradingBotM4:
                 },
             )()
         # Initialisation directe du RiskManager (ajouter cette partie)
+        # Initialisation explicite du risk manager
         self.risk_manager = RiskManager()
+        if hasattr(self.risk_manager, "validate_trade"):
+            print("✅ Risk Manager initialisé avec succès")
+        else:
+            print("❌ Risk Manager mal initialisé")
         print("✅ Risk Manager initialisé")
 
         self.last_correlation_check = 0
@@ -1377,11 +1378,14 @@ class TradingBotM4:
         try:  # Premier try
             print(f"\n=== ANALYSE SIGNAUX {symbol}-{tf} ===")
 
-            # Initialisation des variables au début
+            # Initialisation des scores au début
             total_score = 0
-            volatility_adv = 0
-            exposure_mult = 1.0
-            divergence_score = 0
+            tech_score = 0
+            tech_factors = 0
+            momentum_score = 0
+            momentum_factors = 0
+            flow_score = 0
+            flow_factors = 0
 
             # Fonction de validation des données
             def is_valid(val):
@@ -1687,14 +1691,6 @@ class TradingBotM4:
                 else:  # Divergence négative
                     total_score *= 0.8
 
-            # Calcul score total
-            total_score = (
-                signals["technical"]["score"] * weights["technical"]
-                + signals["momentum"]["score"] * weights["momentum"]
-                + signals["orderflow"]["score"] * weights["orderflow"]
-            )
-            total_score = np.clip(total_score, -1, 1)
-
             # === DÉCISION FINALE ===
 
             # Seuils dynamiques
@@ -1795,6 +1791,14 @@ class TradingBotM4:
                 "ai": self.market_data.get(symbol, {}).get("ai_prediction", 0),
                 "sentiment": self.market_data.get(symbol, {}).get("sentiment", 0),
             }
+            # Calcul score total
+            total_score = (
+                signals["technical"]["score"] * weights["technical"]
+                + signals["momentum"]["score"] * weights["momentum"]
+                + signals["orderflow"]["score"] * weights["orderflow"]
+            )
+            total_score = np.clip(total_score, -1, 1)
+
             return decision
 
         except Exception as e:
