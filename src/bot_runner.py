@@ -2905,32 +2905,33 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        # 1. Lis le fichier existant SANS jamais repartir sur {}
+        """Mise à jour sécurisée des données partagées"""
         try:
+            # Lecture du fichier existant
             with open(data_file, "r") as f:
                 shared_data = json.load(f)
         except Exception:
-            # En cas de bug, tente de restaurer une sauvegarde précédente
-            backup_file = data_file + ".bak"
-            if os.path.exists(backup_file):
-                with open(backup_file, "r") as f:
-                    shared_data = json.load(f)
-            else:
-                shared_data = None
-        # Si shared_data est None, NE PAS ÉCRIRE !
-        if shared_data is None:
-            print("[SAFE PATCH] shared_data.json corrompu, skip écriture !")
-            return
-        # 2. Mets à jour les champs nécessaires
+            shared_data = {}  # Crée un nouveau dict si erreur lecture
+
+        # Met à jour uniquement les champs spécifiés
         shared_data.update(new_fields)
-        # 3. Sauvegarde une copie de secours avant d’écrire
+
+        # Sauvegarde une copie de sécurité avant d'écrire
+        backup_file = data_file + ".bak"
         try:
-            shutil.copyfile(data_file, data_file + ".bak")
+            shutil.copyfile(data_file, backup_file)
         except Exception:
             pass
-        # 4. Écris
-        with open(data_file, "w") as f:
-            json.dump(shared_data, f, indent=4)
+
+        # Écriture sécurisée
+        try:
+            with open(data_file, "w") as f:
+                json.dump(shared_data, f, indent=4)
+        except Exception as e:
+            print(f"Erreur sauvegarde shared_data: {e}")
+            # Restaure depuis la backup si existe
+            if os.path.exists(backup_file):
+                shutil.copyfile(backup_file, data_file)
 
     def check_tp_partial(
         self,
@@ -5952,44 +5953,83 @@ async def run_clean_bot():
                                 ),
                             }
 
-            # Validation finale avant sauvegarde
-            for pair in decisions_for_dashboard:
-                for key in ["confidence", "tech", "ai", "sentiment"]:
-                    if (
-                        decisions_for_dashboard[pair][key] is None
-                        or decisions_for_dashboard[pair][key] == 0
-                    ):
-                        decisions_for_dashboard[pair][key] = 0.5
+            # 1. Vérification et correction des decisions_for_dashboard
+            if not isinstance(decisions_for_dashboard, dict):
+                decisions_for_dashboard = {}
 
-            # Construction des métriques du cycle
-            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            # Initialisation/correction pour chaque paire
+            for pair in bot.pairs_valid:
+                if pair not in decisions_for_dashboard:
+                    decisions_for_dashboard[pair] = {
+                        "action": "neutral",
+                        "confidence": 0.5,
+                        "tech": 0.5,
+                        "ai": 0.5,
+                        "sentiment": 0.5,
+                    }
+                else:
+                    # Validation des valeurs existantes
+                    for key in ["confidence", "tech", "ai", "sentiment"]:
+                        try:
+                            val = float(decisions_for_dashboard[pair].get(key, 0))
+                            if val == 0 or val is None:
+                                decisions_for_dashboard[pair][key] = 0.5
+                        except (TypeError, ValueError):
+                            decisions_for_dashboard[pair][key] = 0.5
+
+            # 2. Construction des métriques du cycle
+            performance = bot.get_performance_metrics()
             cycle_metrics = {
-                "cycle": bot.current_cycle,
+                "cycle": getattr(bot, "current_cycle", 0),
                 "regime": regime,
-                "balance": bot.get_performance_metrics().get("balance", 10000.0),
-                "timestamp": current_time,
-                "user": "Patmoorea",
+                "balance": float(performance.get("balance", 10000.0)),
             }
 
-            # Sauvegarde UNIQUE avec toutes les données
-            bot.safe_update_shared_data(
-                {
+            # 3. Construction du bot_status
+            bot_status = {
+                "cycle": getattr(bot, "current_cycle", 0),
+                "regime": regime,
+                "performance": performance,
+            }
+
+            # 4. Sauvegarde unifiée avec gestion d'erreur
+            try:
+                data_to_save = {
                     "trade_decisions": decisions_for_dashboard,
                     "market_data": bot.market_data,
                     "cycle_metrics": cycle_metrics,
                     "active_pauses": bot.news_pause_manager.get_active_pauses(),
-                    "bot_status": {
-                        "cycle": bot.current_cycle,
-                        "regime": regime,
-                        "performance": bot.get_performance_metrics(),
-                        "last_update": current_time,
-                        "user": "Patmoorea",
+                    "bot_status": bot_status,
+                }
+
+                # Vérification des données avant sauvegarde
+                if all(
+                    isinstance(v, dict)
+                    for v in [
+                        decisions_for_dashboard,
+                        bot.market_data,
+                        cycle_metrics,
+                        bot_status,
+                    ]
+                ):
+                    bot.safe_update_shared_data(data_to_save, bot.data_file)
+                    print(f"✅ Données sauvegardées avec succès ")
+                else:
+                    raise ValueError("Format de données invalide")
+
+            except Exception as e:
+                print(f"❌ Erreur lors de la sauvegarde: {e}")
+                # Tentative de sauvegarde minimale
+                bot.safe_update_shared_data(
+                    {
+                        "trade_decisions": decisions_for_dashboard,
+                        "bot_status": {
+                            "cycle": getattr(bot, "current_cycle", 0),
+                            "regime": regime,
+                        },
                     },
-                    "timestamp": current_time,
-                    "user": "Patmoorea",
-                },
-                bot.data_file,
-            )
+                    bot.data_file,
+                )
 
             # Vérification finale des pauses
             if bot.news_pause_manager.global_cycles_remaining > 0:
