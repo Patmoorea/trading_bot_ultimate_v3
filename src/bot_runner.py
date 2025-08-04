@@ -417,7 +417,7 @@ MARKET_REGIMES = {
 
 
 def get_current_time():
-    """Retourne la date/heure actuelle au format string"""
+    """Retourne la date/heure actuelle"""
     return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -2903,7 +2903,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec validation"""
+        """Mise à jour sécurisée avec validation complète"""
         try:
             # 1. Backup du fichier existant
             backup_file = data_file + ".bak"
@@ -2921,64 +2921,84 @@ class TradingBotM4:
                 print(f"[ERROR] Erreur lecture: {e}")
                 shared_data = {}
 
-            # 3. Timestamp actuel
-            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            # 3. Génération du timestamp correct
+            current_time = datetime.utcnow()
+            current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
-            # 4. Validation et correction des valeurs
+            # 4. Validation des trade decisions
             def validate_trade_decisions(decisions):
+                validated = {}
                 if isinstance(decisions, dict):
                     for pair, data in decisions.items():
                         if isinstance(data, dict):
-                            # Valeurs par défaut
-                            defaults = {
+                            # Structure validée pour chaque paire
+                            validated_data = {
                                 "action": "neutral",
                                 "confidence": 0.5,
                                 "tech": 0.5,
                                 "ai": 0.5,
                                 "sentiment": 0.0,
+                                "timestamp": current_time_str,
                             }
-                            # Force les valeurs correctes
-                            for key, default in defaults.items():
-                                if key not in data or data[key] is None:
-                                    data[key] = default
-                                elif key in ["confidence", "tech", "ai", "sentiment"]:
-                                    try:
+
+                            # Mise à jour avec les données valides
+                            if "action" in data:
+                                validated_data["action"] = data["action"]
+
+                            # Validation des valeurs numériques
+                            for key in ["confidence", "tech", "ai", "sentiment"]:
+                                try:
+                                    if key in data and data[key] is not None:
                                         val = float(data[key])
                                         if key == "sentiment":
-                                            data[key] = max(-1.0, min(1.0, val))
+                                            validated_data[key] = max(
+                                                -1.0, min(1.0, val)
+                                            )
                                         else:
-                                            data[key] = max(0.0, min(1.0, val))
-                                    except (TypeError, ValueError):
-                                        data[key] = default
-                return decisions
+                                            validated_data[key] = max(
+                                                0.0, min(1.0, val)
+                                            )
+                                except (TypeError, ValueError):
+                                    pass  # Garde la valeur par défaut
 
-            # 5. Fusion profonde
+                            validated[pair] = validated_data
+
+                return validated
+
+            # 5. Validation des timestamps
+            def update_timestamps(data):
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        if isinstance(value, dict):
+                            update_timestamps(value)
+                        elif key in ["timestamp", "last_update"]:
+                            data[key] = current_time_str
+                return data
+
+            # 6. Fusion profonde avec préservation des types
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
                         d[k] = deep_update(d[k], v)
                     elif isinstance(v, list) and k in d and isinstance(d[k], list):
                         if k == "pending_sales":
-                            existing_items = {
+                            # Gestion spéciale des pending_sales
+                            existing = {
                                 item.get("symbol"): item
                                 for item in d[k]
                                 if isinstance(item, dict) and "symbol" in item
                             }
                             for new_item in v:
                                 if isinstance(new_item, dict) and "symbol" in new_item:
-                                    existing_items[new_item["symbol"]] = new_item
-                            d[k] = list(existing_items.values())
+                                    existing[new_item["symbol"]] = new_item
+                            d[k] = list(existing.values())
                         else:
                             d[k] = v
                     else:
-                        # Mise à jour des timestamps
-                        if k in ["timestamp", "last_update"]:
-                            d[k] = current_time
-                        else:
-                            d[k] = v
+                        d[k] = v
                 return d
 
-            # 6. Préservation des données importantes
+            # 7. Préservation des données importantes
             preserved_fields = [
                 "trade_history",
                 "closed_positions",
@@ -2988,47 +3008,46 @@ class TradingBotM4:
                 "active_pauses",
                 "pending_sales",
             ]
-
             preserved_data = {
                 field: shared_data.get(field, {})
                 for field in preserved_fields
                 if field in shared_data
             }
 
-            # 7. Validation des trade_decisions
+            # 8. Application des validations
             if "trade_decisions" in new_fields:
+                print("\n[DEBUG] Validation des décisions de trading...")
                 new_fields["trade_decisions"] = validate_trade_decisions(
                     new_fields["trade_decisions"]
                 )
 
-            # 8. Fusion des données avec timestamps corrects
+            # 9. Mise à jour des timestamps critiques
             if "cycle_metrics" in new_fields:
-                new_fields["cycle_metrics"]["timestamp"] = current_time
+                new_fields["cycle_metrics"]["timestamp"] = current_time_str
             if "bot_status" in new_fields:
-                new_fields["bot_status"]["last_update"] = current_time
+                new_fields["bot_status"]["last_update"] = current_time_str
+                new_fields["bot_status"]["timestamp"] = current_time_str
 
+            # 10. Fusion et mise à jour finale
+            new_fields = update_timestamps(new_fields)
             shared_data = deep_update(shared_data, new_fields)
             shared_data.update(preserved_data)
 
-            # 9. Sauvegarde sécurisée
+            # 11. Sauvegarde sécurisée
             try:
-                # Test de sérialisation
-                json.dumps(shared_data)
-
                 with open(data_file, "w") as f:
                     json.dump(shared_data, f, indent=4)
-
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
 
             except Exception as e:
-                print(f"❌ Erreur format JSON: {e}")
+                print(f"❌ Erreur sauvegarde JSON: {e}")
                 if os.path.exists(backup_file):
                     shutil.copyfile(backup_file, data_file)
                 return False
 
         except Exception as e:
-            print(f"❌ Erreur sauvegarde: {e}")
+            print(f"❌ Erreur générale: {e}")
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
             return False
@@ -4486,12 +4505,13 @@ class TradingBotM4:
             self.logger.error(f"Error saving sentiment data: {e}")
 
     async def generate_market_analysis_report(self, cycle=None):
+        current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         debug_market_data_structure(
             self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
         )
         report = (
-            f"Date UTC: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
-            f"Cycle: {cycle if cycle is not None else self.current_cycle}\n"
+            f"⏰ {current_time}\n"
+            f"📊 RAPPORT DE MARCHÉ (Cycle {cycle})\n"
             f"Current User's Login: {CURRENT_USER}\n"
             "╔═════════════════════════════════════════════════╗\n"
             "║           RAPPORT D'ANALYSE DE MARCHÉ           ║\n"
@@ -5877,31 +5897,87 @@ async def run_clean_bot():
             decisions_for_dashboard = {}
 
             print("\n[DEBUG] Initialisation des décisions...")
+
+            # Timestamp correct
+            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 market_signals = bot.market_data.get(pair_key, {})
                 tf_data = market_signals.get("1h", {}).get("signals", {})
 
-                # Ne pas mettre de valeurs par défaut ici
-                tech_score = tf_data.get("technical", {}).get("score")
-                ai_score = market_signals.get("ai_prediction")
-                sentiment_score = market_signals.get("sentiment")
+                # Récupération des scores avec valeurs par défaut sécurisées
+                tech_data = tf_data.get("technical", {})
+                tech_score = (
+                    float(tech_data.get("score", 0.5))
+                    if isinstance(tech_data, dict)
+                    else 0.5
+                )
 
-                decisions_for_dashboard[pair] = {
+                ai_score = market_signals.get("ai_prediction")
+                if ai_score is not None:
+                    try:
+                        ai_score = float(ai_score)
+                        ai_score = max(0.0, min(1.0, ai_score))  # Borne entre 0 et 1
+                    except (TypeError, ValueError):
+                        ai_score = 0.5
+                else:
+                    ai_score = 0.5
+
+                sentiment_score = market_signals.get("sentiment")
+                if sentiment_score is not None:
+                    try:
+                        sentiment_score = float(sentiment_score)
+                        sentiment_score = max(
+                            -1.0, min(1.0, sentiment_score)
+                        )  # Borne entre -1 et 1
+                    except (TypeError, ValueError):
+                        sentiment_score = 0.0
+                else:
+                    sentiment_score = 0.0
+
+                # Construction de la décision avec validation
+                decision = {
                     "action": "neutral",
-                    "confidence": None,  # On laisse à None plutôt que 0.5
-                    "tech": tech_score,  # On garde les valeurs brutes
+                    "confidence": 0.5,  # Valeur par défaut sécurisée
+                    "tech": tech_score,
                     "ai": ai_score,
                     "sentiment": sentiment_score,
+                    "timestamp": current_time,  # Ajout du timestamp correct
                 }
-                print(
-                    f"[DEBUG] Valeurs initiales pour {pair}: tech={tech_score}, ai={ai_score}, sentiment={sentiment_score}"
-                )
+
+                # Debug des valeurs
+                print(f"\n[DEBUG] Décision pour {pair}:")
+                print(f"- Tech score: {tech_score:.4f}")
+                print(f"- AI score: {ai_score:.4f}")
+                print(f"- Sentiment: {sentiment_score:.4f}")
+
+                # Stockage de la décision validée
+                decisions_for_dashboard[pair] = decision
 
             # 7. === ANALYSE DES SIGNAUX ===
             signals_ok = bot.verify_signals_completeness()
             if not signals_ok:
                 log_dashboard("⚠️ Signaux incomplets")
+
+            # Vérification finale des décisions
+            print("\n[DEBUG] Vérification finale des décisions:")
+            for pair, decision in decisions_for_dashboard.items():
+                print(f"\n{pair}:")
+                for key, value in decision.items():
+                    if isinstance(value, (int, float)):
+                        print(f"- {key}: {value:.4f}")
+                    else:
+                        print(f"- {key}: {value}")
+
+            # Mise à jour du market_data avec les décisions validées
+            for pair, decision in decisions_for_dashboard.items():
+                pair_key = pair.replace("/", "").upper()
+                if pair_key not in bot.market_data:
+                    bot.market_data[pair_key] = {}
+                bot.market_data[pair_key].update(
+                    {"last_decision": decision, "last_update": current_time}
+                )
 
             # 8. === GÉNÉRATION DES DÉCISIONS ===
             print("\n[DEBUG] Génération des décisions...")
@@ -7010,27 +7086,26 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
     return summary
 
 
-async def send_cycle_reports(bot, trade_decisions, cycle_num, regime, duration):
-    """Envoi des rapports avec le bon cycle"""
+async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, duration):
+    """Envoi des rapports de cycle"""
     try:
-        # 1. Rapport des trades du cycle
+        # 1. Rapport des trades
         await send_trade_summary(bot, trade_decisions)
 
-        # 2. Préparation des données d'analyse
+        # 2. Préparation des données
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
+        analysis_data.update(
+            {"cycle": current_cycle, "regime": regime, "duration": duration}
+        )
 
-        # Ajout explicite du cycle
-        analysis_data["cycle"] = cycle_num  # Utilisation de cycle_num au lieu de cycle
-        analysis_data["regime"] = regime
+        # 3. Génération et envoi du rapport
+        report = await bot.generate_market_analysis_report(cycle=current_cycle)
+        await bot.telegram.send_message(report)
 
-        # 3. Sauvegarde des données
+        # 4. Sauvegarde des données
         await save_cycle_data(bot, analysis_data)
 
-        # 4. Rapport d'analyse complet avec le bon cycle
-        analysis_report = await bot.generate_market_analysis_report(cycle=cycle_num)
-        await bot.telegram.send_message(analysis_report)
-
-        # 5. Alertes de risque
+        # 5. Vérification des alertes
         await check_risk_alerts(bot, analysis_data)
 
     except Exception as e:
