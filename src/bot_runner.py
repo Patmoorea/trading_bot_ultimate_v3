@@ -5611,7 +5611,7 @@ async def run_clean_bot():
     async def execute_trading_cycle(bot, valid_pairs):
         try:
             print("\n=== DÉBUT CYCLE TRADING ===")
-            log_dashboard(f" Démarrage cycle trading")
+            log_dashboard(f"Démarrage cycle trading")
 
             # Vérification immédiate des pauses actives
             if (
@@ -5664,12 +5664,12 @@ async def run_clean_bot():
                 print(f"[WARNING] Erreur init indicators: {e}")
                 orderflow_indicators = None
 
-            # === CORRECTION 1: Initialisation sentiment avec 0.5 au lieu de 0 ===
+            # Initialisation sentiment avec 0.5 au lieu de 0
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
-                bot.market_data[pair_key]["sentiment"] = 0.5  # <-- Changé de 0 à 0.5
+                bot.market_data[pair_key]["sentiment"] = 0.5
                 bot.market_data[pair_key]["sentiment_timestamp"] = time.time()
 
             # Mise à jour sentiments depuis shared_data
@@ -5704,10 +5704,7 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_cols):
-                            # Calcul des indicateurs techniques
                             indicators_data = bot.add_indicators(df)
-
-                            # Construction de la structure market_data
                             bot.market_data[pair_key][tf] = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -5721,7 +5718,7 @@ async def run_clean_bot():
                                 "signals": {
                                     "technical": {
                                         "score": float(
-                                            indicators_data.get("technical_score", 0)
+                                            indicators_data.get("technical_score", 0.5)
                                         ),
                                         "details": (
                                             indicators_data if indicators_data else {}
@@ -5733,26 +5730,25 @@ async def run_clean_bot():
                                         ),
                                     },
                                     "momentum": {
-                                        "score": 0,
+                                        "score": 0.5,
                                         "details": {},
                                         "factors": 0,
                                     },
                                     "orderflow": {
-                                        "score": 0,
+                                        "score": 0.5,
                                         "details": {},
                                         "factors": 0,
-                                        "liquidity": 0,
-                                        "market_pressure": 0,
+                                        "liquidity": 0.5,
+                                        "market_pressure": 0.5,
                                     },
                                     "ai": bot.market_data[pair_key].get(
-                                        "ai_prediction", 0
+                                        "ai_prediction", 0.5
                                     ),
                                     "sentiment": bot.market_data[pair_key].get(
                                         "sentiment", 0.5
                                     ),
                                 },
                             }
-
                             # Ajout des indicateurs orderflow
                             if orderflow_indicators:
                                 try:
@@ -5780,7 +5776,6 @@ async def run_clean_bot():
                                             else None
                                         ),
                                     }
-                                    # Mise à jour des signaux orderflow
                                     bot.market_data[pair_key][tf]["signals"][
                                         "orderflow"
                                     ].update(
@@ -5791,7 +5786,7 @@ async def run_clean_bot():
                                                 for x in of_data.values()
                                                 if x is not None
                                             )
-                                            / len(of_data),
+                                            / max(len(of_data), 1),
                                             "factors": len(
                                                 [
                                                     x
@@ -5845,45 +5840,41 @@ async def run_clean_bot():
                                     }
                                 )
 
-            # Analyse marché
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie: {strategy}")
 
-            # Vérification signaux
             signals_ok = bot.verify_signals_completeness()
             if not signals_ok:
                 log_dashboard("⚠️ Signaux incomplets")
 
-            # Arbitrage
             await handle_arbitrage_opportunities(bot)
 
-            # Analyse par paire
             trade_decisions = []
             decisions_for_dashboard = {}
 
-            # Initialisation dashboard pour toutes les paires
+            # Initialisation dashboard
             for pair in bot.pairs_valid:
+                pair_key = pair.replace("/", "").upper()
+                market_signals = bot.market_data.get(pair_key, {})
+                tf_data = market_signals.get("1h", {}).get("signals", {})
                 decisions_for_dashboard[pair] = {
                     "action": "neutral",
-                    "confidence": 0.5,  # Valeur par défaut non nulle
-                    "tech": 0.5,  # Valeur par défaut non nulle
-                    "ai": 0.5,  # Valeur par défaut non nulle
-                    "sentiment": 0.5,  # Valeur par défaut non nulle
+                    "confidence": 0.5,
+                    "tech": float(tf_data.get("technical", {}).get("score", 0.5)),
+                    "ai": float(market_signals.get("ai_prediction", 0.5)),
+                    "sentiment": float(market_signals.get("sentiment", 0.5)),
                 }
 
             for pair in bot.pairs_valid:
                 pair_signals = {}
-
                 for tf in bot.config["TRADING"]["timeframes"]:
                     pair_key = pair.replace("/", "").upper()
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
 
                     if df is not None and len(df) >= 20:
                         indicators_data = bot.add_indicators(df)
-                        # === CORRECTION 3: Ajout des scores techniques ===
                         if indicators_data:
-                            # Mise à jour des signaux techniques dans market_data
                             bot.market_data[pair_key][tf]["signals"]["technical"][
                                 "score"
                             ] = float(indicators_data.get("technical_score", 0.5))
@@ -5906,12 +5897,10 @@ async def run_clean_bot():
                     dominant_signals = pair_signals.get(dominant_tf, {}).get(
                         "signals", {}
                     )
-
                     if bot.risk_manager.validate_trade(dominant_signals):
                         action, confidence = bot.aggregate_timeframe_signals(
                             pair, pair_signals
                         )
-
                         pair_key = pair.replace("/", "").upper()
                         final_decision = {
                             "pair": pair,
@@ -5941,15 +5930,15 @@ async def run_clean_bot():
                             "metrics": pair_signals.get(dominant_tf, {}).get(
                                 "metrics", {}
                             ),
-                            "timestamp": get_current_time(),
+                            "timestamp": datetime.utcnow().strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
                             "tf": dominant_tf,
                         }
-
                         signals = final_decision.get("signals", {})
                         tech_score = float(signals.get("technical", 0.5))
                         ai_score = float(signals.get("ai", 0.5))
                         sentiment_score = float(signals.get("sentiment", 0.5))
-
                         decisions_for_dashboard[pair].update(
                             {
                                 "action": str(action),
@@ -5968,19 +5957,16 @@ async def run_clean_bot():
                             + final_decision["signals"]["ai"] * 0.2
                             + final_decision["signals"]["sentiment"] * 0.1
                         )
-
                         if (
                             signal_score >= 0.6
                             and confidence >= 0.7
                             and bot.calculate_volatility_advanced(df) <= 0.08
                             and abs(bot.check_volume_divergence(df)) <= 0.7
                         ):
-
                             final_decision["sizing_multiplier"] = (
                                 bot.optimize_portfolio_exposure()
                             )
                             trade_decisions.append(final_decision)
-
                             decisions_for_dashboard[pair] = {
                                 "action": str(action),
                                 "confidence": float(confidence),
@@ -6000,6 +5986,7 @@ async def run_clean_bot():
                                     else 0.5
                                 ),
                             }
+
             # Validation finale avant sauvegarde
             for pair in decisions_for_dashboard:
                 for key in ["confidence", "tech", "ai", "sentiment"]:
@@ -6009,27 +5996,32 @@ async def run_clean_bot():
                     ):
                         decisions_for_dashboard[pair][key] = 0.5
 
-            # Sauvegarde pour dashboard avec market_data
             # Construction des métriques du cycle
+            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
             cycle_metrics = {
                 "cycle": bot.current_cycle,
                 "regime": regime,
                 "balance": bot.get_performance_metrics().get("balance", 10000.0),
+                "timestamp": current_time,
+                "user": "Patmoorea",
             }
 
-            # Sauvegarde unique avec toutes les données
+            # Sauvegarde UNIQUE avec toutes les données
             bot.safe_update_shared_data(
                 {
                     "trade_decisions": decisions_for_dashboard,
                     "market_data": bot.market_data,
-                    "active_pauses": bot.news_pause_manager.get_active_pauses(),
                     "cycle_metrics": cycle_metrics,
+                    "active_pauses": bot.news_pause_manager.get_active_pauses(),
                     "bot_status": {
                         "cycle": bot.current_cycle,
                         "regime": regime,
                         "performance": bot.get_performance_metrics(),
-                        "last_update": get_current_time(),
+                        "last_update": current_time,
+                        "user": "Patmoorea",
                     },
+                    "timestamp": current_time,
+                    "user": "Patmoorea",
                 },
                 bot.data_file,
             )
