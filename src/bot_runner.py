@@ -2905,17 +2905,26 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec fusion profonde"""
+        """Mise à jour sécurisée avec validation du format JSON"""
         try:
-            # 1. Lecture du fichier existant
+            # 1. Backup du fichier existant avant toute modification
+            backup_file = data_file + ".bak"
+            if os.path.exists(data_file):
+                shutil.copyfile(data_file, backup_file)
+
+            # 2. Lecture du fichier existant
             try:
                 with open(data_file, "r") as f:
                     shared_data = json.load(f)
+                    # Validation du format
+                    if not isinstance(shared_data, dict):
+                        print("[ERROR] Format JSON invalide dans shared_data.json")
+                        raise ValueError("Invalid JSON format")
             except Exception as e:
                 print(f"[ERROR] Erreur lecture shared_data: {e}")
                 shared_data = {}
 
-            # 2. Fonction de fusion profonde
+            # 3. Fonction de fusion profonde
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
@@ -2940,24 +2949,45 @@ class TradingBotM4:
                         d[k] = v
                 return d
 
-            # 3. Fusion profonde des données
+            # 4. Fusion profonde des données
             shared_data = deep_update(shared_data, new_fields)
 
-            # 4. Backup avant sauvegarde
-            backup_file = data_file + ".bak"
-            if os.path.exists(data_file):
-                shutil.copyfile(data_file, backup_file)
+            # 5. Validation du format avant sauvegarde
+            if "trade_decisions" in shared_data:
+                for pair, decision in shared_data["trade_decisions"].items():
+                    if not isinstance(decision, dict):
+                        print(f"[ERROR] Format invalide pour {pair}")
+                        continue
+                    # Force les types corrects
+                    if "confidence" in decision:
+                        decision["confidence"] = float(decision["confidence"])
+                    if "tech" in decision:
+                        decision["tech"] = float(decision["tech"])
+                    if "ai" in decision:
+                        decision["ai"] = float(decision["ai"])
+                    if "sentiment" in decision:
+                        decision["sentiment"] = float(decision["sentiment"])
 
-            # 5. Sauvegarde sécurisée
-            with open(data_file, "w") as f:
-                json.dump(shared_data, f, indent=4)
+            # 6. Sauvegarde avec vérification du format JSON
+            try:
+                # Test de sérialisation avant écriture
+                json.dumps(shared_data)
 
-            print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
-            return True
+                with open(data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
+                print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
+                return True
+
+            except Exception as e:
+                print(f"❌ Erreur format JSON: {e}")
+                # Restaure depuis backup
+                if os.path.exists(backup_file):
+                    shutil.copyfile(backup_file, data_file)
+                return False
 
         except Exception as e:
             print(f"❌ Erreur sauvegarde shared_data: {e}")
-            # Restaure depuis backup si erreur
+            # Restaure depuis backup
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
             return False
