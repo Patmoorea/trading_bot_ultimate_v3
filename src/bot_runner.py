@@ -6293,27 +6293,24 @@ async def run_clean_bot():
                     for td in trade_decisions:
                         if td and isinstance(td, dict):
                             pair = td.get("pair")
-                            if pair and pair in td_dict:
-                                signals = (
-                                    td.get("signals", {})
-                                    if td and isinstance(td, dict)
-                                    else {}
-                                )
-                                td_dict[pair].update(
-                                    {
-                                        "confidence": float(td.get("confidence", 0.5)),
-                                        "action": str(td.get("action", "neutral")),
-                                        "tech": float(
-                                            signals.get("technical", {}).get(
-                                                "score", 0.5
-                                            )
-                                        ),
-                                        "ai": float(signals.get("ai", 0.5)),
-                                        "sentiment": float(
-                                            signals.get("sentiment", 0.5)
-                                        ),
-                                    }
-                                )
+                            signals = (
+                                td.get("signals", {})
+                                if td
+                                and "signals" in td
+                                and isinstance(td["signals"], dict)
+                                else {}
+                            )
+                            td_dict[pair].update(
+                                {
+                                    "confidence": float(td.get("confidence", 0.5)),
+                                    "action": str(td.get("action", "neutral")),
+                                    "tech": float(
+                                        signals.get("technical", {}).get("score", 0.5)
+                                    ),
+                                    "ai": float(signals.get("ai", 0.5)),
+                                    "sentiment": float(signals.get("sentiment", 0.5)),
+                                }
+                            )
 
                     # 3. Mise à jour des métriques de cycle
                     cycle_metrics = {
