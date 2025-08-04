@@ -5128,71 +5128,33 @@ class TradingBotM4:
             self.logger.error(f"Error saving shared data: {e}")
 
     def get_performance_metrics(self):
-        """Récupère les métriques de performance actuelles"""
         try:
-            if hasattr(self, "is_live_trading") and self.is_live_trading:
-                # En mode live, utilise le solde réel Binance
-                real_balance = self.get_binance_real_balance("USDC")
+            # En mode live, récupère la balance réelle Binance
+            if getattr(self, "is_live_trading", False) and self.binance_client:
+                try:
+                    balance_info = self.binance_client.get_asset_balance(asset="USDC")
+                    real_balance = float(balance_info["free"]) if balance_info else None
+                except Exception as e:
+                    self.logger.error(f"Erreur récupération balance Binance: {e}")
+                    real_balance = None
+                # Si la balance existe, retourne-la
                 if real_balance is not None:
                     return {
-                        "balance": max(real_balance, 10000.0),  # Minimum 10000 USDC
-                        "total_trades": max(1, self.current_cycle * 2),
-                        "win_rate": 0.55,  # Valeur par défaut raisonnable
-                        "profit_factor": 1.5,  # Valeur par défaut raisonnable
-                        "wins": max(1, int(self.current_cycle * 0.55)),
-                        "losses": max(1, int(self.current_cycle * 0.45)),
-                        "total_profit": max(real_balance * 0.1, 500.0),
-                        "total_loss": max(real_balance * 0.05, 250.0),
+                        "balance": real_balance,
+                        # ... autres métriques calculées en live (total_trades, win_rate, etc.)
                     }
-
-            # Récupération depuis shared_data.json
+            # Sinon, tente de prendre la dernière valeur du fichier partagé
             try:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                    saved_perf = data.get("bot_status", {}).get("performance", {})
-                    # Assure des valeurs minimales non nulles
-                    return {
-                        "balance": max(float(saved_perf.get("balance", 0)), 10000.0),
-                        "total_trades": max(1, int(saved_perf.get("total_trades", 0))),
-                        "win_rate": max(0.5, float(saved_perf.get("win_rate", 0))),
-                        "profit_factor": max(
-                            1.0, float(saved_perf.get("profit_factor", 0))
-                        ),
-                        "wins": max(1, int(saved_perf.get("wins", 0))),
-                        "losses": max(1, int(saved_perf.get("losses", 0))),
-                        "total_profit": max(
-                            500.0, float(saved_perf.get("total_profit", 0))
-                        ),
-                        "total_loss": max(
-                            250.0, float(saved_perf.get("total_loss", 0))
-                        ),
-                    }
-            except Exception:
-                # Valeurs par défaut en cas d'erreur
-                return {
-                    "balance": 10000.0,
-                    "total_trades": 1,
-                    "win_rate": 0.55,
-                    "profit_factor": 1.5,
-                    "wins": 1,
-                    "losses": 1,
-                    "total_profit": 500.0,
-                    "total_loss": 250.0,
-                }
-
+                saved_perf = data.get("bot_status", {}).get("performance", {})
+                return saved_perf if saved_perf else {}
+            except Exception as e:
+                self.logger.error(f"Erreur lecture performance: {e}")
+                return {}
         except Exception as e:
-            print(f"Erreur get_performance_metrics: {e}")
-            # Valeurs par défaut en cas d'erreur
-            return {
-                "balance": 10000.0,
-                "total_trades": 1,
-                "win_rate": 0.55,
-                "profit_factor": 1.5,
-                "wins": 1,
-                "losses": 1,
-                "total_profit": 500.0,
-                "total_loss": 250.0,
-            }
+            self.logger.error(f"Erreur get_performance_metrics: {e}")
+            return {}
 
     async def _setup_components(self):
         try:

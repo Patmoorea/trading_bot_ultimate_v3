@@ -140243,3 +140243,23 @@
 2025-08-04T02:19:50.272889 | ✅ ArbitrageEngine initialisé avec succès
 2025-08-04T02:19:50.278930 | Initialisation des modèles d'IA...
 2025-08-04T02:19:50.756475 | ✅ Modèles d'IA initialisés avec succès
+2025-08-04T02:19:52.408260 | ✅ PPO Strategy initialized successfully
+2025-08-04T02:19:52.412746 | ✅ Bot initialisé avec Telegram: True
+2025-08-04T02:19:52.412785 | ✅ Trading en direct: True
+2025-08-04T02:19:52.412816 | ✅ IA activée: True
+2025-08-04T02:19:52.412847 | ✅ Analyse de news activée: True
+2025-08-04T02:21:54.454398 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-04T02:23:23.255670 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0284 | Tendance: 0.0026
+2025-08-04T02:23:23.266333 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-04T02:23:23.305418 | Démarrage cycle trading
+2025-08-04T02:24:01.964843 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0283 | Tendance: 0.0026
+2025-08-04T02:24:01.976308 | 🎯 Stratégie: Range/Scalping
+2025-08-04T02:24:01.976572 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-04T02:24:32.815326 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-04T02:24:32.820057 | Initialisation des modèles d'IA...
+2025-08-04T02:24:33.278993 | ✅ Modèles d'IA initialisés avec succès
+2025-08-04T02:24:34.820765 | ✅ PPO Strategy initialized successfully
+2025-08-04T02:24:34.829409 | ✅ Bot initialisé avec Telegram: True
+2025-08-04T02:24:34.829496 | ✅ Trading en direct: True
+2025-08-04T02:24:34.829556 | ✅ IA activée: True
+2025-08-04T02:24:34.829615 | ✅ Analyse de news activée: True
