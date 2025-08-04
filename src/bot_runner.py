@@ -2905,18 +2905,27 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée des données partagées"""
+        """Mise à jour sécurisée et préservative des données"""
         try:
             # Lecture du fichier existant
             with open(data_file, "r") as f:
                 shared_data = json.load(f)
         except Exception:
-            shared_data = {}  # Crée un nouveau dict si erreur lecture
+            shared_data = {}
 
-        # Met à jour uniquement les champs spécifiés
-        shared_data.update(new_fields)
+        # Mise à jour récursive qui préserve les sous-structures
+        def deep_update(d, u):
+            for k, v in u.items():
+                if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+                    d[k] = deep_update(d[k], v)
+                else:
+                    d[k] = v
+            return d
 
-        # Sauvegarde une copie de sécurité avant d'écrire
+        # Met à jour avec préservation des structures
+        shared_data = deep_update(shared_data, new_fields)
+
+        # Sauvegarde une copie de sécurité
         backup_file = data_file + ".bak"
         try:
             shutil.copyfile(data_file, backup_file)
@@ -2929,7 +2938,7 @@ class TradingBotM4:
                 json.dump(shared_data, f, indent=4)
         except Exception as e:
             print(f"Erreur sauvegarde shared_data: {e}")
-            # Restaure depuis la backup si existe
+            # Restaure depuis la backup
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
 
@@ -5032,45 +5041,49 @@ class TradingBotM4:
 
     def initialize_shared_data(self):
         """
-        Initialise le fichier partagé SANS écraser l'historique :
-        - Conserve l'existant (news, positions, historiques…)
-        - Réinitialise uniquement certains champs (cycle, régime, performance…)
+        Initialise le fichier partagé en CONSERVANT l'historique
         """
         # Charge l'existant si présent
         if os.path.exists(self.data_file):
-            with open(self.data_file, "r") as f:
-                data = json.load(f)
+            try:
+                with open(self.data_file, "r") as f:
+                    data = json.load(f)
+            except Exception as e:
+                print(f"Erreur lecture shared_data: {e}")
+                data = {}
         else:
             data = {}
 
-        # Réinitialise uniquement les champs nécessaires
-        data["timestamp"] = get_current_time()
-        data["user"] = CURRENT_USER
-
-        # PATCH : Réinit de bot_status
-        data["bot_status"] = {
-            "regime": self.regime,
-            "cycle": 0,  # Cycle remis à zéro !
-            "last_update": get_current_time(),
-            "performance": {
-                "total_trades": 0,
-                "win_rate": 0,
-                "profit_factor": 0,
-                "balance": 0,
-                "wins": 0,
-                "losses": 0,
-                "total_profit": 0,
-                "total_loss": 0,
-            },
+        # Préserve les données importantes
+        preserved_fields = [
+            "trade_history",
+            "closed_positions",
+            "sentiment",
+            "equity_history",
+            "news_data",
+        ]
+        preserved_data = {
+            field: data.get(field, {}) for field in preserved_fields if field in data
         }
 
-        # Optionnel : tu peux ajouter ici d'autres champs à réinitialiser si besoin
-        # Exemple :
-        # data["active_pauses"] = []
-        # data["equity_history"] = []
+        # Réinitialise uniquement les champs de statut
+        data.update(
+            {
+                "timestamp": get_current_time(),
+                "user": CURRENT_USER,
+                "bot_status": {
+                    "regime": self.regime,
+                    "cycle": self.current_cycle,
+                    "last_update": get_current_time(),
+                    "performance": self.get_performance_metrics(),
+                },
+            }
+        )
 
-        # NE PAS TOUCHER aux autres champs : news, positions, historiques, etc.
+        # Restaure les données préservées
+        data.update(preserved_data)
 
+        # Sauvegarde
         with open(self.data_file, "w") as f:
             json.dump(data, f, indent=4)
 
@@ -6377,7 +6390,7 @@ async def run_clean_bot():
                         )
 
                     # Entraînement IA périodique
-                    if cycle % 50 == 0:
+                    if cycle % 10 == 0:
                         print(
                             "=== Entraînement automatique IA sur toutes les paires/timeframes ==="
                         )
