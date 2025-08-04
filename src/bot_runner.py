@@ -6008,36 +6008,30 @@ async def run_clean_bot():
                 print("\n[DEBUG] Sauvegarde des données...")
                 current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-                # A. Lecture des données existantes
+                # 1. Lecture des données existantes
                 try:
                     with open(bot.data_file, "r") as f:
                         existing_data = json.load(f)
-                except Exception:
+                except Exception as e:
+                    print(f"[ERROR] Erreur lecture shared_data: {e}")
                     existing_data = {}
 
-                # B. Préservation des données historiques importantes
-                preserved_data = {
-                    key: existing_data.get(key, {})
-                    for key in [
-                        "trade_history",
-                        "closed_positions",
-                        "equity_history",
-                        "news_data",
-                        "sentiment",
-                        "active_pauses",
-                    ]
-                }
+                # 2. Préservation des trade_decisions existantes
+                existing_trade_decisions = existing_data.get("trade_decisions", {})
 
-                print("[DEBUG] Données préservées:", list(preserved_data.keys()))
+                # 3. Mise à jour des trade_decisions (fusion au lieu de remplacement)
+                merged_trade_decisions = existing_trade_decisions.copy()
+                for pair, decision in decisions_for_dashboard.items():
+                    if pair in merged_trade_decisions:
+                        # Mise à jour en préservant les champs existants
+                        merged_trade_decisions[pair].update(decision)
+                    else:
+                        # Nouvelle entrée
+                        merged_trade_decisions[pair] = decision
 
-                # C. Préparation des nouvelles données
+                # 4. Préparation des données à sauvegarder
                 data_to_save = {
-                    "trade_decisions": {
-                        **existing_data.get(
-                            "trade_decisions", {}
-                        ),  # Garde l'historique
-                        **decisions_for_dashboard,  # Ajoute les nouvelles
-                    },
+                    "trade_decisions": merged_trade_decisions,  # Utilisation des décisions fusionnées
                     "market_data": {
                         **existing_data.get("market_data", {}),  # Garde l'historique
                         **bot.market_data,  # Ajoute les nouvelles
@@ -6058,23 +6052,26 @@ async def run_clean_bot():
                     },
                 }
 
-                # D. Restauration des données préservées
-                data_to_save.update(preserved_data)
+                # 5. Préservation des autres données importantes
+                preserved_fields = [
+                    "trade_history",
+                    "closed_positions",
+                    "equity_history",
+                    "news_data",
+                    "sentiment",
+                    "active_pauses",
+                    "pending_sales",
+                ]
 
-                print("[DEBUG] Vérification données avant sauvegarde:")
-                for pair in decisions_for_dashboard:
-                    dec = decisions_for_dashboard[pair]
-                    print(f"\n{pair}:")
-                    print(f"- Confidence: {dec['confidence']}")
-                    print(f"- Tech: {dec['tech']}")
-                    print(f"- AI: {dec['ai']}")
-                    print(f"- Sentiment: {dec['sentiment']}")
+                for field in preserved_fields:
+                    if field in existing_data:
+                        data_to_save[field] = existing_data[field]
 
-                # E. Sauvegarde avec backup
+                # 6. Vérification et sauvegarde
                 if all(
                     isinstance(v, dict)
                     for v in [
-                        decisions_for_dashboard,
+                        merged_trade_decisions,
                         bot.market_data,
                         data_to_save["cycle_metrics"],
                         data_to_save["bot_status"],
