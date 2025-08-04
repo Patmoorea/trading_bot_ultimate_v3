@@ -3017,63 +3017,73 @@ class TradingBotM4:
         Affiche TOUTES les positions spot Binance avec leur état actuel, raison, action du signal, etc.
         Permet d'avoir un état des lieux complet, même si le signal n'est pas SELL.
         """
-        pending = []
-        now = datetime.utcnow()
+        try:
+            # 1. Charger l'existant d'abord
+            try:
+                with open(self.data_file, "r") as f:
+                    shared_data = json.load(f)
+                existing_pending = shared_data.get("pending_sales", [])
+            except Exception as e:
+                print(f"[WARNING] Erreur lecture shared_data: {e}")
+                existing_pending = []
 
-        if hasattr(self, "positions_binance"):
-            for symbol, pos in self.positions_binance.items():
-                entry_price = pos.get("entry_price")
-                current_price = pos.get("current_price")
-                amount = pos.get("amount")
-                pnl_pct = (
-                    (current_price - entry_price) / entry_price * 100
-                    if entry_price and current_price
-                    else 0
-                )
-                date_achat = None
-                temps_en_position = None
+            pending = []
+            now = datetime.utcnow()
 
-                # Récupère le signal du tableau "Scores de décision et signaux"
-                td = self.trade_decisions.get(symbol, {})
-                action = td.get("action", "neutral")
-                confidence = td.get("confidence", None)
-
-                # --- INITIALISATION SYSTÉMATIQUE DES VARIABLES ---
-                decision = ""
-                pause_status = "Non"
-                note = ""
-
-                # Raison
-                if action == "SELL":
-                    reason = "🔴 Signal SELL"
-                    decision = "Vente prévue au prochain cycle"
-                elif pnl_pct < -5:
-                    reason = (
-                        f"🔴 Perte latente {pnl_pct:.1f}%, signal: {action.upper()}"
+            if hasattr(self, "positions_binance"):
+                for symbol, pos in self.positions_binance.items():
+                    entry_price = pos.get("entry_price")
+                    current_price = pos.get("current_price")
+                    amount = pos.get("amount")
+                    pnl_pct = (
+                        (current_price - entry_price) / entry_price * 100
+                        if entry_price and current_price
+                        else 0
                     )
-                    decision = "Surveillance, risque de vente auto si perte aggrave"
-                elif pnl_pct > 7:
-                    reason = f"🟢 Gain latent {pnl_pct:.1f}%, signal: {action.upper()}"
-                    decision = "Surveillance, possibilité de prise de profit"
-                else:
-                    reason = f"Signal actuel: {action.upper()}"
-                    decision = "Aucune action prévue, position maintenue"
 
-                # Pause (exemple simple, adapte selon tes pauses réelles)
-                if hasattr(self, "news_pause_manager"):
-                    pauses = self.news_pause_manager.get_active_pauses()
-                    if any(symbol in p.get("asset", "") for p in pauses):
-                        pause_status = "Oui"
-                        note = "Trading suspendu (pause active)"
-                elif reason.startswith("🟢 Gain latent"):
-                    note = "En zone de profit, TP possible"
-                elif reason.startswith("🔴 Perte latente"):
-                    note = "Risque de stop-loss"
-                else:
+                    # Récupère le signal du tableau "Scores de décision et signaux"
+                    td = self.trade_decisions.get(symbol, {})
+                    action = td.get("action", "neutral")
+                    confidence = td.get("confidence", None)
+
+                    # --- INITIALISATION SYSTÉMATIQUE DES VARIABLES ---
+                    decision = ""
+                    pause_status = "Non"
                     note = ""
 
-                pending.append(
-                    {
+                    # Raison
+                    if action == "SELL":
+                        reason = "🔴 Signal SELL"
+                        decision = "Vente prévue au prochain cycle"
+                    elif pnl_pct < -5:
+                        reason = (
+                            f"🔴 Perte latente {pnl_pct:.1f}%, signal: {action.upper()}"
+                        )
+                        decision = "Surveillance, risque de vente auto si perte aggrave"
+                    elif pnl_pct > 7:
+                        reason = (
+                            f"🟢 Gain latent {pnl_pct:.1f}%, signal: {action.upper()}"
+                        )
+                        decision = "Surveillance, possibilité de prise de profit"
+                    else:
+                        reason = f"Signal actuel: {action.upper()}"
+                        decision = "Aucune action prévue, position maintenue"
+
+                    # Pause
+                    if hasattr(self, "news_pause_manager"):
+                        pauses = self.news_pause_manager.get_active_pauses()
+                        if any(symbol in p.get("asset", "") for p in pauses):
+                            pause_status = "Oui"
+                            note = "Trading suspendu (pause active)"
+                    elif reason.startswith("🟢 Gain latent"):
+                        note = "En zone de profit, TP possible"
+                    elif reason.startswith("🔴 Perte latente"):
+                        note = "Risque de stop-loss"
+                    else:
+                        note = ""
+
+                    # Créer l'entrée pour cette position
+                    new_entry = {
                         "symbol": symbol,
                         "reason": reason,
                         "decision": decision,
@@ -3081,20 +3091,39 @@ class TradingBotM4:
                         "current_price": current_price,
                         "amount": amount,
                         "% Gain/Perte": f"{pnl_pct:.2f}%",
-                        "temps_en_position_h": (
-                            f"{temps_en_position:.1f}"
-                            if temps_en_position is not None
-                            else "N/A"
-                        ),
+                        "temps_en_position_h": "N/A",  # À calculer si besoin
                         "pause_blocage": pause_status,
                         "note": note,
                     }
-                )
 
-        print("DEBUG pending_sales tableau:", pending)
-        # Sauvegarde dans shared_data.json
-        self.safe_update_shared_data({"pending_sales": pending}, self.data_file)
-        return pending
+                    # Chercher si cette position existe déjà
+                    existing_entry = next(
+                        (item for item in existing_pending if item["symbol"] == symbol),
+                        None,
+                    )
+
+                    if existing_entry:
+                        # Mise à jour de l'entrée existante
+                        existing_entry.update(new_entry)
+                        pending.append(existing_entry)
+                    else:
+                        # Nouvelle entrée
+                        pending.append(new_entry)
+
+            print("[DEBUG] Pending sales mis à jour:", pending)
+
+            # Fusion avec l'existant et sauvegarde
+            self.safe_update_shared_data(
+                {"pending_sales": pending},
+                self.data_file,
+                merge=True,  # Indique qu'il faut fusionner au lieu d'écraser
+            )
+
+            return pending
+
+        except Exception as e:
+            print(f"[ERROR] Erreur dans get_pending_sales: {e}")
+            return []
 
     def get_active_pauses(self):
         """
