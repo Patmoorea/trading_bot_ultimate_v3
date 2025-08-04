@@ -2905,7 +2905,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée et préservative des données"""
+        """Mise à jour sécurisée avec fusion profonde"""
         try:
             # Lecture du fichier existant
             with open(data_file, "r") as f:
@@ -2913,7 +2913,7 @@ class TradingBotM4:
         except Exception:
             shared_data = {}
 
-        # Mise à jour récursive qui préserve les sous-structures
+        # Fonction de fusion profonde
         def deep_update(d, u):
             for k, v in u.items():
                 if isinstance(v, dict) and k in d and isinstance(d[k], dict):
@@ -2922,23 +2922,23 @@ class TradingBotM4:
                     d[k] = v
             return d
 
-        # Met à jour avec préservation des structures
+        # Fusion profonde des données
         shared_data = deep_update(shared_data, new_fields)
 
-        # Sauvegarde une copie de sécurité
+        # Sauvegarde sécurisée
         backup_file = data_file + ".bak"
         try:
-            shutil.copyfile(data_file, backup_file)
-        except Exception:
-            pass
+            # Backup avant sauvegarde
+            if os.path.exists(data_file):
+                shutil.copyfile(data_file, backup_file)
 
-        # Écriture sécurisée
-        try:
+            # Sauvegarde avec nouvelle fusion
             with open(data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
+
         except Exception as e:
-            print(f"Erreur sauvegarde shared_data: {e}")
-            # Restaure depuis la backup
+            print(f"Erreur sauvegarde: {e}")
+            # Restaure depuis backup si erreur
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
 
@@ -5959,18 +5959,40 @@ async def run_clean_bot():
                 print("\n[DEBUG] Sauvegarde des données...")
                 current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-                print("[DEBUG] Vérification données avant sauvegarde:")
-                for pair in decisions_for_dashboard:
-                    dec = decisions_for_dashboard[pair]
-                    print(f"\n{pair}:")
-                    print(f"- Confidence: {dec['confidence']}")
-                    print(f"- Tech: {dec['tech']}")
-                    print(f"- AI: {dec['ai']}")
-                    print(f"- Sentiment: {dec['sentiment']}")
+                # A. Lecture des données existantes
+                try:
+                    with open(bot.data_file, "r") as f:
+                        existing_data = json.load(f)
+                except Exception:
+                    existing_data = {}
 
+                # B. Préservation des données historiques importantes
+                preserved_data = {
+                    key: existing_data.get(key, {})
+                    for key in [
+                        "trade_history",
+                        "closed_positions",
+                        "equity_history",
+                        "news_data",
+                        "sentiment",
+                        "active_pauses",
+                    ]
+                }
+
+                print("[DEBUG] Données préservées:", list(preserved_data.keys()))
+
+                # C. Préparation des nouvelles données
                 data_to_save = {
-                    "trade_decisions": decisions_for_dashboard,
-                    "market_data": bot.market_data,
+                    "trade_decisions": {
+                        **existing_data.get(
+                            "trade_decisions", {}
+                        ),  # Garde l'historique
+                        **decisions_for_dashboard,  # Ajoute les nouvelles
+                    },
+                    "market_data": {
+                        **existing_data.get("market_data", {}),  # Garde l'historique
+                        **bot.market_data,  # Ajoute les nouvelles
+                    },
                     "cycle_metrics": {
                         "cycle": bot.current_cycle,
                         "regime": regime,
@@ -5987,6 +6009,19 @@ async def run_clean_bot():
                     },
                 }
 
+                # D. Restauration des données préservées
+                data_to_save.update(preserved_data)
+
+                print("[DEBUG] Vérification données avant sauvegarde:")
+                for pair in decisions_for_dashboard:
+                    dec = decisions_for_dashboard[pair]
+                    print(f"\n{pair}:")
+                    print(f"- Confidence: {dec['confidence']}")
+                    print(f"- Tech: {dec['tech']}")
+                    print(f"- AI: {dec['ai']}")
+                    print(f"- Sentiment: {dec['sentiment']}")
+
+                # E. Sauvegarde avec backup
                 if all(
                     isinstance(v, dict)
                     for v in [
@@ -5996,6 +6031,12 @@ async def run_clean_bot():
                         data_to_save["bot_status"],
                     ]
                 ):
+                    # Backup avant sauvegarde
+                    backup_file = bot.data_file + ".bak"
+                    if os.path.exists(bot.data_file):
+                        shutil.copyfile(bot.data_file, backup_file)
+
+                    # Sauvegarde avec fusion profonde
                     bot.safe_update_shared_data(data_to_save, bot.data_file)
                     print("✅ Données sauvegardées avec succès")
                 else:
@@ -6003,6 +6044,7 @@ async def run_clean_bot():
 
             except Exception as e:
                 print(f"❌ Erreur sauvegarde: {e}")
+                # Sauvegarde minimale en cas d'erreur
                 bot.safe_update_shared_data(
                     {
                         "trade_decisions": decisions_for_dashboard,
