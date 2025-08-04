@@ -472,18 +472,36 @@ with tab1:
         def sizing_pct(conf):
             try:
                 conf = float(conf)
-                if conf > 0.7:
-                    rp = 0.09
+                # Base sizing selon la confiance
+                if conf > 0.8:
+                    base_size = 0.09  # 9%
+                elif conf > 0.6:
+                    base_size = 0.06  # 6%
                 elif conf > 0.4:
-                    rp = 0.04
+                    base_size = 0.04  # 4%
                 else:
-                    rp = 0.02
+                    base_size = 0.02  # 2%
+
+                # Ajustement Kelly
                 kelly = kelly_criterion(win_rate, profit_factor)
                 if kelly > 0:
-                    rp = min(rp + kelly * 0.5, 0.12)
-                return f"{rp*100:.1f}%"
+                    # Limite l'influence du Kelly à +50% max du base_size
+                    kelly_adjustment = min(kelly * 0.5, 0.5)
+                    final_size = base_size * (1 + kelly_adjustment)
+                else:
+                    final_size = base_size
+
+                # Plafonnement final
+                final_size = min(final_size, 0.12)  # Max 12%
+
+                return f"{final_size*100:.1f}%"
             except:
                 return "N/A"
+
+        # Application dans le DataFrame
+        df_signals["Sizing (%)"] = df_signals.apply(
+            lambda row: sizing_pct(row["confidence"]), axis=1
+        )
 
         # Ajout de la colonne Sizing
         df_signals["Sizing (%)"] = df_signals["confidence"].map(sizing_pct)
