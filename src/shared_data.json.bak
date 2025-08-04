@@ -10,21 +10,21 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 108157.62198198192,
-      "current_price": 114229.39,
+      "current_price": 114231.98,
       "amount": 9e-05,
-      "% Gain/Perte": "5.61%",
+      "% Gain/Perte": "5.62%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "LTC/USDC",
-      "reason": "\ud83d\udfe2 Gain latent 57.8%, signal: NEUTRAL",
+      "reason": "\ud83d\udfe2 Gain latent 57.4%, signal: NEUTRAL",
       "decision": "Surveillance, possibilit\u00e9 de prise de profit",
       "entry_price": 70.07813412060145,
-      "current_price": 110.58,
+      "current_price": 110.33,
       "amount": 0.102,
-      "% Gain/Perte": "57.80%",
+      "% Gain/Perte": "57.44%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -34,9 +34,9 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 3654.1087878787876,
-      "current_price": 3500.36,
+      "current_price": 3496.6,
       "amount": 0.0033,
-      "% Gain/Perte": "-4.21%",
+      "% Gain/Perte": "-4.31%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -46,9 +46,9 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 719.1871428571428,
-      "current_price": 751.68,
+      "current_price": 751.15,
       "amount": 0.02490912,
-      "% Gain/Perte": "4.52%",
+      "% Gain/Perte": "4.44%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -67,12 +67,12 @@
     },
     {
       "symbol": "XRP/USDC",
-      "reason": "\ud83d\udd34 Perte latente -10.6%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -10.8%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.29422,
-      "current_price": 2.9455,
+      "current_price": 2.9396,
       "amount": 3.4,
-      "% Gain/Perte": "-10.59%",
+      "% Gain/Perte": "-10.76%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -82,9 +82,9 @@
       "reason": "\ud83d\udd34 Perte latente -12.8%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.83298,
-      "current_price": 0.7264,
+      "current_price": 0.7263,
       "amount": 14.2,
-      "% Gain/Perte": "-12.80%",
+      "% Gain/Perte": "-12.81%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -94,7 +94,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.635,
+      "current_price": 0.636,
       "amount": 0.03230637,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -103,12 +103,12 @@
     },
     {
       "symbol": "DOGE/USDC",
-      "reason": "\ud83d\udd34 Perte latente -21.2%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -21.3%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.252465,
-      "current_price": 0.19893,
+      "current_price": 0.19867,
       "amount": 23.0,
-      "% Gain/Perte": "-21.20%",
+      "% Gain/Perte": "-21.31%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -127,12 +127,12 @@
     },
     {
       "symbol": "SOL/USDC",
-      "reason": "\ud83d\udd34 Perte latente -17.0%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -17.1%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 194.96943548387094,
-      "current_price": 161.82,
+      "current_price": 161.69,
       "amount": 0.058,
-      "% Gain/Perte": "-17.00%",
+      "% Gain/Perte": "-17.07%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -166,7 +166,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 9.147,
+      "current_price": 9.152,
       "amount": 3.85614,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -178,7 +178,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01514,
+      "current_price": 0.01513,
       "amount": 1484.74630755,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -190,7 +190,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0182,
+      "current_price": 0.01812,
       "amount": 397.59699569,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -202,7 +202,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.919,
+      "current_price": 0.918,
       "amount": 28.28169,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -247,12 +247,12 @@
     },
     {
       "symbol": "SUI/USDC",
-      "reason": "\ud83d\udd34 Perte latente -13.0%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -13.1%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.9549924242424246,
-      "current_price": 3.4426,
+      "current_price": 3.437,
       "amount": 5.2,
-      "% Gain/Perte": "-12.96%",
+      "% Gain/Perte": "-13.10%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -262,7 +262,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 3.572,
+      "current_price": 3.555,
       "amount": 0.087214,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -286,7 +286,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.996,
+      "current_price": 0.999,
       "amount": 0.35478462,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -298,7 +298,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.5931,
+      "current_price": 0.5923,
       "amount": 2.85374308,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -310,7 +310,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2413,
+      "current_price": 0.2415,
       "amount": 0.05435377,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -322,7 +322,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.14,
+      "current_price": 4.1,
       "amount": 0.05679375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -334,7 +334,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01214,
+      "current_price": 0.01209,
       "amount": 4.05396039,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -343,12 +343,12 @@
     },
     {
       "symbol": "NOT/USDC",
-      "reason": "\ud83d\udd34 Perte latente -79.3%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -79.1%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.01052,
-      "current_price": 0.002181,
+      "current_price": 0.002196,
       "amount": 1116.15,
-      "% Gain/Perte": "-79.27%",
+      "% Gain/Perte": "-79.13%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -358,7 +358,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2699,
+      "current_price": 0.268,
       "amount": 39.51211224,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -370,7 +370,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.59,
+      "current_price": 0.591,
       "amount": 0.43377579,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -394,7 +394,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 23.32,
+      "current_price": 23.2,
       "amount": 0.01833206,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -406,7 +406,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0832,
+      "current_price": 0.0836,
       "amount": 0.07004223,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -430,7 +430,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0706,
+      "current_price": 0.0705,
       "amount": 3.76301349,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -454,7 +454,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.193,
+      "current_price": 4.18,
       "amount": 5.47230677,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -466,7 +466,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.059,
+      "current_price": 0.0588,
       "amount": 0.79286793,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -490,7 +490,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01641,
+      "current_price": 0.01642,
       "amount": 2.50258947,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -502,7 +502,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.5999,
+      "current_price": 0.6001,
       "amount": 0.03474063,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -514,7 +514,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.02606,
+      "current_price": 0.02604,
       "amount": 1.1566659,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -526,7 +526,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3996,
+      "current_price": 0.401,
       "amount": 0.13870156,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -538,7 +538,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2972,
+      "current_price": 0.2969,
       "amount": 0.18545852,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -550,7 +550,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0422,
+      "current_price": 0.04219,
       "amount": 0.88600535,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -562,7 +562,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3865,
+      "current_price": 0.3846,
       "amount": 0.1179094,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -574,7 +574,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.06923,
+      "current_price": 0.06942,
       "amount": 1.17754728,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -586,7 +586,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0832,
+      "current_price": 0.0823,
       "amount": 0.08862893,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -598,7 +598,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0876,
+      "current_price": 0.0874,
       "amount": 0.56851639,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -610,7 +610,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.8928,
+      "current_price": 0.8913,
       "amount": 0.17386141,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -622,7 +622,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1385,
+      "current_price": 0.1384,
       "amount": 0.17714676,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -634,7 +634,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.03263,
+      "current_price": 0.0327,
       "amount": 2.49958419,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -646,7 +646,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1798,
+      "current_price": 0.18,
       "amount": 0.11578375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -658,7 +658,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0349,
+      "current_price": 0.03473,
       "amount": 1.16253643,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -670,7 +670,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.092574,
+      "current_price": 0.09254,
       "amount": 1.36076364,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -682,7 +682,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3427,
+      "current_price": 0.3414,
       "amount": 0.10083373,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -694,7 +694,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0897,
+      "current_price": 0.09022,
       "amount": 1.00786376,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -706,7 +706,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3224,
+      "current_price": 0.3229,
       "amount": 0.16214933,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -718,7 +718,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.937,
+      "current_price": 0.936,
       "amount": 0.34099158,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -730,7 +730,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2884,
+      "current_price": 0.2876,
       "amount": 0.26255203,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -742,7 +742,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.4555,
+      "current_price": 0.4548,
       "amount": 0.10868663,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -751,7 +751,7 @@
     }
   ],
   "sentiment": {
-    "timestamp": "2025-08-03T14:00:13.092848",
+    "timestamp": "2025-08-03T14:56:52.835092",
     "scores": [
       {
         "title": "Bitcoin : Ces 10 pays dominent le minage de BTC en 2025",
@@ -775,10 +775,10 @@
         "timestamp": 1754233200,
         "url": "https://journalducoin.com/defi/comment-acheter-action-tokenisee-palantir-pltr/",
         "symbols": [
-          "UNI",
           "BNB",
           "SOL",
-          "ETH"
+          "ETH",
+          "UNI"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7568115592002869,
@@ -823,8 +823,8 @@
         "timestamp": 1754222400,
         "url": "https://journalducoin.com/actualites/crypto-142-millions-dollars-voles-juillet-par-hackers-qui-perfectionnent-methodes/",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.7,
@@ -881,12 +881,12 @@
         "timestamp": 1754208000,
         "url": "https://journalducoin.com/nft/nft-ventes-atteignent-574-millions-dollars-juillet-deuxieme-plus-haut-2025/",
         "symbols": [
-          "SOL",
-          "ETH",
-          "MATIC",
-          "ADA",
+          "BNB",
           "BTC",
-          "BNB"
+          "MATIC",
+          "ETH",
+          "SOL",
+          "ADA"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7582501769065857,
@@ -945,8 +945,8 @@
         "timestamp": 1754150400,
         "url": "https://journalducoin.com/actualites/comment-acheter-cryptomonnaies-moonpay-guide/",
         "symbols": [
-          "UNI",
-          "BTC"
+          "BTC",
+          "UNI"
         ],
         "source_weight": 0.7,
         "sentiment": 0.8002303838729858,
@@ -960,8 +960,8 @@
         "timestamp": 1754143200,
         "url": "https://journalducoin.com/economie/bitcoin-cryptomonnaies-decentralisation-3-piliers-bonheur-national-brut-du-bhoutan/",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.7,
@@ -988,8 +988,8 @@
         "timestamp": 1754128800,
         "url": "https://journalducoin.com/exchanges/crypto-volume-echanges-atteint-1-700-milliards-dollars-juillet-2025/",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.7,
@@ -1373,13 +1373,13 @@
         "timestamp": 1754042400,
         "url": "https://journalducoin.com/bitcoin/bitcoin-baisse-altcoins-degringolent-marche-crypto-rouge-liquidations-sol-xrp-doge/",
         "symbols": [
-          "SOL",
-          "DOGE",
-          "TRX",
-          "ETH",
-          "XRP",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "TRX",
+          "SOL",
+          "XRP",
+          "DOGE"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7759842872619629,
@@ -1419,11 +1419,11 @@
         "timestamp": 1754038080,
         "url": "https://coinacademy.fr/actu/btc-600-millions-liquides-bitcoin-resiste-115000/?utm_source=rss&utm_medium=rss&utm_campaign=btc-600-millions-liquides-bitcoin-resiste-115000",
         "symbols": [
-          "SOL",
-          "ETH",
-          "XRP",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "SOL",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": 0.6518223285675049,
@@ -1478,7 +1478,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5Nzk0MjMtZWY4ZS03YzYwLWI5MzctYjlkZGY3NWZlOGFk.jpg\" alt=\"Here\u2019s what happened in crypto today\"></p><p>Need to know what happened in crypto today? Here is the latest news on daily trends and events impacting Bitcoin price, blockchain, DeFi, NFTs, Web3 and crypto regulation.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754301090,
-        "url": "https://cointelegraph.com/news/what-happened-in-crypto-today?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/what-happened-in-crypto-today?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1492,7 +1492,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODcyMDItYmMyOC03OTY4LTk5ODUtOTJhZmM3YzAxODZl.jpg\" alt=\"Blockchain technology can help decentralize the US energy grid \u2014 VC\"></p><p>Making the US energy grid more resistant to shocks and maximizing grid uptime is central to the Trump administration\u2019s AI strategy.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754300104,
-        "url": "https://cointelegraph.com/news/blockchain-technology-decentralize-us-energy-grid?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/blockchain-technology-decentralize-us-energy-grid?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": -0.5379056930541992,
@@ -1504,7 +1504,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODcxNTYtZTU4Yy03NDA4LTk3NjMtMzE3M2MxODlmMTUy.jpg\" alt=\"Tron network founder Justin Sun returns from space\"></p><p>The Tron founder said it has been a long-time dream to travel to space and reflected on the fragility of the planet following his return.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754293906,
-        "url": "https://cointelegraph.com/news/tron-founder-justin-sun-returns-space?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/tron-founder-justin-sun-returns-space?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "TRX"
         ],
@@ -1518,7 +1518,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDQvMDE5NjY5ODUtZDM2My03ODY4LWE2NTEtN2Y1N2E3MzIxZmY2.jpg\" alt=\"Iconic Satoshi Nakamoto statue recovered by Lugano municipality\"></p><p>The iconic statue of pseudonymous Bitcoin creator Satoshi Nakamoto has become a textbook symbol of the global Bitcoin movement.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754280060,
-        "url": "https://cointelegraph.com/news/iconic-satoshi-nakamoto-statue-recovered-lugano?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/iconic-satoshi-nakamoto-statue-recovered-lugano?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1532,7 +1532,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDQvMDE5NjExYmUtNmUxYy03MzZjLTg2YTAtYmY1MjgzZTU1YzE3.jpg\" alt=\"Bitcoin dip making \u2018perfect bottom,\u2019 says analyst: Will BTC rally to $148K?\"></p><p>BTC price is retesting a key support that previously triggered a 25% rally, potentially signaling a repeat move toward new all-time highs for Bitcoin.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754275747,
-        "url": "https://cointelegraph.com/news/bitcoin-dip-making-perfect-bottom-says-analyst-will-btc-rally-to-148k?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/bitcoin-dip-making-perfect-bottom-says-analyst-will-btc-rally-to-148k?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1546,7 +1546,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODUxZjctMjg2YS03NWQxLWI1YjktZTBkMjJiOWVjZWFj.jpg\" alt=\"How to use cryptocurrency to buy a home in Dubai (legally and safely)\"></p><p>Dubai now enables crypto property deals under clear VARA rules, with major developers like Damac and Emaar accepting BTC, ETH and stablecoins.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754273074,
-        "url": "https://cointelegraph.com/news/how-to-use-cryptocurrency-to-buy-a-home-in-dubai-legally-and-safely?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/how-to-use-cryptocurrency-to-buy-a-home-in-dubai-legally-and-safely?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC",
           "ETH"
@@ -1561,7 +1561,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODA4ZTQtYmMxYS03NDZkLWE3ODgtMzcyOWYwODFkNDJi.jpg\" alt=\"The token is dead, long live the token\"></p><p>Crypto tokens have failed retail investors through insider concentration and poor design. Regulation and tokenized real-world assets offer hope for revival.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754272800,
-        "url": "https://cointelegraph.com/news/token-is-dead-long-live-token?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/token-is-dead-long-live-token?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.0495377779006958,
@@ -1573,10 +1573,10 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODcwMDUtMmRkNi03MTM3LThiZTMtYzNlZTA2OTQ1MGI4.jpg\" alt=\"Bitcoin hodlers &#039;bleed&#039; as Binance daily inflows near 7K BTC\"></p><p>Bitcoin exchange inflows have been increasing for over a month, and the latest BTC price drawdown has made nervous sellers double down.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754266594,
-        "url": "https://cointelegraph.com/news/bitcoin-speculators-bleed-binance-daily-inflows-near-7k-btc?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/bitcoin-speculators-bleed-binance-daily-inflows-near-7k-btc?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
-          "BTC",
-          "BNB"
+          "BNB",
+          "BTC"
         ],
         "source_weight": 0.8,
         "sentiment": -0.8102564811706543,
@@ -1588,7 +1588,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZiZjAtZTczYy03YmFiLWI0ZDgtY2I1NmI3NzQ2OTU3.jpg\" alt=\"Big stage, bigger scams? 5 shady crypto projects that made it to the spotlight\"></p><p>ZachXBT named some sponsors of Token2049 as sketchy. While these coins may have hype-fueled pumps to cult-like followings, they may have no real utility.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754266523,
-        "url": "https://cointelegraph.com/news/5-shady-crypto-projects-that-made-it-to-the-spotlight?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/5-shady-crypto-projects-that-made-it-to-the-spotlight?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.5289196968078613,
@@ -1600,7 +1600,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODcwMWMtYjBjMS03MTJiLTgxYTAtMjU3MzgyM2IyNGE1.jpg\" alt=\"Citigroup, JP Morgan, Goldman Sachs lead TradFi&#039;s blockchain charge: Ripple\"></p><p>TradFi giants made 345 blockchain investments between 2020\u20132024, with G-SIBs leading 100+ deals across tokenization, custody and payments.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754266502,
-        "url": "https://cointelegraph.com/news/citigroup-jpmorgan-goldman-lead-blockchain-investment-ripple?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/citigroup-jpmorgan-goldman-lead-blockchain-investment-ripple?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "XRP"
         ],
@@ -1614,7 +1614,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5N2U2MDUtNjdkMC03NGQ3LWE4M2YtMjNkNmRhOTIyYzEx.jpg\" alt=\"5 countries where crypto is (surprisingly) tax-free in 2025\"></p><p>Looking to live tax-free with crypto in 2025? These five countries, including the Cayman Islands, UAE and Germany, still offer legal, zero-tax treatment for cryptocurrencies.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754256148,
-        "url": "https://cointelegraph.com/news/countries-where-crypto-is-tax-free?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/countries-where-crypto-is-tax-free?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.8018132448196411,
@@ -1626,7 +1626,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDIvMDE5NGRhZTEtMjFiMy03Mzk3LWEzMjQtZjkyNTIxNDE2YWRh.jpg\" alt=\"Disappearing Satoshi statue in Lugano stolen, 0.1 BTC offered for its return\"></p><p>The disappearing Satoshi statue, symbolizing Bitcoin\u2019s anonymity, was stolen in Lugano. Organizers are offering 0.1 BTC to anyone who helps retrieve it.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754255597,
-        "url": "https://cointelegraph.com/news/satoshi-nakamoto-statue-stolen-lugano-0-1-btc-reward?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/satoshi-nakamoto-statue-stolen-lugano-0-1-btc-reward?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1640,7 +1640,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5N2U1OGQtMmM3Yy03MmQwLThjZTEtMzAyMDhjZmIxZDNj.jpg\" alt=\"SharpLink buys another $54M in ETH, now holds $1.65B worth of Ether\"></p><p>SharpLink spent $108.57 million in USDC over 48 hours to acquire 30,755 ETH, raising its total Ether holdings to 480,031 ETH worth $1.65 billion.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754244935,
-        "url": "https://cointelegraph.com/news/sharplink-buys-54m-eth-holdings-hit-1-65b?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/sharplink-buys-54m-eth-holdings-hit-1-65b?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "ETH"
         ],
@@ -1654,7 +1654,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDUvMDE5NmQzYzQtNGE1Ny03ZjQxLWIzNTYtMmQ3NzQ2OGE0ZTc1.jpg\" alt=\"Bearish Arthur Hayes says Bitcoin could retrace to $100K on macro headwinds\"></p><p>Bitcoin and Ether could fall back toward the $100,000 and $3,000 level amid concerns of more tariffs, a sluggish credit market and slowed job creation, Arthur Hayes argues.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754238242,
-        "url": "https://cointelegraph.com/news/arthur-hayes-says-bitcoin-may-fall-amid-macro-concerns?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/arthur-hayes-says-bitcoin-may-fall-amid-macro-concerns?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1668,7 +1668,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZkOGYtYjQ3Zi03NmJkLThkMDQtNWU0NTY5MWNmMTU1.jpg\" alt=\"XRP eyes 20% surge in August, crypto returns to US: Hodler\u2019s Digest, July 27 \u2013 Aug. 2\"></p><p>XRP may be gearing up for a short-term rebound, crypto companies are beginning to return to the United States, and other news.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754224908,
-        "url": "https://cointelegraph.com/news/xrp-price-surge-crypto-firms-return-us-hodlers-digest?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/xrp-price-surge-crypto-firms-return-us-hodlers-digest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "XRP"
         ],
@@ -1682,7 +1682,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZkMWMtZTQzYy03NDI4LWJlMDUtYWRlMzU1NWRiYTI5.jpg\" alt=\"Crypto victim loses $908K in sophisticated phishing attack\"></p><p>A victim lost $908,551 in a crypto phishing scam 15 months after signing a malicious approval transaction. The scammer waited until two large deposits were made before striking.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754223109,
-        "url": "https://cointelegraph.com/news/crypto-victim-loses-908k-in-sophisticated-phishing-attack?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/crypto-victim-loses-908k-in-sophisticated-phishing-attack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.07356123626232147,
@@ -1694,7 +1694,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZjYjUtYzk3ZC03ODhmLWEzNjktYjdiMjRjYzMxZGFm.jpg\" alt=\"$3.5B Bitcoin heist from 2020 retroactively uncovered \u2014 Arkham Intel\"></p><p>The $3.5 billion heist is the single largest cryptocurrency hack and went unreported by both parties for years, according to Arkham.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754212566,
-        "url": "https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1708,7 +1708,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZjN2EtZjk1Yi03OTYxLWJiYTUtMzk0NDU2ZDUxN2U0.jpg\" alt=\"Creative leverage solves the impermanent loss problem \u2014 Curve founder\"></p><p>Impermanent loss has been a major factor preventing crypto holders from becoming liquidity providers on decentralized finance platforms.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754207729,
-        "url": "https://cointelegraph.com/news/creative-leverage-solves-impermanent-loss-curve?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/creative-leverage-solves-impermanent-loss-curve?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.3337024450302124,
@@ -1720,7 +1720,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODNkYjgtOGM0MC03M2U5LTg0OTYtMzliNTEzYzVmMjAx.jpg\" alt=\"How to use ChatGPT Agent for crypto trading in 2025\"></p><p>ChatGPT Agents can assist with crypto trading in 2025 by automating research and analysis, while keeping users in control through built-in safety features.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754196983,
-        "url": "https://cointelegraph.com/news/how-to-use-chatgpt-agent-for-crypto-trading?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/how-to-use-chatgpt-agent-for-crypto-trading?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.8455800414085388,
@@ -1732,7 +1732,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDUvMDE5NmFmYzgtNTljMC03YmJiLWJmMjItYmFmYWQ0OTJjNGNh.jpg\" alt=\"Bitcoin mining difficulty hits ATH, but is projected to drop in August\"></p><p>The Bitcoin mining difficulty is crucial to both miner profitability and ensuring that BTC is not mined faster than the protocol allows.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754193770,
-        "url": "https://cointelegraph.com/news/bitcoin-mining-difficulty-all-time-high-projected-drop-august?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/bitcoin-mining-difficulty-all-time-high-projected-drop-august?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1746,7 +1746,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODA4ZDgtNGUwYi03YzY1LWI5OGQtZjQxNjg4YmIyMDdl.jpg\" alt=\"China\u2019s crypto liquidation plans reveal its grand strategy\"></p><p>China\u2019s plan to liquidate confiscated crypto through Hong Kong exchanges isn\u2019t simply a policy \u2014 it\u2019s to control global digital asset markets and outmaneuver the US.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754186400,
-        "url": "https://cointelegraph.com/news/china-crypto-liquidation-plans-reveal-its-grand-strategy?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/china-crypto-liquidation-plans-reveal-its-grand-strategy?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.8724189400672913,
@@ -1758,7 +1758,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy83ZmY0NDEzODI1MWRlY2JjNzI5ZmNiZmUxODEwMzdkYy5qcGc=.jpg\" alt=\"Quantum threat to Bitcoin? 80,000 BTC just moved after 14 years\"></p><p>A Bitcoin whale likely moved 80,000 BTC from dormant wallets after alarming OP_RETURN messages were sent across multiple old addresses. </p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754181000,
-        "url": "https://cointelegraph.com/explained/quantum-threat-to-bitcoin-80-000-btc-just-moved-after-14-years?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/explained/quantum-threat-to-bitcoin-80-000-btc-just-moved-after-14-years?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1772,7 +1772,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZhODUtYTVmNC03Mzk1LWJhNzEtYmZiZmQzNTVmYTZl.jpg\" alt=\"Small setups, big wins: Is solo Bitcoin mining making a comeback?\"></p><p>With Bitcoin\u2019s hashrate near all-time highs, solo miners continue to land full block rewards, thanks to efficient ASICs and a heavy dose of luck.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754173759,
-        "url": "https://cointelegraph.com/news/solo-bitcoin-miners-defy-odds-block-rewards-rise?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/solo-bitcoin-miners-defy-odds-block-rewards-rise?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1786,7 +1786,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODZhMmYtYmE5ZC03YTc1LWEyMmUtOTY2ODkxOGM5NDJh.jpg\" alt=\"ARK Invest scoops up Coinbase, BitMine shares amid stock dips\"></p><p>ARK Invest bought $30 million in Coinbase and $17 million in BitMine shares on Friday amid price dips.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754168212,
-        "url": "https://cointelegraph.com/news/ark-invest-buys-coinbase-bitmine-stock-dips?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/ark-invest-buys-coinbase-bitmine-stock-dips?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.700833797454834,
@@ -1798,7 +1798,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODY2ZmMtYzFkYS03N2Y2LTlkMjUtMDlmYjU1YzA5OGE5.jpg\" alt=\"Can Google Gemini really help plan crypto trades?\"></p><p>Gemini looks smart, but can it actually trade? We put it to the test with sample trades and break down where it helps and where it doesn\u2019t.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754166245,
-        "url": "https://cointelegraph.com/news/can-google-gemini-really-help-plan-crypto-trades?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/can-google-gemini-really-help-plan-crypto-trades?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.7524901032447815,
@@ -1810,7 +1810,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjQtMTIvMDE5NDAwNDUtMjg4Yy03MGYzLWE3NjAtZTRkM2M5ZTVkZjI2.jpg\" alt=\"Spot Bitcoin ETFs see second-largest outflow, Ether ETFs end 20-day streak\"></p><p>Bitcoin ETFs saw $812 million in outflows, led by Fidelity and ARK, while Ether ETFs ended their longest inflow streak with $152 million in losses.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754156809,
-        "url": "https://cointelegraph.com/news/spot-bitcoin-etfs-second-largest-outflow-ether-etfs-streak-ends?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/spot-bitcoin-etfs-second-largest-outflow-ether-etfs-streak-ends?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1824,7 +1824,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODY4YzctMmExNy03MWJkLTk5NzMtZmEzOThhYjY1ZTcy.jpg\" alt=\"Mill City Ventures to load up on more SUI with $500M deal as shares fall 11%\"></p><p>Mill City Ventures III announced a $500 million equity agreement to boost its SUI treasury, which currently sits at 76.2 million units after making its first $276 million purchase this week.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754149677,
-        "url": "https://cointelegraph.com/news/mill-city-to-raise-500-million-for-sui-treasury?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/mill-city-to-raise-500-million-for-sui-treasury?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "SUI"
         ],
@@ -1838,7 +1838,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODI5MDktZGNiYi03NmI5LTg4NmQtOGEzYzMwMTcxMDEx.jpg\" alt=\"DeFi Education Fund urges Senate to strengthen crypto dev protections in draft bill\"></p><p>DeFi Education Fund called on the Senate Banking Committee to frame a key crypto market bill in a more tech-neutral way and strengthen crypto developer protections in a recent letter.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754138354,
-        "url": "https://cointelegraph.com/news/defi-education-fund-gives-feedback-to-senators-on-crypto-bill?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/defi-education-fund-gives-feedback-to-senators-on-crypto-bill?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": -0.27926233410835266,
@@ -1850,7 +1850,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDQvMDE5Njg0MzQtYjFkNS03NTFjLTk2NTUtYjQ1OTZlYTYwYjUx.jpg\" alt=\"Strategy expands STRC offering twice in two weeks\"></p><p>The company continues to accumulate BTC through corporate equity and debt offerings, but class action lawsuits against Strategy are mounting.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754127676,
-        "url": "https://cointelegraph.com/news/strategy-expands-strc-offering-twice-two-weeks?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/strategy-expands-strc-offering-twice-two-weeks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [
           "BTC"
         ],
@@ -1864,7 +1864,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDMvMDE5NWM4OTgtYzdkZS03ZGQ4LTljODMtYWZiNzg2ZTg1NDc2.jpg\" alt=\"SEC Chair Aktins calls to \u2018reshore crypto\u2019 as companies move back to the US\"></p><p>With officials urging companies to \u201creshore crypto,\u201d global companies are expanding US operations as the Trump administration rolls out pro-crypto reforms.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1754126484,
-        "url": "https://cointelegraph.com/news/sec-chairman-atkins-reshore-crypto-companies-back-to-the-us?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/sec-chairman-atkins-reshore-crypto-companies-back-to-the-us?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.715326726436615,
@@ -1876,7 +1876,7 @@
         "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy9iNmQxM2ViMWYyZjdlYmUwMWQzYjZhZGRkMmNiM2M2MS5qcGc=.jpg\" alt=\"Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Years\"></p><p>Popular chart analysis service TradingView contains a bug in the Fibonacci retracement technical analysis tool.</p>\n                                ",
         "source": "Cointelegraph",
         "timestamp": 1560899040,
-        "url": "https://cointelegraph.com/news/twitter-user-claims-tradingview-has-ignored-a-fibonacci-retracement-bug-for-5-years?utm_source=rss_feed&utm_medium=rss%3Fnocache%3D1709545169462&utm_campaign=rss_partner_inbound",
+        "url": "https://cointelegraph.com/news/twitter-user-claims-tradingview-has-ignored-a-fibonacci-retracement-bug-for-5-years?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
         "symbols": [],
         "source_weight": 0.8,
         "sentiment": 0.4045460522174835,
@@ -1966,8 +1966,8 @@
         "timestamp": 1754117989,
         "url": "https://decrypt.co/333226/bitcoin-ethereum-xrp-sink-crypto-liquidations-top-900-million",
         "symbols": [
-          "XRP",
           "BTC",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -1982,8 +1982,8 @@
         "timestamp": 1754114445,
         "url": "https://decrypt.co/333218/public-keys-strategy-metaplanet-bitcoin-coinbase-xrp",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.14626279473304749,
@@ -2135,9 +2135,9 @@
         "timestamp": 1754066200,
         "url": "https://decrypt.co/333090/solana-xrp-dogecoin-extend-losses",
         "symbols": [
-          "XRP",
+          "DOGE",
           "SOL",
-          "DOGE"
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.009305082261562347,
@@ -2413,12 +2413,12 @@
         "timestamp": 1753846596,
         "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
         "symbols": [
-          "SOL",
-          "DOGE",
-          "TRX",
-          "ETH",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "TRX",
+          "SOL",
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": 0.19718927145004272,
@@ -2432,12 +2432,12 @@
         "timestamp": 1753838801,
         "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
         "symbols": [
-          "SOL",
-          "DOGE",
-          "TRX",
-          "ETH",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "TRX",
+          "SOL",
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": 0.43923965096473694,
@@ -2463,8 +2463,8 @@
         "timestamp": 1753752618,
         "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2479,11 +2479,11 @@
         "timestamp": 1753495243,
         "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
         "symbols": [
-          "SOL",
-          "TRX",
-          "ETH",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "SOL",
+          "TRX"
         ],
         "source_weight": 0.8,
         "sentiment": -0.6711649894714355,
@@ -2497,8 +2497,8 @@
         "timestamp": 1753408933,
         "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
         "symbols": [
-          "XRP",
           "BTC",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2513,11 +2513,11 @@
         "timestamp": 1753320869,
         "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
         "symbols": [
-          "SOL",
-          "ETH",
-          "XRP",
+          "BNB",
           "BTC",
-          "BNB"
+          "ETH",
+          "SOL",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": -0.797458291053772,
@@ -2565,9 +2565,9 @@
         "timestamp": 1753148067,
         "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
         "symbols": [
-          "XRP",
           "BTC",
           "SOL",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2582,9 +2582,9 @@
         "timestamp": 1752887652,
         "url": "https://decrypt.co/videos/interviews/DcqEJpDC/crypto-market-cap-tops-4t-xrp-hits-ath-eth-treasuries-heat-up",
         "symbols": [
-          "XRP",
           "BTC",
           "DOGE",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2599,8 +2599,8 @@
         "timestamp": 1752803362,
         "url": "https://decrypt.co/videos/interviews/nbpG8vnt/eth-surges-on-inflows-house-advances-crypto-bills-base-revamp",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2647,9 +2647,9 @@
         "timestamp": 1752636545,
         "url": "https://decrypt.co/videos/interviews/HGl3YZoZ/pump-token-debuts-at-55b-fdv-pengu-leads-all-movers-eth-outpreforms",
         "symbols": [
-          "XRP",
           "BTC",
           "DOGE",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2664,9 +2664,9 @@
         "timestamp": 1752628776,
         "url": "https://decrypt.co/videos/interviews/TAOPt7BO/crypto-dips-stocks-keep-hitting-aths-sharplink-top-eth-holder",
         "symbols": [
-          "XRP",
           "BTC",
           "DOGE",
+          "XRP",
           "ETH"
         ],
         "source_weight": 0.8,
@@ -2725,8 +2725,8 @@
         "timestamp": 1754281855,
         "url": "https://www.newsbtc.com/news/bitcoin/slow-and-steady-bitcoins-current-rise-feels-different-study/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.788812518119812,
@@ -2740,9 +2740,9 @@
         "timestamp": 1754276414,
         "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-analyst-builds-btc-bullish-case-on-binance-volume/",
         "symbols": [
-          "XRP",
+          "BNB",
           "BTC",
-          "BNB"
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.016920708119869232,
@@ -2756,8 +2756,8 @@
         "timestamp": 1754271051,
         "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-set-to-hit-189k-as-global-liquidity-tops-127-t/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.7445639371871948,
@@ -2800,8 +2800,8 @@
         "timestamp": 1754254837,
         "url": "https://www.newsbtc.com/news/bitcoin/more-work-less-reward-bitcoin-mining-toughens-as-price-sinks-to-113k/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.045507147908210754,
@@ -2815,8 +2815,8 @@
         "timestamp": 1754249406,
         "url": "https://www.newsbtc.com/analysis/xrp/xrp-must-hold-2-65-support-or-risk-major-breakdown-analyst/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": 0.013300007209181786,
@@ -2830,8 +2830,8 @@
         "timestamp": 1754244042,
         "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-inflows-to-binance-accelerate-investor-behavior-shifts-after-months-of-decline/",
         "symbols": [
-          "BTC",
           "BNB",
+          "BTC",
           "ETH"
         ],
         "source_weight": 0.7,
@@ -2915,8 +2915,8 @@
         "timestamp": 1754107745,
         "url": "https://www.theblock.co/post/365317/uniswap-a16z-and-allies-urge-senate-to-carve-out-defi-in-market-structure-bill?utm_source=rss&utm_medium=rss",
         "symbols": [
-          "UNI",
-          "SOL"
+          "SOL",
+          "UNI"
         ],
         "source_weight": 0.7,
         "sentiment": 0.33364349603652954,
@@ -3797,12 +3797,12 @@
       "sentiment": 0
     }
   },
-  "timestamp": "2025-08-03 13:43:54",
+  "timestamp": "2025-08-03 14:05:39",
   "user": "Patmoorea",
   "bot_status": {
     "regime": "Range/Scalping",
     "cycle": 0,
-    "last_update": "2025-08-03 13:43:54",
+    "last_update": "2025-08-03 14:05:39",
     "performance": {
       "total_trades": 0,
       "win_rate": 0,
