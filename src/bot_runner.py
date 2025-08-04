@@ -2903,7 +2903,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec validation du format JSON et des timestamps"""
+        """Mise à jour sécurisée avec validation"""
         try:
             # 1. Backup du fichier existant
             backup_file = data_file + ".bak"
@@ -2921,27 +2921,38 @@ class TradingBotM4:
                 print(f"[ERROR] Erreur lecture: {e}")
                 shared_data = {}
 
-            # 3. Génération des timestamps
-            current_time = get_current_time()
-            current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            # 3. Timestamp actuel
+            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-            def fix_timestamps(data):
-                if isinstance(data, dict):
-                    for key, value in data.items():
-                        if isinstance(value, dict):
-                            data[key] = fix_timestamps(value)
-                        elif key in ["timestamp", "last_update"]:
-                            # Pour les graphiques: timestamp en datetime
-                            if "chart_data" in data:
-                                data[key] = current_time
-                            else:
-                                # Pour le reste: format string
-                                data[key] = current_time_str
-                return data
+            # 4. Validation et correction des valeurs
+            def validate_trade_decisions(decisions):
+                if isinstance(decisions, dict):
+                    for pair, data in decisions.items():
+                        if isinstance(data, dict):
+                            # Valeurs par défaut
+                            defaults = {
+                                "action": "neutral",
+                                "confidence": 0.5,
+                                "tech": 0.5,
+                                "ai": 0.5,
+                                "sentiment": 0.0,
+                            }
+                            # Force les valeurs correctes
+                            for key, default in defaults.items():
+                                if key not in data or data[key] is None:
+                                    data[key] = default
+                                elif key in ["confidence", "tech", "ai", "sentiment"]:
+                                    try:
+                                        val = float(data[key])
+                                        if key == "sentiment":
+                                            data[key] = max(-1.0, min(1.0, val))
+                                        else:
+                                            data[key] = max(0.0, min(1.0, val))
+                                    except (TypeError, ValueError):
+                                        data[key] = default
+                return decisions
 
-            new_fields = fix_timestamps(new_fields)
-
-            # 4. Fusion profonde avec préservation des types
+            # 5. Fusion profonde
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
@@ -2957,16 +2968,17 @@ class TradingBotM4:
                                 if isinstance(new_item, dict) and "symbol" in new_item:
                                     existing_items[new_item["symbol"]] = new_item
                             d[k] = list(existing_items.values())
-                        elif k == "chart_data":
-                            # Préserve le format datetime pour les données de graphique
-                            d[k] = v
                         else:
                             d[k] = v
                     else:
-                        d[k] = v
+                        # Mise à jour des timestamps
+                        if k in ["timestamp", "last_update"]:
+                            d[k] = current_time
+                        else:
+                            d[k] = v
                 return d
 
-            # 5. Préservation des données importantes
+            # 6. Préservation des données importantes
             preserved_fields = [
                 "trade_history",
                 "closed_positions",
@@ -2983,43 +2995,28 @@ class TradingBotM4:
                 if field in shared_data
             }
 
-            # 6. Fusion des données
+            # 7. Validation des trade_decisions
+            if "trade_decisions" in new_fields:
+                new_fields["trade_decisions"] = validate_trade_decisions(
+                    new_fields["trade_decisions"]
+                )
+
+            # 8. Fusion des données avec timestamps corrects
+            if "cycle_metrics" in new_fields:
+                new_fields["cycle_metrics"]["timestamp"] = current_time
+            if "bot_status" in new_fields:
+                new_fields["bot_status"]["last_update"] = current_time
+
             shared_data = deep_update(shared_data, new_fields)
             shared_data.update(preserved_data)
 
-            # 7. Validation des types dans trade_decisions
-            if "trade_decisions" in shared_data:
-                for pair, decision in shared_data["trade_decisions"].items():
-                    if isinstance(decision, dict):
-                        for key in ["confidence", "tech", "ai", "sentiment"]:
-                            if key in decision:
-                                try:
-                                    decision[key] = float(decision[key])
-                                except (TypeError, ValueError):
-                                    decision[key] = 0.5
-
-            # 8. Conversion des timestamps pour les graphiques
-            if "chart_data" in shared_data:
-                try:
-                    chart_data = shared_data["chart_data"]
-                    if isinstance(chart_data, dict):
-                        if "timestamp" in chart_data:
-                            if isinstance(chart_data["timestamp"], str):
-                                chart_data["timestamp"] = pd.to_datetime(
-                                    chart_data["timestamp"]
-                                )
-                except Exception as e:
-                    print(f"[WARNING] Erreur conversion timestamps: {e}")
-
-            # 9. Sauvegarde avec vérification
+            # 9. Sauvegarde sécurisée
             try:
                 # Test de sérialisation
-                json.dumps(
-                    shared_data, default=str
-                )  # Utilise str pour datetime objects
+                json.dumps(shared_data)
 
                 with open(data_file, "w") as f:
-                    json.dump(shared_data, f, indent=4, default=str)
+                    json.dump(shared_data, f, indent=4)
 
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
@@ -4361,59 +4358,43 @@ class TradingBotM4:
             self.logger.error(f"Erreur update métriques: {e}")
 
     async def _update_sentiment_data(self, sentiment_scores):
-        """Met à jour les données de sentiment du marché avec une meilleure gestion des valeurs par défaut"""
-        print("\n=== MISE À JOUR SENTIMENTS ===")
+        """Met à jour les données de sentiment avec validation"""
+        try:
+            for pair in self.pairs_valid:
+                pair_key = pair.replace("/", "").upper()
+                if pair_key not in self.market_data:
+                    self.market_data[pair_key] = {}
 
-        # Validation et filtrage des scores valides
-        valid_scores = [
-            item
-            for item in sentiment_scores
-            if isinstance(item, dict)
-            and "sentiment" in item
-            and item["sentiment"] is not None
-        ]
-        print(f"[DEBUG] {len(valid_scores)}/{len(sentiment_scores)} scores valides")
+                # Récupère le sentiment existant ou initialise à 0.0
+                current_sentiment = self.market_data[pair_key].get("sentiment", 0.0)
 
-        # Initialisation avec valeur neutre pour toutes les paires
-        default_sentiment = 0.0
-        for pair in self.pairs_valid:
-            pair_key = pair.replace("/", "").upper()
-            if pair_key not in self.market_data:
-                self.market_data[pair_key] = {}
+                # Calcul du nouveau sentiment
+                new_sentiment = 0.0
+                matching_scores = [
+                    score.get("sentiment", 0.0)
+                    for score in sentiment_scores
+                    if isinstance(score, dict)
+                    and "sentiment" in score
+                    and score["sentiment"] is not None
+                    and (
+                        not score.get("symbols")
+                        or pair_key in [s.upper() for s in score.get("symbols", [])]
+                    )
+                ]
 
-            # Initialisation explicite du sentiment avec timestamp
-            self.market_data[pair_key]["sentiment"] = default_sentiment
-            self.market_data[pair_key]["sentiment_timestamp"] = time.time()
-            print(f"[INIT] {pair_key} sentiment initialisé à {default_sentiment}")
+                if matching_scores:
+                    new_sentiment = sum(matching_scores) / len(matching_scores)
 
-        # Application des scores valides
-        for item in valid_scores:
-            score = item.get("sentiment", default_sentiment)
-            symbols = item.get("symbols", [])
+                # Mise à jour avec le nouveau sentiment
+                self.market_data[pair_key]["sentiment"] = new_sentiment
+                self.market_data[pair_key][
+                    "sentiment_timestamp"
+                ] = datetime.utcnow().timestamp()
 
-            if not symbols:
-                # Score global - appliqué à toutes les paires
-                for pair_key in self.market_data:
-                    self.market_data[pair_key]["sentiment"] = score
-                    print(f"[UPDATE] Sentiment global {score:.4f} → {pair_key}")
-            else:
-                # Scores spécifiques par symbole
-                for symbol in symbols:
-                    symbol = symbol.upper()
-                    for pair_key in self.market_data:
-                        if symbol in pair_key:
-                            self.market_data[pair_key]["sentiment"] = score
-                            print(
-                                f"[UPDATE] Sentiment spécifique {score:.4f} → {pair_key}"
-                            )
+                print(f"[SENTIMENT] {pair_key}: {new_sentiment:.4f}")
 
-        # Vérification finale et logging
-        print("\n=== ÉTAT FINAL DES SENTIMENTS ===")
-        for pair_key in self.market_data:
-            sentiment_value = self.market_data[pair_key].get(
-                "sentiment", default_sentiment
-            )
-            print(f"✅ {pair_key}: sentiment = {sentiment_value:.4f}")
+        except Exception as e:
+            print(f"❌ Erreur mise à jour sentiment: {e}")
 
     async def _save_sentiment_data(self, sentiment_scores, news_data=None):
         """
@@ -7029,7 +7010,8 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
     return summary
 
 
-async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
+async def send_cycle_reports(bot, trade_decisions, cycle_num, regime, duration):
+    """Envoi des rapports avec le bon cycle"""
     try:
         # 1. Rapport des trades du cycle
         await send_trade_summary(bot, trade_decisions)
@@ -7037,24 +7019,22 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         # 2. Préparation des données d'analyse
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
 
-        # Ajout du cycle et du régime dans analysis_data
-        analysis_data["cycle"] = cycle  # <- Ajout ici
-        analysis_data["regime"] = regime  # <- Ajout ici
+        # Ajout explicite du cycle
+        analysis_data["cycle"] = cycle_num  # Utilisation de cycle_num au lieu de cycle
+        analysis_data["regime"] = regime
 
-        # 3. Sauvegarde des données avec cycle
+        # 3. Sauvegarde des données
         await save_cycle_data(bot, analysis_data)
 
-        # 4. Rapport d'analyse complet
-        analysis_report = await bot.generate_market_analysis_report(
-            cycle=cycle
-        )  # <- Ajout du cycle ici
+        # 4. Rapport d'analyse complet avec le bon cycle
+        analysis_report = await bot.generate_market_analysis_report(cycle=cycle_num)
         await bot.telegram.send_message(analysis_report)
 
         # 5. Alertes de risque
         await check_risk_alerts(bot, analysis_data)
 
     except Exception as e:
-        bot.logger.error(f"Erreur envoi rapports: {e}")
+        print(f"❌ Erreur envoi rapports: {e}")
 
 
 async def send_trade_summary(bot, trade_decisions):
