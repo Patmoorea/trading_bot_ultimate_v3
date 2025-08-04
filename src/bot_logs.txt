@@ -140310,3 +140310,15 @@
 2025-08-04T02:48:11.062230 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0283 | Tendance: 0.0026
 2025-08-04T02:48:11.075464 | 🎯 Stratégie: Range/Scalping
 2025-08-04T02:48:11.075761 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-04T02:49:25.830746 | Démarrage cycle trading
+2025-08-04T02:50:04.875035 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0281 | Tendance: 0.0027
+2025-08-04T02:50:04.889159 | 🎯 Stratégie: Range/Scalping
+2025-08-04T02:50:04.889476 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-04T02:51:19.058664 | Démarrage cycle trading
+2025-08-04T02:51:58.758578 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0281 | Tendance: 0.0027
+2025-08-04T02:51:58.775124 | 🎯 Stratégie: Range/Scalping
+2025-08-04T02:51:58.775384 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
+2025-08-04T02:53:21.661110 | Démarrage cycle trading
+2025-08-04T02:54:01.420664 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0281 | Tendance: 0.0027
+2025-08-04T02:54:01.435428 | 🎯 Stratégie: Range/Scalping
+2025-08-04T02:54:01.439513 | [ARBITRAGE] Démarrage détection arbitrage USDC/USDT…
