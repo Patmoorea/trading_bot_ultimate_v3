@@ -90,35 +90,56 @@ class NewsPauseManager:
         Scanne les news et déclenche une pause globale ou ciblée si un mot-clé critique est détecté.
         news_list: liste de dicts (doit contenir "title", "text", et idéalement "symbols"/"assets"/"sentiment")
         """
+        # Debug initial
+        print(f"\n[NEWSPAUSE DEBUG] Analyse de {len(news_list)} news")
+
+        if not news_list:
+            print("[NEWSPAUSE DEBUG] Liste de news vide")
+            return False
+
         triggered = False
-        for news in news_list:
+        for i, news in enumerate(news_list):
+            # Debug de chaque news
+            print(f"\n[NEWSPAUSE DEBUG] Analyse news #{i+1}:")
+            print(f"- Title: {news.get('title', 'NO TITLE')}")
+            print(f"- Text: {news.get('text', 'NO TEXT')[:100]}...")
+            print(f"- Sentiment: {news.get('sentiment', 'NO SENTIMENT')}")
+            print(f"- Symbols: {news.get('symbols', []) or news.get('assets', [])}")
+            print(f"- Processed: {news.get('processed', False)}")
+
+            # Si déjà traitée, skip
+            if news.get("processed"):
+                print("➡️ News déjà traitée, skip")
+                continue
+
             title = news.get("title", "") or ""
             text = news.get("text", "") or ""
             content = f"{title} {text}".lower()
-            # Extraction symboles/paire concernés si possible
             symbols = news.get("symbols", []) or news.get("assets", [])
-            # Score de sentiment éventuel (pour adaptation)
             sentiment = float(news.get("sentiment", 0)) if "sentiment" in news else None
 
+            # Debug des mots-clés recherchés
+            print("\nRecherche des mots-clés critiques:")
             for keyword, pause_cycles in self.CRITICAL_KEYWORDS.items():
                 if re.search(rf"\b{re.escape(keyword)}\b", content):
+                    print(f"⚠️ Mot-clé '{keyword}' trouvé!")
                     if title == self.last_triggered_title:
-                        continue  # Ne pas relancer sur la même news
+                        print("➡️ Même titre que précédent, skip")
+                        continue
 
-                    # Durée de pause ajustée par criticité et sentiment
+                    # Calcul durée pause
                     cycles = pause_cycles
                     if sentiment is not None and abs(sentiment) > 0.7:
                         cycles = int(cycles * 1.5)
+                        print(f"Durée augmentée (sentiment fort): {cycles}")
                     elif sentiment is not None and abs(sentiment) < 0.3:
                         cycles = int(max(2, cycles * 0.5))
+                        print(f"Durée réduite (sentiment faible): {cycles}")
 
-                    # PATCH FONDAMENTAL : Marquer la news comme traitée DÈS le déclenchement
                     news["processed"] = True
 
-                    # Pause ciblée si symboles détectés, sinon globale
                     if symbols:
                         for sym in symbols:
-                            # Pour certains mots-clés, on bloque uniquement les achats (BUY)
                             if keyword in [
                                 "regulation",
                                 "lawsuit",
@@ -127,27 +148,27 @@ class NewsPauseManager:
                             ]:
                                 self.buy_paused_pairs.add(sym)
                                 self.pair_pauses[sym] = cycles
-                                print(
-                                    f"[NEWS PAUSE] Trigger: '{keyword}' -> BUY PAUSE {cycles} cycles for {sym} (news: {title[:80]})"
-                                )
+                                print(f"🔒 BUY PAUSE {cycles} cycles pour {sym}")
                             else:
                                 self.pair_pauses[sym] = cycles
-                                print(
-                                    f"[NEWS PAUSE] Trigger: '{keyword}' -> FULL PAUSE {cycles} cycles for {sym} (news: {title[:80]})"
-                                )
+                                print(f"🔒 FULL PAUSE {cycles} cycles pour {sym}")
                     else:
-                        # Pas de symboles → pause globale
                         self.global_cycles_remaining = cycles
-                        print(
-                            f"[NEWS PAUSE] Trigger: '{keyword}' -> GLOBAL PAUSE {cycles} cycles (news: {title[:80]})"
-                        )
+                        print(f"🔒 PAUSE GLOBALE {cycles} cycles")
 
                     self.last_event_time = datetime.now()
                     self.last_event_news = news
                     self.last_triggered_title = title
+
                     if self.alert_callback:
                         self.alert_callback(keyword, news)
+
                     triggered = True
+                    break  # Sort de la boucle des mots-clés si un est trouvé
+
+        print(
+            f"\n[NEWSPAUSE DEBUG] Résultat final: {'⚠️ Pause activée' if triggered else '✅ Aucune pause nécessaire'}"
+        )
         return triggered
 
     def should_pause(self, news_item, market_data):

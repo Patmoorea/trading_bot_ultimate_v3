@@ -5891,6 +5891,29 @@ async def run_clean_bot():
             regime, market_data, indicators = await bot.study_market("7d")
             strategy = bot.choose_strategy(regime, indicators)
             log_dashboard(f"🎯 Stratégie: {strategy}")
+            news_list = []
+            try:
+                with open(self.data_file, "r") as f:
+                    shared_data = json.load(f)
+                    news_sentiment = shared_data.get("sentiment", {})
+                    news_list = news_sentiment.get("scores", [])
+
+                print(f"\n[DEBUG] News disponibles: {len(news_list)}")
+                if news_list:
+                    print("Premières news:")
+                    for news in news_list[:3]:
+                        print(
+                            f"- {news.get('title')} | Sentiment: {news.get('sentiment')} | Processed: {news.get('processed')}"
+                        )
+
+                unprocessed_news = [n for n in news_list if not n.get("processed")]
+                print(f"News non traitées: {len(unprocessed_news)}")
+
+                if unprocessed_news:
+                    triggered = self.news_pause_manager.scan_news(unprocessed_news)
+                    print(f"Scan_news résultat: {triggered}")
+            except Exception as e:
+                print(f"[ERROR] Erreur analyse news: {e}")
 
             # 6. === INITIALISATION DES DÉCISIONS ===
             trade_decisions = []
@@ -5937,17 +5960,31 @@ async def run_clean_bot():
                         ai_score = 0.5
 
                     # 3. Sentiment Score
-                    try:
-                        sentiment_score = market_signals.get("sentiment")
-                        if sentiment_score is not None:
+                    sentiment_score = market_signals.get("sentiment")
+                    if sentiment_score is not None:
+                        try:
                             sentiment_score = float(sentiment_score)
                             sentiment_score = max(-1.0, min(1.0, sentiment_score))
-                        else:
-                            print(f"[WARNING] No sentiment data for {pair_key}")
-                            sentiment_score = 0.0
-                    except (TypeError, ValueError):
-                        print(f"[WARNING] Invalid sentiment score for {pair_key}")
-                        sentiment_score = 0.0
+                        except (TypeError, ValueError):
+                            # Utiliser la valeur du sentiment stockée dans market_data
+                            sentiment_score = float(
+                                market_signals.get("sentiment", 0.0)
+                            )
+                    else:
+                        # Récupération du sentiment depuis l'analyse des news
+                        news_sentiment = shared_data.get("sentiment", {})
+                        sentiment_score = float(
+                            news_sentiment.get("overall_sentiment", 0.0)
+                        )
+
+                    decision = {
+                        "action": "neutral",
+                        "confidence": confidence,
+                        "tech": tech_score,
+                        "ai": ai_score,
+                        "sentiment": sentiment_score,  # Utilisation du sentiment corrigé
+                        "timestamp": current_time,
+                    }
 
                     # Calcul de la confiance globale
                     confidence = 0.5  # Valeur par défaut
@@ -7169,6 +7206,8 @@ async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, durati
 
         # 2. Préparation des données
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
+
+        # Ajout du cycle courant
         analysis_data.update(
             {"cycle": current_cycle, "regime": regime, "duration": duration}
         )

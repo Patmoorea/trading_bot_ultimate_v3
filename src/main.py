@@ -435,6 +435,48 @@ with tab1:
         # Création du DataFrame initial
         decisions_data = []
 
+        # Récupération des paramètres de performance pour le sizing
+        perf = shared_data.get("bot_status", {}).get("performance", {})
+        win_rate = perf.get("win_rate", 0.55)
+        profit_factor = perf.get("profit_factor", 1.7)
+
+        def calculate_size(conf, tech, ai, sent):
+            try:
+                conf = float(conf)
+                tech = float(tech)
+                ai = float(ai)
+                sent = float(sent)
+
+                # Base size selon la confiance
+                if conf > 0.8:
+                    base_size = 0.09  # 9%
+                elif conf > 0.6:
+                    base_size = 0.06  # 6%
+                elif conf > 0.4:
+                    base_size = 0.04  # 4%
+                else:
+                    base_size = 0.02  # 2%
+
+                # Ajustements selon les autres signaux
+                if tech > 0.7:
+                    base_size *= 1.2
+                if ai > 0.7:
+                    base_size *= 1.1
+                if abs(sent) > 0.7:
+                    base_size *= 0.8  # Réduction si sentiment fort
+
+                # Ajustement Kelly
+                kelly = kelly_criterion(win_rate, profit_factor)
+                if kelly > 0:
+                    kelly_adjustment = min(kelly * 0.5, 0.5)
+                    base_size *= 1 + kelly_adjustment
+
+                # Plafonnement final
+                final_size = min(base_size, 0.12)  # Max 12%
+                return f"{final_size*100:.1f}%"
+            except:
+                return "N/A"
+
         for pair, decision in trade_decisions.items():
             pair_key = pair.replace("/", "").upper()
 
@@ -449,13 +491,18 @@ with tab1:
                 .get("score", 0.5)
             )
 
+            confidence = float(decision.get("confidence", 0.5))
+
             row_data = {
                 "pair": pair,
                 "action": decision.get("action", "neutral"),
-                "confidence": float(decision.get("confidence", 0.5)),
+                "confidence": confidence,
                 "tech": float(tech_score),
                 "ai": float(ai_pred),
                 "sentiment": float(sentiment),
+                "Sizing (%)": calculate_size(
+                    confidence, tech_score, ai_pred, sentiment
+                ),
                 "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             }
             decisions_data.append(row_data)
@@ -463,48 +510,6 @@ with tab1:
         # Création du DataFrame final
         df_signals = pd.DataFrame(decisions_data)
         df_signals.set_index("pair", inplace=True)
-
-        # Calcul du sizing
-        perf = shared_data.get("bot_status", {}).get("performance", {})
-        win_rate = perf.get("win_rate", 0.55)
-        profit_factor = perf.get("profit_factor", 1.7)
-
-        def sizing_pct(conf):
-            try:
-                conf = float(conf)
-                # Base sizing selon la confiance
-                if conf > 0.8:
-                    base_size = 0.09  # 9%
-                elif conf > 0.6:
-                    base_size = 0.06  # 6%
-                elif conf > 0.4:
-                    base_size = 0.04  # 4%
-                else:
-                    base_size = 0.02  # 2%
-
-                # Ajustement Kelly
-                kelly = kelly_criterion(win_rate, profit_factor)
-                if kelly > 0:
-                    # Limite l'influence du Kelly à +50% max du base_size
-                    kelly_adjustment = min(kelly * 0.5, 0.5)
-                    final_size = base_size * (1 + kelly_adjustment)
-                else:
-                    final_size = base_size
-
-                # Plafonnement final
-                final_size = min(final_size, 0.12)  # Max 12%
-
-                return f"{final_size*100:.1f}%"
-            except:
-                return "N/A"
-
-        # Application dans le DataFrame
-        df_signals["Sizing (%)"] = df_signals.apply(
-            lambda row: sizing_pct(row["confidence"]), axis=1
-        )
-
-        # Ajout de la colonne Sizing
-        df_signals["Sizing (%)"] = df_signals["confidence"].map(sizing_pct)
 
         # Arrondi des valeurs numériques
         numeric_cols = ["confidence", "tech", "ai", "sentiment"]
@@ -520,8 +525,12 @@ with tab1:
             st.write("Debug - Raw Values:")
             for pair, row in df_signals.iterrows():
                 st.write(f"\n{pair}:")
-                for col in ["action", "confidence", "tech", "ai", "sentiment"]:
-                    st.write(f"{col}: {row[col]}")
+                st.write(f"Action: {row['action']}")
+                st.write(f"Confidence: {row['confidence']:.4f}")
+                st.write(f"Tech: {row['tech']:.4f}")
+                st.write(f"AI: {row['ai']:.4f}")
+                st.write(f"Sentiment: {row['sentiment']:.4f}")
+                st.write(f"Sizing: {row['Sizing (%)']}")
     else:
         st.info("Aucun signal de trading ce cycle.")
 
@@ -560,45 +569,86 @@ with tab2:
     market_data = shared_data.get("market_data", {}).get(pair, {}).get(tf, {})
 
     if market_data and market_data.get("close") and market_data.get("timestamp"):
-        # Conversion des timestamps en datetime
         try:
-            timestamps = pd.to_datetime(market_data["timestamp"])
-            closes = np.array(market_data["close"], dtype=float)
-            opens = np.array(market_data.get("open", []), dtype=float)
-            highs = np.array(market_data.get("high", []), dtype=float)
-            lows = np.array(market_data.get("low", []), dtype=float)
+            # 1. Validation et conversion des données
+            timestamps = market_data["timestamp"]
+            closes = market_data["close"]
+            opens = market_data.get("open", [])
+            highs = market_data.get("high", [])
+            lows = market_data.get("low", [])
 
-            # Création du DataFrame pour les moyennes mobiles
-            df = pd.DataFrame({"close": closes}, index=timestamps)
+            # 2. Vérification du type et conversion des timestamps
+            if isinstance(timestamps, (int, str)):
+                timestamps = [timestamps]
+            if isinstance(closes, (int, float)):
+                closes = [closes]
+            if isinstance(opens, (int, float)):
+                opens = [opens]
+            if isinstance(highs, (int, float)):
+                highs = [highs]
+            if isinstance(lows, (int, float)):
+                lows = [lows]
 
-            ema20 = df["close"].ewm(span=20).mean()
-            ema50 = df["close"].ewm(span=50).mean()
+            # 3. Conversion des timestamps en datetime
+            try:
+                if isinstance(timestamps[0], str):
+                    timestamps = pd.to_datetime(timestamps)
+                elif isinstance(timestamps[0], (int, float)):
+                    timestamps = pd.to_datetime(timestamps, unit="s")
+            except Exception as e:
+                print(f"Erreur conversion timestamps: {e}")
+                timestamps = pd.date_range(
+                    end=pd.Timestamp.utcnow(), periods=len(closes), freq="H"
+                )
 
-            # Création du graphique avec les données validées
+            # 4. Conversion en arrays numpy avec la bonne longueur
+            min_len = min(
+                len(timestamps), len(closes), len(opens), len(highs), len(lows)
+            )
+            timestamps = timestamps[:min_len]
+            closes = np.array(closes[:min_len], dtype=float)
+            opens = np.array(opens[:min_len], dtype=float)
+            highs = np.array(highs[:min_len], dtype=float)
+            lows = np.array(lows[:min_len], dtype=float)
+
+            # 5. Création du DataFrame
+            df = pd.DataFrame(
+                {"close": closes, "open": opens, "high": highs, "low": lows},
+                index=timestamps,
+            )
+
+            # 6. Calcul des moyennes mobiles
+            ema20 = df["close"].ewm(span=20, adjust=False).mean()
+            ema50 = df["close"].ewm(span=50, adjust=False).mean()
+
+            # 7. Création du graphique
             fig = go.Figure()
 
-            # Ajout du graphique en chandelier
+            # Chandelier japonais
             fig.add_trace(
                 go.Candlestick(
-                    x=timestamps,  # Timestamps convertis en datetime
-                    open=opens,
-                    high=highs,
-                    low=lows,
-                    close=closes,
+                    x=df.index,
+                    open=df["open"],
+                    high=df["high"],
+                    low=df["low"],
+                    close=df["close"],
                     name="OHLC",
                 )
             )
 
-            # Ajout des EMA
+            # EMA 20 et 50
             fig.add_trace(
                 go.Scatter(
-                    x=timestamps, y=ema20, name="EMA 20", line=dict(color="blue")
+                    x=df.index, y=ema20, name="EMA 20", line=dict(color="blue", width=1)
                 )
             )
 
             fig.add_trace(
                 go.Scatter(
-                    x=timestamps, y=ema50, name="EMA 50", line=dict(color="orange")
+                    x=df.index,
+                    y=ema50,
+                    name="EMA 50",
+                    line=dict(color="orange", width=1),
                 )
             )
 
@@ -608,17 +658,41 @@ with tab2:
                 yaxis_title="Prix USDT",
                 template="plotly_dark",
                 xaxis_rangeslider_visible=False,
+                height=600,
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                xaxis=dict(
+                    showgrid=True, gridcolor="rgba(128,128,128,0.2)", zeroline=False
+                ),
+                yaxis=dict(
+                    showgrid=True, gridcolor="rgba(128,128,128,0.2)", zeroline=False
+                ),
             )
 
             # Affichage du graphique
             st.plotly_chart(fig, use_container_width=True)
 
+            # Debug optionnel
+            if st.checkbox("Show Data Debug"):
+                st.write("DataFrame Head:", df.head())
+                st.write("Timestamps Info:", pd.Series(timestamps).describe())
+
         except Exception as e:
             st.error(f"Erreur lors de la création du graphique: {str(e)}")
-            print(f"DEBUG - Erreur graphique: {str(e)}")
+            print(f"DEBUG - Erreur graphique détaillée: {str(e)}")
             print(f"DEBUG - Type timestamps: {type(market_data['timestamp'])}")
             print(
-                f"DEBUG - Exemple timestamp: {market_data['timestamp'][0] if market_data['timestamp'] else 'None'}"
+                f"DEBUG - Premier timestamp: {market_data['timestamp'][0] if isinstance(market_data['timestamp'], list) else market_data['timestamp']}"
+            )
+            print(f"DEBUG - Longueur données:")
+            print(
+                f"- Timestamps: {len(market_data['timestamp']) if isinstance(market_data['timestamp'], list) else 1}"
+            )
+            print(
+                f"- Close: {len(market_data['close']) if isinstance(market_data['close'], list) else 1}"
+            )
+            print(
+                f"- Open: {len(market_data.get('open', [])) if isinstance(market_data.get('open'), list) else 1}"
             )
     else:
         st.info("Pas de données live pour cette paire et ce timeframe.")
