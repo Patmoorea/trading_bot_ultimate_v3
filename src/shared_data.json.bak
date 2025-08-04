@@ -10,21 +10,21 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 108157.62198198192,
-      "current_price": 114691.78,
+      "current_price": 114796.02,
       "amount": 9e-05,
-      "% Gain/Perte": "6.04%",
+      "% Gain/Perte": "6.14%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "LTC/USDC",
-      "reason": "\ud83d\udfe2 Gain latent 59.0%, signal: NEUTRAL",
+      "reason": "\ud83d\udfe2 Gain latent 59.2%, signal: NEUTRAL",
       "decision": "Surveillance, possibilit\u00e9 de prise de profit",
       "entry_price": 70.07813412060145,
-      "current_price": 111.4,
+      "current_price": 111.54,
       "amount": 0.102,
-      "% Gain/Perte": "58.97%",
+      "% Gain/Perte": "59.17%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -34,9 +34,9 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 3654.1087878787876,
-      "current_price": 3543.4,
+      "current_price": 3568.19,
       "amount": 0.0033,
-      "% Gain/Perte": "-3.03%",
+      "% Gain/Perte": "-2.35%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -46,9 +46,9 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 719.1871428571428,
-      "current_price": 754.06,
+      "current_price": 756.44,
       "amount": 0.02490912,
-      "% Gain/Perte": "4.85%",
+      "% Gain/Perte": "5.18%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -58,33 +58,33 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": 0.309744424778761,
-      "current_price": 0.328,
+      "current_price": 0.3274,
       "amount": 37.2,
-      "% Gain/Perte": "5.89%",
+      "% Gain/Perte": "5.70%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "XRP/USDC",
-      "reason": "\ud83d\udd34 Perte latente -8.9%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -8.5%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.29422,
-      "current_price": 3.0012,
+      "current_price": 3.0145,
       "amount": 3.4,
-      "% Gain/Perte": "-8.89%",
+      "% Gain/Perte": "-8.49%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
     },
     {
       "symbol": "ADA/USDC",
-      "reason": "\ud83d\udd34 Perte latente -11.7%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -11.2%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.83298,
-      "current_price": 0.7354,
+      "current_price": 0.7395,
       "amount": 14.2,
-      "% Gain/Perte": "-11.71%",
+      "% Gain/Perte": "-11.22%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -94,7 +94,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.643,
+      "current_price": 0.647,
       "amount": 0.03230637,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -103,12 +103,12 @@
     },
     {
       "symbol": "DOGE/USDC",
-      "reason": "\ud83d\udd34 Perte latente -20.3%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -19.7%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.252465,
-      "current_price": 0.20113,
+      "current_price": 0.20271,
       "amount": 23.0,
-      "% Gain/Perte": "-20.33%",
+      "% Gain/Perte": "-19.71%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -127,12 +127,12 @@
     },
     {
       "symbol": "SOL/USDC",
-      "reason": "\ud83d\udd34 Perte latente -16.2%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -15.7%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 194.96943548387094,
-      "current_price": 163.37,
+      "current_price": 164.31,
       "amount": 0.058,
-      "% Gain/Perte": "-16.21%",
+      "% Gain/Perte": "-15.73%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -166,7 +166,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 9.275,
+      "current_price": 9.353,
       "amount": 3.85614,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -178,7 +178,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0153,
+      "current_price": 0.01536,
       "amount": 1484.74630755,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -190,7 +190,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01825,
+      "current_price": 0.0183,
       "amount": 397.59699569,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -202,7 +202,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.932,
+      "current_price": 0.937,
       "amount": 28.28169,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -247,12 +247,12 @@
     },
     {
       "symbol": "SUI/USDC",
-      "reason": "\ud83d\udd34 Perte latente -12.2%, signal: NEUTRAL",
+      "reason": "\ud83d\udd34 Perte latente -11.5%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 3.9549924242424246,
-      "current_price": 3.4744,
+      "current_price": 3.499,
       "amount": 5.2,
-      "% Gain/Perte": "-12.15%",
+      "% Gain/Perte": "-11.53%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -262,7 +262,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 3.599,
+      "current_price": 3.557,
       "amount": 0.087214,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -286,7 +286,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 1.01,
+      "current_price": 1.015,
       "amount": 0.35478462,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -298,7 +298,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.6122,
+      "current_price": 0.6243,
       "amount": 2.85374308,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -310,7 +310,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.244,
+      "current_price": 0.2437,
       "amount": 0.05435377,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -322,7 +322,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.12,
+      "current_price": 4.11,
       "amount": 0.05679375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -334,7 +334,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0123,
+      "current_price": 0.01227,
       "amount": 4.05396039,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -346,9 +346,9 @@
       "reason": "\ud83d\udd34 Perte latente -79.3%, signal: NEUTRAL",
       "decision": "Surveillance, risque de vente auto si perte aggrave",
       "entry_price": 0.01052,
-      "current_price": 0.002178,
+      "current_price": 0.002176,
       "amount": 1116.15,
-      "% Gain/Perte": "-79.30%",
+      "% Gain/Perte": "-79.32%",
       "temps_en_position_h": "N/A",
       "pause_blocage": "Non",
       "note": ""
@@ -370,7 +370,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.591,
+      "current_price": 0.593,
       "amount": 0.43377579,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -394,7 +394,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 23.45,
+      "current_price": 23.8,
       "amount": 0.01833206,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -430,7 +430,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0712,
+      "current_price": 0.0715,
       "amount": 3.76301349,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -454,7 +454,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 4.199,
+      "current_price": 4.212,
       "amount": 5.47230677,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -466,7 +466,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0594,
+      "current_price": 0.0596,
       "amount": 0.79286793,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -490,7 +490,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.01649,
+      "current_price": 0.01651,
       "amount": 2.50258947,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -502,7 +502,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.6027,
+      "current_price": 0.6037,
       "amount": 0.03474063,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -514,7 +514,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.02646,
+      "current_price": 0.02655,
       "amount": 1.1566659,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -526,7 +526,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.4114,
+      "current_price": 0.414,
       "amount": 0.13870156,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -538,7 +538,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2987,
+      "current_price": 0.2996,
       "amount": 0.18545852,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -550,7 +550,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.04226,
+      "current_price": 0.0421,
       "amount": 0.88600535,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -562,7 +562,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3912,
+      "current_price": 0.3908,
       "amount": 0.1179094,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -574,7 +574,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.06956,
+      "current_price": 0.06971,
       "amount": 1.17754728,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -586,7 +586,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0825,
+      "current_price": 0.0828,
       "amount": 0.08862893,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -598,7 +598,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.0873,
+      "current_price": 0.0875,
       "amount": 0.56851639,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -610,7 +610,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.8959,
+      "current_price": 0.8996,
       "amount": 0.17386141,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -622,7 +622,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1392,
+      "current_price": 0.1398,
       "amount": 0.17714676,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -634,7 +634,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.03299,
+      "current_price": 0.03319,
       "amount": 2.49958419,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -646,7 +646,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.1826,
+      "current_price": 0.184,
       "amount": 0.11578375,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -670,7 +670,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.101681,
+      "current_price": 0.103799,
       "amount": 1.36076364,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -682,7 +682,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3434,
+      "current_price": 0.3457,
       "amount": 0.10083373,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -694,7 +694,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.08896,
+      "current_price": 0.089,
       "amount": 1.00786376,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -706,7 +706,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.3251,
+      "current_price": 0.3282,
       "amount": 0.16214933,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -718,7 +718,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.9506,
+      "current_price": 0.952,
       "amount": 0.34099158,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -730,7 +730,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.2918,
+      "current_price": 0.292,
       "amount": 0.26255203,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -742,7 +742,7 @@
       "reason": "Signal actuel: NEUTRAL",
       "decision": "Aucune action pr\u00e9vue, position maintenue",
       "entry_price": null,
-      "current_price": 0.4656,
+      "current_price": 0.4679,
       "amount": 0.10868663,
       "% Gain/Perte": "0.00%",
       "temps_en_position_h": "N/A",
@@ -751,7 +751,7 @@
     }
   ],
   "sentiment": {
-    "timestamp": "2025-08-03T16:52:24.510611",
+    "timestamp": "2025-08-03T17:04:53.302879",
     "scores": [
       {
         "title": "Bitcoin : Ces 10 pays dominent le minage de BTC en 2025",
@@ -760,8 +760,8 @@
         "timestamp": 1754236800,
         "url": "https://journalducoin.com/bitcoin/bitcoin-10-pays-dominent-minage-btc-2025/",
         "symbols": [
-          "BTC",
-          "SOL"
+          "SOL",
+          "BTC"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7041463851928711,
@@ -775,9 +775,9 @@
         "timestamp": 1754233200,
         "url": "https://journalducoin.com/defi/comment-acheter-action-tokenisee-palantir-pltr/",
         "symbols": [
+          "SOL",
           "ETH",
           "BNB",
-          "SOL",
           "UNI"
         ],
         "source_weight": 0.7,
@@ -806,9 +806,9 @@
         "timestamp": 1754225926,
         "url": "https://coinacademy.fr/actu/coin-hebdo-199/?utm_source=rss&utm_medium=rss&utm_campaign=coin-hebdo-199",
         "symbols": [
+          "SOL",
           "ETH",
           "BTC",
-          "SOL",
           "TRX"
         ],
         "source_weight": 0.7,
@@ -881,12 +881,12 @@
         "timestamp": 1754208000,
         "url": "https://journalducoin.com/nft/nft-ventes-atteignent-574-millions-dollars-juillet-deuxieme-plus-haut-2025/",
         "symbols": [
-          "ADA",
           "BNB",
           "BTC",
-          "ETH",
+          "ADA",
+          "MATIC",
           "SOL",
-          "MATIC"
+          "ETH"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7582501769065857,
@@ -929,9 +929,9 @@
         "timestamp": 1754200800,
         "url": "https://journalducoin.com/bitcoin/ordinateurs-quantiques-bitcoin-ethereum-danger-mysten-labs-sonnette-alarme/",
         "symbols": [
+          "SOL",
           "ETH",
-          "BTC",
-          "SOL"
+          "BTC"
         ],
         "source_weight": 0.7,
         "sentiment": 0.78803950548172,
@@ -945,8 +945,8 @@
         "timestamp": 1754150400,
         "url": "https://journalducoin.com/actualites/comment-acheter-cryptomonnaies-moonpay-guide/",
         "symbols": [
-          "BTC",
-          "UNI"
+          "UNI",
+          "BTC"
         ],
         "source_weight": 0.7,
         "sentiment": 0.8002303838729858,
@@ -1246,8 +1246,8 @@
         "timestamp": 1754053202,
         "url": "https://cryptoast.fr/visa-renforce-reseau-nouveaux-stablecoins-usdg-pyusd-eurc/",
         "symbols": [
-          "AVAX",
-          "XLM"
+          "XLM",
+          "AVAX"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7330129146575928,
@@ -1373,13 +1373,13 @@
         "timestamp": 1754042400,
         "url": "https://journalducoin.com/bitcoin/bitcoin-baisse-altcoins-degringolent-marche-crypto-rouge-liquidations-sol-xrp-doge/",
         "symbols": [
-          "XRP",
-          "DOGE",
-          "BTC",
           "BNB",
-          "ETH",
+          "TRX",
+          "DOGE",
+          "XRP",
+          "BTC",
           "SOL",
-          "TRX"
+          "ETH"
         ],
         "source_weight": 0.7,
         "sentiment": 0.7759842872619629,
@@ -1419,11 +1419,11 @@
         "timestamp": 1754038080,
         "url": "https://coinacademy.fr/actu/btc-600-millions-liquides-bitcoin-resiste-115000/?utm_source=rss&utm_medium=rss&utm_campaign=btc-600-millions-liquides-bitcoin-resiste-115000",
         "symbols": [
-          "XRP",
           "BNB",
+          "XRP",
           "BTC",
-          "ETH",
-          "SOL"
+          "SOL",
+          "ETH"
         ],
         "source_weight": 0.7,
         "sentiment": 0.6518223285675049,
@@ -1967,8 +1967,8 @@
         "url": "https://decrypt.co/333226/bitcoin-ethereum-xrp-sink-crypto-liquidations-top-900-million",
         "symbols": [
           "ETH",
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.011207802221179008,
@@ -1982,8 +1982,8 @@
         "timestamp": 1754114445,
         "url": "https://decrypt.co/333218/public-keys-strategy-metaplanet-bitcoin-coinbase-xrp",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.14626279473304749,
@@ -2040,9 +2040,9 @@
         "timestamp": 1754099085,
         "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
         "symbols": [
+          "SOL",
           "ETH",
-          "BTC",
-          "SOL"
+          "BTC"
         ],
         "source_weight": 0.8,
         "sentiment": 0.16119861602783203,
@@ -2135,9 +2135,9 @@
         "timestamp": 1754066200,
         "url": "https://decrypt.co/333090/solana-xrp-dogecoin-extend-losses",
         "symbols": [
-          "XRP",
+          "SOL",
           "DOGE",
-          "SOL"
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.009305082261562347,
@@ -2220,8 +2220,8 @@
         "timestamp": 1754038383,
         "url": "https://decrypt.co/333015/visa-stablecoin-features-avalanche-stellar-support",
         "symbols": [
-          "AVAX",
-          "XLM"
+          "XLM",
+          "AVAX"
         ],
         "source_weight": 0.8,
         "sentiment": -0.8528333902359009,
@@ -2290,8 +2290,8 @@
         "timestamp": 1754026070,
         "url": "https://decrypt.co/333022/bitcoin-sits-tight-solana-token-turning-heads-analysis",
         "symbols": [
-          "BTC",
-          "SOL"
+          "SOL",
+          "BTC"
         ],
         "source_weight": 0.8,
         "sentiment": 0.17216317355632782,
@@ -2413,12 +2413,12 @@
         "timestamp": 1753846596,
         "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
         "symbols": [
-          "DOGE",
           "BNB",
+          "TRX",
+          "DOGE",
           "BTC",
-          "ETH",
           "SOL",
-          "TRX"
+          "ETH"
         ],
         "source_weight": 0.8,
         "sentiment": 0.19718927145004272,
@@ -2432,12 +2432,12 @@
         "timestamp": 1753838801,
         "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
         "symbols": [
-          "DOGE",
           "BNB",
+          "TRX",
+          "DOGE",
           "BTC",
-          "ETH",
           "SOL",
-          "TRX"
+          "ETH"
         ],
         "source_weight": 0.8,
         "sentiment": 0.43923965096473694,
@@ -2480,10 +2480,10 @@
         "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
         "symbols": [
           "BNB",
+          "TRX",
           "BTC",
-          "ETH",
           "SOL",
-          "TRX"
+          "ETH"
         ],
         "source_weight": 0.8,
         "sentiment": -0.6711649894714355,
@@ -2498,8 +2498,8 @@
         "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
         "symbols": [
           "ETH",
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.30484887957572937,
@@ -2513,11 +2513,11 @@
         "timestamp": 1753320869,
         "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
         "symbols": [
-          "XRP",
           "BNB",
+          "XRP",
           "BTC",
-          "ETH",
-          "SOL"
+          "SOL",
+          "ETH"
         ],
         "source_weight": 0.8,
         "sentiment": -0.797458291053772,
@@ -2531,10 +2531,10 @@
         "timestamp": 1753241819,
         "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
         "symbols": [
+          "SOL",
           "ETH",
-          "DOGE",
           "BTC",
-          "SOL"
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": 0.47174540162086487,
@@ -2548,10 +2548,10 @@
         "timestamp": 1753233746,
         "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
         "symbols": [
+          "SOL",
           "ETH",
-          "DOGE",
           "BTC",
-          "SOL"
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": 0.6145052313804626,
@@ -2565,10 +2565,10 @@
         "timestamp": 1753148067,
         "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
         "symbols": [
+          "SOL",
           "ETH",
-          "XRP",
           "BTC",
-          "SOL"
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": -0.5108786225318909,
@@ -2582,10 +2582,10 @@
         "timestamp": 1752887652,
         "url": "https://decrypt.co/videos/interviews/DcqEJpDC/crypto-market-cap-tops-4t-xrp-hits-ath-eth-treasuries-heat-up",
         "symbols": [
-          "ETH",
-          "XRP",
           "DOGE",
-          "BTC"
+          "ETH",
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.03072836995124817,
@@ -2616,8 +2616,8 @@
         "url": "https://decrypt.co/videos/interviews/mObPY7xr/eth-doge-lead-crypto-pengu-up-big-eth-etf-inflows-catching-btc",
         "symbols": [
           "ETH",
-          "DOGE",
-          "BTC"
+          "BTC",
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": -0.7657484412193298,
@@ -2632,8 +2632,8 @@
         "url": "https://decrypt.co/videos/interviews/kQJMUB87/crypto-bills-stuck-eth-leads-majors-pump-starts-buybacks",
         "symbols": [
           "ETH",
-          "DOGE",
-          "BTC"
+          "BTC",
+          "DOGE"
         ],
         "source_weight": 0.8,
         "sentiment": -0.5257932543754578,
@@ -2647,10 +2647,10 @@
         "timestamp": 1752636545,
         "url": "https://decrypt.co/videos/interviews/HGl3YZoZ/pump-token-debuts-at-55b-fdv-pengu-leads-all-movers-eth-outpreforms",
         "symbols": [
-          "ETH",
-          "XRP",
           "DOGE",
-          "BTC"
+          "ETH",
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.7446343898773193,
@@ -2664,10 +2664,10 @@
         "timestamp": 1752628776,
         "url": "https://decrypt.co/videos/interviews/TAOPt7BO/crypto-dips-stocks-keep-hitting-aths-sharplink-top-eth-holder",
         "symbols": [
-          "ETH",
-          "XRP",
           "DOGE",
-          "BTC"
+          "ETH",
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.8,
         "sentiment": 0.6975058317184448,
@@ -2725,8 +2725,8 @@
         "timestamp": 1754281855,
         "url": "https://www.newsbtc.com/news/bitcoin/slow-and-steady-bitcoins-current-rise-feels-different-study/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.788812518119812,
@@ -2740,9 +2740,9 @@
         "timestamp": 1754276414,
         "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-analyst-builds-btc-bullish-case-on-binance-volume/",
         "symbols": [
-          "XRP",
           "BNB",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.016920708119869232,
@@ -2756,8 +2756,8 @@
         "timestamp": 1754271051,
         "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-set-to-hit-189k-as-global-liquidity-tops-127-t/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.7445639371871948,
@@ -2785,8 +2785,8 @@
         "timestamp": 1754260212,
         "url": "https://www.newsbtc.com/news/solana/solana-brewing-cup-and-handle-pattern-suggests-drop-to-140-details/",
         "symbols": [
-          "ETH",
-          "SOL"
+          "SOL",
+          "ETH"
         ],
         "source_weight": 0.7,
         "sentiment": 0.004998508840799332,
@@ -2800,8 +2800,8 @@
         "timestamp": 1754254837,
         "url": "https://www.newsbtc.com/news/bitcoin/more-work-less-reward-bitcoin-mining-toughens-as-price-sinks-to-113k/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": -0.045507147908210754,
@@ -2815,8 +2815,8 @@
         "timestamp": 1754249406,
         "url": "https://www.newsbtc.com/analysis/xrp/xrp-must-hold-2-65-support-or-risk-major-breakdown-analyst/",
         "symbols": [
-          "XRP",
-          "BTC"
+          "BTC",
+          "XRP"
         ],
         "source_weight": 0.7,
         "sentiment": 0.013300007209181786,
@@ -2970,8 +2970,8 @@
         "timestamp": 1754091888,
         "url": "https://www.theblock.co/post/365295/nadaq-listed-devvstream-corp-buys-10-million-worth-of-bitcoin-and-solana-as-it-looks-to-tokenize-carbon-credits?utm_source=rss&utm_medium=rss",
         "symbols": [
-          "BTC",
-          "SOL"
+          "SOL",
+          "BTC"
         ],
         "source_weight": 0.7,
         "sentiment": -0.46085819602012634,
@@ -3797,12 +3797,12 @@
       "sentiment": 0
     }
   },
-  "timestamp": "2025-08-03 16:24:34",
+  "timestamp": "2025-08-03 16:54:40",
   "user": "Patmoorea",
   "bot_status": {
     "regime": "Range/Scalping",
     "cycle": 0,
-    "last_update": "2025-08-03 16:24:34",
+    "last_update": "2025-08-03 16:54:40",
     "performance": {
       "total_trades": 0,
       "win_rate": 0,
