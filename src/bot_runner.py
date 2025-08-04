@@ -5898,62 +5898,137 @@ async def run_clean_bot():
 
             print("\n[DEBUG] Initialisation des décisions...")
 
-            # Timestamp correct
+            # Timestamp correct UTC
             current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
             for pair in bot.pairs_valid:
-                pair_key = pair.replace("/", "").upper()
-                market_signals = bot.market_data.get(pair_key, {})
-                tf_data = market_signals.get("1h", {}).get("signals", {})
+                try:
+                    pair_key = pair.replace("/", "").upper()
 
-                # Récupération des scores avec valeurs par défaut sécurisées
-                tech_data = tf_data.get("technical", {})
-                tech_score = (
-                    float(tech_data.get("score", 0.5))
-                    if isinstance(tech_data, dict)
-                    else 0.5
-                )
+                    # Vérification et initialisation des structures
+                    if pair_key not in bot.market_data:
+                        bot.market_data[pair_key] = {}
 
-                ai_score = market_signals.get("ai_prediction")
-                if ai_score is not None:
+                    market_signals = bot.market_data[pair_key]
+
+                    # Récupération des signaux techniques depuis timeframe 1h
+                    tf_data = market_signals.get("1h", {}).get("signals", {})
+                    tech_data = tf_data.get("technical", {})
+
+                    # 1. Technical Score
                     try:
-                        ai_score = float(ai_score)
-                        ai_score = max(0.0, min(1.0, ai_score))  # Borne entre 0 et 1
+                        tech_score = float(tech_data.get("score", 0.5))
+                        tech_score = max(0.0, min(1.0, tech_score))  # Normalisation
                     except (TypeError, ValueError):
+                        print(f"[WARNING] Invalid tech score for {pair_key}")
+                        tech_score = 0.5
+
+                    # 2. AI Score
+                    try:
+                        ai_score = market_signals.get("ai_prediction")
+                        if ai_score is not None:
+                            ai_score = float(ai_score)
+                            ai_score = max(0.0, min(1.0, ai_score))
+                        else:
+                            print(f"[WARNING] No AI prediction for {pair_key}")
+                            ai_score = 0.5
+                    except (TypeError, ValueError):
+                        print(f"[WARNING] Invalid AI score for {pair_key}")
                         ai_score = 0.5
-                else:
-                    ai_score = 0.5
 
-                sentiment_score = market_signals.get("sentiment")
-                if sentiment_score is not None:
+                    # 3. Sentiment Score
                     try:
-                        sentiment_score = float(sentiment_score)
-                        sentiment_score = max(
-                            -1.0, min(1.0, sentiment_score)
-                        )  # Borne entre -1 et 1
+                        sentiment_score = market_signals.get("sentiment")
+                        if sentiment_score is not None:
+                            sentiment_score = float(sentiment_score)
+                            sentiment_score = max(-1.0, min(1.0, sentiment_score))
+                        else:
+                            print(f"[WARNING] No sentiment data for {pair_key}")
+                            sentiment_score = 0.0
                     except (TypeError, ValueError):
+                        print(f"[WARNING] Invalid sentiment score for {pair_key}")
                         sentiment_score = 0.0
-                else:
-                    sentiment_score = 0.0
 
-                # Construction de la décision avec validation
-                decision = {
-                    "action": "neutral",
-                    "confidence": 0.5,  # Valeur par défaut sécurisée
-                    "tech": tech_score,
-                    "ai": ai_score,
-                    "sentiment": sentiment_score,
-                    "timestamp": current_time,  # Ajout du timestamp correct
-                }
+                    # Calcul de la confiance globale
+                    confidence = 0.5  # Valeur par défaut
 
-                # Debug des valeurs
-                print(f"\n[DEBUG] Décision pour {pair}:")
-                print(f"- Tech score: {tech_score:.4f}")
-                print(f"- AI score: {ai_score:.4f}")
-                print(f"- Sentiment: {sentiment_score:.4f}")
+                    # Pondération des signaux pour la confiance
+                    if all(
+                        x is not None for x in [tech_score, ai_score, sentiment_score]
+                    ):
+                        # Poids des signaux
+                        tech_weight = 0.5
+                        ai_weight = 0.3
+                        sentiment_weight = 0.2
 
-                # Stockage de la décision validée
-                decisions_for_dashboard[pair] = decision
+                        # Normalisation du sentiment entre 0 et 1
+                        norm_sentiment = (sentiment_score + 1) / 2
+
+                        # Calcul pondéré
+                        confidence = (
+                            tech_score * tech_weight
+                            + ai_score * ai_weight
+                            + norm_sentiment * sentiment_weight
+                        )
+
+                        # Borne entre 0.5 et 1.0
+                        confidence = max(0.5, min(1.0, confidence))
+
+                    # Construction de la décision
+                    decision = {
+                        "pair": pair,
+                        "action": "neutral",  # Sera mis à jour plus tard selon les signaux
+                        "confidence": round(confidence, 4),
+                        "tech": round(tech_score, 4),
+                        "ai": round(ai_score, 4),
+                        "sentiment": round(sentiment_score, 4),
+                        "timestamp": current_time,
+                    }
+
+                    # Détermination de l'action selon les signaux
+                    weighted_signal = (
+                        tech_score * 0.5
+                        + ai_score * 0.3
+                        + ((sentiment_score + 1) / 2) * 0.2
+                    )
+
+                    if weighted_signal > 0.7:
+                        decision["action"] = "buy"
+                    elif weighted_signal < 0.3:
+                        decision["action"] = "sell"
+
+                    # Debug des valeurs
+                    print(f"\n[DEBUG] Décision pour {pair}:")
+                    print(f"- Tech score: {tech_score:.4f}")
+                    print(f"- AI score: {ai_score:.4f}")
+                    print(f"- Sentiment: {sentiment_score:.4f}")
+                    print(f"- Confiance: {confidence:.4f}")
+                    print(f"- Action: {decision['action']}")
+
+                    # Stockage de la décision
+                    decisions_for_dashboard[pair] = decision
+
+                    # Si les signaux sont suffisamment forts, ajouter aux décisions de trade
+                    if decision["action"] != "neutral" and decision["confidence"] > 0.7:
+                        trade_decisions.append(decision)
+
+                except Exception as e:
+                    print(f"[ERROR] Failed to process {pair}: {str(e)}")
+                    continue
+
+            # Mise à jour du market_data avec les décisions
+            for pair, decision in decisions_for_dashboard.items():
+                pair_key = pair.replace("/", "").upper()
+                if pair_key not in bot.market_data:
+                    bot.market_data[pair_key] = {}
+                bot.market_data[pair_key]["last_decision"] = decision
+                bot.market_data[pair_key]["last_update"] = current_time
+
+            # Debug final
+            print("\n[DEBUG] Résumé des décisions:")
+            for pair, decision in decisions_for_dashboard.items():
+                print(f"\n{pair}:")
+                print(json.dumps(decision, indent=2))
 
             # 7. === ANALYSE DES SIGNAUX ===
             signals_ok = bot.verify_signals_completeness()

@@ -396,8 +396,13 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
 # --- TAB1 TRADING ---
 with tab1:
     st.subheader("Trading en temps réel")
+
+    # Récupération des données
     bot_status = shared_data.get("bot_status", {})
     perf = bot_status.get("performance", {})
+    market_data = shared_data.get("market_data", {})
+
+    # Affichage des métriques principales
     st.markdown("#### Cycle et Régime")
     col1, col2, col3 = st.columns(3)
     col1.metric("Cycle actuel", bot_status.get("cycle", 0))
@@ -408,7 +413,7 @@ with tab1:
         f"+{perf.get('win_rate',0)*100:.1f}%",
     )
 
-    # --- BANDEAU PAUSE TRADING AVEC COMPTEUR ET TABLEAU DÉTAILLÉ ---
+    # Gestion des pauses trading
     active_pauses = shared_data.get("active_pauses", [])
     if active_pauses:
         pause_cycles_left = max([p.get("cycles_left", 0) for p in active_pauses])
@@ -421,42 +426,90 @@ with tab1:
         st.dataframe(df_pauses, use_container_width=True)
 
     st.divider()
+
+    # Section Scores et Signaux
     st.markdown("#### Scores de décision et signaux")
     trade_decisions = shared_data.get("trade_decisions", {})
-    # print("=== DEBUG TRADE_DECISIONS ===")
-    # print(trade_decisions)
+
     if trade_decisions:
-        df_signals = pd.DataFrame(trade_decisions).T
+        # Création du DataFrame initial
+        decisions_data = []
 
-        # Filtrer dynamiquement les colonnes où tout est None ou NaN
-        keep_cols = [
-            col for col in df_signals.columns if not df_signals[col].isna().all()
-        ]
-        df_signals = df_signals[keep_cols]
+        for pair, decision in trade_decisions.items():
+            pair_key = pair.replace("/", "").upper()
 
-        # Ajoute une colonne 'Sizing (%)'
+            # Récupération des valeurs réelles depuis market_data
+            ai_pred = market_data.get(pair_key, {}).get("ai_prediction", 0.5)
+            sentiment = market_data.get(pair_key, {}).get("sentiment", 0.0)
+            tech_score = (
+                market_data.get(pair_key, {})
+                .get("1h", {})
+                .get("signals", {})
+                .get("technical", {})
+                .get("score", 0.5)
+            )
+
+            row_data = {
+                "pair": pair,
+                "action": decision.get("action", "neutral"),
+                "confidence": float(decision.get("confidence", 0.5)),
+                "tech": float(tech_score),
+                "ai": float(ai_pred),
+                "sentiment": float(sentiment),
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            decisions_data.append(row_data)
+
+        # Création du DataFrame final
+        df_signals = pd.DataFrame(decisions_data)
+        df_signals.set_index("pair", inplace=True)
+
+        # Calcul du sizing
         perf = shared_data.get("bot_status", {}).get("performance", {})
         win_rate = perf.get("win_rate", 0.55)
         profit_factor = perf.get("profit_factor", 1.7)
 
         def sizing_pct(conf):
-            if conf > 0.7:
-                rp = 0.09
-            elif conf > 0.4:
-                rp = 0.04
-            else:
-                rp = 0.02
-            kelly = kelly_criterion(win_rate, profit_factor)
-            if kelly > 0:
-                rp = min(rp + kelly * 0.5, 0.12)
-            return f"{rp*100:.1f}%"
+            try:
+                conf = float(conf)
+                if conf > 0.7:
+                    rp = 0.09
+                elif conf > 0.4:
+                    rp = 0.04
+                else:
+                    rp = 0.02
+                kelly = kelly_criterion(win_rate, profit_factor)
+                if kelly > 0:
+                    rp = min(rp + kelly * 0.5, 0.12)
+                return f"{rp*100:.1f}%"
+            except:
+                return "N/A"
 
+        # Ajout de la colonne Sizing
         df_signals["Sizing (%)"] = df_signals["confidence"].map(sizing_pct)
+
+        # Arrondi des valeurs numériques
+        numeric_cols = ["confidence", "tech", "ai", "sentiment"]
+        for col in numeric_cols:
+            if col in df_signals.columns:
+                df_signals[col] = df_signals[col].round(4)
+
+        # Affichage du DataFrame
         st.dataframe(df_signals, use_container_width=True)
+
+        # Debug des valeurs (optionnel)
+        if st.checkbox("Show Debug Values"):
+            st.write("Debug - Raw Values:")
+            for pair, row in df_signals.iterrows():
+                st.write(f"\n{pair}:")
+                for col in ["action", "confidence", "tech", "ai", "sentiment"]:
+                    st.write(f"{col}: {row[col]}")
     else:
         st.info("Aucun signal de trading ce cycle.")
 
     st.divider()
+
+    # Historique des trades
     st.markdown("#### 📜 Historique des trades exécutés")
     trades = shared_data.get("trade_history", [])
     if trades:
@@ -466,6 +519,8 @@ with tab1:
         st.info("Aucun trade exécuté ce cycle.")
 
     st.divider()
+
+    # Section Arbitrage
     st.markdown("#### Arbitrage")
     arbitrage_ops = shared_data.get("arbitrage_opportunities", [])
     if arbitrage_ops:
@@ -487,34 +542,66 @@ with tab2:
     market_data = shared_data.get("market_data", {}).get(pair, {}).get(tf, {})
 
     if market_data and market_data.get("close") and market_data.get("timestamp"):
-        closes = market_data["close"]
-        timestamps = market_data["timestamp"]
-        ema20 = pd.Series(closes).ewm(span=20).mean()
-        ema50 = pd.Series(closes).ewm(span=50).mean()
-        fig = go.Figure()
-        fig.add_trace(
-            go.Candlestick(
-                x=timestamps,
-                open=market_data.get("open", []),
-                high=market_data.get("high", []),
-                low=market_data.get("low", []),
-                close=closes,
-                name="OHLC",
+        # Conversion des timestamps en datetime
+        try:
+            timestamps = pd.to_datetime(market_data["timestamp"])
+            closes = np.array(market_data["close"], dtype=float)
+            opens = np.array(market_data.get("open", []), dtype=float)
+            highs = np.array(market_data.get("high", []), dtype=float)
+            lows = np.array(market_data.get("low", []), dtype=float)
+
+            # Création du DataFrame pour les moyennes mobiles
+            df = pd.DataFrame({"close": closes}, index=timestamps)
+
+            ema20 = df["close"].ewm(span=20).mean()
+            ema50 = df["close"].ewm(span=50).mean()
+
+            # Création du graphique avec les données validées
+            fig = go.Figure()
+
+            # Ajout du graphique en chandelier
+            fig.add_trace(
+                go.Candlestick(
+                    x=timestamps,  # Timestamps convertis en datetime
+                    open=opens,
+                    high=highs,
+                    low=lows,
+                    close=closes,
+                    name="OHLC",
+                )
             )
-        )
-        fig.add_trace(
-            go.Scatter(x=timestamps, y=ema20, name="EMA 20", line=dict(color="blue"))
-        )
-        fig.add_trace(
-            go.Scatter(x=timestamps, y=ema50, name="EMA 50", line=dict(color="orange"))
-        )
-        fig.update_layout(
-            title=f"Graphique {pair} ({tf})",
-            yaxis_title="Prix USDT",
-            template="plotly_dark",
-            xaxis_rangeslider_visible=False,
-        )
-        st.plotly_chart(fig, use_container_width=True)
+
+            # Ajout des EMA
+            fig.add_trace(
+                go.Scatter(
+                    x=timestamps, y=ema20, name="EMA 20", line=dict(color="blue")
+                )
+            )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=timestamps, y=ema50, name="EMA 50", line=dict(color="orange")
+                )
+            )
+
+            # Configuration du layout
+            fig.update_layout(
+                title=f"Graphique {pair} ({tf})",
+                yaxis_title="Prix USDT",
+                template="plotly_dark",
+                xaxis_rangeslider_visible=False,
+            )
+
+            # Affichage du graphique
+            st.plotly_chart(fig, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Erreur lors de la création du graphique: {str(e)}")
+            print(f"DEBUG - Erreur graphique: {str(e)}")
+            print(f"DEBUG - Type timestamps: {type(market_data['timestamp'])}")
+            print(
+                f"DEBUG - Exemple timestamp: {market_data['timestamp'][0] if market_data['timestamp'] else 'None'}"
+            )
     else:
         st.info("Pas de données live pour cette paire et ce timeframe.")
 
