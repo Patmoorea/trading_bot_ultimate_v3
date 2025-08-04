@@ -417,10 +417,10 @@ MARKET_REGIMES = {
 
 
 def get_current_time():
+    """Retourne la date/heure actuelle au format correct"""
     utc_now = datetime.utcnow()
-    polynesie_offset = timedelta(hours=-10)
-    local_dt = utc_now + polynesie_offset
-    return local_dt.strftime("%Y-%m-%d %H:%M:%S")
+    # Plus d'offset Polynésie qui cause des problèmes
+    return utc_now.strftime("%Y-%m-%d %H:%M:%S")
 
 
 # Constantes
@@ -2905,7 +2905,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec validation du format JSON"""
+        """Mise à jour sécurisée avec validation du format JSON et des timestamps"""
         try:
             # 1. Backup du fichier existant avant toute modification
             backup_file = data_file + ".bak"
@@ -2916,23 +2916,34 @@ class TradingBotM4:
             try:
                 with open(data_file, "r") as f:
                     shared_data = json.load(f)
-                    # Validation du format
                     if not isinstance(shared_data, dict):
                         print("[ERROR] Format JSON invalide dans shared_data.json")
-                        raise ValueError("Invalid JSON format")
+                        shared_data = {}
             except Exception as e:
                 print(f"[ERROR] Erreur lecture shared_data: {e}")
                 shared_data = {}
 
-            # 3. Fonction de fusion profonde
+            # 3. Correction des timestamps
+            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+            def fix_timestamps(data):
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        if isinstance(value, dict):
+                            data[key] = fix_timestamps(value)
+                        elif key in ["timestamp", "last_update"]:
+                            data[key] = current_time
+                return data
+
+            new_fields = fix_timestamps(new_fields)
+
+            # 4. Fonction de fusion profonde
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
                         d[k] = deep_update(d[k], v)
                     elif isinstance(v, list) and k in d and isinstance(d[k], list):
-                        # Fusion spéciale pour les listes
                         if k == "pending_sales":
-                            # Fusion par symbol pour pending_sales
                             existing_items = {
                                 item.get("symbol"): item
                                 for item in d[k]
@@ -2943,51 +2954,70 @@ class TradingBotM4:
                                     existing_items[new_item["symbol"]] = new_item
                             d[k] = list(existing_items.values())
                         else:
-                            # Pour les autres listes, garde la nouvelle
                             d[k] = v
                     else:
                         d[k] = v
                 return d
 
-            # 4. Fusion profonde des données
+            # 5. Préservation des données importantes
+            preserved_fields = [
+                "trade_history",
+                "closed_positions",
+                "equity_history",
+                "news_data",
+                "sentiment",
+                "active_pauses",
+                "pending_sales",
+            ]
+
+            preserved_data = {
+                field: shared_data.get(field, {})
+                for field in preserved_fields
+                if field in shared_data
+            }
+
+            # 6. Fusion des données
             shared_data = deep_update(shared_data, new_fields)
 
-            # 5. Validation du format avant sauvegarde
+            # 7. Restauration des données préservées
+            shared_data.update(preserved_data)
+
+            # 8. Validation des types dans trade_decisions
             if "trade_decisions" in shared_data:
                 for pair, decision in shared_data["trade_decisions"].items():
-                    if not isinstance(decision, dict):
-                        print(f"[ERROR] Format invalide pour {pair}")
-                        continue
-                    # Force les types corrects
-                    if "confidence" in decision:
-                        decision["confidence"] = float(decision["confidence"])
-                    if "tech" in decision:
-                        decision["tech"] = float(decision["tech"])
-                    if "ai" in decision:
-                        decision["ai"] = float(decision["ai"])
-                    if "sentiment" in decision:
-                        decision["sentiment"] = float(decision["sentiment"])
+                    if isinstance(decision, dict):
+                        for key in ["confidence", "tech", "ai", "sentiment"]:
+                            if key in decision:
+                                try:
+                                    decision[key] = float(decision[key])
+                                except (TypeError, ValueError):
+                                    decision[key] = 0.5
 
-            # 6. Sauvegarde avec vérification du format JSON
+            # 9. Mise à jour des timestamps
+            if "cycle_metrics" in shared_data:
+                shared_data["cycle_metrics"]["timestamp"] = current_time
+            if "bot_status" in shared_data:
+                shared_data["bot_status"]["last_update"] = current_time
+
+            # 10. Vérification finale et sauvegarde
             try:
-                # Test de sérialisation avant écriture
+                # Test de sérialisation
                 json.dumps(shared_data)
 
                 with open(data_file, "w") as f:
                     json.dump(shared_data, f, indent=4)
+
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
 
             except Exception as e:
                 print(f"❌ Erreur format JSON: {e}")
-                # Restaure depuis backup
                 if os.path.exists(backup_file):
                     shutil.copyfile(backup_file, data_file)
                 return False
 
         except Exception as e:
             print(f"❌ Erreur sauvegarde shared_data: {e}")
-            # Restaure depuis backup
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
             return False
@@ -4465,7 +4495,7 @@ class TradingBotM4:
             self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
         )
         report = (
-            f"Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): {get_current_time()}\n"
+            f"Current Date and Time (UTC): {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"Cycle: {cycle if cycle is not None else self.current_cycle}\n"
             f"Current User's Login: {CURRENT_USER}\n"
             "╔═════════════════════════════════════════════════╗\n"
@@ -6061,10 +6091,10 @@ async def run_clean_bot():
 
                 # 4. Préparation des données à sauvegarder
                 data_to_save = {
-                    "trade_decisions": merged_trade_decisions,  # Utilisation des décisions fusionnées
+                    "trade_decisions": merged_trade_decisions,
                     "market_data": {
-                        **existing_data.get("market_data", {}),  # Garde l'historique
-                        **bot.market_data,  # Ajoute les nouvelles
+                        **existing_data.get("market_data", {}),
+                        **bot.market_data,
                     },
                     "cycle_metrics": {
                         "cycle": bot.current_cycle,
@@ -6072,13 +6102,15 @@ async def run_clean_bot():
                         "balance": bot.get_performance_metrics().get(
                             "balance", 10000.0
                         ),
-                        "timestamp": current_time,
+                        "timestamp": current_time,  # Timestamp correct
+                        "last_update": current_time,  # Ajout explicite
                     },
                     "bot_status": {
                         "cycle": bot.current_cycle,
                         "regime": regime,
                         "performance": bot.get_performance_metrics(),
-                        "last_update": current_time,
+                        "last_update": current_time,  # Timestamp correct
+                        "timestamp": current_time,  # Ajout explicite
                     },
                 }
 

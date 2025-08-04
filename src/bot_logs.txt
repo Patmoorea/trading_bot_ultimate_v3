@@ -146559,3 +146559,91 @@
 2025-08-04T18:49:56.747310 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0424 | Tech: 0.06 | AI: 0.65
 2025-08-04T18:51:46.747385 | Démarrage cycle trading
 2025-08-04T18:51:46.784216 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T18:54:19.294439 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-04T18:54:19.300948 | Initialisation des modèles d'IA...
+2025-08-04T18:54:19.768016 | ✅ Modèles d'IA initialisés avec succès
+2025-08-04T18:54:21.356000 | ✅ PPO Strategy initialized successfully
+2025-08-04T18:54:21.366869 | ✅ Bot initialisé avec Telegram: True
+2025-08-04T18:54:21.366956 | ✅ Trading en direct: True
+2025-08-04T18:54:21.367024 | ✅ IA activée: True
+2025-08-04T18:54:21.367176 | ✅ Analyse de news activée: True
+2025-08-04T18:56:27.471583 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-04T18:57:58.369760 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0374 | Tendance: 0.0008
+2025-08-04T18:57:58.384387 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-04T18:57:58.389393 | Démarrage cycle trading
+2025-08-04T18:58:38.635775 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0372 | Tendance: 0.0008
+2025-08-04T18:58:38.653041 | 🎯 Stratégie: Range/Scalping
+2025-08-04T18:58:38.834235 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.2014 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:38.991583 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.26 | Score: -0.2618 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:39.154543 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0905 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:39.317259 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: 0.1304 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:39.476601 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0811 | Tech: 0.02 | AI: 0.65
+2025-08-04T18:58:39.637506 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1344 | Tech: 0.08 | AI: 0.65
+2025-08-04T18:58:39.800771 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1413 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:39.966324 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.24 | Score: -0.2389 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:40.124067 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0554 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:40.284571 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1609 | Tech: 0.09 | AI: 0.65
+2025-08-04T18:58:40.445507 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0368 | Tech: 0.13 | AI: 0.65
+2025-08-04T18:58:40.613544 | [TRADE-DECISION] ETHUSDC | Action: BUY | Confiance: 0.32 | Score: 0.3204 | Tech: 0.19 | AI: 0.65
+2025-08-04T18:58:40.772593 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0888 | Tech: 0.00 | AI: 0.66
+2025-08-04T18:58:40.933325 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1105 | Tech: 0.02 | AI: 0.66
+2025-08-04T18:58:41.088260 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0676 | Tech: 0.03 | AI: 0.66
+2025-08-04T18:58:41.245797 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: 0.2519 | Tech: 0.08 | AI: 0.66
+2025-08-04T18:58:41.409240 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.21 | Score: 0.2100 | Tech: 0.14 | AI: 0.66
+2025-08-04T18:58:41.571802 | [TRADE-DECISION] LTCUSDC | Action: BUY | Confiance: 0.29 | Score: 0.2853 | Tech: 0.05 | AI: 0.66
+2025-08-04T18:58:41.730537 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0244 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:41.893906 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1897 | Tech: -0.01 | AI: 0.65
+2025-08-04T18:58:42.053014 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1166 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:42.211048 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0113 | Tech: -0.02 | AI: 0.65
+2025-08-04T18:58:42.373336 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1163 | Tech: 0.11 | AI: 0.65
+2025-08-04T18:58:42.531925 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0547 | Tech: 0.09 | AI: 0.65
+2025-08-04T18:58:42.686473 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1743 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:42.852718 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2156 | Tech: -0.01 | AI: 0.65
+2025-08-04T18:58:43.014515 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0582 | Tech: -0.01 | AI: 0.65
+2025-08-04T18:58:43.175431 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0304 | Tech: 0.06 | AI: 0.65
+2025-08-04T18:58:43.335147 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1645 | Tech: 0.06 | AI: 0.65
+2025-08-04T18:58:43.435070 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0508 | Tech: -0.06 | AI: 0.65
+2025-08-04T18:58:43.592023 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1908 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:43.775312 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1897 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:43.973095 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0659 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:44.134950 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1381 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:44.294801 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0631 | Tech: -0.03 | AI: 0.65
+2025-08-04T18:58:44.464334 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: 0.0960 | Tech: 0.05 | AI: 0.65
+2025-08-04T18:58:44.628395 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1197 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:44.789604 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1515 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:44.947189 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0556 | Tech: -0.01 | AI: 0.65
+2025-08-04T18:58:45.104755 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0060 | Tech: 0.05 | AI: 0.65
+2025-08-04T18:58:45.273054 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0861 | Tech: 0.04 | AI: 0.65
+2025-08-04T18:58:45.435994 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0081 | Tech: 0.03 | AI: 0.65
+2025-08-04T18:58:45.593559 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0700 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:45.751419 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1360 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:45.911479 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0092 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:46.075429 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0772 | Tech: 0.02 | AI: 0.65
+2025-08-04T18:58:46.259689 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1210 | Tech: 0.05 | AI: 0.65
+2025-08-04T18:58:46.411671 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0285 | Tech: -0.02 | AI: 0.65
+2025-08-04T18:58:46.568511 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0859 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:46.921698 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0234 | Tech: -0.00 | AI: 0.65
+2025-08-04T18:58:47.082845 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0527 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:47.247807 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1193 | Tech: 0.01 | AI: 0.65
+2025-08-04T18:58:47.405830 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0906 | Tech: 0.08 | AI: 0.65
+2025-08-04T18:58:47.566361 | [TRADE-DECISION] TRXUSDC | Action: BUY | Confiance: 0.29 | Score: 0.2898 | Tech: 0.17 | AI: 0.65
+2025-08-04T18:58:47.726717 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1243 | Tech: 0.00 | AI: 0.65
+2025-08-04T18:58:47.890942 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2331 | Tech: -0.01 | AI: 0.65
+2025-08-04T18:58:48.051129 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1314 | Tech: -0.03 | AI: 0.65
+2025-08-04T18:58:48.216224 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: -0.0394 | Tech: 0.03 | AI: 0.65
+2025-08-04T18:58:48.375055 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1717 | Tech: 0.03 | AI: 0.65
+2025-08-04T18:58:48.468774 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0390 | Tech: 0.05 | AI: 0.65
+2025-08-04T19:00:36.148770 | Démarrage cycle trading
+2025-08-04T19:00:36.206336 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:02:25.446767 | Démarrage cycle trading
+2025-08-04T19:02:25.496142 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:04:12.110165 | Démarrage cycle trading
+2025-08-04T19:04:12.180543 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:06:00.778302 | Démarrage cycle trading
+2025-08-04T19:06:00.814054 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:07:49.810032 | Démarrage cycle trading
+2025-08-04T19:07:49.852519 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:09:38.631196 | Démarrage cycle trading
+2025-08-04T19:09:38.687879 | 🚫 Cycle bloqué - Pause news active
+2025-08-04T19:11:29.442697 | Démarrage cycle trading
+2025-08-04T19:11:29.470616 | 🚫 Cycle bloqué - Pause news active
