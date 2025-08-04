@@ -417,10 +417,8 @@ MARKET_REGIMES = {
 
 
 def get_current_time():
-    """Retourne la date/heure actuelle au format correct"""
-    utc_now = datetime.utcnow()
-    # Plus d'offset Polynésie qui cause des problèmes
-    return utc_now.strftime("%Y-%m-%d %H:%M:%S")
+    """Retourne la date/heure actuelle au format string"""
+    return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
 
 # Constantes
@@ -2907,7 +2905,7 @@ class TradingBotM4:
     ):
         """Mise à jour sécurisée avec validation du format JSON et des timestamps"""
         try:
-            # 1. Backup du fichier existant avant toute modification
+            # 1. Backup du fichier existant
             backup_file = data_file + ".bak"
             if os.path.exists(data_file):
                 shutil.copyfile(data_file, backup_file)
@@ -2917,14 +2915,15 @@ class TradingBotM4:
                 with open(data_file, "r") as f:
                     shared_data = json.load(f)
                     if not isinstance(shared_data, dict):
-                        print("[ERROR] Format JSON invalide dans shared_data.json")
+                        print("[ERROR] Format JSON invalide")
                         shared_data = {}
             except Exception as e:
-                print(f"[ERROR] Erreur lecture shared_data: {e}")
+                print(f"[ERROR] Erreur lecture: {e}")
                 shared_data = {}
 
-            # 3. Correction des timestamps
-            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            # 3. Génération des timestamps
+            current_time = get_current_time()
+            current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
             def fix_timestamps(data):
                 if isinstance(data, dict):
@@ -2932,12 +2931,17 @@ class TradingBotM4:
                         if isinstance(value, dict):
                             data[key] = fix_timestamps(value)
                         elif key in ["timestamp", "last_update"]:
-                            data[key] = current_time
+                            # Pour les graphiques: timestamp en datetime
+                            if "chart_data" in data:
+                                data[key] = current_time
+                            else:
+                                # Pour le reste: format string
+                                data[key] = current_time_str
                 return data
 
             new_fields = fix_timestamps(new_fields)
 
-            # 4. Fonction de fusion profonde
+            # 4. Fusion profonde avec préservation des types
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
@@ -2953,6 +2957,9 @@ class TradingBotM4:
                                 if isinstance(new_item, dict) and "symbol" in new_item:
                                     existing_items[new_item["symbol"]] = new_item
                             d[k] = list(existing_items.values())
+                        elif k == "chart_data":
+                            # Préserve le format datetime pour les données de graphique
+                            d[k] = v
                         else:
                             d[k] = v
                     else:
@@ -2978,11 +2985,9 @@ class TradingBotM4:
 
             # 6. Fusion des données
             shared_data = deep_update(shared_data, new_fields)
-
-            # 7. Restauration des données préservées
             shared_data.update(preserved_data)
 
-            # 8. Validation des types dans trade_decisions
+            # 7. Validation des types dans trade_decisions
             if "trade_decisions" in shared_data:
                 for pair, decision in shared_data["trade_decisions"].items():
                     if isinstance(decision, dict):
@@ -2993,19 +2998,28 @@ class TradingBotM4:
                                 except (TypeError, ValueError):
                                     decision[key] = 0.5
 
-            # 9. Mise à jour des timestamps
-            if "cycle_metrics" in shared_data:
-                shared_data["cycle_metrics"]["timestamp"] = current_time
-            if "bot_status" in shared_data:
-                shared_data["bot_status"]["last_update"] = current_time
+            # 8. Conversion des timestamps pour les graphiques
+            if "chart_data" in shared_data:
+                try:
+                    chart_data = shared_data["chart_data"]
+                    if isinstance(chart_data, dict):
+                        if "timestamp" in chart_data:
+                            if isinstance(chart_data["timestamp"], str):
+                                chart_data["timestamp"] = pd.to_datetime(
+                                    chart_data["timestamp"]
+                                )
+                except Exception as e:
+                    print(f"[WARNING] Erreur conversion timestamps: {e}")
 
-            # 10. Vérification finale et sauvegarde
+            # 9. Sauvegarde avec vérification
             try:
                 # Test de sérialisation
-                json.dumps(shared_data)
+                json.dumps(
+                    shared_data, default=str
+                )  # Utilise str pour datetime objects
 
                 with open(data_file, "w") as f:
-                    json.dump(shared_data, f, indent=4)
+                    json.dump(shared_data, f, indent=4, default=str)
 
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
@@ -3017,7 +3031,7 @@ class TradingBotM4:
                 return False
 
         except Exception as e:
-            print(f"❌ Erreur sauvegarde shared_data: {e}")
+            print(f"❌ Erreur sauvegarde: {e}")
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
             return False
@@ -4495,7 +4509,7 @@ class TradingBotM4:
             self.market_data, self.pairs_valid, ["1m", "5m", "15m", "1h", "4h", "1d"]
         )
         report = (
-            f"Current Date and Time (UTC): {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Date UTC: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"Cycle: {cycle if cycle is not None else self.current_cycle}\n"
             f"Current User's Login: {CURRENT_USER}\n"
             "╔═════════════════════════════════════════════════╗\n"
@@ -6102,15 +6116,13 @@ async def run_clean_bot():
                         "balance": bot.get_performance_metrics().get(
                             "balance", 10000.0
                         ),
-                        "timestamp": current_time,  # Timestamp correct
-                        "last_update": current_time,  # Ajout explicite
+                        "timestamp": current_time,
                     },
                     "bot_status": {
                         "cycle": bot.current_cycle,
                         "regime": regime,
                         "performance": bot.get_performance_metrics(),
-                        "last_update": current_time,  # Timestamp correct
-                        "timestamp": current_time,  # Ajout explicite
+                        "last_update": current_time,
                     },
                 }
 
