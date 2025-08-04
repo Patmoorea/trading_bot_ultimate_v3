@@ -2907,40 +2907,60 @@ class TradingBotM4:
     ):
         """Mise à jour sécurisée avec fusion profonde"""
         try:
-            # Lecture du fichier existant
-            with open(data_file, "r") as f:
-                shared_data = json.load(f)
-        except Exception:
-            shared_data = {}
+            # 1. Lecture du fichier existant
+            try:
+                with open(data_file, "r") as f:
+                    shared_data = json.load(f)
+            except Exception as e:
+                print(f"[ERROR] Erreur lecture shared_data: {e}")
+                shared_data = {}
 
-        # Fonction de fusion profonde
-        def deep_update(d, u):
-            for k, v in u.items():
-                if isinstance(v, dict) and k in d and isinstance(d[k], dict):
-                    d[k] = deep_update(d[k], v)
-                else:
-                    d[k] = v
-            return d
+            # 2. Fonction de fusion profonde
+            def deep_update(d, u):
+                for k, v in u.items():
+                    if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+                        d[k] = deep_update(d[k], v)
+                    elif isinstance(v, list) and k in d and isinstance(d[k], list):
+                        # Fusion spéciale pour les listes
+                        if k == "pending_sales":
+                            # Fusion par symbol pour pending_sales
+                            existing_items = {
+                                item.get("symbol"): item
+                                for item in d[k]
+                                if isinstance(item, dict) and "symbol" in item
+                            }
+                            for new_item in v:
+                                if isinstance(new_item, dict) and "symbol" in new_item:
+                                    existing_items[new_item["symbol"]] = new_item
+                            d[k] = list(existing_items.values())
+                        else:
+                            # Pour les autres listes, garde la nouvelle
+                            d[k] = v
+                    else:
+                        d[k] = v
+                return d
 
-        # Fusion profonde des données
-        shared_data = deep_update(shared_data, new_fields)
+            # 3. Fusion profonde des données
+            shared_data = deep_update(shared_data, new_fields)
 
-        # Sauvegarde sécurisée
-        backup_file = data_file + ".bak"
-        try:
-            # Backup avant sauvegarde
+            # 4. Backup avant sauvegarde
+            backup_file = data_file + ".bak"
             if os.path.exists(data_file):
                 shutil.copyfile(data_file, backup_file)
 
-            # Sauvegarde avec nouvelle fusion
+            # 5. Sauvegarde sécurisée
             with open(data_file, "w") as f:
                 json.dump(shared_data, f, indent=4)
 
+            print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
+            return True
+
         except Exception as e:
-            print(f"Erreur sauvegarde: {e}")
+            print(f"❌ Erreur sauvegarde shared_data: {e}")
             # Restaure depuis backup si erreur
             if os.path.exists(backup_file):
                 shutil.copyfile(backup_file, data_file)
+            return False
 
     def check_tp_partial(
         self,
@@ -6943,14 +6963,20 @@ async def send_cycle_reports(bot, trade_decisions, cycle, regime, duration):
         # 1. Rapport des trades du cycle
         await send_trade_summary(bot, trade_decisions)
 
-        # 2. Construction des analyses
+        # 2. Préparation des données d'analyse
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
 
-        # 3. Sauvegarde des données
+        # Ajout du cycle et du régime dans analysis_data
+        analysis_data["cycle"] = cycle  # <- Ajout ici
+        analysis_data["regime"] = regime  # <- Ajout ici
+
+        # 3. Sauvegarde des données avec cycle
         await save_cycle_data(bot, analysis_data)
 
         # 4. Rapport d'analyse complet
-        analysis_report = await bot.generate_market_analysis_report()
+        analysis_report = await bot.generate_market_analysis_report(
+            cycle=cycle
+        )  # <- Ajout du cycle ici
         await bot.telegram.send_message(analysis_report)
 
         # 5. Alertes de risque
