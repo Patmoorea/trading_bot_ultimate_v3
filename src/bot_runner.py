@@ -5833,7 +5833,7 @@ async def run_clean_bot():
             try:
                 current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
                 data_to_save = {
-                    "trade_decisions": decisions_for_dashboard,
+                    "trade_decisions": decisions_for_dashboard,  # Crucial pour le dashboard
                     "market_data": bot.market_data,
                     "cycle_metrics": {
                         "cycle": bot.current_cycle,
@@ -5842,19 +5842,16 @@ async def run_clean_bot():
                             "balance", 10000.0
                         ),
                         "timestamp": current_time,
-                        "user": "Patmoorea",
                     },
-                    "active_pauses": bot.news_pause_manager.get_active_pauses(),
                     "bot_status": {
                         "cycle": bot.current_cycle,
                         "regime": regime,
                         "performance": bot.get_performance_metrics(),
                         "last_update": current_time,
-                        "user": "Patmoorea",
                     },
                 }
 
-                # Vérification et sauvegarde
+                # Une seule vérification et sauvegarde
                 if all(
                     isinstance(v, dict)
                     for v in [
@@ -5867,7 +5864,7 @@ async def run_clean_bot():
                     bot.safe_update_shared_data(data_to_save, bot.data_file)
                     print("✅ Données sauvegardées avec succès")
                 else:
-                    raise ValueError("Format de données invalide")
+                    print("❌ Format de données invalide")
 
             except Exception as e:
                 print(f"❌ Erreur sauvegarde: {e}")
