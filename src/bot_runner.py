@@ -5894,8 +5894,11 @@ async def run_clean_bot():
 
                 if pair_signals:
                     dominant_tf = "1h"
-                    dominant_signals = pair_signals.get(dominant_tf, {}).get(
-                        "signals", {}
+                    dom_decision = pair_signals.get(dominant_tf)
+                    dominant_signals = (
+                        dom_decision.get("signals", {})
+                        if dom_decision and isinstance(dom_decision, dict)
+                        else {}
                     )
                     if bot.risk_manager.validate_trade(dominant_signals):
                         action, confidence = bot.aggregate_timeframe_signals(
@@ -6329,7 +6332,11 @@ async def run_clean_bot():
                         if td and isinstance(td, dict):
                             pair = td.get("pair")
                             if pair and pair in td_dict:
-                                signals = td.get("signals", {})
+                                signals = (
+                                    td.get("signals", {})
+                                    if td and isinstance(td, dict)
+                                    else {}
+                                )
                                 td_dict[pair].update(
                                     {
                                         "confidence": float(td.get("confidence", 0.5)),
