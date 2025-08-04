@@ -5765,15 +5765,20 @@ async def run_clean_bot():
                 market_signals = bot.market_data.get(pair_key, {})
                 tf_data = market_signals.get("1h", {}).get("signals", {})
 
+                # Ne pas mettre de valeurs par défaut ici
+                tech_score = tf_data.get("technical", {}).get("score")
+                ai_score = market_signals.get("ai_prediction")
+                sentiment_score = market_signals.get("sentiment")
+
                 decisions_for_dashboard[pair] = {
                     "action": "neutral",
-                    "confidence": 0.5,
-                    "tech": float(tf_data.get("technical", {}).get("score", 0.5)),
-                    "ai": float(market_signals.get("ai_prediction", 0.5)),
-                    "sentiment": float(market_signals.get("sentiment", 0.5)),
+                    "confidence": None,  # On laisse à None plutôt que 0.5
+                    "tech": tech_score,  # On garde les valeurs brutes
+                    "ai": ai_score,
+                    "sentiment": sentiment_score,
                 }
                 print(
-                    f"[DEBUG] Dashboard initialisé pour {pair}: {decisions_for_dashboard[pair]}"
+                    f"[DEBUG] Valeurs initiales pour {pair}: tech={tech_score}, ai={ai_score}, sentiment={sentiment_score}"
                 )
 
             # 7. === ANALYSE DES SIGNAUX ===
@@ -5875,7 +5880,24 @@ async def run_clean_bot():
                             "sentiment": float(sentiment_score),
                         }
 
-                        decisions_for_dashboard[pair].update(dashboard_update)
+                        print(f"\n[DEBUG] Mise à jour dashboard pour {pair}:")
+                        print(
+                            f"Avant: {json.dumps(decisions_for_dashboard[pair], indent=2)}"
+                        )
+
+                        decisions_for_dashboard[pair].update(
+                            {
+                                "action": str(action),
+                                "confidence": float(confidence),
+                                "tech": float(tech_score),
+                                "ai": float(ai_score),
+                                "sentiment": float(sentiment_score),
+                            }
+                        )
+
+                        print(
+                            f"Après: {json.dumps(decisions_for_dashboard[pair], indent=2)}"
+                        )
 
                         print(f"\n[DEBUG] Dashboard mis à jour pour {pair}:")
                         print(json.dumps(decisions_for_dashboard[pair], indent=2))
@@ -5898,19 +5920,26 @@ async def run_clean_bot():
             # 9. === VALIDATION FINALE DES DONNÉES ===
             print("\n[DEBUG] Validation finale des données...")
             for pair in decisions_for_dashboard:
+                decision = decisions_for_dashboard[pair]
+                print(f"\n[DEBUG] Validation {pair} avant correction:")
+                print(json.dumps(decision, indent=2))
+
+                # Ne corrige que si vraiment nécessaire
                 for key in ["confidence", "tech", "ai", "sentiment"]:
-                    try:
-                        val = float(decisions_for_dashboard[pair].get(key, 0))
-                        if val == 0 or val is None:
-                            decisions_for_dashboard[pair][key] = 0.5
-                            print(
-                                f"[DEBUG] Correction {pair} {key} à 0.5 (était {val})"
-                            )
-                    except:
+                    current_val = decision.get(key)
+                    if current_val is None:  # Correction uniquement si None
                         decisions_for_dashboard[pair][key] = 0.5
-                        print(
-                            f"[DEBUG] Correction {pair} {key} à 0.5 (erreur conversion)"
-                        )
+                        print(f"[DEBUG] {pair}: {key} était None -> 0.5")
+                    else:
+                        try:
+                            # Convertit en float mais garde la valeur
+                            decisions_for_dashboard[pair][key] = float(current_val)
+                        except:
+                            print(f"[DEBUG] {pair}: {key} non convertible -> 0.5")
+                            decisions_for_dashboard[pair][key] = 0.5
+
+                print(f"[DEBUG] {pair} après validation:")
+                print(json.dumps(decisions_for_dashboard[pair], indent=2))
 
             # 10. === SAUVEGARDE DES DONNÉES ===
             try:
@@ -5920,9 +5949,11 @@ async def run_clean_bot():
                 print("[DEBUG] Vérification données avant sauvegarde:")
                 for pair in decisions_for_dashboard:
                     dec = decisions_for_dashboard[pair]
-                    print(
-                        f"{pair}: conf={dec['confidence']:.3f} tech={dec['tech']:.3f}"
-                    )
+                    print(f"\n{pair}:")
+                    print(f"- Confidence: {dec['confidence']}")
+                    print(f"- Tech: {dec['tech']}")
+                    print(f"- AI: {dec['ai']}")
+                    print(f"- Sentiment: {dec['sentiment']}")
 
                 data_to_save = {
                     "trade_decisions": decisions_for_dashboard,
