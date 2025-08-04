@@ -5647,7 +5647,38 @@ async def run_clean_bot():
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
 
+                # AJOUT: Vérifie que la paire existe dans market_data
+                if pair_key not in bot.market_data:
+                    bot.market_data[pair_key] = {}
+
                 for tf in bot.config["TRADING"]["timeframes"]:
+                    # AJOUT: Initialise d'abord la structure du timeframe s'il n'existe pas
+                    if tf not in bot.market_data[pair_key]:
+                        bot.market_data[pair_key][tf] = {
+                            "signals": {
+                                "technical": {
+                                    "score": 0.5,
+                                    "details": {},
+                                    "factors": 0,
+                                },
+                                "momentum": {"score": 0.5, "details": {}, "factors": 0},
+                                "orderflow": {
+                                    "score": 0.5,
+                                    "details": {},
+                                    "factors": 0,
+                                    "liquidity": 0.5,
+                                    "market_pressure": 0.5,
+                                },
+                                "ai": float(
+                                    bot.market_data[pair_key].get("ai_prediction", 0.5)
+                                ),
+                                "sentiment": float(
+                                    bot.market_data[pair_key].get("sentiment", 0.5)
+                                ),
+                            }
+                        }
+
+                    # Récupération et traitement des données
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
                     if df is not None and not df.empty:
                         required_cols = [
@@ -5664,47 +5695,53 @@ async def run_clean_bot():
                             if indicators_data is None:
                                 indicators_data = {}
 
-                            # Structure complète des signaux
-                            bot.market_data[pair_key][tf] = {
-                                "open": df["open"].tolist(),
-                                "high": df["high"].tolist(),
-                                "low": df["low"].tolist(),
-                                "close": df["close"].tolist(),
-                                "volume": df["volume"].tolist(),
-                                "timestamp": [
-                                    int(pd.Timestamp(t).timestamp())
-                                    for t in df["timestamp"]
-                                ],
-                                "signals": {
-                                    "technical": {
-                                        "score": float(
-                                            indicators_data.get("technical_score", 0.5)
+                            # Mise à jour de la structure existante
+                            bot.market_data[pair_key][tf].update(
+                                {
+                                    "open": df["open"].tolist(),
+                                    "high": df["high"].tolist(),
+                                    "low": df["low"].tolist(),
+                                    "close": df["close"].tolist(),
+                                    "volume": df["volume"].tolist(),
+                                    "timestamp": [
+                                        int(pd.Timestamp(t).timestamp())
+                                        for t in df["timestamp"]
+                                    ],
+                                    "signals": {
+                                        "technical": {
+                                            "score": float(
+                                                indicators_data.get(
+                                                    "technical_score", 0.5
+                                                )
+                                            ),
+                                            "details": indicators_data,
+                                            "factors": len(indicators_data),
+                                        },
+                                        "momentum": {
+                                            "score": 0.5,
+                                            "details": {},
+                                            "factors": 0,
+                                        },
+                                        "orderflow": {
+                                            "score": 0.5,
+                                            "details": {},
+                                            "factors": 0,
+                                            "liquidity": 0.5,
+                                            "market_pressure": 0.5,
+                                        },
+                                        "ai": float(
+                                            bot.market_data[pair_key].get(
+                                                "ai_prediction", 0.5
+                                            )
                                         ),
-                                        "details": indicators_data,
-                                        "factors": len(indicators_data),
+                                        "sentiment": float(
+                                            bot.market_data[pair_key].get(
+                                                "sentiment", 0.5
+                                            )
+                                        ),
                                     },
-                                    "momentum": {
-                                        "score": 0.5,
-                                        "details": {},
-                                        "factors": 0,
-                                    },
-                                    "orderflow": {
-                                        "score": 0.5,
-                                        "details": {},
-                                        "factors": 0,
-                                        "liquidity": 0.5,
-                                        "market_pressure": 0.5,
-                                    },
-                                    "ai": float(
-                                        bot.market_data[pair_key].get(
-                                            "ai_prediction", 0.5
-                                        )
-                                    ),
-                                    "sentiment": float(
-                                        bot.market_data[pair_key].get("sentiment", 0.5)
-                                    ),
-                                },
-                            }
+                                }
+                            )
 
             # 5. === ANALYSE DU MARCHÉ ===
             regime, market_data, indicators = await bot.study_market("7d")
@@ -5761,32 +5798,53 @@ async def run_clean_bot():
                             pair, pair_signals
                         )
 
+                        # AJOUT: Calcul amélioré de la confiance
+                        tech_score = float(
+                            dominant_signals.get("technical", {}).get("score", 0.5)
+                        )
+                        momentum_score = float(
+                            dominant_signals.get("momentum", {}).get("score", 0.5)
+                        )
+                        orderflow_score = float(
+                            dominant_signals.get("orderflow", {}).get("score", 0.5)
+                        )
+                        ai_score = float(
+                            bot.market_data[pair_key].get("ai_prediction", 0.5)
+                        )
+                        sentiment_score = float(
+                            bot.market_data[pair_key].get("sentiment", 0.5)
+                        )
+
+                        # Calcul du score combiné pour la confiance
+                        confidence = max(
+                            0.5,
+                            (
+                                tech_score * 0.3
+                                + momentum_score * 0.2
+                                + orderflow_score * 0.2
+                                + ai_score * 0.2
+                                + sentiment_score * 0.1
+                            ),
+                        )
+
+                        # AJOUT: Ajustement du sizing basé sur la confiance
+                        sizing_multiplier = 1.0
+                        if confidence > 0.7:
+                            sizing_multiplier = 1.5
+                        elif confidence > 0.8:
+                            sizing_multiplier = 2.0
+
                         final_decision = {
                             "pair": pair,
                             "action": action,
-                            "confidence": float(confidence),
+                            "confidence": float(confidence),  # Nouvelle confiance
+                            "sizing_multiplier": sizing_multiplier,  # Pour le calcul du sizing
                             "signals": {
-                                "technical": float(
-                                    dominant_signals.get("technical", {}).get(
-                                        "score", 0.5
-                                    )
-                                ),
-                                "momentum": float(
-                                    dominant_signals.get("momentum", {}).get(
-                                        "score", 0.5
-                                    )
-                                ),
-                                "orderflow": float(
-                                    dominant_signals.get("orderflow", {}).get(
-                                        "score", 0.5
-                                    )
-                                ),
-                                "ai": float(
-                                    bot.market_data[pair_key].get("ai_prediction", 0.5)
-                                ),
-                                "sentiment": float(
-                                    bot.market_data[pair_key].get("sentiment", 0.5)
-                                ),
+                                "technical": tech_score,
+                                "momentum": momentum_score,
+                                "orderflow": orderflow_score,
+                                "ai": ai_score,
+                                "sentiment": sentiment_score,
                             },
                         }
 
@@ -5888,16 +5946,36 @@ async def run_clean_bot():
                     current_exposure
                     < bot.risk_manager.position_limits["max_total_exposure"]
                 ):
-                    filtered_decisions = [
-                        d
-                        for d in trade_decisions
-                        if bot.calculate_volatility(
-                            bot.market_data.get(
-                                d["pair"].replace("/", "").upper(), {}
-                            ).get("1h", {})
+                    filtered_decisions = []
+
+                    for decision in trade_decisions:
+                        # Vérification volatilité
+                        pair_key = decision["pair"].replace("/", "").upper()
+                        volatility = bot.calculate_volatility(
+                            bot.market_data.get(pair_key, {}).get("1h", {})
                         )
-                        <= 0.08
-                    ]
+
+                        if volatility <= 0.08:
+                            # Calcul du sizing dynamique
+                            base_size = 12  # Taille de base
+                            confidence = decision.get("confidence", 0.5)
+                            sizing_multiplier = decision.get("sizing_multiplier", 1.0)
+
+                            # Sizing final ajusté
+                            final_size = (
+                                base_size * sizing_multiplier * (confidence / 0.5)
+                            )
+
+                            # Limites min/max
+                            final_size = max(12, min(final_size, 50))  # Entre 12 et 50
+
+                            # Ajout du sizing au trade
+                            decision["amount"] = final_size
+                            filtered_decisions.append(decision)
+
+                            print(
+                                f"[SIZING] {decision['pair']} : {final_size:.2f} USDC (conf={confidence:.2f}, mult={sizing_multiplier})"
+                            )
 
                     if filtered_decisions:
                         await execute_trade_decisions(bot, filtered_decisions)
@@ -5910,7 +5988,6 @@ async def run_clean_bot():
                     log_dashboard(f"🚫 Exposition ({current_exposure:.1%}) > limite")
 
             return trade_decisions, regime
-
         except Exception as e:
             logger.error(f"❌ Erreur cycle trading: {e}")
             raise
