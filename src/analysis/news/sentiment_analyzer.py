@@ -54,89 +54,6 @@ class NewsSentimentAnalyzer:
     }
 
     def __init__(self, config: dict):
-        self.symbol_mapping = (
-            symbol_mapping if symbol_mapping is not None else self.DEFAULT_MAPPING
-        )
-        self.known_tickers = set(self.symbol_mapping.values())
-        self.regex_patterns = [
-            (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
-            for name, ticker in self.symbol_mapping.items()
-        ]
-        # Ajout des paramètres de connexion
-        self.conn_timeout = 10  # Timeout de connexion
-        self.read_timeout = 20  # Timeout de lecture
-        self.max_retries = 3  # Nombre max de tentatives
-        self.retry_delay = 5  # Délai entre les tentatives
-
-        # Création du contexte SSL personnalisé
-        self.ssl_context = ssl.create_default_context()
-        self.ssl_context.check_hostname = False
-        self.ssl_context.verify_mode = ssl.CERT_NONE
-
-        # Headers HTTP personnalisés
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Connection": "keep-alive",
-        }
-
-    def extract_symbols(self, text: str) -> List[str]:
-        found: Set[str] = set()
-        if not text:
-            return []
-        for pattern, ticker in self.regex_patterns:
-            if pattern.search(text):
-                found.add(ticker)
-        for pair in re.findall(
-            r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
-        ):
-            ticker = pair[0]
-            if ticker in self.known_tickers:
-                found.add(ticker)
-        for match in re.findall(r"\$([A-Z]{3,5})\b", text.upper()):
-            if match in self.known_tickers:
-                found.add(match)
-        return list(found)
-
-
-class NewsSentimentAnalyzer:
-    def __init__(self, config: dict):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.config = config
-
-        # Configuration SSL
-        self.ssl_context = ssl.create_default_context()
-        self.ssl_context.check_hostname = False
-        self.ssl_context.verify_mode = ssl.CERT_NONE
-
-        # Configuration des timeouts et retries
-        self.conn_timeout = 10
-        self.read_timeout = 20
-        self.max_retries = 3
-        self.retry_delay = 5
-
-        # Headers HTTP
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Connection": "keep-alive",
-        }
-
-        # Configuration existante
-        self.low_watermark_ratio = config.get("news", {}).get(
-            "low_watermark_ratio", 0.2
-        )
-        self.symbol_extractor = SymbolExtractor(config.get("symbol_mapping"))
-        self.device = torch.device(
-            "cuda"
-            if torch.cuda.is_available()
-            else ("mps" if torch.backends.mps.is_available() else "cpu")
-        )
-        self._model = None
-        self._tokenizer = None
-
         # API Keys
         self.news_api_key = os.getenv("NEWS_API_KEY")
         self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
@@ -188,11 +105,85 @@ class NewsSentimentAnalyzer:
                 "weight": 0.7,
             },
         ]
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.config = config
+
+        # Configuration SSL
+        self.ssl_context = ssl.create_default_context()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
+
+        # Configuration des timeouts et retries
+        self.conn_timeout = 10
+        self.read_timeout = 20
+        self.max_retries = 3
+        self.retry_delay = 5
+
+        # Headers HTTP
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Connection": "keep-alive",
+        }
+
+        # Initialisation des patterns regex pour l'extraction des symboles
+        self.regex_patterns = [
+            (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
+            for name, ticker in self.SYMBOL_MAPPING.items()
+        ]
+        self.known_tickers = set(self.SYMBOL_MAPPING.values())
+
+        # Configuration existante
+        self.low_watermark_ratio = config.get("news", {}).get(
+            "low_watermark_ratio", 0.2
+        )
+        self.device = torch.device(
+            "cuda"
+            if torch.cuda.is_available()
+            else ("mps" if torch.backends.mps.is_available() else "cpu")
+        )
+        self._model = None
+        self._tokenizer = None
 
         # Buffer et configuration
         self.news_buffer = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
+
+    def extract_symbols(self, text: str) -> List[str]:
+        """
+        Extrait les symboles de crypto-monnaies du texte.
+
+        Args:
+            text (str): Le texte à analyser
+
+        Returns:
+            List[str]: Liste des symboles trouvés
+        """
+        found: Set[str] = set()
+        if not text:
+            return []
+
+        # Recherche par regex patterns
+        for pattern, ticker in self.regex_patterns:
+            if pattern.search(text):
+                found.add(ticker)
+
+        # Recherche des paires de trading
+        for pair in re.findall(
+            r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
+        ):
+            ticker = pair[0]
+            if ticker in self.known_tickers:
+                found.add(ticker)
+
+        # Recherche des symboles avec $
+        for match in re.findall(r"\$([A-Z]{3,5})\b", text.upper()):
+            if match in self.known_tickers:
+                found.add(match)
+
+        return list(found)
 
     @property
     def model(self):
@@ -444,7 +435,7 @@ class NewsSentimentAnalyzer:
                 title = n.get("title", "")
                 text = n.get("body", "")
                 url = n.get("url", "")
-                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+                symbols = self.extract_symbols(f"{title} {text}")
 
                 # Utilise normalize_timestamp
                 timestamp = self.normalize_timestamp(n.get("published_on", None))
@@ -466,7 +457,7 @@ class NewsSentimentAnalyzer:
                 title = n.get("title", "")
                 text = n.get("description", "") or n.get("content", "")
                 url = n.get("url", "")
-                symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+                symbols = self.extract_symbols(f"{title} {text}")
 
                 # Utilise normalize_timestamp
                 timestamp = self.normalize_timestamp(n.get("publishedAt", None))
@@ -488,7 +479,7 @@ class NewsSentimentAnalyzer:
         title = item.find("title").text if item.find("title") else ""
         description = item.find("description").text if item.find("description") else ""
         url = item.find("link").text if item.find("link") else ""
-        symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
+        symbols = self.extract_symbols(f"{title} {description}")
 
         # Extraction et normalisation du timestamp
         pub_date = item.find("pubDate")
