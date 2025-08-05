@@ -395,7 +395,6 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
 
 # --- TAB1 TRADING ---
 with tab1:
-    st.subheader("Trading en temps réel")
 
     # Configuration du timestamp Polynésie
     tahiti_tz = pytz.timezone("Pacific/Tahiti")
@@ -405,9 +404,6 @@ with tab1:
     bot_status = shared_data.get("bot_status", {})
     perf = bot_status.get("performance", {})
     market_data = shared_data.get("market_data", {})
-
-    # En-tête avec timestamp
-    st.markdown(f"**🕒 Heure Polynésie : {current_time}**")
 
     # Affichage des métriques principales
     st.markdown("#### Cycle et Régime")
@@ -433,21 +429,6 @@ with tab1:
         st.dataframe(df_pauses, use_container_width=True)
 
     st.divider()
-
-    # Section Scores et Signaux avec explications
-    st.markdown(
-        """
-    #### 📊 Scores de décision et signaux
-    
-    **Guide des colonnes:**
-    - **Action**: Signal de trading (BUY/SELL/NEUTRAL)
-    - **Confidence**: Niveau de confiance global (0-1)
-    - **Tech**: Score des indicateurs techniques (0-1)
-    - **AI**: Prédiction du modèle IA (0-1)
-    - **Sentiment**: Impact des news (-1 à +1)
-    - **Sizing (%)**: Taille de position recommandée
-    """
-    )
 
     trade_decisions = shared_data.get("trade_decisions", {})
 

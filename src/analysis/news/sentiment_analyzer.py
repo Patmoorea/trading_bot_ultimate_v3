@@ -97,6 +97,27 @@ class NewsSentimentAnalyzer:
     def __init__(self, config: dict):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
+
+        # Configuration SSL
+        self.ssl_context = ssl.create_default_context()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
+
+        # Configuration des timeouts et retries
+        self.conn_timeout = 10
+        self.read_timeout = 20
+        self.max_retries = 3
+        self.retry_delay = 5
+
+        # Headers HTTP
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Connection": "keep-alive",
+        }
+
+        # Configuration existante
         self.low_watermark_ratio = config.get("news", {}).get(
             "low_watermark_ratio", 0.2
         )
@@ -109,10 +130,13 @@ class NewsSentimentAnalyzer:
         self._model = None
         self._tokenizer = None
 
+        # API Keys
         self.news_api_key = os.getenv("NEWS_API_KEY")
         self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
         self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
         self.news_sources = os.getenv("NEWS_SOURCES", "bloomberg,reuters,coindesk")
+
+        # Sources de news
         self.sources = [
             {
                 "name": "CryptoCompare",
@@ -157,7 +181,9 @@ class NewsSentimentAnalyzer:
                 "weight": 0.7,
             },
         ]
-        self.news_buffer: List[Dict] = []
+
+        # Buffer et configuration
+        self.news_buffer = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
 
@@ -189,18 +215,20 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"[NEWS] Failed to save state: {e}")
 
     async def fetch_all_news(self) -> List[Dict]:
-        conn = aiohttp.TCPConnector(
+        """Récupère les news de toutes les sources avec gestion des erreurs améliorée"""
+        connector = aiohttp.TCPConnector(
             ssl=self.ssl_context,
             limit=10,  # Limite de connexions simultanées
             ttl_dns_cache=300,  # Cache DNS de 5 minutes
-            force_close=False,  # Réutilisation des connexions
             enable_cleanup_closed=True,
         )
 
+        timeout = aiohttp.ClientTimeout(
+            total=self.read_timeout, connect=self.conn_timeout
+        )
+
         async with aiohttp.ClientSession(
-            connector=conn,
-            headers=self.headers,
-            timeout=aiohttp.ClientTimeout(total=self.read_timeout),
+            connector=connector, timeout=timeout, headers=self.headers
         ) as session:
             tasks = [
                 self._fetch_source_with_retry(session, source)
@@ -216,9 +244,18 @@ class NewsSentimentAnalyzer:
                     continue
                 if isinstance(result, list):
                     valid_news.extend(result)
+                    if result:  # Log des premières news récupérées
+                        self.logger.info(
+                            f"[{source['name']}] {len(result)} news récupérées"
+                        )
+                        for n in result[:2]:  # Log des 2 premiers titres
+                            self.logger.info(f"  - {n.get('title', '')[:100]}")
 
-            self.news_buffer = self.patch_news_list(valid_news)
-            return self.news_buffer
+            # Patch et mise à jour du buffer
+            valid_news = self.patch_news_list(valid_news)
+            self.news_buffer = valid_news
+
+            return valid_news
 
     async def _fetch_source_with_retry(
         self, session: aiohttp.ClientSession, source: Dict, max_retries=None
