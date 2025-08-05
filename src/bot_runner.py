@@ -5991,14 +5991,10 @@ async def run_clean_bot():
             # PATCH CORRECTIF - Mise à jour des données OHLCV pour chaque paire et timeframe
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
-                print(f"\n[DEBUG] Traitement de {pair_key}...")
-
                 if pair_key not in bot.market_data:
                     bot.market_data[pair_key] = {}
 
                 for tf in bot.config["TRADING"]["timeframes"]:
-                    print(f"[DEBUG] Timeframe {tf}...")
-
                     df = bot.ws_collector.get_dataframe(pair_key, tf)
                     if df is not None and not df.empty:
                         required_cols = [
@@ -6010,9 +6006,7 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_cols):
-                            # PATCH: Correction taille timestamp
                             if len(df["timestamp"]) != len(df["close"]):
-                                # Si l'index est datetime et de la bonne taille, prends-le
                                 if (
                                     hasattr(df.index, "dtype")
                                     and np.issubdtype(df.index.dtype, np.datetime64)
@@ -6020,14 +6014,11 @@ async def run_clean_bot():
                                 ):
                                     df["timestamp"] = df.index
                                 else:
-                                    # Génère une série régulière
                                     df["timestamp"] = pd.date_range(
                                         end=pd.Timestamp.utcnow(),
                                         periods=len(df["close"]),
                                         freq="T",
                                     )
-
-                            # Conversion explicite des colonnes en listes
                             ohlcv_dict = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -6039,10 +6030,15 @@ async def run_clean_bot():
                                     for t in df["timestamp"]
                                 ],
                             }
-                            # Mise à jour ou création de la structure
-                            bot.market_data[pair_key][tf] = ohlcv_dict
 
-                            # Update signals
+                            # PATCH: Conserve l'historique des bougies OHLCV
+                            if tf not in bot.market_data[pair_key]:
+                                bot.market_data[pair_key][tf] = {
+                                    k: [] for k in ohlcv_dict
+                                }
+                            for k in ohlcv_dict:
+                                bot.market_data[pair_key][tf][k].extend(ohlcv_dict[k])
+
                             indicators_data = bot.add_indicators(df)
                             bot.market_data[pair_key][tf]["signals"] = {
                                 "technical": {
@@ -6052,11 +6048,7 @@ async def run_clean_bot():
                                     "details": indicators_data,
                                     "factors": len(indicators_data),
                                 },
-                                "momentum": {
-                                    "score": 0.5,
-                                    "details": {},
-                                    "factors": 0,
-                                },
+                                "momentum": {"score": 0.5, "details": {}, "factors": 0},
                                 "orderflow": {
                                     "score": 0.5,
                                     "details": {},
