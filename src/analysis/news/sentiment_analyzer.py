@@ -203,14 +203,33 @@ class NewsSentimentAnalyzer:
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
         return self._tokenizer
 
-    def normalize_timestamp(self, timestamp: int) -> int:
-        """Convertit un timestamp en secondes si nécessaire"""
+    def normalize_timestamp(self, timestamp: Any) -> int:
+        """Normalise un timestamp en secondes depuis l'époque"""
         try:
-            timestamp = int(timestamp)
-            if timestamp > 9999999999:  # Si en millisecondes
-                timestamp = int(timestamp / 1000)
-            return timestamp
-        except Exception:
+            # Si c'est déjà un int
+            if isinstance(timestamp, int):
+                if timestamp > 9999999999:  # Si en millisecondes
+                    return int(timestamp / 1000)
+                return timestamp
+                
+            # Si c'est une string
+            if isinstance(timestamp, str):
+                # Essaye de parser comme int d'abord
+                try:
+                    ts = int(timestamp)
+                    if ts > 9999999999:  # Si en millisecondes
+                        return int(ts / 1000)
+                    return ts
+                except ValueError:
+                    # Si ce n'est pas un int, essaye de parser comme datetime
+                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    return int(dt.timestamp())
+                    
+            # Si c'est un datetime
+            if isinstance(timestamp, datetime):
+                return int(timestamp.timestamp())
+                
+            # Si on ne peut pas convertir, retourne le timestamp actuel
             return int(datetime.now().timestamp())
 
     async def _save_state(self, data):
@@ -408,21 +427,6 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"Error parsing RSS {source['name']}: {str(e)}")
             return []
 
-    def _parse_rss_item(self, item, source: Dict) -> Dict:
-        title = item.find("title").text if item.find("title") else ""
-        description = item.find("description").text if item.find("description") else ""
-        url = item.find("link").text if item.find("link") else ""
-        symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
-        return {
-            "title": title,
-            "text": description,
-            "source": source["name"],
-            "timestamp": self._parse_timestamp(item),
-            "url": url,
-            "symbols": symbols,
-            "source_weight": source["weight"],
-        }
-
     def _parse_json(self, data, source: Dict) -> List[Dict]:
         news_list = []
         if source["name"] == "CryptoCompare" and "Data" in data:
@@ -431,54 +435,60 @@ class NewsSentimentAnalyzer:
                 text = n.get("body", "")
                 url = n.get("url", "")
                 symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
-
-                # Conversion du timestamp si en millisecondes
-                timestamp = n.get("published_on", int(datetime.now().timestamp()))
-                if timestamp > 9999999999:  # Si en millisecondes
-                    timestamp = int(timestamp / 1000)
-
-                news_list.append(
-                    {
-                        "title": title,
-                        "text": text,
-                        "source": source["name"],
-                        "timestamp": timestamp,
-                        "url": url,
-                        "symbols": symbols,
-                        "source_weight": source["weight"],
-                    }
-                )
+                
+                # Utilise normalize_timestamp
+                timestamp = self.normalize_timestamp(n.get("published_on", None))
+                
+                news_list.append({
+                    "title": title,
+                    "text": text,
+                    "source": source["name"],
+                    "timestamp": timestamp,
+                    "url": url,
+                    "symbols": symbols,
+                    "source_weight": source["weight"],
+                })
+                
         elif source["name"] == "NewsAPI" and "articles" in data:
             for n in data["articles"]:
                 title = n.get("title", "")
                 text = n.get("description", "") or n.get("content", "")
                 url = n.get("url", "")
                 symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
-
-                try:
-                    if n.get("publishedAt"):
-                        timestamp = int(
-                            datetime.strptime(
-                                n["publishedAt"], "%Y-%m-%dT%H:%M:%SZ"
-                            ).timestamp()
-                        )
-                    else:
-                        timestamp = int(datetime.now().timestamp())
-                except Exception:
-                    timestamp = int(datetime.now().timestamp())
-
-                news_list.append(
-                    {
-                        "title": title,
-                        "text": text,
-                        "source": source["name"],
-                        "timestamp": timestamp,
-                        "url": url,
-                        "symbols": symbols,
-                        "source_weight": source["weight"],
-                    }
-                )
+                
+                # Utilise normalize_timestamp
+                timestamp = self.normalize_timestamp(n.get("publishedAt", None))
+                
+                news_list.append({
+                    "title": title,
+                    "text": text,
+                    "source": source["name"],
+                    "timestamp": timestamp,
+                    "url": url,
+                    "symbols": symbols,
+                    "source_weight": source["weight"],
+                })
         return news_list
+
+    def _parse_rss_item(self, item, source: Dict) -> Dict:
+        title = item.find("title").text if item.find("title") else ""
+        description = item.find("description").text if item.find("description") else ""
+        url = item.find("link").text if item.find("link") else ""
+        symbols = self.symbol_extractor.extract_symbols(f"{title} {description}")
+        
+        # Extraction et normalisation du timestamp
+        pub_date = item.find("pubDate")
+        timestamp = self.normalize_timestamp(pub_date.text if pub_date else None)
+        
+        return {
+            "title": title,
+            "text": description,
+            "source": source["name"],
+            "timestamp": timestamp,
+            "url": url,
+            "symbols": symbols,
+            "source_weight": source["weight"],
+        }
 
     def _parse_timestamp(self, item):
         pub_date = item.find("pubDate")
@@ -608,87 +618,173 @@ class NewsSentimentAnalyzer:
             "top_news": top_news_titles,
         }
 
-    async def get_symbol_sentiment(
-        self, symbol: str, news_list: Optional[list] = None
-    ) -> float:
+    async def get_symbol_sentiment(self, symbol: str, news_list: Optional[list] = None) -> float:
+        """
+        Calcule le sentiment moyen pour un symbole donné avec decay temporel.
+        
+        Args:
+            symbol (str): Le symbole de la crypto-monnaie (ex: "BTC", "ETH")
+            news_list (Optional[list]): Liste optionnelle de news, utilise news_buffer si None
+            
+        Returns:
+            float: Score de sentiment entre -1 et 1
+        """
         try:
+            # Normalisation du symbole
             symbol_key = symbol.replace("/", "").upper()
+
+            # Mapping des symboles vers leurs variations
             coin_mapping = {
-                "BTC": ["BTC", "BITCOIN"],
-                "ETH": ["ETH", "ETHEREUM"],
+                "BTC": ["BTC", "BITCOIN", "XBT"],
+                "ETH": ["ETH", "ETHEREUM", "ETHER"],
                 "SOL": ["SOL", "SOLANA"],
                 "ADA": ["ADA", "CARDANO"],
                 "TRX": ["TRX", "TRON"],
-                "BNB": ["BNB", "BINANCE"],
+                "BNB": ["BNB", "BINANCE", "BINANCECOIN"],
                 "XRP": ["XRP", "RIPPLE"],
                 "DOGE": ["DOGE", "DOGECOIN"],
                 "AVAX": ["AVAX", "AVALANCHE"],
                 "DOT": ["DOT", "POLKADOT"],
                 "MATIC": ["MATIC", "POLYGON"],
-                "LUNC": ["LUNC", "LUNACLASSIC"],
-                "BTTOLD": ["BTTOLD", "BITTORRENT OLD"],
-                "PEPEAI": ["PEPEAI", "PEPE AI"],
+                "LINK": ["LINK", "CHAINLINK"],
+                "UNI": ["UNI", "UNISWAP"],
+                "AAVE": ["AAVE"],
+                "ATOM": ["ATOM", "COSMOS"],
+                "NEAR": ["NEAR", "NEAR PROTOCOL"],
+                "ALGO": ["ALGO", "ALGORAND"],
+                "FTM": ["FTM", "FANTOM"],
+                "XLM": ["XLM", "STELLAR"],
+                "HBAR": ["HBAR", "HEDERA"],
             }
+
+            # Identification du coin
             coin = None
             for cm in sorted(coin_mapping.keys(), key=len, reverse=True):
                 if symbol_key.startswith(cm):
                     coin = cm
                     break
+                    
+            # Fallback sur les 3 premiers caractères si non trouvé
             if coin is None:
                 coin = symbol_key[:3]
+                
+            # Récupération des termes de recherche
             search_terms = coin_mapping.get(coin, [coin])
+            
+            # Utilisation du buffer si pas de liste fournie
             if news_list is None:
                 news_list = self.news_buffer
-            total = 0.0
+                
+            # Variables d'accumulation
+            total_sentiment = 0.0
             total_weight = 0.0
-            current_time = datetime.now().timestamp()
-            matched = False
+            matched_news = 0
+            
+            # Timestamp actuel en UTC
+            current_time = datetime.now(timezone.utc).timestamp()
+            
+            # Parcours des news
             for news in news_list:
-                news_symbols = news.get("symbols", [])
-                title = news.get("title", "").lower()
-                text = news.get("text", "").lower()
-                content = f"{title} {text}"
-                match_extracted = any(
-                    s.upper().strip() in [term.upper() for term in search_terms]
-                    for s in news_symbols
+                try:
+                    # Extraction des données de la news
+                    news_symbols = news.get("symbols", [])
+                    title = news.get("title", "").lower()
+                    text = news.get("text", "").lower()
+                    content = f"{title} {text}"
+                    timestamp = self.normalize_timestamp(news.get("timestamp", current_time))
+                    
+                    # Vérification des correspondances
+                    match_extracted = any(
+                        s.upper().strip() in [term.upper() for term in search_terms]
+                        for s in news_symbols
+                    )
+                    match_content = any(term.lower() in content for term in search_terms)
+                    
+                    # Si correspondance trouvée
+                    if match_extracted or match_content:
+                        # Calcul de l'âge de la news en heures
+                        hours_old = (current_time - timestamp) / 3600
+                        
+                        # Facteur de decay exponentiel (diminue de moitié toutes les 24h)
+                        decay = 0.5 ** (hours_old / 24)
+                        
+                        # Récupération du sentiment et de l'impact
+                        sentiment = float(news.get("sentiment", 0))
+                        impact = float(news.get("impact_score", 1) or 1)
+                        
+                        # Source weight pour pondération
+                        source_weight = float(news.get("source_weight", 0.7))
+                        
+                        # Calcul du poids final
+                        weight = decay * impact * source_weight
+                        
+                        # Accumulation
+                        total_sentiment += sentiment * weight
+                        total_weight += weight
+                        matched_news += 1
+                        
+                except Exception as e:
+                    self.logger.warning(f"Erreur traitement news pour {symbol}: {str(e)}")
+                    continue
+                    
+            # Calcul du score final
+            if total_weight > 0:
+                final_score = total_sentiment / total_weight
+                # Log du résultat
+                self.logger.info(
+                    f"Sentiment {symbol}: {final_score:.3f} (basé sur {matched_news} news)"
                 )
-                match_content = any(term.lower() in content for term in search_terms)
-                if match_extracted or match_content:
-                    matched = True
-                    hours_old = (
-                        current_time - news.get("timestamp", current_time)
-                    ) / 3600
-                    decay = 0.5 ** (hours_old / 24)
-                    sentiment = news.get("sentiment", 0)
-                    impact = news.get("impact_score", 1) or 1
-                    total += sentiment * impact * decay
-                    total_weight += impact * decay
-            score = total / max(total_weight, 1e-6) if total_weight > 0 else 0.0
-            return score
+                return float(max(min(final_score, 1.0), -1.0))  # Clamp entre -1 et 1
+            else:
+                self.logger.info(f"Pas de sentiment calculable pour {symbol}")
+                return 0.0
+                
         except Exception as e:
-            self.logger.error(f"Error getting sentiment for {symbol}: {str(e)}")
+            self.logger.error(f"Erreur calcul sentiment pour {symbol}: {str(e)}")
             return 0.0
 
-    SYMBOL_MAPPING = {
-        "bitcoin": "BTC",
-        "btc": "BTC",
-        "ethereum": "ETH",
-        "eth": "ETH",
-        "cardano": "ADA",
-        "ada": "ADA",
-        "solana": "SOL",
-        "sol": "SOL",
-        "litecoin": "LTC",
-        "ltc": "LTC",
-        "xrp": "XRP",
-        "dogecoin": "DOGE",
-        "doge": "DOGE",
-        "binancecoin": "BNB",
-        "bnb": "BNB",
-        "tron": "TRX",
-        "trx": "TRX",
-        "sui": "SUI",
-    }
+        # Mapping des symboles pour l'extraction depuis le texte
+        SYMBOL_MAPPING = {
+            "bitcoin": "BTC",
+            "btc": "BTC",
+            "ethereum": "ETH", 
+            "eth": "ETH",
+            "cardano": "ADA",
+            "ada": "ADA",
+            "solana": "SOL",
+            "sol": "SOL",
+            "litecoin": "LTC",
+            "ltc": "LTC",
+            "xrp": "XRP",
+            "ripple": "XRP",
+            "dogecoin": "DOGE",
+            "doge": "DOGE",
+            "binancecoin": "BNB",
+            "bnb": "BNB",
+            "tron": "TRX",
+            "trx": "TRX",
+            "avalanche": "AVAX",
+            "avax": "AVAX",
+            "polkadot": "DOT",
+            "dot": "DOT",
+            "matic": "MATIC",
+            "polygon": "MATIC",
+            "chainlink": "LINK",
+            "link": "LINK",
+            "uniswap": "UNI",
+            "uni": "UNI",
+            "stellar": "XLM",
+            "xlm": "XLM",
+            "near": "NEAR",
+            "algorand": "ALGO",
+            "algo": "ALGO",
+            "fantom": "FTM",
+            "ftm": "FTM",
+            "hedera": "HBAR",
+            "hbar": "HBAR",
+            "cosmos": "ATOM",
+            "atom": "ATOM",
+        }
 
     def _extract_symbols_from_text(self, text):
         text = text.lower()
