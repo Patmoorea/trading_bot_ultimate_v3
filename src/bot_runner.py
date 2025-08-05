@@ -4678,9 +4678,8 @@ class TradingBotM4:
             if sentiment_scores
             else 0.0
         )
-        major_events = (
-            "; ".join(summary["top_news"][:3]) if summary["top_news"] else "Aucun"
-        )
+        top_news = summary.get("top_news", [])
+        major_events = "; ".join(top_news[:3]) if top_news else "Aucun"
 
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
@@ -6300,6 +6299,7 @@ async def run_clean_bot():
                         decision = await bot.analyze_signals(
                             pair_key, df, bot.add_indicators(df), tf
                         )
+                        print(f"[DEBUG] {pair} - decision:", decision)
                         if decision and isinstance(decision.get("signals"), dict):
                             decision["tf"] = tf
                             pair_signals[tf] = decision
