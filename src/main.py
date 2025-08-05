@@ -442,21 +442,11 @@ with tab1:
         profit_factor = perf.get("profit_factor", 1.7)
 
         for pair, decision in trade_decisions.items():
-            pair_key = pair.replace("/", "").upper()
-
-            # Récupération et validation des scores
-            tech_score = (
-                market_data.get(pair_key, {})
-                .get("1h", {})
-                .get("signals", {})
-                .get("technical", {})
-                .get("score", 0.5)
-            )
-            ai_pred = market_data.get(pair_key, {}).get("ai_prediction", 0.5)
-            sentiment = market_data.get(pair_key, {}).get("sentiment", 0.0)
-
-            # Calcul du sizing dynamique
+            # Les vraies valeurs sont dans la décision !
             confidence = float(decision.get("confidence", 0.5))
+            tech_score = float(decision.get("tech", 0.5))
+            ai_pred = float(decision.get("ai", 0.5))
+            sentiment = float(decision.get("sentiment", 0.0))
 
             # Calcul du sizing base
             if confidence > 0.8:
@@ -469,11 +459,11 @@ with tab1:
                 base_size = 0.02  # 2%
 
             # Ajustements
-            if float(tech_score) > 0.7:
+            if tech_score > 0.7:
                 base_size *= 1.2
-            if float(ai_pred) > 0.7:
+            if ai_pred > 0.7:
                 base_size *= 1.1
-            if abs(float(sentiment)) > 0.7:
+            if abs(sentiment) > 0.7:
                 base_size *= 0.8
 
             # Kelly Criterion
@@ -486,9 +476,9 @@ with tab1:
                 "pair": pair,
                 "action": decision.get("action", "NEUTRAL").upper(),
                 "confidence": confidence,
-                "tech": float(tech_score),
-                "ai": float(ai_pred),
-                "sentiment": float(sentiment),
+                "tech": tech_score,
+                "ai": ai_pred,
+                "sentiment": sentiment,
                 "Sizing (%)": f"{min(base_size * 100, 12.0):.1f}%",
                 "timestamp": current_time,
             }
@@ -504,7 +494,8 @@ with tab1:
             if col in df_signals.columns:
                 df_signals[col] = df_signals[col].map("{:.3f}".format)
 
-        # Affichage avec style
+        # Affichage avec style et TITRE explicite
+        st.markdown("#### Tableau des signaux et sizing par paire")
         st.dataframe(df_signals, use_container_width=True, height=400)
 
     else:

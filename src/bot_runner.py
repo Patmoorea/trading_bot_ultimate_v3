@@ -234,11 +234,14 @@ def _generate_analysis_report(
     else:
         report.append("\n📰 Analyse des News: Aucune donnée disponible.")
 
+    # PATCH: Sécurise l'accès aux news pour éviter "list index out of range"
     major_news = news_sentiment.get("latest_news", []) if news_sentiment else []
-    if major_news:
+    if major_news and isinstance(major_news, list) and len(major_news) > 0:
         report.append("Dernières news :")
         for news in major_news[:3]:
             report.append(f"- {news}")
+    else:
+        report.append("Aucune news disponible.")
 
     for timeframe, analysis in indicators_analysis.items():
         try:
