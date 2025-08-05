@@ -14,6 +14,7 @@ import torch
 import random
 from datetime import datetime, timezone
 from typing import Any, List, Dict, Optional, Set
+from deep_translator import GoogleTranslator
 
 
 class NewsSentimentAnalyzer:
@@ -52,6 +53,54 @@ class NewsSentimentAnalyzer:
         "stellar": "XLM",
         "xlm": "XLM",
     }
+
+    def real_translate_title(self, text):
+        """Traduit un texte avec Google Translate et fallback sur dictionnaire"""
+        try:
+            # 1. Essai Google Translate d'abord
+            return self.translator.translate(text)
+        except Exception:
+            # 2. Fallback sur dictionnaire si erreur
+            original = text
+            dico = {
+                "Bitcoin": "Bitcoin",
+                "Ethereum": "Ethereum",
+                "price": "prix",
+                "update": "mise à jour",
+                "reaches": "atteint",
+                "falls": "chute",
+                "surges": "explose",
+                "network": "réseau",
+                "record": "record",
+                "launch": "lancement",
+                "approval": "approbation",
+                "hack": "piratage",
+                "coin": "jeton",
+                "exchange": "plateforme",
+                "regulation": "réglementation",
+                "ETF": "ETF",
+                "market": "marché",
+                "crash": "effondrement",
+                "rise": "hausse",
+                "buy": "achat",
+                "sell": "vente",
+                "token": "jeton",
+                "trading": "trading",
+                "volume": "volume",
+                "support": "support",
+                "resistance": "résistance",
+            }
+            for en, fr in dico.items():
+                text = text.replace(en, fr)
+
+            # 3. Retour texte original si aucune traduction
+            if text == original:
+                try:
+                    return self.translator.translate(text)
+                except:
+                    return text
+
+            return text
 
     def __init__(self, config: dict):
         # API Keys
@@ -157,6 +206,139 @@ class NewsSentimentAnalyzer:
                 "priority": 2,
             },
         ]
+        # Configuration pour la traduction
+        self.translate_news = config.get("news", {}).get("translate", True)
+        self.target_language = config.get("news", {}).get("language", "fr")
+        self.translator = GoogleTranslator(source="auto", target=self.target_language)
+
+    def _translate_text(self, text: str) -> str:
+        """Traduit un texte en utilisant Google Translate"""
+        try:
+            if not text or not isinstance(text, str):
+                return ""
+            return self.translator.translate(text)
+        except Exception as e:
+            self.logger.warning(f"Erreur traduction: {str(e)}")
+            return text
+
+    def _parse_json(self, data, source: Dict) -> List[Dict]:
+        news_list = []
+        if source["name"] == "CryptoCompare" and "Data" in data:
+            for n in data["Data"]:
+                title = n.get("title", "")
+                text = n.get("body", "")
+                original_title = title  # Sauvegarde du titre original
+
+                # Traduction si activée
+                if self.translate_news:
+                    title = self.real_translate_title(title)
+                    text = self.real_translate_title(text)
+
+                url = n.get("url", "")
+                symbols = self.extract_symbols(f"{title} {text}")
+                timestamp = self.normalize_timestamp(n.get("published_on", None))
+
+                news_list.append(
+                    {
+                        "title": title,
+                        "text": text,
+                        "original_title": original_title,  # Titre original
+                        "source": source["name"],
+                        "timestamp": timestamp,
+                        "url": url,
+                        "symbols": symbols,
+                        "source_weight": source["weight"],
+                        "processed": False,  # Pour le suivi des news traitées
+                    }
+                )
+
+        elif source["name"] == "NewsAPI" and "articles" in data:
+            for n in data["articles"]:
+                title = n.get("title", "")
+                text = n.get("description", "") or n.get("content", "")
+                original_title = title  # Sauvegarde du titre original
+
+                # Traduction si activée
+                if self.translate_news:
+                    title = self.real_translate_title(title)
+                    text = self.real_translate_title(text)
+
+                url = n.get("url", "")
+                symbols = self.extract_symbols(f"{title} {text}")
+                timestamp = self.normalize_timestamp(n.get("publishedAt", None))
+
+                news_list.append(
+                    {
+                        "title": title,
+                        "text": text,
+                        "original_title": original_title,  # Titre original
+                        "source": source["name"],
+                        "timestamp": timestamp,
+                        "url": url,
+                        "symbols": symbols,
+                        "source_weight": source["weight"],
+                        "processed": False,  # Pour le suivi des news traitées
+                    }
+                )
+        return news_list
+
+    def _parse_rss_item(self, item, source: Dict) -> Dict:
+        title = item.find("title").text if item.find("title") else ""
+        description = item.find("description").text if item.find("description") else ""
+        original_title = title  # Sauvegarde du titre original
+
+        # Traduction si activée
+        if self.translate_news:
+            title = self.real_translate_title(title)
+            description = self.real_translate_title(description)
+
+        url = item.find("link").text if item.find("link") else ""
+        symbols = self.extract_symbols(f"{title} {description}")
+        pub_date = item.find("pubDate")
+        timestamp = self.normalize_timestamp(pub_date.text if pub_date else None)
+
+        return {
+            "title": title,
+            "text": description,
+            "original_title": original_title,  # Titre original
+            "source": source["name"],
+            "timestamp": timestamp,
+            "url": url,
+            "symbols": symbols,
+            "source_weight": source["weight"],
+            "processed": False,  # Pour le suivi des news traitées
+        }
+
+    async def _save_state(self, data):
+        # ... reste du code ...
+        try:
+            data["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+            if "latest_pauses" in data:
+                pause_info = []
+                for pause in data["latest_pauses"]:
+                    pause_info.append(
+                        {
+                            "title": pause["title"],
+                            "original_title": pause.get(
+                                "original_title", pause["title"]
+                            ),  # Ajouter le titre original
+                            "timestamp": datetime.fromtimestamp(
+                                pause["timestamp"], tz=timezone.utc
+                            ).strftime("%Y-%m-%d %H:%M:%S"),
+                            "symbols": pause["symbols"],
+                            "impact": pause["impact"],
+                            "source": pause["source"],
+                            "url": pause["url"],
+                        }
+                    )
+                data["pause_info"] = pause_info
+
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2)
+            self.logger.info(f"[NEWS] State saved to {path}")
+        except Exception as e:
+            self.logger.error(f"[NEWS] Failed to save state: {e}")
 
     def extract_symbols(self, text: str) -> List[str]:
         """
