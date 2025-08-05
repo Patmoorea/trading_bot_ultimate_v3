@@ -6315,7 +6315,7 @@ async def run_clean_bot():
                             pair, pair_signals
                         )
 
-                        # AJOUT: Calcul amélioré de la confiance
+                        # Calcul amélioré de la confiance (utilise les RÉELS scores)
                         tech_score = float(
                             dominant_signals.get("technical", {}).get("score", 0.5)
                         )
@@ -6339,16 +6339,14 @@ async def run_clean_bot():
                         print(f"- AI: {ai_score:.3f}")
                         print(f"- Sentiment: {sentiment_score:.3f}")
 
-                        # Calcul de la confiance avec poids ajustés
+                        # Calcul pondéré de la confiance
                         confidence = (
-                            tech_score * 0.35  # 35%
-                            + momentum_score * 0.25  # 25%
-                            + orderflow_score * 0.2  # 20%
-                            + ai_score * 0.15  # 15%
-                            + sentiment_score * 0.05  # 5%
+                            tech_score * 0.35
+                            + momentum_score * 0.25
+                            + orderflow_score * 0.2
+                            + ai_score * 0.15
+                            + sentiment_score * 0.05
                         )
-
-                        # Force la confiance entre 0.5 et 1.0
                         confidence = max(0.5, min(confidence, 1.0))
 
                         print(f"=> Confidence calculée: {confidence:.3f}")
@@ -6373,7 +6371,7 @@ async def run_clean_bot():
                             },
                         }
 
-                        # Mise à jour du dashboard avec vérification
+                        # Mise à jour du dashboard avec les vraies valeurs
                         dashboard_update = {
                             "action": str(action),
                             "confidence": float(confidence),
@@ -6387,15 +6385,7 @@ async def run_clean_bot():
                             f"Avant: {json.dumps(decisions_for_dashboard[pair], indent=2)}"
                         )
 
-                        decisions_for_dashboard[pair].update(
-                            {
-                                "action": str(action),
-                                "confidence": float(confidence),
-                                "tech": float(tech_score),
-                                "ai": float(ai_score),
-                                "sentiment": float(sentiment_score),
-                            }
-                        )
+                        decisions_for_dashboard[pair].update(dashboard_update)
 
                         print(
                             f"Après: {json.dumps(decisions_for_dashboard[pair], indent=2)}"

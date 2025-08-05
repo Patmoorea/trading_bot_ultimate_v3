@@ -160278,3 +160278,11 @@
 2025-08-05T18:24:40.981691 | [NEWS] Score sentiment global: 0.29 | Impact: 0.57 | Événements: The Daily: Brit who accidentally dumped 8,000 BTC isn’t done chasing his lost fortune, Solana Mobile begins shipping second-gen Seeker smartphones, and more;  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis
 2025-08-05T18:25:10.820357 | Démarrage cycle trading
 2025-08-05T18:25:10.870367 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:27:00.546745 | Démarrage cycle trading
+2025-08-05T18:27:00.577132 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:28:52.511469 | Démarrage cycle trading
+2025-08-05T18:28:52.545682 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:30:43.289858 | Démarrage cycle trading
+2025-08-05T18:30:43.321356 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:32:36.198143 | Démarrage cycle trading
+2025-08-05T18:32:36.233570 | 🚫 Cycle bloqué - Pause news active
