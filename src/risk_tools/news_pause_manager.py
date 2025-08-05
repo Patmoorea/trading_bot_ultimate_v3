@@ -228,29 +228,52 @@ class NewsPauseManager:
 
     def on_cycle_end(self):
         """
-        Doit être appelée à chaque tick/cycle.
-        Décrémente les compteurs de pause (globale et par paire).
-        Nettoie les pauses terminées.
+        Gestion synchronisée de la décrémentation des compteurs
         """
         print(
             "[NEWSPAUSE] Avant decrement:",
             self.global_cycles_remaining,
             self.pair_pauses,
         )
-        # Décrémentation pause globale
+
+        # Liste des pauses à retirer
+        to_remove = []
+
+        # 1. Décrémentation synchronisée
         if self.global_cycles_remaining > 0:
             self.global_cycles_remaining -= 1
 
-        # Décrémentation des pauses par paire
-        to_remove = []
         for pair, cycles in list(self.pair_pauses.items()):
             if cycles > 0:
-                self.pair_pauses[pair] -= 1
+                self.pair_pauses[pair] = max(0, cycles - 1)
             if self.pair_pauses[pair] <= 0:
                 to_remove.append(pair)
+
+        # 2. Nettoyage des pauses terminées
         for pair in to_remove:
             self.pair_pauses.pop(pair, None)
             self.buy_paused_pairs.discard(pair)
+
+        # 3. Mise à jour du fichier shared_data.json
+        try:
+            current_pauses = self.get_active_pauses()
+            self.safe_update_shared_data(
+                {
+                    "active_pauses": current_pauses,
+                    "pause_status": {
+                        "global_remaining": self.global_cycles_remaining,
+                        "pair_pauses": self.pair_pauses,
+                        "max_remaining": max(
+                            [self.global_cycles_remaining]
+                            + list(self.pair_pauses.values()),
+                            default=0,
+                        ),
+                    },
+                }
+            )
+        except Exception as e:
+            print(f"[ERROR] Erreur mise à jour pauses: {e}")
+
         print(
             "[NEWSPAUSE] Après decrement:",
             self.global_cycles_remaining,
@@ -272,10 +295,14 @@ class NewsPauseManager:
 
     def get_active_pauses(self):
         """
-        Retourne la liste des pauses actives sous forme de dicts.
-        Exemple : [{"asset": "ETH", "action": "BUY", "cycles_left": 8, "type": "FULL", "reason": ...}, ...]
+        Retourne la liste des pauses actives avec gestion cohérente des compteurs.
         """
         pauses = []
+        # Calcul du max des cycles pour une cohérence globale
+        max_cycles = max(
+            [self.global_cycles_remaining] + list(self.pair_pauses.values()), default=0
+        )
+
         # Pauses par paire (ciblées)
         for pair, cycles_left in self.pair_pauses.items():
             if cycles_left > 0:
@@ -288,8 +315,10 @@ class NewsPauseManager:
                         "cycles_left": cycles_left,
                         "type": pause_type,
                         "reason": reason,
+                        "max_cycles": max_cycles,  # Ajout pour cohérence
                     }
                 )
+
         # Pause globale
         if self.global_cycles_remaining > 0:
             reason = getattr(self, "last_event_news", {}).get("title", "")
@@ -300,8 +329,15 @@ class NewsPauseManager:
                     "cycles_left": self.global_cycles_remaining,
                     "type": "GLOBAL",
                     "reason": reason,
+                    "max_cycles": max_cycles,  # Ajout pour cohérence
                 }
             )
+
+        # Ajout information de synchronisation
+        if pauses:
+            for pause in pauses:
+                pause["total_remaining"] = max_cycles
+
         return pauses
 
     def analyze_market_conditions(self, price_data, volume_data):

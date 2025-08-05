@@ -157483,3 +157483,17 @@
 2025-08-05T07:53:57.787657 | ✅ Trading en direct: True
 2025-08-05T07:53:57.787697 | ✅ IA activée: True
 2025-08-05T07:53:57.787735 | ✅ Analyse de news activée: True
+2025-08-05T07:55:51.200702 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T07:57:10.165401 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0346 | Tendance: -0.0014
+2025-08-05T07:57:10.175011 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T07:57:10.255468 | Démarrage cycle trading
+2025-08-05T07:57:10.279325 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T07:58:30.846615 | [NEWS] Score sentiment global: 0.30 | Impact: 0.57 | Événements: Hyperliquid records its highest-ever monthly trade volume in July;  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis
+2025-08-05T07:59:02.653386 | Démarrage cycle trading
+2025-08-05T07:59:02.692394 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T08:00:52.900913 | Démarrage cycle trading
+2025-08-05T08:00:52.935294 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T08:02:44.182565 | Démarrage cycle trading
+2025-08-05T08:02:44.228851 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T08:04:35.899277 | Démarrage cycle trading
+2025-08-05T08:04:35.934519 | 🚫 Cycle bloqué - Pause news active

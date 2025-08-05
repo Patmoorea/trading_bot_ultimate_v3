@@ -454,7 +454,7 @@ class TelegramNotifier:
         return self.N_FEATURES * self.N_STEPS * len(self.pairs_valid)
 
     async def send_message(self, message):
-        """Envoie un message sur Telegram"""
+        """Envoie un message sur Telegram avec retry et fallback"""
         if not self.bot_token or not self.chat_id:
             print("⚠️ Message non envoyé: Configuration Telegram manquante")
             return
@@ -475,15 +475,47 @@ class TelegramNotifier:
 
         url = f"{self.base_url}/sendMessage"
         data = {"chat_id": self.chat_id, "text": full_message, "parse_mode": "HTML"}
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, json=data) as response:
-                    result = await response.json()
-                    if not result.get("ok"):
-                        print(f"⚠️ Erreur Telegram: {result.get('description')}")
-                    return result
-        except Exception as e:
-            print(f"⚠️ Erreur envoi Telegram: {e}")
+
+        # Ajout de retry avec timeout plus court
+        MAX_RETRIES = 3
+        TIMEOUT = 5  # 5 secondes max par tentative
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                timeout = aiohttp.ClientTimeout(total=TIMEOUT)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.post(url, json=data) as response:
+                        result = await response.json()
+                        if not result.get("ok"):
+                            print(f"⚠️ Erreur Telegram: {result.get('description')}")
+                        return result
+
+            except asyncio.TimeoutError:
+                if attempt < MAX_RETRIES - 1:
+                    print(f"⚠️ Timeout Telegram (tentative {attempt+1}/{MAX_RETRIES})")
+                    await asyncio.sleep(1)  # Pause entre les tentatives
+                    continue
+                else:
+                    print("❌ Échec envoi Telegram après plusieurs tentatives")
+                    # Fallback : log dans un fichier
+                    self._log_to_file(full_message)
+                    return None
+
+            except Exception as e:
+                print(f"⚠️ Erreur envoi Telegram: {e}")
+                # Fallback : log dans un fichier
+                self._log_to_file(full_message)
+                return None
+
+        def _log_to_file(self, message):
+            """Fallback pour sauvegarder les messages non envoyés"""
+            try:
+                log_file = "logs/telegram_failed.log"
+                os.makedirs(os.path.dirname(log_file), exist_ok=True)
+                with open(log_file, "a", encoding="utf-8") as f:
+                    f.write(f"\n[{datetime.utcnow()}] {message}\n")
+            except Exception as e:
+                print(f"❌ Erreur sauvegarde log: {e}")
 
     async def send_performance_update(self, performance_data):
         message = (
