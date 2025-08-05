@@ -12,6 +12,7 @@ import numpy as np
 from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
+import random
 
 
 class SymbolExtractor:
@@ -201,6 +202,16 @@ class NewsSentimentAnalyzer:
         if self._tokenizer is None:
             self._tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
         return self._tokenizer
+
+    def normalize_timestamp(self, timestamp: int) -> int:
+        """Convertit un timestamp en secondes si nécessaire"""
+        try:
+            timestamp = int(timestamp)
+            if timestamp > 9999999999:  # Si en millisecondes
+                timestamp = int(timestamp / 1000)
+            return timestamp
+        except Exception:
+            return int(datetime.now().timestamp())
 
     async def _save_state(self, data):
         path = self.config.get("news", {}).get(
@@ -420,14 +431,18 @@ class NewsSentimentAnalyzer:
                 text = n.get("body", "")
                 url = n.get("url", "")
                 symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+
+                # Conversion du timestamp si en millisecondes
+                timestamp = n.get("published_on", int(datetime.now().timestamp()))
+                if timestamp > 9999999999:  # Si en millisecondes
+                    timestamp = int(timestamp / 1000)
+
                 news_list.append(
                     {
                         "title": title,
                         "text": text,
                         "source": source["name"],
-                        "timestamp": n.get(
-                            "published_on", int(datetime.now().timestamp())
-                        ),
+                        "timestamp": timestamp,
                         "url": url,
                         "symbols": symbols,
                         "source_weight": source["weight"],
@@ -439,21 +454,25 @@ class NewsSentimentAnalyzer:
                 text = n.get("description", "") or n.get("content", "")
                 url = n.get("url", "")
                 symbols = self.symbol_extractor.extract_symbols(f"{title} {text}")
+
+                try:
+                    if n.get("publishedAt"):
+                        timestamp = int(
+                            datetime.strptime(
+                                n["publishedAt"], "%Y-%m-%dT%H:%M:%SZ"
+                            ).timestamp()
+                        )
+                    else:
+                        timestamp = int(datetime.now().timestamp())
+                except Exception:
+                    timestamp = int(datetime.now().timestamp())
+
                 news_list.append(
                     {
                         "title": title,
                         "text": text,
                         "source": source["name"],
-                        "timestamp": (
-                            int(
-                                datetime.strptime(
-                                    n.get("publishedAt", datetime.utcnow().isoformat()),
-                                    "%Y-%m-%dT%H:%M:%SZ",
-                                ).timestamp()
-                            )
-                            if n.get("publishedAt")
-                            else int(datetime.now().timestamp())
-                        ),
+                        "timestamp": timestamp,
                         "url": url,
                         "symbols": symbols,
                         "source_weight": source["weight"],
@@ -465,13 +484,11 @@ class NewsSentimentAnalyzer:
         pub_date = item.find("pubDate")
         if pub_date and pub_date.text:
             try:
-                return int(
-                    datetime.strptime(
-                        pub_date.text[:25], "%a, %d %b %Y %H:%M:%S"
-                    ).timestamp()
-                )
-            except Exception:
-                pass
+                # Convertir directement en timestamp
+                dt = datetime.strptime(pub_date.text[:25], "%a, %d %b %Y %H:%M:%S")
+                return int(dt.timestamp())
+            except Exception as e:
+                self.logger.warning(f"Erreur parsing date {pub_date.text}: {e}")
         return int(datetime.now().timestamp())
 
     def analyze_sentiment_batch(
