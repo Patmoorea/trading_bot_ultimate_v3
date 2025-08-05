@@ -55,6 +55,24 @@ class SymbolExtractor:
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
             for name, ticker in self.symbol_mapping.items()
         ]
+        # Ajout des paramètres de connexion
+        self.conn_timeout = 10  # Timeout de connexion
+        self.read_timeout = 20  # Timeout de lecture
+        self.max_retries = 3  # Nombre max de tentatives
+        self.retry_delay = 5  # Délai entre les tentatives
+
+        # Création du contexte SSL personnalisé
+        self.ssl_context = ssl.create_default_context()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
+
+        # Headers HTTP personnalisés
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Connection": "keep-alive",
+        }
 
     def extract_symbols(self, text: str) -> List[str]:
         found: Set[str] = set()
@@ -171,84 +189,122 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"[NEWS] Failed to save state: {e}")
 
     async def fetch_all_news(self) -> List[Dict]:
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            )
-        }
+        conn = aiohttp.TCPConnector(
+            ssl=self.ssl_context,
+            limit=10,  # Limite de connexions simultanées
+            ttl_dns_cache=300,  # Cache DNS de 5 minutes
+            force_close=False,  # Réutilisation des connexions
+            enable_cleanup_closed=True,
+        )
+
         async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=ssl_context, family=socket.AF_INET),
-            headers=headers,
+            connector=conn,
+            headers=self.headers,
+            timeout=aiohttp.ClientTimeout(total=self.read_timeout),
         ) as session:
             tasks = [
                 self._fetch_source_with_retry(session, source)
                 for source in self.sources
             ]
+
             results = await asyncio.gather(*tasks, return_exceptions=True)
             valid_news = []
-            for result in results:
+
+            for source, result in zip(self.sources, results):
+                if isinstance(result, Exception):
+                    self.logger.error(f"[{source['name']}] Échec: {str(result)}")
+                    continue
                 if isinstance(result, list):
                     valid_news.extend(result)
-            if valid_news:
-                for idx, n in enumerate(valid_news[:5]):
-                    print(
-                        f"  - {n['source']}: {n['title'][:100]} | Symbols: {n['symbols']}"
-                    )
-            else:
-                print("  (Aucune news récupérée)")
-            valid_news = self.patch_news_list(valid_news)
-            self.news_buffer = valid_news
-            return valid_news
+
+            self.news_buffer = self.patch_news_list(valid_news)
+            return self.news_buffer
 
     async def _fetch_source_with_retry(
-        self, session: aiohttp.ClientSession, source: Dict, max_retries=3
+        self, session: aiohttp.ClientSession, source: Dict, max_retries=None
     ) -> List[Dict]:
+        max_retries = max_retries or self.max_retries
+        last_error = None
+
         for attempt in range(max_retries):
             try:
-                news = await self._fetch_source(session, source)
-                if news is not None and len(news) == 0 and attempt < max_retries - 1:
-                    import asyncio
+                # Calcul du délai exponentiel
+                delay = self.retry_delay * (2**attempt) + (random.random() * 2)
 
-                    await asyncio.sleep(2 + np.random.random() * 3)
-                    continue
-                return news
-            except aiohttp.ClientResponseError as cre:
-                if cre.status == 429 and attempt < max_retries - 1:
-                    print(f"[{source['name']}] HTTP 429, attente 60s avant retry")
-                    import asyncio
-
-                    await asyncio.sleep(60)
-                    continue
-                else:
-                    self.logger.error(
-                        f"[{source['name']}] ClientResponseError {cre.status} on {source['url']}"
+                if attempt > 0:
+                    self.logger.info(
+                        f"[{source['name']}] Tentative {attempt+1}/{max_retries} après {delay:.1f}s"
                     )
+
+                # Configuration du timeout pour cette tentative
+                timeout = aiohttp.ClientTimeout(
+                    total=self.read_timeout * (attempt + 1), connect=self.conn_timeout
+                )
+
+                async with session.get(
+                    source["url"],
+                    timeout=timeout,
+                    ssl=self.ssl_context,
+                    headers=self.headers,
+                ) as response:
+                    if response.status == 429:  # Too Many Requests
+                        retry_after = int(response.headers.get("Retry-After", delay))
+                        self.logger.warning(
+                            f"[{source['name']}] Rate limit atteint, attente de {retry_after}s"
+                        )
+                        await asyncio.sleep(retry_after)
+                        continue
+
+                    if response.status != 200:
+                        raise aiohttp.ClientResponseError(
+                            request_info=response.request_info,
+                            history=response.history,
+                            status=response.status,
+                        )
+
+                    content = await response.text()
+
+                    # Parse le contenu selon le type
+                    if source["type"] == "rss":
+                        news = self._parse_rss(content, source)
+                    else:
+                        data = json.loads(content)
+                        news = self._parse_json(data, source)
+
+                    if news:  # Si on a des résultats valides
+                        return news
+
+                    # Si pas de news et ce n'est pas le dernier essai
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(delay)
+                        continue
+
                     return []
-            except asyncio.TimeoutError:
-                self.logger.error(
-                    f"[{source['name']}] Timeout when fetching ({source['url']})"
-                )
-                if attempt < max_retries - 1:
-                    import asyncio
 
-                    await asyncio.sleep(5)
+            except asyncio.TimeoutError as e:
+                last_error = f"Timeout après {self.read_timeout * (attempt + 1)}s"
+                self.logger.warning(f"[{source['name']}] {last_error}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(delay)
                     continue
-                return []
+
+            except aiohttp.ClientError as e:
+                last_error = f"Erreur réseau: {str(e)}"
+                self.logger.warning(f"[{source['name']}] {last_error}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(delay)
+                    continue
+
             except Exception as e:
-                self.logger.error(
-                    f"[{source['name']}] Error fetching: {str(e)} ({source['url']})"
-                )
+                last_error = f"Erreur inattendue: {str(e)}"
+                self.logger.error(f"[{source['name']}] {last_error}")
                 if attempt < max_retries - 1:
-                    import asyncio
-
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(delay)
                     continue
-                return []
+
+        self.logger.error(
+            f"[{source['name']}] Échec après {max_retries} tentatives: {last_error}"
+        )
         return []
 
     async def _fetch_source(

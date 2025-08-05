@@ -397,10 +397,17 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab_logs = st.tabs(
 with tab1:
     st.subheader("Trading en temps réel")
 
+    # Configuration du timestamp Polynésie
+    tahiti_tz = pytz.timezone("Pacific/Tahiti")
+    current_time = datetime.now(tahiti_tz).strftime("%Y-%m-%d %H:%M:%S")
+
     # Récupération des données
     bot_status = shared_data.get("bot_status", {})
     perf = bot_status.get("performance", {})
     market_data = shared_data.get("market_data", {})
+
+    # En-tête avec timestamp
+    st.markdown(f"**🕒 Heure Polynésie : {current_time}**")
 
     # Affichage des métriques principales
     st.markdown("#### Cycle et Régime")
@@ -410,7 +417,7 @@ with tab1:
     col3.metric(
         "Balance",
         f"${perf.get('balance',0):,.2f}",
-        f"+{perf.get('win_rate',0)*100:.1f}%",
+        f"{perf.get('win_rate',0)*100:.1f}%",
     )
 
     # Gestion des pauses trading
@@ -427,62 +434,36 @@ with tab1:
 
     st.divider()
 
-    # Section Scores et Signaux
-    st.markdown("#### Scores de décision et signaux")
+    # Section Scores et Signaux avec explications
+    st.markdown(
+        """
+    #### 📊 Scores de décision et signaux
+    
+    **Guide des colonnes:**
+    - **Action**: Signal de trading (BUY/SELL/NEUTRAL)
+    - **Confidence**: Niveau de confiance global (0-1)
+    - **Tech**: Score des indicateurs techniques (0-1)
+    - **AI**: Prédiction du modèle IA (0-1)
+    - **Sentiment**: Impact des news (-1 à +1)
+    - **Sizing (%)**: Taille de position recommandée
+    """
+    )
+
     trade_decisions = shared_data.get("trade_decisions", {})
 
     if trade_decisions:
-        # Création du DataFrame initial
+        # Création du DataFrame
         decisions_data = []
 
-        # Récupération des paramètres de performance pour le sizing
+        # Paramètres de performance pour le sizing
         perf = shared_data.get("bot_status", {}).get("performance", {})
         win_rate = perf.get("win_rate", 0.55)
         profit_factor = perf.get("profit_factor", 1.7)
 
-        def calculate_size(conf, tech, ai, sent):
-            try:
-                conf = float(conf)
-                tech = float(tech)
-                ai = float(ai)
-                sent = float(sent)
-
-                # Base size selon la confiance
-                if conf > 0.8:
-                    base_size = 0.09  # 9%
-                elif conf > 0.6:
-                    base_size = 0.06  # 6%
-                elif conf > 0.4:
-                    base_size = 0.04  # 4%
-                else:
-                    base_size = 0.02  # 2%
-
-                # Ajustements selon les autres signaux
-                if tech > 0.7:
-                    base_size *= 1.2
-                if ai > 0.7:
-                    base_size *= 1.1
-                if abs(sent) > 0.7:
-                    base_size *= 0.8  # Réduction si sentiment fort
-
-                # Ajustement Kelly
-                kelly = kelly_criterion(win_rate, profit_factor)
-                if kelly > 0:
-                    kelly_adjustment = min(kelly * 0.5, 0.5)
-                    base_size *= 1 + kelly_adjustment
-
-                # Plafonnement final
-                final_size = min(base_size, 0.12)  # Max 12%
-                return f"{final_size*100:.1f}%"
-            except:
-                return "N/A"
-
         for pair, decision in trade_decisions.items():
             pair_key = pair.replace("/", "").upper()
 
-            # Récupération des valeurs réelles depuis market_data
-            ai_pred = market_data.get(pair_key, {}).get("ai_prediction", 0.5)
-            sentiment = market_data.get(pair_key, {}).get("sentiment", 0.0)
+            # Récupération et validation des scores
             tech_score = (
                 market_data.get(pair_key, {})
                 .get("1h", {})
@@ -490,47 +471,61 @@ with tab1:
                 .get("technical", {})
                 .get("score", 0.5)
             )
+            ai_pred = market_data.get(pair_key, {}).get("ai_prediction", 0.5)
+            sentiment = market_data.get(pair_key, {}).get("sentiment", 0.0)
 
+            # Calcul du sizing dynamique
             confidence = float(decision.get("confidence", 0.5))
 
+            # Calcul du sizing base
+            if confidence > 0.8:
+                base_size = 0.09  # 9%
+            elif confidence > 0.6:
+                base_size = 0.06  # 6%
+            elif confidence > 0.4:
+                base_size = 0.04  # 4%
+            else:
+                base_size = 0.02  # 2%
+
+            # Ajustements
+            if float(tech_score) > 0.7:
+                base_size *= 1.2
+            if float(ai_pred) > 0.7:
+                base_size *= 1.1
+            if abs(float(sentiment)) > 0.7:
+                base_size *= 0.8
+
+            # Kelly Criterion
+            kelly = kelly_criterion(win_rate, profit_factor)
+            if kelly > 0:
+                base_size *= 1 + min(kelly * 0.5, 0.5)
+
+            # Création de la ligne
             row_data = {
                 "pair": pair,
-                "action": decision.get("action", "neutral"),
+                "action": decision.get("action", "NEUTRAL").upper(),
                 "confidence": confidence,
                 "tech": float(tech_score),
                 "ai": float(ai_pred),
                 "sentiment": float(sentiment),
-                "Sizing (%)": calculate_size(
-                    confidence, tech_score, ai_pred, sentiment
-                ),
-                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "Sizing (%)": f"{min(base_size * 100, 12.0):.1f}%",
+                "timestamp": current_time,
             }
             decisions_data.append(row_data)
 
-        # Création du DataFrame final
+        # Création et formatage du DataFrame
         df_signals = pd.DataFrame(decisions_data)
         df_signals.set_index("pair", inplace=True)
 
-        # Arrondi des valeurs numériques
+        # Formatage des colonnes numériques
         numeric_cols = ["confidence", "tech", "ai", "sentiment"]
         for col in numeric_cols:
             if col in df_signals.columns:
-                df_signals[col] = df_signals[col].round(4)
+                df_signals[col] = df_signals[col].map("{:.3f}".format)
 
-        # Affichage du DataFrame
-        st.dataframe(df_signals, use_container_width=True)
+        # Affichage avec style
+        st.dataframe(df_signals, use_container_width=True, height=400)
 
-        # Debug des valeurs (optionnel)
-        if st.checkbox("Show Debug Values"):
-            st.write("Debug - Raw Values:")
-            for pair, row in df_signals.iterrows():
-                st.write(f"\n{pair}:")
-                st.write(f"Action: {row['action']}")
-                st.write(f"Confidence: {row['confidence']:.4f}")
-                st.write(f"Tech: {row['tech']:.4f}")
-                st.write(f"AI: {row['ai']:.4f}")
-                st.write(f"Sentiment: {row['sentiment']:.4f}")
-                st.write(f"Sizing: {row['Sizing (%)']}")
     else:
         st.info("Aucun signal de trading ce cycle.")
 
@@ -541,6 +536,13 @@ with tab1:
     trades = shared_data.get("trade_history", [])
     if trades:
         df_trades = pd.DataFrame(trades)
+        # Conversion des timestamps en heure Polynésie
+        if "timestamp" in df_trades.columns:
+            df_trades["timestamp"] = (
+                pd.to_datetime(df_trades["timestamp"])
+                .dt.tz_localize("UTC")
+                .dt.tz_convert("Pacific/Tahiti")
+            )
         st.dataframe(df_trades, use_container_width=True)
     else:
         st.info("Aucun trade exécuté ce cycle.")
@@ -548,11 +550,17 @@ with tab1:
     st.divider()
 
     # Section Arbitrage
-    st.markdown("#### Arbitrage")
+    st.markdown("#### 💹 Opportunités d'arbitrage")
     arbitrage_ops = shared_data.get("arbitrage_opportunities", [])
     if arbitrage_ops:
-        st.write("Opportunités d'arbitrage détectées:")
-        st.dataframe(pd.DataFrame(arbitrage_ops), use_container_width=True)
+        df_arb = pd.DataFrame(arbitrage_ops)
+        if "timestamp" in df_arb.columns:
+            df_arb["timestamp"] = (
+                pd.to_datetime(df_arb["timestamp"])
+                .dt.tz_localize("UTC")
+                .dt.tz_convert("Pacific/Tahiti")
+            )
+        st.dataframe(df_arb, use_container_width=True)
     else:
         st.info("Aucune opportunité d'arbitrage détectée ce cycle.")
 
