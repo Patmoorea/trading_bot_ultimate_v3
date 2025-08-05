@@ -156321,3 +156321,640 @@
 2025-08-05T03:57:17.993327 | ✅ Trading en direct: True
 2025-08-05T03:57:17.993398 | ✅ IA activée: True
 2025-08-05T03:57:17.993443 | ✅ Analyse de news activée: True
+2025-08-05T03:59:19.343421 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T04:00:56.120569 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0343 | Tendance: 0.0002
+2025-08-05T04:00:56.129127 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T04:00:56.166585 | Démarrage cycle trading
+2025-08-05T04:01:35.304474 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0343 | Tendance: 0.0002
+2025-08-05T04:01:35.319280 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:01:35.520943 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1415 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:35.688689 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1935 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:35.853354 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3012 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:36.020931 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2522 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:36.183855 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0768 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:01:36.353210 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3683 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:01:36.515384 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1304 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:01:36.679377 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2522 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:01:36.847125 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3000 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:37.035131 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1426 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:01:37.210784 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: 0.2341 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:01:37.378349 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0003 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:01:37.540892 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1630 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:37.700062 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1554 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:01:37.869428 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0525 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:01:38.031146 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1639 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:01:38.195923 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1567 | Tech: 0.14 | AI: 0.15
+2025-08-05T04:01:38.359523 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1193 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:01:38.520668 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1465 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:38.683484 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1136 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:38.849244 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1720 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:39.013863 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1227 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:01:39.174990 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0151 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:01:39.336075 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2437 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:01:39.500213 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0186 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:39.661423 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0840 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:39.830216 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1502 | Tech: -0.02 | AI: 0.15
+2025-08-05T04:01:39.993722 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0066 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:01:40.156964 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1172 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:01:40.256243 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3083 | Tech: -0.05 | AI: 0.15
+2025-08-05T04:01:40.414083 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0735 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:40.575939 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1530 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:40.747650 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2315 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:40.913820 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0168 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:01:41.256748 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0327 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:01:41.420721 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1035 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:01:41.578962 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0698 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:41.742276 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1076 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:01:41.899965 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1581 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:42.063327 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0606 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:01:42.228100 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0041 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:01:42.393758 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:01:42.554633 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0317 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:42.719155 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1411 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:01:42.882983 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1925 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:01:43.046362 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0672 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:01:43.206700 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0536 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:01:43.363717 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3495 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:43.527802 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: 0.1088 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:01:43.696452 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2216 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:43.860165 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0206 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:44.024181 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0659 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:01:44.184107 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0309 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:01:44.345110 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:01:44.506046 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0629 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:44.673534 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0997 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:01:44.838333 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1740 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:01:45.005553 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0303 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:01:45.171282 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0369 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:01:45.265455 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.1991 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:03:01.352918 | [NEWS CHECK] ⚠️ News sans symboles: L’euro numérique avance, mais la Banque centrale européenne ne lâchera pas le ca
+2025-08-05T04:03:01.366088 | [NEWS CHECK] ⚠️ News sans symboles: Record historique pour Tether : 4,9 milliards de dollars de bénéfice au deuxième
+2025-08-05T04:03:01.366139 | [NEWS CHECK] ⚠️ News sans symboles: France : un homme recherché dans toute l'Europe pour des arnaques crypto relâché
+2025-08-05T04:03:01.366178 | [NEWS CHECK] ⚠️ News sans symboles: La CFTC lance un « sprint crypto » pour apporter de la clarté réglementaire aux 
+2025-08-05T04:03:01.366213 | [NEWS CHECK] ⚠️ News sans symboles: Europe : Le cash, roi des modes de paiement d’après la BCE
+2025-08-05T04:03:01.366243 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid (HYPE) rembourse 2 millions de dollars à ses utilisateurs après une 
+2025-08-05T04:03:01.366272 | [NEWS CHECK] ⚠️ News sans symboles: Monero : Le pool minier Qubic victime d’une attaque DDoS
+2025-08-05T04:03:01.366302 | [NEWS CHECK] ⚠️ News sans symboles: Elon Musk décroche 30 milliards $ d’actions Tesla : la manœuvre choc pour éviter
+2025-08-05T04:03:01.366332 | [NEWS CHECK] ⚠️ News sans symboles: Tokenisation : Le Crédit Agricole soutient financièrement la blockchain made in 
+2025-08-05T04:03:01.366360 | [NEWS CHECK] ⚠️ News sans symboles: Prélèvement sur les comptes bancaires, géolocalisation, travail au noir… Les pla
+2025-08-05T04:03:01.366388 | [NEWS CHECK] ⚠️ News sans symboles: Crypto en France : le résumé complet de juillet 2025 dans l’écosystème blockchai
+2025-08-05T04:03:01.366417 | [NEWS CHECK] ⚠️ News sans symboles: Les messages chiffrés sous contrôle ? L'UE pourrait bientôt imposer le scan des 
+2025-08-05T04:03:01.366445 | [NEWS CHECK] ⚠️ News sans symboles: La Chine a-t-elle vraiment (encore) banni les cryptos ?
+2025-08-05T04:03:01.366473 | [NEWS CHECK] ⚠️ News sans symboles: Trump prend le contrôle des chiffres économiques et s’apprête à nommer 2 nouveau
+2025-08-05T04:03:01.366501 | [NEWS CHECK] ⚠️ News sans symboles: Comment faire du staking de TAO sur Bittensor ?
+2025-08-05T04:03:01.366532 | [NEWS CHECK] ⚠️ News sans symboles: L'essor des stablecoins ébranle la domination des géants du paiement Visa et Mas
+2025-08-05T04:03:01.366563 | [NEWS CHECK] ⚠️ News sans symboles: Obtenez gratuitement une action Michelin : l'offre exclusive de XTB pour l'été
+2025-08-05T04:03:01.366591 | [NEWS CHECK] ⚠️ News sans symboles: Crypto : La CFTC et la SEC lancent un « crypto sprint » pour accélérer la réglem
+2025-08-05T04:03:01.366618 | [NEWS CHECK] ⚠️ News sans symboles: Kraken publie des résultats solides pour le 2e trimestre malgré la volatilité du
+2025-08-05T04:03:01.366651 | [NEWS CHECK] ⚠️ News sans symboles:  CFTC seeks to allow spot crypto trading on registered exchanges 
+2025-08-05T04:03:01.366680 | [NEWS CHECK] ⚠️ News sans symboles:  Grayscale adds Wall Street veterans as founder Barry Silbert returns to chair 
+2025-08-05T04:03:01.366707 | [NEWS CHECK] ⚠️ News sans symboles:  GENIUS Act scrutinized for stablecoin yield ban as TradFi tokenization gains st
+2025-08-05T04:03:01.366734 | [NEWS CHECK] ⚠️ News sans symboles:  Verb stock soars 200% after announcing TON treasury plan 
+2025-08-05T04:03:01.366760 | [NEWS CHECK] ⚠️ News sans symboles:  Nvidia releases update for &#039;critical&#039; vulnerabilities in AI stack 
+2025-08-05T04:03:01.366785 | [NEWS CHECK] ⚠️ News sans symboles:  How fake news and deepfakes power the latest crypto pump-and-dump scams 
+2025-08-05T04:03:01.366811 | [NEWS CHECK] ⚠️ News sans symboles:  Coinbase turns lobbying efforts to UK in scathing op-ed 
+2025-08-05T04:03:01.366861 | [NEWS CHECK] ⚠️ News sans symboles:  How to use Google Gemini to turn crypto news into trade signals 
+2025-08-05T04:03:01.366894 | [NEWS CHECK] ⚠️ News sans symboles:  CoinDesk owner Bullish eyes $4.2B valuation in IPO backed by BlackRock, ARK 
+2025-08-05T04:03:01.366929 | [NEWS CHECK] ⚠️ News sans symboles:  DeFi will become the default financial interface 
+2025-08-05T04:03:01.366966 | [NEWS CHECK] ⚠️ News sans symboles:  $27 million gone, no private keys exposed: How the BigONE hack happened 
+2025-08-05T04:03:01.366996 | [NEWS CHECK] ⚠️ News sans symboles:  Arcadia Finance users reimbursed by DeFi hack insurance 
+2025-08-05T04:03:01.367027 | [NEWS CHECK] ⚠️ News sans symboles:  Hyperliquid reimburses $2M to crypto traders after API outage 
+2025-08-05T04:03:01.367057 | [NEWS CHECK] ⚠️ News sans symboles:  Monero takeover disrupted by alleged DDoS attack on Qubic mining pool 
+2025-08-05T04:03:01.367088 | [NEWS CHECK] ⚠️ News sans symboles:  4 countries that let you buy citizenship or a golden visa with crypto 
+2025-08-05T04:03:01.367118 | [NEWS CHECK] ⚠️ News sans symboles:  Crypto funds see $223M outflow, ending 15-week streak as Fed dampens sentiment 
+2025-08-05T04:03:01.367148 | [NEWS CHECK] ⚠️ News sans symboles:  ECB: Cash is ‘here to stay’ even as digital euro advances 
+2025-08-05T04:03:01.367179 | [NEWS CHECK] ⚠️ News sans symboles:  White House crypto rules bring SEC-CFTC clarity for US crypto firms: Lawyer 
+2025-08-05T04:03:01.367209 | [NEWS CHECK] ⚠️ News sans symboles:  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-05T04:03:01.367241 | [NEWS CHECK] ⚠️ News sans symboles: North Korean Hackers Are Using Fake Job Offers to Breach Cloud Systems, Steal Bi
+2025-08-05T04:03:01.367272 | [NEWS CHECK] ⚠️ News sans symboles: Google to Pit Top AI Models Against Each Other in Live Chess Tournament
+2025-08-05T04:03:01.367302 | [NEWS CHECK] ⚠️ News sans symboles: Cloudflare Accuses Perplexity AI of Using Stealth Crawlers to Evade Website Bloc
+2025-08-05T04:03:01.367336 | [NEWS CHECK] ⚠️ News sans symboles: A TON Strategy? Telegram-linked Online Marketer to Raise $558 Million for Treasu
+2025-08-05T04:03:01.367366 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase, PayPal Press Forward With Stablecoin Rewards Despite GENIUS Prohibitio
+2025-08-05T04:03:01.367397 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase Receives Downgrade to ‘Sell’ as Retail Interest Cools: Compass Point
+2025-08-05T04:03:01.367427 | [NEWS CHECK] ⚠️ News sans symboles: In a Market Obsessed With Speed, This Crypto AI Agent Wants You to Slow Down
+2025-08-05T04:03:01.367458 | [NEWS CHECK] ⚠️ News sans symboles: This is Your Browser On AI. Any Questions?
+2025-08-05T04:03:01.367488 | [NEWS CHECK] ⚠️ News sans symboles: Crypto Company Bullish to Raise Up to $629M in IPO
+2025-08-05T04:03:01.367517 | [NEWS CHECK] ⚠️ News sans symboles: Former Chancellor Osborne Warns UK Is ‘Completely Left Behind’ on Crypto
+2025-08-05T04:03:01.367548 | [NEWS CHECK] ⚠️ News sans symboles: Attacker Swipes $4.5 Million From Credix Using Unbacked Stablecoins
+2025-08-05T04:03:01.367580 | [NEWS CHECK] ⚠️ News sans symboles: The Biggest Games Releasing in August 2025
+2025-08-05T04:03:01.367609 | [NEWS CHECK] ⚠️ News sans symboles: AI Trading Bots Are Booming—But Can You Trust Them With Your Money?
+2025-08-05T04:03:01.367639 | [NEWS CHECK] ⚠️ News sans symboles: Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-05T04:03:01.367670 | [NEWS CHECK] ⚠️ News sans symboles: Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-05T04:03:01.367705 | [NEWS CHECK] ⚠️ News sans symboles: SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-05T04:03:01.367735 | [NEWS CHECK] ⚠️ News sans symboles: FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-05T04:03:01.367765 | [NEWS CHECK] ⚠️ News sans symboles: Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-05T04:03:01.367796 | [NEWS CHECK] ⚠️ News sans symboles: Why Tokenized Stocks are Important: A Breakdown
+2025-08-05T04:03:01.367827 | [NEWS CHECK] ⚠️ News sans symboles: Benchmark says Coinbase’s soft earnings and stock drop ‘doesn’t matter’ in the b
+2025-08-05T04:03:01.367857 | [NEWS CHECK] ⚠️ News sans symboles: Rep. Dina Titus urges probe into CFTC chair nominee Brian Quintenz over predicti
+2025-08-05T04:03:01.367888 | [NEWS CHECK] ⚠️ News sans symboles: Mizuho reaffirms $120 price target on Robinhood, cites tokenized stock ambitions
+2025-08-05T04:03:01.367919 | [NEWS CHECK] ⚠️ News sans symboles: FinCEN warns financial institutions of crypto ATM fraud linked to criminal organ
+2025-08-05T04:03:01.367949 | [NEWS CHECK] ⚠️ News sans symboles: Mike Cagney’s Figure Technology files draft IPO paperwork with SEC
+2025-08-05T04:03:01.367979 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid records its highest-ever monthly trade volume in July
+2025-08-05T04:03:01.368010 | [NEWS CHECK] ⚠️ News sans symboles: Scrap-metal billionaire Adam Weitsman buys over 5,000 Yuga Labs NFTs
+2025-08-05T04:03:01.368041 | [NEWS CHECK] ⚠️ News sans symboles: Barry Silbert returns to Grayscale as chairman as the firm prepares to go public
+2025-08-05T04:03:01.368073 | [NEWS CHECK] ⚠️ News sans symboles: Peter Thiel-backed crypto platform Bullish files IPO, aims to raise up to $629 m
+2025-08-05T04:03:01.368103 | [NEWS CHECK] ⚠️ News sans symboles: Nasdaq-listed Verb Technology to build $558 million TON treasury, rebrand as TON
+2025-08-05T04:03:01.368132 | [NEWS CHECK] ⚠️ News sans symboles: Pantera leads $20 million raise for OpenMind’s decentralized operating system fo
+2025-08-05T04:03:01.368164 | [NEWS CHECK] ⚠️ News sans symboles: Bernstein says SEC’s Project Crypto could rewrite the rules of Wall Street
+2025-08-05T04:03:01.368194 | [NEWS CHECK] ⚠️ News sans symboles: Ethena’s USDe jumps to third-largest stablecoin as market cap surges 75% to $9.3
+2025-08-05T04:03:01.368223 | [NEWS CHECK] ⚠️ News sans symboles: CFTC kicks off new ‘Sprint’ initiative to advance Trump’s crypto regulatory road
+2025-08-05T04:03:41.759863 | Démarrage cycle trading
+2025-08-05T04:04:20.293384 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0343 | Tendance: 0.0002
+2025-08-05T04:04:20.311528 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:04:20.498895 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1690 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:20.675886 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1935 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:20.849155 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3012 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:21.017491 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2522 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:21.183375 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0768 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:04:21.343069 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3683 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:04:21.515315 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0604 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:04:21.722944 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2522 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:04:21.891502 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3000 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:22.071623 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1426 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:04:22.232935 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: 0.2341 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:04:22.397511 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0003 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:04:22.561612 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1062 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:22.727185 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1554 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:04:22.891453 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0525 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:04:23.056382 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1639 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:04:23.215925 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1567 | Tech: 0.14 | AI: 0.15
+2025-08-05T04:04:23.375727 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1193 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:04:23.535016 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0493 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:23.697142 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1136 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:23.862730 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1720 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:24.031214 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1227 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:04:24.200221 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0151 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:04:24.366995 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2437 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:04:24.532988 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0232 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:24.696853 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0840 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:24.860910 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1502 | Tech: -0.02 | AI: 0.15
+2025-08-05T04:04:25.028568 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0066 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:04:25.191308 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1172 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:04:25.293426 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3083 | Tech: -0.05 | AI: 0.15
+2025-08-05T04:04:25.457052 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0830 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:25.623305 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1530 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:25.788902 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2315 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:25.956588 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0168 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:04:26.117697 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0327 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:04:26.284802 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1035 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:04:26.450487 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0287 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:26.616661 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1076 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:04:26.780727 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1581 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:26.950433 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0606 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:04:27.114194 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0041 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:04:27.277073 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:04:27.435929 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0134 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:27.596709 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1411 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:04:27.777071 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1925 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:04:27.938523 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0672 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:04:28.106287 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0536 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:04:28.266498 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3495 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:28.433798 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1563 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:04:28.602959 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2216 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:28.773408 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0206 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:28.934867 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0659 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:04:29.097599 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0309 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:04:29.258736 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:04:29.417526 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0240 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:29.578708 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0997 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:04:29.755937 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1740 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:04:29.927244 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0303 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:04:30.094453 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0369 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:04:30.189142 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.1991 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:05:46.266770 | [NEWS CHECK] ⚠️ News sans symboles: L’euro numérique avance, mais la Banque centrale européenne ne lâchera pas le ca
+2025-08-05T04:05:46.272093 | [NEWS CHECK] ⚠️ News sans symboles: Record historique pour Tether : 4,9 milliards de dollars de bénéfice au deuxième
+2025-08-05T04:05:46.272139 | [NEWS CHECK] ⚠️ News sans symboles: France : un homme recherché dans toute l'Europe pour des arnaques crypto relâché
+2025-08-05T04:05:46.272167 | [NEWS CHECK] ⚠️ News sans symboles: La CFTC lance un « sprint crypto » pour apporter de la clarté réglementaire aux 
+2025-08-05T04:05:46.272193 | [NEWS CHECK] ⚠️ News sans symboles: Europe : Le cash, roi des modes de paiement d’après la BCE
+2025-08-05T04:05:46.272217 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid (HYPE) rembourse 2 millions de dollars à ses utilisateurs après une 
+2025-08-05T04:05:46.272242 | [NEWS CHECK] ⚠️ News sans symboles: Monero : Le pool minier Qubic victime d’une attaque DDoS
+2025-08-05T04:05:46.272266 | [NEWS CHECK] ⚠️ News sans symboles: Elon Musk décroche 30 milliards $ d’actions Tesla : la manœuvre choc pour éviter
+2025-08-05T04:05:46.272289 | [NEWS CHECK] ⚠️ News sans symboles: Tokenisation : Le Crédit Agricole soutient financièrement la blockchain made in 
+2025-08-05T04:05:46.272330 | [NEWS CHECK] ⚠️ News sans symboles: Prélèvement sur les comptes bancaires, géolocalisation, travail au noir… Les pla
+2025-08-05T04:05:46.272353 | [NEWS CHECK] ⚠️ News sans symboles: Crypto en France : le résumé complet de juillet 2025 dans l’écosystème blockchai
+2025-08-05T04:05:46.272377 | [NEWS CHECK] ⚠️ News sans symboles: Les messages chiffrés sous contrôle ? L'UE pourrait bientôt imposer le scan des 
+2025-08-05T04:05:46.272407 | [NEWS CHECK] ⚠️ News sans symboles: La Chine a-t-elle vraiment (encore) banni les cryptos ?
+2025-08-05T04:05:46.272461 | [NEWS CHECK] ⚠️ News sans symboles: Trump prend le contrôle des chiffres économiques et s’apprête à nommer 2 nouveau
+2025-08-05T04:05:46.272493 | [NEWS CHECK] ⚠️ News sans symboles: Comment faire du staking de TAO sur Bittensor ?
+2025-08-05T04:05:46.272518 | [NEWS CHECK] ⚠️ News sans symboles: L'essor des stablecoins ébranle la domination des géants du paiement Visa et Mas
+2025-08-05T04:05:46.272543 | [NEWS CHECK] ⚠️ News sans symboles: Obtenez gratuitement une action Michelin : l'offre exclusive de XTB pour l'été
+2025-08-05T04:05:46.272568 | [NEWS CHECK] ⚠️ News sans symboles: Crypto : La CFTC et la SEC lancent un « crypto sprint » pour accélérer la réglem
+2025-08-05T04:05:46.272591 | [NEWS CHECK] ⚠️ News sans symboles: Kraken publie des résultats solides pour le 2e trimestre malgré la volatilité du
+2025-08-05T04:05:46.272621 | [NEWS CHECK] ⚠️ News sans symboles:  CFTC pressured to probe nominee Brian Quintenz over ties to Kalshi 
+2025-08-05T04:05:46.272648 | [NEWS CHECK] ⚠️ News sans symboles:  CFTC seeks to allow spot crypto trading on registered exchanges 
+2025-08-05T04:05:46.272672 | [NEWS CHECK] ⚠️ News sans symboles:  Grayscale adds Wall Street veterans as founder Barry Silbert returns to chair 
+2025-08-05T04:05:46.272699 | [NEWS CHECK] ⚠️ News sans symboles:  GENIUS Act scrutinized for stablecoin yield ban as TradFi tokenization gains st
+2025-08-05T04:05:46.272723 | [NEWS CHECK] ⚠️ News sans symboles:  Verb stock soars 200% after announcing TON treasury plan 
+2025-08-05T04:05:46.272746 | [NEWS CHECK] ⚠️ News sans symboles:  Nvidia releases update for &#039;critical&#039; vulnerabilities in AI stack 
+2025-08-05T04:05:46.272796 | [NEWS CHECK] ⚠️ News sans symboles:  How fake news and deepfakes power the latest crypto pump-and-dump scams 
+2025-08-05T04:05:46.272840 | [NEWS CHECK] ⚠️ News sans symboles:  Coinbase turns lobbying efforts to UK in scathing op-ed 
+2025-08-05T04:05:46.272905 | [NEWS CHECK] ⚠️ News sans symboles:  How to use Google Gemini to turn crypto news into trade signals 
+2025-08-05T04:05:46.272987 | [NEWS CHECK] ⚠️ News sans symboles:  CoinDesk owner Bullish eyes $4.2B valuation in IPO backed by BlackRock, ARK 
+2025-08-05T04:05:46.273037 | [NEWS CHECK] ⚠️ News sans symboles:  DeFi will become the default financial interface 
+2025-08-05T04:05:46.273159 | [NEWS CHECK] ⚠️ News sans symboles:  $27 million gone, no private keys exposed: How the BigONE hack happened 
+2025-08-05T04:05:46.273195 | [NEWS CHECK] ⚠️ News sans symboles:  Arcadia Finance users reimbursed by DeFi hack insurance 
+2025-08-05T04:05:46.273236 | [NEWS CHECK] ⚠️ News sans symboles:  Hyperliquid reimburses $2M to crypto traders after API outage 
+2025-08-05T04:05:46.273273 | [NEWS CHECK] ⚠️ News sans symboles:  Monero takeover disrupted by alleged DDoS attack on Qubic mining pool 
+2025-08-05T04:05:46.273307 | [NEWS CHECK] ⚠️ News sans symboles:  4 countries that let you buy citizenship or a golden visa with crypto 
+2025-08-05T04:05:46.273339 | [NEWS CHECK] ⚠️ News sans symboles:  Crypto funds see $223M outflow, ending 15-week streak as Fed dampens sentiment 
+2025-08-05T04:05:46.273395 | [NEWS CHECK] ⚠️ News sans symboles:  ECB: Cash is ‘here to stay’ even as digital euro advances 
+2025-08-05T04:05:46.273427 | [NEWS CHECK] ⚠️ News sans symboles:  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-05T04:05:46.273466 | [NEWS CHECK] ⚠️ News sans symboles: CFTC Seeks Feedback on Plan to List Spot Crypto on Registered Exchanges
+2025-08-05T04:05:46.273493 | [NEWS CHECK] ⚠️ News sans symboles: North Korean Hackers Are Using Fake Job Offers to Breach Cloud Systems, Steal Bi
+2025-08-05T04:05:46.273525 | [NEWS CHECK] ⚠️ News sans symboles: Google to Pit Top AI Models Against Each Other in Live Chess Tournament
+2025-08-05T04:05:46.273551 | [NEWS CHECK] ⚠️ News sans symboles: Cloudflare Accuses Perplexity AI of Using Stealth Crawlers to Evade Website Bloc
+2025-08-05T04:05:46.273575 | [NEWS CHECK] ⚠️ News sans symboles: A TON Strategy? Telegram-linked Online Marketer to Raise $558 Million for Treasu
+2025-08-05T04:05:46.273600 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase, PayPal Press Forward With Stablecoin Rewards Despite GENIUS Prohibitio
+2025-08-05T04:05:46.273625 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase Receives Downgrade to ‘Sell’ as Retail Interest Cools: Compass Point
+2025-08-05T04:05:46.273651 | [NEWS CHECK] ⚠️ News sans symboles: In a Market Obsessed With Speed, This Crypto AI Agent Wants You to Slow Down
+2025-08-05T04:05:46.273679 | [NEWS CHECK] ⚠️ News sans symboles: This is Your Browser On AI. Any Questions?
+2025-08-05T04:05:46.273706 | [NEWS CHECK] ⚠️ News sans symboles: Crypto Company Bullish to Raise Up to $629M in IPO
+2025-08-05T04:05:46.273732 | [NEWS CHECK] ⚠️ News sans symboles: Former Chancellor Osborne Warns UK Is ‘Completely Left Behind’ on Crypto
+2025-08-05T04:05:46.273759 | [NEWS CHECK] ⚠️ News sans symboles: Attacker Swipes $4.5 Million From Credix Using Unbacked Stablecoins
+2025-08-05T04:05:46.273828 | [NEWS CHECK] ⚠️ News sans symboles: The Biggest Games Releasing in August 2025
+2025-08-05T04:05:46.273878 | [NEWS CHECK] ⚠️ News sans symboles: AI Trading Bots Are Booming—But Can You Trust Them With Your Money?
+2025-08-05T04:05:46.273951 | [NEWS CHECK] ⚠️ News sans symboles: Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-05T04:05:46.273984 | [NEWS CHECK] ⚠️ News sans symboles: Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-05T04:05:46.274022 | [NEWS CHECK] ⚠️ News sans symboles: SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-05T04:05:46.274075 | [NEWS CHECK] ⚠️ News sans symboles: FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-05T04:05:46.274109 | [NEWS CHECK] ⚠️ News sans symboles: Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-05T04:05:46.274159 | [NEWS CHECK] ⚠️ News sans symboles: Why Tokenized Stocks are Important: A Breakdown
+2025-08-05T04:05:46.274196 | [NEWS CHECK] ⚠️ News sans symboles: CFTC explores allowing spot crypto trading on futures exchanges in new initiativ
+2025-08-05T04:05:46.274232 | [NEWS CHECK] ⚠️ News sans symboles: Benchmark says Coinbase’s soft earnings and stock drop ‘doesn’t matter’ in the b
+2025-08-05T04:05:46.274266 | [NEWS CHECK] ⚠️ News sans symboles: Rep. Dina Titus urges probe into CFTC chair nominee Brian Quintenz over predicti
+2025-08-05T04:05:46.274297 | [NEWS CHECK] ⚠️ News sans symboles: Mizuho reaffirms $120 price target on Robinhood, cites tokenized stock ambitions
+2025-08-05T04:05:46.274323 | [NEWS CHECK] ⚠️ News sans symboles: FinCEN warns financial institutions of crypto ATM fraud linked to criminal organ
+2025-08-05T04:05:46.274349 | [NEWS CHECK] ⚠️ News sans symboles: Mike Cagney’s Figure Technology files draft IPO paperwork with SEC
+2025-08-05T04:05:46.274375 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid records its highest-ever monthly trade volume in July
+2025-08-05T04:05:46.274401 | [NEWS CHECK] ⚠️ News sans symboles: Scrap-metal billionaire Adam Weitsman buys over 5,000 Yuga Labs NFTs
+2025-08-05T04:05:46.274425 | [NEWS CHECK] ⚠️ News sans symboles: Barry Silbert returns to Grayscale as chairman as the firm prepares to go public
+2025-08-05T04:05:46.274448 | [NEWS CHECK] ⚠️ News sans symboles: Peter Thiel-backed crypto platform Bullish files IPO, aims to raise up to $629 m
+2025-08-05T04:05:46.274472 | [NEWS CHECK] ⚠️ News sans symboles: Nasdaq-listed Verb Technology to build $558 million TON treasury, rebrand as TON
+2025-08-05T04:05:46.274498 | [NEWS CHECK] ⚠️ News sans symboles: Pantera leads $20 million raise for OpenMind’s decentralized operating system fo
+2025-08-05T04:05:46.274524 | [NEWS CHECK] ⚠️ News sans symboles: Bernstein says SEC’s Project Crypto could rewrite the rules of Wall Street
+2025-08-05T04:05:46.274547 | [NEWS CHECK] ⚠️ News sans symboles: Ethena’s USDe jumps to third-largest stablecoin as market cap surges 75% to $9.3
+2025-08-05T04:06:18.563939 | Démarrage cycle trading
+2025-08-05T04:06:56.907376 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0344 | Tendance: 0.0002
+2025-08-05T04:06:56.914823 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:06:57.114333 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.1989 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:06:57.287703 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0868 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:06:57.454060 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3012 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:06:57.626531 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2522 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:06:57.791696 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0768 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:06:57.959490 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3683 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:06:58.135442 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0588 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:06:58.300954 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: -0.1829 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:06:58.467704 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.30 | Score: -0.3000 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:06:58.639186 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1426 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:06:58.804466 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: 0.2341 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:06:58.972753 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0003 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:06:59.142781 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1600 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:06:59.309178 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0978 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:06:59.493218 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0525 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:06:59.658287 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1639 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:06:59.825826 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1567 | Tech: 0.14 | AI: 0.15
+2025-08-05T04:06:59.990846 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1193 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:07:00.158031 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0006 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:00.325322 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0687 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:00.499539 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1720 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:00.670939 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1227 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:07:00.838897 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0151 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:07:01.006421 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2437 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:07:01.172164 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: -0.0411 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:01.342913 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0091 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:01.514800 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1502 | Tech: -0.02 | AI: 0.15
+2025-08-05T04:07:01.684623 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0066 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:07:01.852532 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1172 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:07:01.954392 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3083 | Tech: -0.05 | AI: 0.15
+2025-08-05T04:07:02.118431 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0731 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:07:02.287835 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0280 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:02.461841 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2315 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:02.632569 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0168 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:07:02.798976 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0327 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:07:02.963899 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1035 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:07:03.128214 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0654 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:03.292744 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0549 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:07:03.462293 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1581 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:03.626610 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0606 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:07:03.793272 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0041 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:07:03.963606 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:07:04.129325 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0526 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:04.311679 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0745 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:07:04.479586 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1925 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:07:04.647691 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0672 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:07:04.812889 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0536 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:07:04.969327 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3495 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:05.132303 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0093 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:05.298533 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1298 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:05.459137 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0206 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:05.624019 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0659 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:07:05.786448 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0309 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:07:05.951378 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:07:06.118499 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0800 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:07:06.289814 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: -0.0730 | Tech: -0.02 | AI: 0.15
+2025-08-05T04:07:06.456198 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1740 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:07:06.624357 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0303 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:07:06.803348 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0369 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:07:06.912339 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.1991 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:08:23.247855 | [NEWS CHECK] ⚠️ News sans symboles: L’euro numérique avance, mais la Banque centrale européenne ne lâchera pas le ca
+2025-08-05T04:08:23.255766 | [NEWS CHECK] ⚠️ News sans symboles: Record historique pour Tether : 4,9 milliards de dollars de bénéfice au deuxième
+2025-08-05T04:08:23.255818 | [NEWS CHECK] ⚠️ News sans symboles: France : un homme recherché dans toute l'Europe pour des arnaques crypto relâché
+2025-08-05T04:08:23.255860 | [NEWS CHECK] ⚠️ News sans symboles: La CFTC lance un « sprint crypto » pour apporter de la clarté réglementaire aux 
+2025-08-05T04:08:23.255900 | [NEWS CHECK] ⚠️ News sans symboles: Europe : Le cash, roi des modes de paiement d’après la BCE
+2025-08-05T04:08:23.255938 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid (HYPE) rembourse 2 millions de dollars à ses utilisateurs après une 
+2025-08-05T04:08:23.255979 | [NEWS CHECK] ⚠️ News sans symboles: Monero : Le pool minier Qubic victime d’une attaque DDoS
+2025-08-05T04:08:23.256015 | [NEWS CHECK] ⚠️ News sans symboles: Elon Musk décroche 30 milliards $ d’actions Tesla : la manœuvre choc pour éviter
+2025-08-05T04:08:23.256056 | [NEWS CHECK] ⚠️ News sans symboles: Tokenisation : Le Crédit Agricole soutient financièrement la blockchain made in 
+2025-08-05T04:08:23.256089 | [NEWS CHECK] ⚠️ News sans symboles: Prélèvement sur les comptes bancaires, géolocalisation, travail au noir… Les pla
+2025-08-05T04:08:23.256125 | [NEWS CHECK] ⚠️ News sans symboles: Crypto en France : le résumé complet de juillet 2025 dans l’écosystème blockchai
+2025-08-05T04:08:23.256157 | [NEWS CHECK] ⚠️ News sans symboles: Les messages chiffrés sous contrôle ? L'UE pourrait bientôt imposer le scan des 
+2025-08-05T04:08:23.256196 | [NEWS CHECK] ⚠️ News sans symboles: La Chine a-t-elle vraiment (encore) banni les cryptos ?
+2025-08-05T04:08:23.256227 | [NEWS CHECK] ⚠️ News sans symboles: Trump prend le contrôle des chiffres économiques et s’apprête à nommer 2 nouveau
+2025-08-05T04:08:23.256258 | [NEWS CHECK] ⚠️ News sans symboles: Comment faire du staking de TAO sur Bittensor ?
+2025-08-05T04:08:23.256288 | [NEWS CHECK] ⚠️ News sans symboles: L'essor des stablecoins ébranle la domination des géants du paiement Visa et Mas
+2025-08-05T04:08:23.256319 | [NEWS CHECK] ⚠️ News sans symboles: Obtenez gratuitement une action Michelin : l'offre exclusive de XTB pour l'été
+2025-08-05T04:08:23.256350 | [NEWS CHECK] ⚠️ News sans symboles: Crypto : La CFTC et la SEC lancent un « crypto sprint » pour accélérer la réglem
+2025-08-05T04:08:23.256381 | [NEWS CHECK] ⚠️ News sans symboles: Kraken publie des résultats solides pour le 2e trimestre malgré la volatilité du
+2025-08-05T04:08:23.256412 | [NEWS CHECK] ⚠️ News sans symboles:  CFTC pressured to probe nominee Brian Quintenz over ties to Kalshi 
+2025-08-05T04:08:23.256442 | [NEWS CHECK] ⚠️ News sans symboles:  CFTC seeks to allow spot crypto trading on registered exchanges 
+2025-08-05T04:08:23.256472 | [NEWS CHECK] ⚠️ News sans symboles:  Grayscale adds Wall Street veterans as founder Barry Silbert returns to chair 
+2025-08-05T04:08:23.256502 | [NEWS CHECK] ⚠️ News sans symboles:  GENIUS Act scrutinized for stablecoin yield ban as TradFi tokenization gains st
+2025-08-05T04:08:23.256533 | [NEWS CHECK] ⚠️ News sans symboles:  Verb stock soars 200% after announcing TON treasury plan 
+2025-08-05T04:08:23.256563 | [NEWS CHECK] ⚠️ News sans symboles:  Nvidia releases update for &#039;critical&#039; vulnerabilities in AI stack 
+2025-08-05T04:08:23.256593 | [NEWS CHECK] ⚠️ News sans symboles:  How fake news and deepfakes power the latest crypto pump-and-dump scams 
+2025-08-05T04:08:23.256623 | [NEWS CHECK] ⚠️ News sans symboles:  Coinbase turns lobbying efforts to UK in scathing op-ed 
+2025-08-05T04:08:23.256653 | [NEWS CHECK] ⚠️ News sans symboles:  How to use Google Gemini to turn crypto news into trade signals 
+2025-08-05T04:08:23.256705 | [NEWS CHECK] ⚠️ News sans symboles:  CoinDesk owner Bullish eyes $4.2B valuation in IPO backed by BlackRock, ARK 
+2025-08-05T04:08:23.256739 | [NEWS CHECK] ⚠️ News sans symboles:  DeFi will become the default financial interface 
+2025-08-05T04:08:23.256773 | [NEWS CHECK] ⚠️ News sans symboles:  $27 million gone, no private keys exposed: How the BigONE hack happened 
+2025-08-05T04:08:23.256806 | [NEWS CHECK] ⚠️ News sans symboles:  Arcadia Finance users reimbursed by DeFi hack insurance 
+2025-08-05T04:08:23.256838 | [NEWS CHECK] ⚠️ News sans symboles:  Hyperliquid reimburses $2M to crypto traders after API outage 
+2025-08-05T04:08:23.256871 | [NEWS CHECK] ⚠️ News sans symboles:  Monero takeover disrupted by alleged DDoS attack on Qubic mining pool 
+2025-08-05T04:08:23.256902 | [NEWS CHECK] ⚠️ News sans symboles:  4 countries that let you buy citizenship or a golden visa with crypto 
+2025-08-05T04:08:23.256935 | [NEWS CHECK] ⚠️ News sans symboles:  Crypto funds see $223M outflow, ending 15-week streak as Fed dampens sentiment 
+2025-08-05T04:08:23.256967 | [NEWS CHECK] ⚠️ News sans symboles:  ECB: Cash is ‘here to stay’ even as digital euro advances 
+2025-08-05T04:08:23.257000 | [NEWS CHECK] ⚠️ News sans symboles:  Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Y
+2025-08-05T04:08:23.257032 | [NEWS CHECK] ⚠️ News sans symboles: CFTC Seeks Feedback on Plan to List Spot Crypto on Registered Exchanges
+2025-08-05T04:08:23.257065 | [NEWS CHECK] ⚠️ News sans symboles: North Korean Hackers Are Using Fake Job Offers to Breach Cloud Systems, Steal Bi
+2025-08-05T04:08:23.257097 | [NEWS CHECK] ⚠️ News sans symboles: Google to Pit Top AI Models Against Each Other in Live Chess Tournament
+2025-08-05T04:08:23.257129 | [NEWS CHECK] ⚠️ News sans symboles: Cloudflare Accuses Perplexity AI of Using Stealth Crawlers to Evade Website Bloc
+2025-08-05T04:08:23.257161 | [NEWS CHECK] ⚠️ News sans symboles: A TON Strategy? Telegram-linked Online Marketer to Raise $558 Million for Treasu
+2025-08-05T04:08:23.257193 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase, PayPal Press Forward With Stablecoin Rewards Despite GENIUS Prohibitio
+2025-08-05T04:08:23.257226 | [NEWS CHECK] ⚠️ News sans symboles: Coinbase Receives Downgrade to ‘Sell’ as Retail Interest Cools: Compass Point
+2025-08-05T04:08:23.257257 | [NEWS CHECK] ⚠️ News sans symboles: In a Market Obsessed With Speed, This Crypto AI Agent Wants You to Slow Down
+2025-08-05T04:08:23.257290 | [NEWS CHECK] ⚠️ News sans symboles: This is Your Browser On AI. Any Questions?
+2025-08-05T04:08:23.257322 | [NEWS CHECK] ⚠️ News sans symboles: Crypto Company Bullish to Raise Up to $629M in IPO
+2025-08-05T04:08:23.257354 | [NEWS CHECK] ⚠️ News sans symboles: Former Chancellor Osborne Warns UK Is ‘Completely Left Behind’ on Crypto
+2025-08-05T04:08:23.257386 | [NEWS CHECK] ⚠️ News sans symboles: Attacker Swipes $4.5 Million From Credix Using Unbacked Stablecoins
+2025-08-05T04:08:23.257418 | [NEWS CHECK] ⚠️ News sans symboles: The Biggest Games Releasing in August 2025
+2025-08-05T04:08:23.257450 | [NEWS CHECK] ⚠️ News sans symboles: AI Trading Bots Are Booming—But Can You Trust Them With Your Money?
+2025-08-05T04:08:23.257482 | [NEWS CHECK] ⚠️ News sans symboles: Stablecoins Are Finally Legal—Now Comes the Hard Part
+2025-08-05T04:08:23.257514 | [NEWS CHECK] ⚠️ News sans symboles: Why Analysts Aren't Worried by Coinbase's Stock Dive After Earnings Miss
+2025-08-05T04:08:23.257547 | [NEWS CHECK] ⚠️ News sans symboles: SBF Loves Coldplay? Crypto and AI Leaders' Spotify Playlists Leaked
+2025-08-05T04:08:23.257579 | [NEWS CHECK] ⚠️ News sans symboles: FDIC Still Trying to ‘Stonewall’ Crypto Debanking Documents, Says Coinbase Legal
+2025-08-05T04:08:23.257611 | [NEWS CHECK] ⚠️ News sans symboles: Amazon Backs 'Netflix of AI' Startup Fable With User-Generated Animation Launch
+2025-08-05T04:08:23.257643 | [NEWS CHECK] ⚠️ News sans symboles: Why Tokenized Stocks are Important: A Breakdown
+2025-08-05T04:08:23.257677 | [NEWS CHECK] ⚠️ News sans symboles: CFTC explores allowing spot crypto trading on futures exchanges in new initiativ
+2025-08-05T04:08:23.257709 | [NEWS CHECK] ⚠️ News sans symboles: Benchmark says Coinbase’s soft earnings and stock drop ‘doesn’t matter’ in the b
+2025-08-05T04:08:23.257741 | [NEWS CHECK] ⚠️ News sans symboles: Rep. Dina Titus urges probe into CFTC chair nominee Brian Quintenz over predicti
+2025-08-05T04:08:23.257773 | [NEWS CHECK] ⚠️ News sans symboles: Mizuho reaffirms $120 price target on Robinhood, cites tokenized stock ambitions
+2025-08-05T04:08:23.257805 | [NEWS CHECK] ⚠️ News sans symboles: FinCEN warns financial institutions of crypto ATM fraud linked to criminal organ
+2025-08-05T04:08:23.257837 | [NEWS CHECK] ⚠️ News sans symboles: Mike Cagney’s Figure Technology files draft IPO paperwork with SEC
+2025-08-05T04:08:23.257869 | [NEWS CHECK] ⚠️ News sans symboles: Hyperliquid records its highest-ever monthly trade volume in July
+2025-08-05T04:08:23.257901 | [NEWS CHECK] ⚠️ News sans symboles: Scrap-metal billionaire Adam Weitsman buys over 5,000 Yuga Labs NFTs
+2025-08-05T04:08:23.257932 | [NEWS CHECK] ⚠️ News sans symboles: Barry Silbert returns to Grayscale as chairman as the firm prepares to go public
+2025-08-05T04:08:23.257964 | [NEWS CHECK] ⚠️ News sans symboles: Peter Thiel-backed crypto platform Bullish files IPO, aims to raise up to $629 m
+2025-08-05T04:08:23.257997 | [NEWS CHECK] ⚠️ News sans symboles: Nasdaq-listed Verb Technology to build $558 million TON treasury, rebrand as TON
+2025-08-05T04:08:23.258029 | [NEWS CHECK] ⚠️ News sans symboles: Pantera leads $20 million raise for OpenMind’s decentralized operating system fo
+2025-08-05T04:08:23.258061 | [NEWS CHECK] ⚠️ News sans symboles: Bernstein says SEC’s Project Crypto could rewrite the rules of Wall Street
+2025-08-05T04:08:23.258093 | [NEWS CHECK] ⚠️ News sans symboles: Ethena’s USDe jumps to third-largest stablecoin as market cap surges 75% to $9.3
+2025-08-05T04:08:55.434973 | Démarrage cycle trading
+2025-08-05T04:10:10.044739 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T04:10:10.050681 | Initialisation des modèles d'IA...
+2025-08-05T04:10:10.558887 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T04:10:12.102576 | ✅ PPO Strategy initialized successfully
+2025-08-05T04:10:12.111282 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T04:10:12.111327 | ✅ Trading en direct: True
+2025-08-05T04:10:12.111357 | ✅ IA activée: True
+2025-08-05T04:10:12.111387 | ✅ Analyse de news activée: True
+2025-08-05T04:12:10.973587 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T04:13:48.100643 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0346 | Tendance: 0.0002
+2025-08-05T04:13:48.109500 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T04:13:48.115427 | Démarrage cycle trading
+2025-08-05T04:14:28.067827 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0347 | Tendance: 0.0002
+2025-08-05T04:14:28.081033 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:14:28.266944 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1544 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:28.449903 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.32 | Score: -0.3241 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:28.618230 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.26 | Score: -0.2617 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:28.783144 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2296 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:28.952978 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0602 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:14:29.116524 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3676 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:14:29.281180 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1460 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:29.447113 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2466 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:29.610878 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1509 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:29.775284 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0821 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:14:29.946605 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1417 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:14:30.114772 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0036 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:14:30.280083 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0598 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:30.444854 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0813 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:30.606304 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: 0.2470 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:14:30.766718 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1841 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:14:30.932790 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1631 | Tech: 0.15 | AI: 0.15
+2025-08-05T04:14:31.098391 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1237 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:14:31.261119 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0357 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:31.423101 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1277 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:31.589255 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0020 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:31.756234 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0802 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:14:31.924571 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0202 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:14:32.087186 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2448 | Tech: 0.09 | AI: 0.15
+2025-08-05T04:14:32.249799 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: 0.1332 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:32.415748 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1691 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:14:32.587063 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0199 | Tech: -0.02 | AI: 0.15
+2025-08-05T04:14:32.755527 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0474 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:14:32.930806 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0228 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:14:33.035931 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3089 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:14:33.196701 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: 0.1056 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:33.359763 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2471 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:33.523807 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.27 | Score: -0.2699 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:14:33.692287 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0334 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:33.865678 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0563 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:14:34.030681 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1011 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:14:34.192359 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0411 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:34.356853 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: -0.1830 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:34.524318 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0878 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:14:34.708451 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: -0.0378 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:14:34.870561 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0007 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:14:35.039006 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:14:35.204571 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.07 | Score: 0.0691 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:35.364385 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.21 | Score: -0.2090 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:35.526309 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.2036 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:14:35.698307 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0920 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:14:35.865466 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0584 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:14:36.024835 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3489 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:14:36.186328 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0175 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:36.348300 | [TRADE-DECISION] TRXUSDC | Action: SELL | Confiance: 0.27 | Score: -0.2671 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:36.515037 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0029 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:14:36.686850 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0401 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:14:36.851460 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0275 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:14:37.231063 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:14:37.392952 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0807 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:37.557524 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1906 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:14:37.728535 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1015 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:14:37.893675 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0094 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:14:38.060435 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0475 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:14:38.162911 | [TRADE-DECISION] SUIUSDC | Action: SELL | Confiance: 0.30 | Score: -0.2987 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:16:42.015965 | Démarrage cycle trading
+2025-08-05T04:17:22.882243 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0346 | Tendance: 0.0002
+2025-08-05T04:17:22.896908 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:17:23.087964 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: 0.1986 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:23.266951 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1415 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:23.438563 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3486 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:23.602158 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2296 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:23.765973 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0602 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:17:23.932729 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3676 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:17:24.094763 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1677 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:24.258276 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1891 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:24.422864 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3694 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:24.589340 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0821 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:17:24.755547 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1417 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:17:24.921131 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0036 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:17:25.094016 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0070 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:25.259561 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0762 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:25.466891 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0933 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:17:25.632185 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1841 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:17:25.802418 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1631 | Tech: 0.15 | AI: 0.15
+2025-08-05T04:17:25.967073 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1237 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:17:26.127817 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0406 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:26.299154 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0868 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:26.491059 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: -0.1786 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:26.676705 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0802 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:17:26.848714 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0202 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:17:27.021786 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2448 | Tech: 0.09 | AI: 0.15
+2025-08-05T04:17:27.191801 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1421 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:27.362270 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0997 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:27.532978 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1678 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:27.701888 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0474 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:17:27.873097 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0228 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:17:27.989799 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3089 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:17:28.284226 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1214 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:28.467380 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1402 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:28.653034 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2479 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:28.839346 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0334 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:29.023731 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0563 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:17:29.267060 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1011 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:17:29.447818 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0847 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:29.642782 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0590 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:29.887850 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2213 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:30.095068 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: -0.0378 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:17:30.284433 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0007 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:17:30.559337 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:17:30.752804 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1513 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:30.930857 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0899 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:31.150291 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2273 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:17:31.373193 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0920 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:17:31.714408 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0584 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:17:31.921918 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3489 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:32.132904 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0175 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:32.331460 | [TRADE-DECISION] TRXUSDC | Action: SELL | Confiance: 0.27 | Score: -0.2671 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:32.523297 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0029 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:32.740445 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0401 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:17:32.976265 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0275 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:17:33.180514 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:17:33.370785 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0917 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:17:33.570806 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1503 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:17:33.783964 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1532 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:17:34.043672 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0094 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:17:34.296487 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0475 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:17:34.418608 | [TRADE-DECISION] SUIUSDC | Action: SELL | Confiance: 0.30 | Score: -0.2987 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:19:28.088982 | Démarrage cycle trading
+2025-08-05T04:20:06.829261 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0343 | Tendance: 0.0002
+2025-08-05T04:20:06.845236 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:20:07.026257 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1692 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:07.190299 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1415 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:07.365812 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3486 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:07.537163 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2296 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:07.702744 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0602 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:20:07.870581 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3676 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:20:08.036533 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1784 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:08.208705 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: -0.1891 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:20:08.377618 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3694 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:08.546832 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0821 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:20:08.715358 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1417 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:20:08.882414 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0036 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:20:09.079675 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0495 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:09.265233 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0762 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:20:09.443768 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0933 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:20:09.613025 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1841 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:20:09.785372 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1631 | Tech: 0.15 | AI: 0.15
+2025-08-05T04:20:09.955186 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1237 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:20:10.128410 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0222 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:10.294333 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0868 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:10.460408 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: -0.1786 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:10.626742 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: -0.0802 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:20:10.795068 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0202 | Tech: 0.11 | AI: 0.15
+2025-08-05T04:20:10.967562 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.24 | Score: -0.2448 | Tech: 0.09 | AI: 0.15
+2025-08-05T04:20:11.131247 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0554 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:11.297518 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0997 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:11.467817 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1678 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:11.642554 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0474 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:20:11.815124 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0228 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:20:11.930795 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3089 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:20:12.101412 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: 0.1483 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:12.273205 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1402 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:12.442843 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.25 | Score: -0.2479 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:12.612676 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: -0.0334 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:20:12.781671 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0563 | Tech: -0.03 | AI: 0.15
+2025-08-05T04:20:12.955737 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1011 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:20:13.119319 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0276 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:13.289215 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0590 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:20:13.463262 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2213 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:13.638483 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: -0.0378 | Tech: 0.05 | AI: 0.15
+2025-08-05T04:20:13.815056 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: -0.0007 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:20:13.981575 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.26 | Score: -0.2616 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:20:14.159724 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: 0.0226 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:14.338599 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0899 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:14.518719 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2273 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:20:14.697301 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0920 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:20:14.878969 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0584 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:20:15.060064 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3489 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:15.227720 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1114 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:15.413913 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.21 | Score: -0.2055 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:15.583106 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0076 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:20:15.750393 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0401 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:20:15.918535 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.03 | Score: 0.0275 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:20:16.088206 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1775 | Tech: 0.17 | AI: 0.15
+2025-08-05T04:20:16.253835 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0226 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:16.424426 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1503 | Tech: -0.01 | AI: 0.15
+2025-08-05T04:20:16.591120 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.15 | Score: -0.1532 | Tech: -0.04 | AI: 0.15
+2025-08-05T04:20:16.757689 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0094 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:20:16.925879 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: 0.0475 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:20:17.024548 | [TRADE-DECISION] SUIUSDC | Action: SELL | Confiance: 0.30 | Score: -0.2987 | Tech: 0.04 | AI: 0.15
+2025-08-05T04:22:06.029914 | Démarrage cycle trading
+2025-08-05T04:22:44.794223 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0343 | Tendance: 0.0002
+2025-08-05T04:22:44.804007 | 🎯 Stratégie: Range/Scalping
+2025-08-05T04:22:45.003420 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0621 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:22:45.178720 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: -0.1380 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:22:45.347189 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3486 | Tech: -0.00 | AI: 0.15
+2025-08-05T04:22:45.517686 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.23 | Score: -0.2296 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:22:45.691407 | [TRADE-DECISION] BTCUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: -0.0602 | Tech: 0.02 | AI: 0.15
+2025-08-05T04:22:45.858011 | [TRADE-DECISION] BTCUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3676 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:22:46.028894 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0228 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:22:46.198615 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.21 | Score: -0.2147 | Tech: 0.01 | AI: 0.15
+2025-08-05T04:22:46.369610 | [TRADE-DECISION] ETHUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3694 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:22:46.571539 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.08 | Score: 0.0821 | Tech: 0.07 | AI: 0.15
+2025-08-05T04:22:46.779539 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1417 | Tech: 0.12 | AI: 0.15
+2025-08-05T04:22:47.050974 | [TRADE-DECISION] ETHUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0036 | Tech: 0.18 | AI: 0.15
+2025-08-05T04:22:47.249357 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: 0.1093 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:22:47.446173 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1016 | Tech: 0.00 | AI: 0.15
+2025-08-05T04:22:47.622784 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0933 | Tech: 0.03 | AI: 0.15
+2025-08-05T04:22:47.854061 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.18 | Score: 0.1841 | Tech: 0.08 | AI: 0.15
+2025-08-05T04:22:48.030647 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: 0.1631 | Tech: 0.15 | AI: 0.15
+2025-08-05T04:22:48.207282 | [TRADE-DECISION] LTCUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1237 | Tech: 0.06 | AI: 0.15
+2025-08-05T04:22:56.985925 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T04:22:56.991484 | Initialisation des modèles d'IA...
+2025-08-05T04:22:57.490260 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T04:22:59.083898 | ✅ PPO Strategy initialized successfully
+2025-08-05T04:22:59.097436 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T04:22:59.097661 | ✅ Trading en direct: True
+2025-08-05T04:22:59.097732 | ✅ IA activée: True
+2025-08-05T04:22:59.097782 | ✅ Analyse de news activée: True

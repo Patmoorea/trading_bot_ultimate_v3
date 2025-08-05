@@ -60,51 +60,6 @@ class NewsSentimentAnalyzer:
         self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
         self.news_sources = os.getenv("NEWS_SOURCES", "bloomberg,reuters,coindesk")
 
-        # Sources de news
-        self.sources = [
-            {
-                "name": "CryptoCompare",
-                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
-                "type": "json",
-                "weight": 0.7,
-            },
-            {
-                "name": "NewsAPI",
-                "url": (
-                    "https://newsapi.org/v2/everything?"
-                    "q=crypto OR bitcoin OR blockchain&"
-                    f"language={self.news_api_languages}&"
-                    f"sources={self.news_sources}&"
-                    f"apiKey={self.news_api_key}"
-                ),
-                "type": "json",
-                "weight": 0.7,
-            },
-            {
-                "name": "Cointelegraph",
-                "url": "https://cointelegraph.com/rss",
-                "type": "rss",
-                "weight": 0.8,
-            },
-            {
-                "name": "Decrypt",
-                "url": "https://decrypt.co/feed",
-                "type": "rss",
-                "weight": 0.8,
-            },
-            {
-                "name": "NewsBTC",
-                "url": "https://www.newsbtc.com/feed/",
-                "type": "rss",
-                "weight": 0.7,
-            },
-            {
-                "name": "TheBlock",
-                "url": "https://www.theblock.co/rss.xml",
-                "type": "rss",
-                "weight": 0.7,
-            },
-        ]
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
 
@@ -114,10 +69,8 @@ class NewsSentimentAnalyzer:
         self.ssl_context.verify_mode = ssl.CERT_NONE
 
         # Configuration des timeouts et retries
-        self.conn_timeout = 10
-        self.read_timeout = 20
-        self.max_retries = 3
-        self.retry_delay = 5
+        self.conn_timeout = 5  # Réduit à 5 secondes
+        self.max_retries = 2  # Réduit à 2 tentatives maximum
 
         # Headers HTTP
         self.headers = {
@@ -150,6 +103,60 @@ class NewsSentimentAnalyzer:
         self.news_buffer = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
+
+        # Sources de news
+        self.sources = [
+            # Sources principales (priorité 1)
+            {
+                "name": "CryptoCompare",
+                "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
+                "type": "json",
+                "weight": 0.7,
+                "priority": 1,
+            },
+            {
+                "name": "NewsAPI",
+                "url": (
+                    "https://newsapi.org/v2/everything?"
+                    "q=crypto OR bitcoin OR blockchain&"
+                    f"language={self.news_api_languages}&"
+                    f"sources={self.news_sources}&"
+                    f"apiKey={self.news_api_key}"
+                ),
+                "type": "json",
+                "weight": 0.7,
+                "priority": 1,
+            },
+            # Sources secondaires (priorité 2)
+            {
+                "name": "Cointelegraph",
+                "url": "https://cointelegraph.com/rss",
+                "type": "rss",
+                "weight": 0.8,
+                "priority": 2,
+            },
+            {
+                "name": "Decrypt",
+                "url": "https://decrypt.co/feed",
+                "type": "rss",
+                "weight": 0.8,
+                "priority": 2,
+            },
+            {
+                "name": "NewsBTC",
+                "url": "https://www.newsbtc.com/feed/",
+                "type": "rss",
+                "weight": 0.7,
+                "priority": 2,
+            },
+            {
+                "name": "TheBlock",
+                "url": "https://www.theblock.co/rss.xml",
+                "type": "rss",
+                "weight": 0.7,
+                "priority": 2,
+            },
+        ]
 
     def extract_symbols(self, text: str) -> List[str]:
         """
@@ -211,16 +218,28 @@ class NewsSentimentAnalyzer:
 
             # Si c'est une string
             if isinstance(timestamp, str):
-                # Essaye de parser comme int d'abord
                 try:
+                    # Essaye de parser comme int d'abord
                     ts = int(timestamp)
                     if ts > 9999999999:  # Si en millisecondes
                         return int(ts / 1000)
                     return ts
                 except ValueError:
-                    # Si ce n'est pas un int, essaye de parser comme datetime
-                    dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-                    return int(dt.timestamp())
+                    try:
+                        # Essaye format RFC 822 (format RSS)
+                        dt = datetime.strptime(timestamp, "%a, %d %b %Y %H:%M:%S %z")
+                        return int(dt.timestamp())
+                    except ValueError:
+                        try:
+                            # Essaye format RFC 822 sans timezone
+                            dt = datetime.strptime(timestamp, "%a, %d %b %Y %H:%M:%S")
+                            return int(dt.timestamp())
+                        except ValueError:
+                            # Dernier essai : format ISO
+                            dt = datetime.fromisoformat(
+                                timestamp.replace("Z", "+00:00")
+                            )
+                            return int(dt.timestamp())
 
             # Si c'est un datetime
             if isinstance(timestamp, datetime):
@@ -246,47 +265,81 @@ class NewsSentimentAnalyzer:
             self.logger.error(f"[NEWS] Failed to save state: {e}")
 
     async def fetch_all_news(self) -> List[Dict]:
-        """Récupère les news de toutes les sources avec gestion des erreurs améliorée"""
-        connector = aiohttp.TCPConnector(
-            ssl=self.ssl_context,
-            limit=10,  # Limite de connexions simultanées
-            ttl_dns_cache=300,  # Cache DNS de 5 minutes
-            enable_cleanup_closed=True,
-        )
+        """Version optimisée de la récupération des news"""
 
-        timeout = aiohttp.ClientTimeout(
-            total=self.read_timeout, connect=self.conn_timeout
-        )
+        async def fetch_source(
+            session: aiohttp.ClientSession, source: Dict
+        ) -> List[Dict]:
+            try:
+                async with session.get(
+                    source["url"], timeout=self.conn_timeout
+                ) as response:
+                    if response.status == 200:
+                        content = await response.text()
+                        if source["type"] == "rss":
+                            return self._parse_rss(content, source)
+                        data = json.loads(content)
+                        return self._parse_json(data, source)
+            except Exception as e:
+                self.logger.debug(f"[{source['name']}] Échec: {str(e)}")
+            return []
 
-        async with aiohttp.ClientSession(
-            connector=connector, timeout=timeout, headers=self.headers
-        ) as session:
-            tasks = [
-                self._fetch_source_with_retry(session, source)
-                for source in self.sources
-            ]
+        # Utiliser le buffer existant si disponible
+        if self.news_buffer:
+            try:
+                # Tenter de mettre à jour avec les sources prioritaires
+                connector = aiohttp.TCPConnector(ssl=self.ssl_context)
+                async with aiohttp.ClientSession(connector=connector) as session:
+                    primary_sources = [
+                        s for s in self.sources if s.get("priority", 1) == 1
+                    ]
+                    tasks = [
+                        fetch_source(session, source) for source in primary_sources
+                    ]
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-            valid_news = []
+                    valid_news = []
+                    for source, result in zip(primary_sources, results):
+                        if isinstance(result, list) and result:
+                            valid_news.extend(result)
+                            self.logger.info(
+                                f"[{source['name']}] {len(result)} news récupérées"
+                            )
 
-            for source, result in zip(self.sources, results):
-                if isinstance(result, Exception):
-                    self.logger.error(f"[{source['name']}] Échec: {str(result)}")
-                    continue
-                if isinstance(result, list):
-                    valid_news.extend(result)
-                    if result:  # Log des premières news récupérées
+                    if valid_news:
+                        self.news_buffer = self.patch_news_list(valid_news)
+                        return self.news_buffer
+
+            except Exception as e:
+                self.logger.warning(f"Échec mise à jour rapide: {str(e)}")
+
+            # Si la mise à jour rapide échoue, retourner le buffer existant
+            self.logger.info("Utilisation du buffer existant")
+            return self.news_buffer
+
+        # Si pas de buffer, essayer toutes les sources
+        try:
+            connector = aiohttp.TCPConnector(ssl=self.ssl_context)
+            async with aiohttp.ClientSession(connector=connector) as session:
+                tasks = [fetch_source(session, source) for source in self.sources]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+
+                valid_news = []
+                for source, result in zip(self.sources, results):
+                    if isinstance(result, list) and result:
+                        valid_news.extend(result)
                         self.logger.info(
                             f"[{source['name']}] {len(result)} news récupérées"
                         )
-                        for n in result[:2]:  # Log des 2 premiers titres
-                            self.logger.info(f"  - {n.get('title', '')[:100]}")
 
-            # Patch et mise à jour du buffer
-            valid_news = self.patch_news_list(valid_news)
-            self.news_buffer = valid_news
+                if valid_news:
+                    self.news_buffer = self.patch_news_list(valid_news)
+                    return self.news_buffer
 
-            return valid_news
+        except Exception as e:
+            self.logger.error(f"Échec récupération news: {str(e)}")
+
+        return []
 
     async def _fetch_source_with_retry(
         self, session: aiohttp.ClientSession, source: Dict, max_retries=None
