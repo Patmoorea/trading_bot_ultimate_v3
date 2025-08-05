@@ -3001,10 +3001,16 @@ class TradingBotM4:
             def update_timestamps(data):
                 if isinstance(data, dict):
                     for key, value in data.items():
+                        # PATCH: NE JAMAIS écraser une liste de timestamp OHLCV
                         if isinstance(value, dict):
                             update_timestamps(value)
                         elif key in ["timestamp", "last_update"]:
-                            data[key] = current_time_str
+                            # On écrase SEULEMENT si ce n'est PAS une liste d'entiers
+                            if not (
+                                isinstance(value, list)
+                                and all(isinstance(x, (int, float)) for x in value)
+                            ):
+                                data[key] = current_time_str
                 return data
 
             # 6. Fusion profonde avec préservation des types
