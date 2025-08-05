@@ -6006,6 +6006,7 @@ async def run_clean_bot():
                             "timestamp",
                         ]
                         if all(col in df.columns for col in required_cols):
+                            # Vérifie la cohérence des longueurs
                             if len(df["timestamp"]) != len(df["close"]):
                                 if (
                                     hasattr(df.index, "dtype")
@@ -6019,6 +6020,7 @@ async def run_clean_bot():
                                         periods=len(df["close"]),
                                         freq="T",
                                     )
+                            # Convertit tous les timestamps en int (UNIX)
                             ohlcv_dict = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -6030,29 +6032,53 @@ async def run_clean_bot():
                                     for t in df["timestamp"]
                                 ],
                             }
-
-                            # PATCH: Conserve l'historique des bougies OHLCV SANS DOUBLONS
+                            # Initialise la structure si besoin
                             if tf not in bot.market_data[pair_key]:
                                 bot.market_data[pair_key][tf] = {
                                     k: [] for k in ohlcv_dict
                                 }
 
-                            # Ajout sans doublons
+                            # DEBUG : affiche la taille avant update
+                            print(
+                                f"[DEBUG] {pair_key}-{tf} bougies avant : {len(bot.market_data[pair_key][tf]['close'])}"
+                            )
+
+                            # PATCH: Ajoute uniquement les nouvelles bougies (timestamps uniques)
                             last_ts = (
                                 bot.market_data[pair_key][tf]["timestamp"][-1]
                                 if bot.market_data[pair_key][tf]["timestamp"]
                                 else None
                             )
-                            new_indices = [
-                                i
-                                for i, ts in enumerate(ohlcv_dict["timestamp"])
-                                if last_ts is None or ts > last_ts
-                            ]
+                            # Convertit last_ts en int si c'est une string
+                            if last_ts is not None and isinstance(last_ts, str):
+                                try:
+                                    last_ts = int(pd.Timestamp(last_ts).timestamp())
+                                except Exception:
+                                    last_ts = None
+
+                            # Filtre les nouvelles bougies avec conversion int
+                            new_indices = []
+                            for i, ts in enumerate(ohlcv_dict["timestamp"]):
+                                ts_int = ts
+                                if isinstance(ts, str):
+                                    try:
+                                        ts_int = int(pd.Timestamp(ts).timestamp())
+                                    except Exception:
+                                        continue
+                                if last_ts is None or ts_int > last_ts:
+                                    new_indices.append(i)
+
                             for k in ohlcv_dict:
                                 bot.market_data[pair_key][tf][k].extend(
                                     [ohlcv_dict[k][i] for i in new_indices]
                                 )
 
+                            # DEBUG : affiche la taille après update
+                            print(
+                                f"[DEBUG] {pair_key}-{tf} bougies après : {len(bot.market_data[pair_key][tf]['close'])}"
+                            )
+
+                            # Calcul des indicateurs
                             indicators_data = bot.add_indicators(df)
                             bot.market_data[pair_key][tf]["signals"] = {
                                 "technical": {
