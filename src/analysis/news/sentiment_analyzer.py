@@ -16,8 +16,9 @@ from datetime import datetime, timezone
 from typing import Any, List, Dict, Optional, Set
 
 
-class SymbolExtractor:
-    DEFAULT_MAPPING = {
+class NewsSentimentAnalyzer:
+    # Définition du mapping comme attribut de classe
+    SYMBOL_MAPPING = {
         "bitcoin": "BTC",
         "btc": "BTC",
         "ethereum": "ETH",
@@ -52,7 +53,7 @@ class SymbolExtractor:
         "xlm": "XLM",
     }
 
-    def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
+    def __init__(self, config: dict):
         self.symbol_mapping = (
             symbol_mapping if symbol_mapping is not None else self.DEFAULT_MAPPING
         )
