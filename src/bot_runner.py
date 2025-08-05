@@ -6106,6 +6106,9 @@ async def run_clean_bot():
 
                     market_signals = bot.market_data[pair_key]
 
+                    # Initialisation de confidence avant son utilisation
+                    confidence = 0.5  # Valeur par défaut initiale
+
                     # Récupération des signaux techniques depuis timeframe 1h
                     tf_data = market_signals.get("1h", {}).get("signals", {})
                     tech_data = tf_data.get("technical", {})
@@ -6132,34 +6135,26 @@ async def run_clean_bot():
                         ai_score = 0.5
 
                     # 3. Sentiment Score
-                    sentiment_score = market_signals.get("sentiment")
-                    if sentiment_score is not None:
-                        try:
+                    try:
+                        sentiment_score = market_signals.get("sentiment")
+                        if sentiment_score is not None:
                             sentiment_score = float(sentiment_score)
                             sentiment_score = max(-1.0, min(1.0, sentiment_score))
-                        except (TypeError, ValueError):
-                            # Utiliser la valeur du sentiment stockée dans market_data
+                        else:
+                            # Récupération du sentiment depuis l'analyse des news
+                            with open(bot.data_file, "r") as f:
+                                shared_data = json.load(f)
+                            news_sentiment = shared_data.get("sentiment", {})
                             sentiment_score = float(
-                                market_signals.get("sentiment", 0.0)
+                                news_sentiment.get("overall_sentiment", 0.0)
                             )
-                    else:
-                        # Récupération du sentiment depuis l'analyse des news
-                        news_sentiment = shared_data.get("sentiment", {})
-                        sentiment_score = float(
-                            news_sentiment.get("overall_sentiment", 0.0)
-                        )
-
-                    decision = {
-                        "action": "neutral",
-                        "confidence": confidence,
-                        "tech": tech_score,
-                        "ai": ai_score,
-                        "sentiment": sentiment_score,  # Utilisation du sentiment corrigé
-                        "timestamp": current_time,
-                    }
-
-                    # Calcul de la confiance globale
-                    confidence = 0.5  # Valeur par défaut
+                    except (
+                        TypeError,
+                        ValueError,
+                        FileNotFoundError,
+                        json.JSONDecodeError,
+                    ):
+                        sentiment_score = 0.0
 
                     # Pondération des signaux pour la confiance
                     if all(
@@ -6183,7 +6178,7 @@ async def run_clean_bot():
                         # Borne entre 0.5 et 1.0
                         confidence = max(0.5, min(1.0, confidence))
 
-                    # Construction de la décision
+                    # Construction de la décision finale
                     decision = {
                         "pair": pair,
                         "action": "neutral",  # Sera mis à jour plus tard selon les signaux
@@ -7376,14 +7371,10 @@ async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, durati
         # 1. Rapport des trades
         await send_trade_summary(bot, trade_decisions)
 
-        # 2. Préparation des données d'analyse avec le cycle courant
+        # 2. Préparation des données d'analyse
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
         analysis_data.update(
-            {
-                "cycle": current_cycle,  # Ajout du cycle courant ici
-                "regime": regime,
-                "duration": duration,
-            }
+            {"cycle": current_cycle, "regime": regime, "duration": duration}
         )
 
         # 3. Génération et envoi du rapport
