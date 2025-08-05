@@ -6031,13 +6031,27 @@ async def run_clean_bot():
                                 ],
                             }
 
-                            # PATCH: Conserve l'historique des bougies OHLCV
+                            # PATCH: Conserve l'historique des bougies OHLCV SANS DOUBLONS
                             if tf not in bot.market_data[pair_key]:
                                 bot.market_data[pair_key][tf] = {
                                     k: [] for k in ohlcv_dict
                                 }
+
+                            # Ajout sans doublons
+                            last_ts = (
+                                bot.market_data[pair_key][tf]["timestamp"][-1]
+                                if bot.market_data[pair_key][tf]["timestamp"]
+                                else None
+                            )
+                            new_indices = [
+                                i
+                                for i, ts in enumerate(ohlcv_dict["timestamp"])
+                                if last_ts is None or ts > last_ts
+                            ]
                             for k in ohlcv_dict:
-                                bot.market_data[pair_key][tf][k].extend(ohlcv_dict[k])
+                                bot.market_data[pair_key][tf][k].extend(
+                                    [ohlcv_dict[k][i] for i in new_indices]
+                                )
 
                             indicators_data = bot.add_indicators(df)
                             bot.market_data[pair_key][tf]["signals"] = {

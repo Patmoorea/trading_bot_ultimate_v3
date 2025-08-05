@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-08-05 16:23:30",
+  "timestamp": "2025-08-05 16:25:23",
   "user": "Patmoorea",
   "bot_status": {
     "regime": "Range/Scalping",
-    "cycle": 2,
-    "last_update": "2025-08-05 16:23:30",
+    "cycle": 3,
+    "last_update": "2025-08-05 16:25:23",
     "performance": {
       "balance": 60.85659068
     }
@@ -3211,65 +3211,65 @@
     {
       "asset": "BTC",
       "action": "BUY",
-      "cycles_left": 6,
+      "cycles_left": 5,
       "type": "BUY",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "LINK",
       "action": "FULL",
-      "cycles_left": 28,
+      "cycles_left": 27,
       "type": "FULL",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "ETH",
       "action": "BUY",
-      "cycles_left": 6,
+      "cycles_left": 5,
       "type": "BUY",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "SOL",
       "action": "FULL",
-      "cycles_left": 28,
+      "cycles_left": 27,
       "type": "FULL",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "XRP",
       "action": "BUY",
-      "cycles_left": 6,
+      "cycles_left": 5,
       "type": "BUY",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "DOGE",
       "action": "FULL",
-      "cycles_left": 28,
+      "cycles_left": 27,
       "type": "FULL",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     },
     {
       "asset": "GLOBAL",
       "action": "ALL",
-      "cycles_left": 13,
+      "cycles_left": 12,
       "type": "GLOBAL",
       "reason": "Grayscale Welcomes Barry Silbert Back As Chairman Ahead Of US IPO",
-      "max_cycles": 28,
-      "total_remaining": 28
+      "max_cycles": 27,
+      "total_remaining": 27
     }
   ],
   "market_data": {
@@ -3785,7 +3785,7 @@
           1.09991,
           0.28243
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -4298,7 +4298,7 @@
           12.91466,
           9.20182
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -4811,7 +4811,7 @@
           59.67647,
           9.20182
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -5324,7 +5324,7 @@
           284.58033,
           68.87829
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -5837,7 +5837,7 @@
           1329.70512,
           68.87829
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -6350,7 +6350,7 @@
           2609.04826,
           2560.45352
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6636056303977966,
       "signals": {
@@ -6871,7 +6871,7 @@
           163.1093,
           75.6065
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -7384,7 +7384,7 @@
           870.1565,
           1095.7027
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -7897,7 +7897,7 @@
           5427.498,
           1095.7027
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -8410,7 +8410,7 @@
           26534.6476,
           6523.2007
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -8923,7 +8923,7 @@
           124947.5425,
           6523.2007
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -9436,7 +9436,7 @@
           267319.2562,
           248451.0459
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6585005819797516,
       "signals": {
@@ -9957,7 +9957,7 @@
           155.13,
           43.494
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -10470,7 +10470,7 @@
           796.846,
           792.866
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -10983,7 +10983,7 @@
           2512.966,
           792.866
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -11496,7 +11496,7 @@
           5224.037,
           3305.832
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -12009,7 +12009,7 @@
           38676.202,
           3305.832
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -12522,7 +12522,7 @@
           164563.184,
           144914.155
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6612419247627258,
       "signals": {
@@ -13043,7 +13043,7 @@
           26176.8,
           84.1
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -13556,7 +13556,7 @@
           207559.5,
           1519.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -14069,7 +14069,7 @@
           1052523.8,
           209672.2
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -14582,7 +14582,7 @@
           5368872.7,
           1262525.4
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -15095,7 +15095,7 @@
           24149582.7,
           1262525.4
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -15608,7 +15608,7 @@
           49435571.2,
           44721107.9
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6595184206962585,
       "signals": {
@@ -16129,7 +16129,7 @@
           76753.0,
           21905.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -16642,7 +16642,7 @@
           1283828.0,
           21905.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -17155,7 +17155,7 @@
           1036643.0,
           1305733.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -17668,7 +17668,7 @@
           12059519.0,
           2345270.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -18181,7 +18181,7 @@
           41516637.0,
           2345270.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -18694,7 +18694,7 @@
           130808673.0,
           109318036.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6587080717086792,
       "signals": {
@@ -19215,7 +19215,7 @@
           7.476,
           7.438
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -19728,7 +19728,7 @@
           100.767,
           7.438
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -20241,7 +20241,7 @@
           574.232,
           108.205
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -20754,7 +20754,7 @@
           3247.473,
           682.437
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -21267,7 +21267,7 @@
           12925.688,
           682.437
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -21780,7 +21780,7 @@
           32341.035,
           29903.044
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6610138654708863,
       "signals": {
@@ -22301,7 +22301,7 @@
           10371.1,
           2193.0
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -22814,7 +22814,7 @@
           146162.4,
           2618.3
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -23327,7 +23327,7 @@
           790931.8,
           148907.3
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -23840,7 +23840,7 @@
           3534238.3,
           940232.7
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -24353,7 +24353,7 @@
           13570902.8,
           940232.7
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -24866,7 +24866,7 @@
           25243845.1,
           24090974.2
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6607158362865448,
       "signals": {
@@ -25387,7 +25387,7 @@
           332.075,
           23.197
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -25900,7 +25900,7 @@
           1825.086,
           23.197
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -26413,7 +26413,7 @@
           5892.685,
           1848.283
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -26926,7 +26926,7 @@
           54027.79,
           7740.968
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -27439,7 +27439,7 @@
           308673.963,
           7740.968
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -27952,7 +27952,7 @@
           647146.74,
           587261.796
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6569323718547821,
       "signals": {
@@ -28473,7 +28473,7 @@
           1638.3,
           117.6
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -28986,7 +28986,7 @@
           47620.6,
           117.6
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -29499,7 +29499,7 @@
           91316.9,
           47738.2
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -30012,7 +30012,7 @@
           715866.2,
           139055.1
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -30525,7 +30525,7 @@
           2219035.2,
           139055.1
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -31038,7 +31038,7 @@
           10783507.7,
           9132464.9
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6616107583045959,
       "signals": {
@@ -31559,7 +31559,7 @@
           9476.0,
           5723.4
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "5m": {
         "open": [
@@ -32072,7 +32072,7 @@
           98436.8,
           5768.1
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "15m": {
         "open": [
@@ -32585,7 +32585,7 @@
           436606.3,
           104204.9
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1h": {
         "open": [
@@ -33098,7 +33098,7 @@
           2796706.2,
           540811.2
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "4h": {
         "open": [
@@ -33611,7 +33611,7 @@
           13203876.6,
           540812.9
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "1d": {
         "open": [
@@ -34124,7 +34124,7 @@
           33496455.3,
           25723963.4
         ],
-        "timestamp": "2025-08-05 16:24:03"
+        "timestamp": "2025-08-05 16:25:56"
       },
       "ai_prediction": 0.6600457191467285,
       "signals": {
@@ -34141,7 +34141,7 @@
       "tech": 0.5,
       "ai": 0.6636056303977966,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "ETH/USDC": {
       "action": "neutral",
@@ -34149,7 +34149,7 @@
       "tech": 0.5,
       "ai": 0.6585005819797516,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "LTC/USDC": {
       "action": "neutral",
@@ -34157,7 +34157,7 @@
       "tech": 0.5,
       "ai": 0.6612419247627258,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "XRP/USDC": {
       "action": "neutral",
@@ -34165,7 +34165,7 @@
       "tech": 0.5,
       "ai": 0.6595184206962585,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "DOGE/USDC": {
       "action": "neutral",
@@ -34173,7 +34173,7 @@
       "tech": 0.5,
       "ai": 0.6587080717086792,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "BNB/USDC": {
       "action": "neutral",
@@ -34181,7 +34181,7 @@
       "tech": 0.5,
       "ai": 0.6610138654708863,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "ADA/USDC": {
       "action": "neutral",
@@ -34189,7 +34189,7 @@
       "tech": 0.5,
       "ai": 0.6607158362865448,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "SOL/USDC": {
       "action": "neutral",
@@ -34197,7 +34197,7 @@
       "tech": 0.5,
       "ai": 0.6569323718547821,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "TRX/USDC": {
       "action": "neutral",
@@ -34205,7 +34205,7 @@
       "tech": 0.5,
       "ai": 0.6616107583045959,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     },
     "SUI/USDC": {
       "action": "neutral",
@@ -34213,96 +34213,96 @@
       "tech": 0.5,
       "ai": 0.6600457191467285,
       "sentiment": 0.5,
-      "timestamp": "2025-08-05 16:23:30"
+      "timestamp": "2025-08-05 16:25:23"
     }
   },
   "cycle_metrics": {
-    "cycle": 2,
+    "cycle": 3,
     "regime": "Range/Scalping",
     "balance": 60.85659068,
-    "timestamp": "2025-08-05 16:23:30"
+    "timestamp": "2025-08-05 16:25:23"
   },
   "positions_binance": {
     "BTC/USDC": {
       "side": "long",
       "amount": 9e-05,
       "entry_price": 108157.62198198192,
-      "current_price": 113164.01,
-      "pnl_pct": 4.628788915913933,
-      "pnl_usd": 0.45057492162162643,
-      "value_usd": 10.1847609
+      "current_price": 113162.28,
+      "pnl_pct": 4.6271893984982455,
+      "pnl_usd": 0.4504192216216268,
+      "value_usd": 10.1846052
     },
     "LTC/USDC": {
       "side": "long",
       "amount": 0.102,
       "entry_price": 70.07813412060145,
-      "current_price": 122.95,
-      "pnl_pct": 75.44702287365179,
-      "pnl_usd": 5.392930319698652,
-      "value_usd": 12.540899999999999
+      "current_price": 123.16,
+      "pnl_pct": 75.74668838649006,
+      "pnl_usd": 5.414350319698651,
+      "value_usd": 12.56232
     },
     "ETH/USDC": {
       "side": "long",
       "amount": 0.0033,
       "entry_price": 3654.1087878787876,
-      "current_price": 3582.83,
-      "pnl_pct": -1.9506476685978749,
-      "pnl_usd": -0.23521999999999915,
-      "value_usd": 11.823338999999999
+      "current_price": 3584.27,
+      "pnl_pct": -1.9112399748593425,
+      "pnl_usd": -0.23046799999999898,
+      "value_usd": 11.828091
     },
     "BNB/USDC": {
       "side": "long",
       "amount": 0.02491006,
       "entry_price": 719.1871428571428,
-      "current_price": 750.65,
-      "pnl_pct": 4.374780257870495,
-      "pnl_usd": 0.7837416592000005,
-      "value_usd": 18.698736539
+      "current_price": 750.77,
+      "pnl_pct": 4.391465761941561,
+      "pnl_usd": 0.7867308664000006,
+      "value_usd": 18.7017257462
     },
     "TRX/USDC": {
       "side": "long",
       "amount": 37.2,
       "entry_price": 0.309744424778761,
-      "current_price": 0.331,
-      "pnl_pct": 6.862294692284153,
-      "pnl_usd": 0.7907073982300908,
-      "value_usd": 12.313200000000002
+      "current_price": 0.3312,
+      "pnl_pct": 6.926864054635979,
+      "pnl_usd": 0.79814739823009,
+      "value_usd": 12.320640000000001
     },
     "XRP/USDC": {
       "side": "long",
       "amount": 3.4,
       "entry_price": 3.29422,
-      "current_price": 2.9866,
-      "pnl_pct": -9.338174135303651,
-      "pnl_usd": -1.045908,
-      "value_usd": 10.154440000000001
+      "current_price": 2.9862,
+      "pnl_pct": -9.350316615162313,
+      "pnl_usd": -1.0472679999999999,
+      "value_usd": 10.153080000000001
     },
     "ADA/USDC": {
       "side": "long",
       "amount": 14.2,
       "entry_price": 0.83298,
-      "current_price": 0.7272,
-      "pnl_pct": -12.698984369372624,
-      "pnl_usd": -1.5020760000000013,
-      "value_usd": 10.326239999999999
+      "current_price": 0.7278,
+      "pnl_pct": -12.626953828423257,
+      "pnl_usd": -1.4935560000000005,
+      "value_usd": 10.33476
     },
     "FET/USDC": {
       "side": "long",
       "amount": 0.03230637,
       "entry_price": null,
-      "current_price": 0.644,
+      "current_price": 0.645,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.02080530228
+      "value_usd": 0.020837608650000002
     },
     "DOGE/USDC": {
       "side": "long",
       "amount": 23.0,
       "entry_price": 0.252465,
-      "current_price": 0.19941,
-      "pnl_pct": -21.014794129879384,
-      "pnl_usd": -1.2202649999999997,
-      "value_usd": 4.58643
+      "current_price": 0.19952,
+      "pnl_pct": -20.971223733982924,
+      "pnl_usd": -1.2177349999999998,
+      "value_usd": 4.58896
     },
     "LDBNB/USDC": {
       "side": "long",
@@ -34317,10 +34317,10 @@
       "side": "long",
       "amount": 0.058,
       "entry_price": 194.96943548387094,
-      "current_price": 164.45,
-      "pnl_pct": -15.653446094321644,
-      "pnl_usd": -1.770127258064515,
-      "value_usd": 9.5381
+      "current_price": 164.41,
+      "pnl_pct": -15.673962130540714,
+      "pnl_usd": -1.7724472580645148,
+      "value_usd": 9.53578
     },
     "NVT/USDC": {
       "side": "long",
@@ -34344,37 +34344,37 @@
       "side": "long",
       "amount": 3.85614,
       "entry_price": null,
-      "current_price": 9.548,
+      "current_price": 9.549,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 36.818424719999996
+      "value_usd": 36.82228086
     },
     "GALA/USDC": {
       "side": "long",
       "amount": 1484.74630755,
       "entry_price": null,
-      "current_price": 0.01514,
+      "current_price": 0.01515,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 22.479059096307
+      "value_usd": 22.4939065593825
     },
     "PEOPLE/USDC": {
       "side": "long",
       "amount": 397.59699569,
       "entry_price": null,
-      "current_price": 0.01761,
+      "current_price": 0.01764,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 7.001683094100901
+      "value_usd": 7.0136110039716
     },
     "LDO/USDC": {
       "side": "long",
       "amount": 28.28169,
       "entry_price": null,
-      "current_price": 0.899,
+      "current_price": 0.9,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 25.425239310000002
+      "value_usd": 25.453521000000002
     },
     "LUNC/USDC": {
       "side": "long",
@@ -34407,19 +34407,19 @@
       "side": "long",
       "amount": 5.2,
       "entry_price": 3.9549924242424246,
-      "current_price": 3.4092,
-      "pnl_pct": -13.800087729547823,
-      "pnl_usd": -2.8381206060606092,
-      "value_usd": 17.72784
+      "current_price": 3.408,
+      "pnl_pct": -13.830429127742278,
+      "pnl_usd": -2.8443606060606084,
+      "value_usd": 17.7216
     },
     "TON/USDC": {
       "side": "long",
       "amount": 0.087214,
       "entry_price": null,
-      "current_price": 3.255,
+      "current_price": 3.257,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.28388156999999997
+      "value_usd": 0.28405599800000003
     },
     "AEVO/USDC": {
       "side": "long",
@@ -34434,55 +34434,55 @@
       "side": "long",
       "amount": 0.35478462,
       "entry_price": null,
-      "current_price": 0.986,
+      "current_price": 0.988,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.34981763532
+      "value_usd": 0.35052720455999997
     },
     "ENA/USDC": {
       "side": "long",
       "amount": 2.85374308,
       "entry_price": null,
-      "current_price": 0.5813,
+      "current_price": 0.5817,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 1.6588808524040002
+      "value_usd": 1.660022349636
     },
     "SAGA/USDC": {
       "side": "long",
       "amount": 0.05435377,
       "entry_price": null,
-      "current_price": 0.2369,
+      "current_price": 0.2367,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.012876408113
+      "value_usd": 0.012865537359
     },
     "OMNI/USDC": {
       "side": "long",
       "amount": 0.05679375,
       "entry_price": null,
-      "current_price": 3.94,
+      "current_price": 3.95,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.223767375
+      "value_usd": 0.2243353125
     },
     "REZ/USDC": {
       "side": "long",
       "amount": 4.05396039,
       "entry_price": null,
-      "current_price": 0.01221,
+      "current_price": 0.01223,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.049498856361900004
+      "value_usd": 0.0495799355697
     },
     "NOT/USDC": {
       "side": "long",
       "amount": 1116.15,
       "entry_price": 0.01052,
-      "current_price": 0.002037,
-      "pnl_pct": -80.63688212927757,
-      "pnl_usd": -9.46830045,
-      "value_usd": 2.2735975500000003
+      "current_price": 0.002035,
+      "pnl_pct": -80.65589353612167,
+      "pnl_usd": -9.47053275,
+      "value_usd": 2.27136525
     },
     "LISTA/USDC": {
       "side": "long",
@@ -34497,10 +34497,10 @@
       "side": "long",
       "amount": 0.43377579,
       "entry_price": null,
-      "current_price": 0.547,
+      "current_price": 0.545,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.23727535713
+      "value_usd": 0.23640780555000002
     },
     "G/USDC": {
       "side": "long",
@@ -34542,10 +34542,10 @@
       "side": "long",
       "amount": 3.76301349,
       "entry_price": null,
-      "current_price": 0.0683,
+      "current_price": 0.0682,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.257013821367
+      "value_usd": 0.256637520018
     },
     "ME/USDC": {
       "side": "long",
@@ -34560,19 +34560,19 @@
       "side": "long",
       "amount": 5.47230677,
       "entry_price": null,
-      "current_price": 4.107,
+      "current_price": 4.11,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 22.474763904390002
+      "value_usd": 22.491180824700002
     },
     "BIO/USDC": {
       "side": "long",
       "amount": 0.79286793,
       "entry_price": null,
-      "current_price": 0.0579,
+      "current_price": 0.058,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.045907053147
+      "value_usd": 0.04598633994
     },
     "SOLV/USDC": {
       "side": "long",
@@ -34587,10 +34587,10 @@
       "side": "long",
       "amount": 2.50258947,
       "entry_price": null,
-      "current_price": 0.01616,
+      "current_price": 0.01614,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.040441845835200003
+      "value_usd": 0.040391794045800004
     },
     "LAYER/USDC": {
       "side": "long",
@@ -34605,28 +34605,28 @@
       "side": "long",
       "amount": 1.1566659,
       "entry_price": null,
-      "current_price": 0.02884,
+      "current_price": 0.02877,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.033358244556
+      "value_usd": 0.033277277943
     },
     "INIT/USDC": {
       "side": "long",
       "amount": 0.13870156,
       "entry_price": null,
-      "current_price": 0.4102,
+      "current_price": 0.409,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.056895379912
+      "value_usd": 0.056728938039999996
     },
     "WCT/USDC": {
       "side": "long",
       "amount": 0.18545852,
       "entry_price": null,
-      "current_price": 0.2953,
+      "current_price": 0.2946,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.054765900956
+      "value_usd": 0.05463607999199999
     },
     "SOPH/USDC": {
       "side": "long",
@@ -34641,10 +34641,10 @@
       "side": "long",
       "amount": 0.1179094,
       "entry_price": null,
-      "current_price": 0.4041,
+      "current_price": 0.4047,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.04764718854
+      "value_usd": 0.04771793418
     },
     "SIGN/USDC": {
       "side": "long",
@@ -34677,37 +34677,37 @@
       "side": "long",
       "amount": 0.17386141,
       "entry_price": null,
-      "current_price": 0.9037,
+      "current_price": 0.9022,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.157118556217
+      "value_usd": 0.156857764102
     },
     "HAEDAL/USDC": {
       "side": "long",
       "amount": 0.17714676,
       "entry_price": null,
-      "current_price": 0.1411,
+      "current_price": 0.1407,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.024995407836
+      "value_usd": 0.024924549131999995
     },
     "HUMA/USDC": {
       "side": "long",
       "amount": 2.49958419,
       "entry_price": null,
-      "current_price": 0.03362,
+      "current_price": 0.03358,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0840360204678
+      "value_usd": 0.0839360371002
     },
     "RESOLV/USDC": {
       "side": "long",
       "amount": 0.11578375,
       "entry_price": null,
-      "current_price": 0.1723,
+      "current_price": 0.1722,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.019949540125
+      "value_usd": 0.01993796175
     },
     "HOME/USDC": {
       "side": "long",
@@ -34722,73 +34722,73 @@
       "side": "long",
       "amount": 1.36076364,
       "entry_price": null,
-      "current_price": 0.122324,
+      "current_price": 0.122639,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.16645405149936002
+      "value_usd": 0.16688269204596
     },
     "NEWT/USDC": {
       "side": "long",
       "amount": 0.10083373,
       "entry_price": null,
-      "current_price": 0.358,
+      "current_price": 0.3592,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.03609847534
+      "value_usd": 0.036219475816
     },
     "SAHARA/USDC": {
       "side": "long",
       "amount": 1.00786376,
       "entry_price": null,
-      "current_price": 0.08866,
+      "current_price": 0.0886,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.0893572009616
+      "value_usd": 0.089296729136
     },
     "LA/USDC": {
       "side": "long",
       "amount": 0.16214933,
       "entry_price": null,
-      "current_price": 0.3069,
+      "current_price": 0.3065,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.049763629377000004
+      "value_usd": 0.049698769645
     },
     "ERA/USDC": {
       "side": "long",
       "amount": 0.34099158,
       "entry_price": null,
-      "current_price": 0.974,
+      "current_price": 0.9744,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.33212579892
+      "value_usd": 0.33226219555200004
     },
     "C/USDC": {
       "side": "long",
       "amount": 0.26255203,
       "entry_price": null,
-      "current_price": 0.2631,
+      "current_price": 0.2635,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.069077439093
+      "value_usd": 0.06918245990500001
     },
     "TREE/USDC": {
       "side": "long",
       "amount": 0.10868663,
       "entry_price": null,
-      "current_price": 0.4193,
+      "current_price": 0.4185,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.045572303959000006
+      "value_usd": 0.045485354655
     },
     "TOWNS/USDC": {
       "side": "long",
       "amount": 2.65771927,
       "entry_price": null,
-      "current_price": 0.03966,
+      "current_price": 0.04028,
       "pnl_pct": 0.0,
       "pnl_usd": 0.0,
-      "value_usd": 0.1054051462482
+      "value_usd": 0.1070529321956
     },
     "PROVE/USDC": {
       "side": "long",
@@ -34815,27 +34815,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 113085.09949999994,
-        "sma_50": 112938.54820000006,
-        "ema_20": 113083.37953023807,
-        "rsi_14": 60.20799788758527,
-        "macd": 65.35014615840919,
-        "macd_signal": 62.76632499814624,
-        "macd_hist": 2.58382116026295,
-        "bb_lower": 112902.05823571466,
-        "bb_upper": 113268.14076428521,
+        "sma_20": 113114.43199999996,
+        "sma_50": 112946.70960000005,
+        "ema_20": 113099.38464946927,
+        "rsi_14": 57.11827632096136,
+        "macd": 62.5406847235281,
+        "macd_signal": 63.20668540178868,
+        "macd_hist": -0.6660006782605805,
+        "bb_lower": 112988.7295305549,
+        "bb_upper": 113240.13446944501,
         "donchian_high": 113214.7,
-        "donchian_low": 112823.23,
+        "donchian_low": 112906.01,
         "psar": 113046.62475252752,
-        "momentum_10": 30.910000000003492,
-        "zscore_20": 1.059663694770438,
-        "vwma_20": 113053.69125171186,
+        "momentum_10": 78.55000000000291,
+        "zscore_20": 0.6222938438570789,
+        "vwma_20": 113099.34284426764,
         "obv": -244.63241,
         "vwap": 113782.81335737844,
-        "stochrsi": 42.78111256891674,
+        "stochrsi": 45.93168785365575,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.6020799788758527
+        "technical_score": 0.5711827632096136
       }
     },
     "5m | BTC/USDC": {
@@ -35037,27 +35037,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 3581.572,
-        "sma_50": 3570.703399999999,
-        "ema_20": 3580.740504680904,
-        "rsi_14": 57.337087416973596,
-        "macd": 3.9635252166131067,
-        "macd_signal": 4.174665824547286,
-        "macd_hist": -0.21114060793417888,
-        "bb_lower": 3570.819135078709,
-        "bb_upper": 3592.324864921291,
+        "sma_20": 3583.185,
+        "sma_50": 3571.336599999999,
+        "ema_20": 3581.4907079133927,
+        "rsi_14": 56.04285470594086,
+        "macd": 3.6312222773153735,
+        "macd_signal": 4.018945941091394,
+        "macd_hist": -0.3877236637760202,
+        "bb_lower": 3576.5379420030217,
+        "bb_upper": 3589.832057996978,
         "donchian_high": 3590.15,
-        "donchian_low": 3565.48,
+        "donchian_low": 3570.0,
         "psar": 3579.872312,
-        "momentum_10": 0.07999999999992724,
-        "zscore_20": 0.5289966182656785,
-        "vwma_20": 3581.9132630786244,
+        "momentum_10": 4.440000000000055,
+        "zscore_20": 0.25074278485643303,
+        "vwma_20": 3583.0461538009545,
         "obv": -15535.474400000006,
         "vwap": 3613.696702160016,
-        "stochrsi": 28.559366522818777,
+        "stochrsi": 35.908217824975914,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.573370874169736
+        "technical_score": 0.5604285470594086
       }
     },
     "5m | ETH/USDC": {
@@ -35259,27 +35259,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 122.87850000000006,
-        "sma_50": 122.3519999999999,
-        "ema_20": 122.95836674844692,
-        "rsi_14": 59.358648711439365,
-        "macd": 0.3483223977178369,
-        "macd_signal": 0.30909864293149597,
-        "macd_hist": 0.039223754786340936,
-        "bb_lower": 121.79880976664899,
-        "bb_upper": 123.95819023335113,
+        "sma_20": 122.95000000000005,
+        "sma_50": 122.3885999999999,
+        "ema_20": 122.97458139725474,
+        "rsi_14": 55.538783858999096,
+        "macd": 0.2800919638052193,
+        "macd_signal": 0.3029787431871783,
+        "macd_hist": -0.022886779381959044,
+        "bb_lower": 121.9318644490999,
+        "bb_upper": 123.96813555090019,
         "donchian_high": 123.93,
         "donchian_low": 122.08,
         "psar": 123.22325481377791,
-        "momentum_10": 0.8299999999999983,
-        "zscore_20": 0.6526809351044013,
-        "vwma_20": 122.87592990190247,
+        "momentum_10": 0.19999999999998863,
+        "zscore_20": 0.2871953838427208,
+        "vwma_20": 122.8948576154067,
         "obv": 7432.923999999996,
         "vwap": 124.85268743736,
-        "stochrsi": 40.68973033231429,
+        "stochrsi": 16.496886232156466,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.5935864871143937
+        "technical_score": 0.555387838589991
       }
     },
     "5m | LTC/USDC": {
@@ -35481,27 +35481,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 2.981665000000001,
-        "sma_50": 2.9742579999999963,
-        "ema_20": 2.9812867287605247,
-        "rsi_14": 61.01462554828218,
-        "macd": 0.003537679355820167,
-        "macd_signal": 0.0030513258039984023,
-        "macd_hist": 0.00048635355182176463,
-        "bb_lower": 2.973089389233291,
-        "bb_upper": 2.990240610766711,
+        "sma_20": 2.9830250000000005,
+        "sma_50": 2.9745959999999965,
+        "ema_20": 2.982305462772221,
+        "rsi_14": 56.8767687443167,
+        "macd": 0.0034916588795046444,
+        "macd_signal": 0.0032303787700886217,
+        "macd_hist": 0.0002612801094160227,
+        "bb_lower": 2.976060841757108,
+        "bb_upper": 2.989989158242893,
         "donchian_high": 2.9899,
-        "donchian_low": 2.9699,
+        "donchian_low": 2.9719,
         "psar": 2.97900955157556,
-        "momentum_10": 0.006599999999999717,
-        "zscore_20": 1.6218874562532846,
-        "vwma_20": 2.981406909837834,
+        "momentum_10": 0.005600000000000271,
+        "zscore_20": 0.8327413644080851,
+        "vwma_20": 2.9818869320956742,
         "obv": -3041034.9000000004,
         "vwap": 3.00348063662975,
-        "stochrsi": 41.89994491431146,
+        "stochrsi": 49.1267972947955,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.6101462554828219
+        "technical_score": 0.568767687443167
       }
     },
     "5m | XRP/USDC": {
@@ -35703,27 +35703,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.19906349999999956,
-        "sma_50": 0.19840260000000018,
-        "ema_20": 0.19904617284784576,
-        "rsi_14": 62.0891576782677,
-        "macd": 0.00029086802853084404,
-        "macd_signal": 0.00026912908217901463,
-        "macd_hist": 2.1738946351829407e-05,
-        "bb_lower": 0.19830188920656505,
-        "bb_upper": 0.19982511079343407,
+        "sma_20": 0.19919849999999956,
+        "sma_50": 0.1984428000000002,
+        "ema_20": 0.19913557459880343,
+        "rsi_14": 61.3523063646903,
+        "macd": 0.000292610901559881,
+        "macd_signal": 0.00027804842873767127,
+        "macd_hist": 1.4562472822209744e-05,
+        "bb_lower": 0.1986576016725144,
+        "bb_upper": 0.19973939832748472,
         "donchian_high": 0.19963,
-        "donchian_low": 0.19805,
-        "psar": 0.19910080000000002,
-        "momentum_10": 0.0003100000000000047,
-        "zscore_20": 1.2196117880815605,
-        "vwma_20": 0.19912774973368505,
+        "donchian_low": 0.19823,
+        "psar": 0.19925659648000002,
+        "momentum_10": 0.0004800000000000082,
+        "zscore_20": 1.1586629968170727,
+        "vwma_20": 0.1991905417924981,
         "obv": -8361315.0,
         "vwap": 0.20303087708985987,
-        "stochrsi": 51.62359959322013,
+        "stochrsi": 66.02563727458893,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.620891576782677
+        "technical_score": 0.613523063646903
       }
     },
     "5m | DOGE/USDC": {
@@ -35925,27 +35925,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 750.0054999999991,
-        "sma_50": 749.0554000000006,
-        "ema_20": 750.0719562280116,
-        "rsi_14": 58.879175523515705,
-        "macd": 0.493370713956665,
-        "macd_signal": 0.44540793988169536,
-        "macd_hist": 0.04796277407496963,
-        "bb_lower": 748.4412433050989,
-        "bb_upper": 751.5697566948993,
+        "sma_20": 750.237499999999,
+        "sma_50": 749.0514000000006,
+        "ema_20": 750.1795378646534,
+        "rsi_14": 57.76522342428186,
+        "macd": 0.4626297710071867,
+        "macd_signal": 0.45281790285411594,
+        "macd_hist": 0.00981186815307078,
+        "bb_lower": 749.1143815699849,
+        "bb_upper": 751.3606184300132,
         "donchian_high": 751.5,
-        "donchian_low": 747.64,
+        "donchian_low": 748.65,
         "psar": 749.6220190093591,
-        "momentum_10": 0.6600000000000819,
-        "zscore_20": 1.015020620622464,
-        "vwma_20": 750.0474694889897,
+        "momentum_10": 0.5299999999999727,
+        "zscore_20": 0.9068856721106088,
+        "vwma_20": 750.164108222671,
         "obv": 874.8220000000007,
         "vwap": 754.1981275767031,
-        "stochrsi": 24.086983828352885,
+        "stochrsi": 24.721165891548868,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.588791755235157
+        "technical_score": 0.5776522342428185
       }
     },
     "5m | BNB/USDC": {
@@ -36147,27 +36147,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.7252999999999997,
-        "sma_50": 0.723198,
-        "ema_20": 0.7254725088673077,
-        "rsi_14": 62.26396640969346,
-        "macd": 0.001140396841623037,
-        "macd_signal": 0.0009101580058966076,
-        "macd_hist": 0.00023023883572642937,
-        "bb_lower": 0.7222301465827373,
-        "bb_upper": 0.7283698534172621,
+        "sma_20": 0.7258099999999998,
+        "sma_50": 0.723344,
+        "ema_20": 0.7258652510228982,
+        "rsi_14": 60.018569463868175,
+        "macd": 0.0011735560703827197,
+        "macd_signal": 0.001007444443869845,
+        "macd_hist": 0.0001661116265128746,
+        "bb_lower": 0.7230634385127356,
+        "bb_upper": 0.7285565614872641,
         "donchian_high": 0.728,
-        "donchian_low": 0.7216,
-        "psar": 0.7249417117514005,
+        "donchian_low": 0.723,
+        "psar": 0.7255227865186344,
         "momentum_10": 0.0027000000000000357,
-        "zscore_20": 1.524001524013384,
-        "vwma_20": 0.7245397684552444,
+        "zscore_20": 1.1284948896036355,
+        "vwma_20": 0.7245963471816393,
         "obv": 1296688.0999999999,
         "vwap": 0.7340863937940134,
-        "stochrsi": 50.98938721207662,
+        "stochrsi": 58.7396838086319,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.6226396640969346
+        "technical_score": 0.6001856946386818
       }
     },
     "5m | ADA/USDC": {
@@ -36369,27 +36369,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 164.14499999999992,
-        "sma_50": 163.81980000000013,
-        "ema_20": 164.11678951317737,
-        "rsi_14": 61.604540116012494,
-        "macd": 0.1368628901577722,
-        "macd_signal": 0.11258080517966071,
-        "macd_hist": 0.02428208497811149,
-        "bb_lower": 163.71221829992732,
-        "bb_upper": 164.57778170007253,
+        "sma_20": 164.21949999999993,
+        "sma_50": 163.8390000000001,
+        "ema_20": 164.1860340459343,
+        "rsi_14": 59.44452356767499,
+        "macd": 0.15829861805150358,
+        "macd_signal": 0.12811789801968165,
+        "macd_hist": 0.030180720031821928,
+        "bb_lower": 163.8273023458427,
+        "bb_upper": 164.61169765415715,
         "donchian_high": 164.58,
-        "donchian_low": 163.61,
-        "psar": 163.8646,
-        "momentum_10": 0.21999999999999886,
-        "zscore_20": 1.7791804804880689,
-        "vwma_20": 164.079581461742,
-        "obv": -21532.653999999988,
-        "vwap": 166.61696717590388,
-        "stochrsi": 68.08796393640819,
+        "donchian_low": 163.84,
+        "psar": 163.89292984,
+        "momentum_10": 0.38999999999998636,
+        "zscore_20": 1.245072201197856,
+        "vwma_20": 164.17447654540234,
+        "obv": -21532.991999999987,
+        "vwap": 166.6169652289203,
+        "stochrsi": 93.19419710583861,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.616045401160125
+        "technical_score": 0.5944452356767499
       }
     },
     "5m | SOL/USDC": {
@@ -36591,27 +36591,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.330875,
+        "sma_20": 0.33094,
         "sma_50": 0.3306420000000008,
-        "ema_20": 0.3308799075191667,
-        "rsi_14": 57.07762260170791,
-        "macd": 0.00013737323604134932,
-        "macd_signal": 0.00012331139541933567,
-        "macd_hist": 1.4061840622013648e-05,
-        "bb_lower": 0.3304560727987806,
-        "bb_upper": 0.33129392720121936,
+        "ema_20": 0.33092935740231105,
+        "rsi_14": 63.47702943576963,
+        "macd": 0.00014351653014760268,
+        "macd_signal": 0.00012957808256881218,
+        "macd_hist": 1.3938447578790505e-05,
+        "bb_lower": 0.33057448666249184,
+        "bb_upper": 0.3313055133375082,
         "donchian_high": 0.3314,
-        "donchian_low": 0.3303,
+        "donchian_low": 0.3306,
         "psar": 0.33094832781393746,
-        "momentum_10": 9.999999999998899e-05,
-        "zscore_20": 0.5816520336963222,
-        "vwma_20": 0.3309583139553281,
+        "momentum_10": 0.00029999999999996696,
+        "zscore_20": 1.3866342311140492,
+        "vwma_20": 0.33101363702441755,
         "obv": -1392360.9000000008,
         "vwap": 0.33216443456916117,
-        "stochrsi": 4.914008870185612,
+        "stochrsi": 24.483311375054782,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.5707762260170791
+        "technical_score": 0.6347702943576963
       }
     },
     "5m | TRX/USDC": {
@@ -36628,27 +36628,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 0.33102000000000004,
-        "sma_50": 0.33207599999999987,
-        "ema_20": 0.3310880267330224,
-        "rsi_14": 45.49237370493338,
-        "macd": -0.0003943602302157734,
-        "macd_signal": -0.0004593006693539942,
-        "macd_hist": 6.494043913822083e-05,
-        "bb_lower": 0.3299681444964808,
-        "bb_upper": 0.33207185550351925,
+        "sma_20": 0.3310100000000001,
+        "sma_50": 0.33204399999999984,
+        "ema_20": 0.33108916704416314,
+        "rsi_14": 47.14666725126448,
+        "macd": -0.0003465024919114268,
+        "macd_signal": -0.0004367410338654807,
+        "macd_hist": 9.023854195405393e-05,
+        "bb_lower": 0.3299652033689904,
+        "bb_upper": 0.3320547966310098,
         "donchian_high": 0.3321,
         "donchian_low": 0.3297,
-        "psar": 0.3297,
-        "momentum_10": -0.0005000000000000004,
-        "zscore_20": -0.03706514559621421,
-        "vwma_20": 0.3308806326590069,
-        "obv": -2060705.1000000015,
-        "vwap": 0.33215987948340797,
-        "stochrsi": 93.8966503369076,
+        "psar": 0.32973399999999997,
+        "momentum_10": 0.0,
+        "zscore_20": 0.16792004588526074,
+        "vwma_20": 0.33086052484621065,
+        "obv": -2052132.3000000014,
+        "vwap": 0.33215719130343946,
+        "stochrsi": 99.99999999999993,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.45492373704933375
+        "technical_score": 0.47146667251264485
       }
     },
     "15m | TRX/USDC": {
@@ -36813,27 +36813,27 @@
       },
       "dominant_signal": "ATTENTE",
       "ta": {
-        "sma_20": 3.402825,
-        "sma_50": 3.3938620000000066,
-        "ema_20": 3.4017367326731525,
-        "rsi_14": 58.776354316221735,
-        "macd": 0.003788209664850495,
-        "macd_signal": 0.0032857441355985096,
-        "macd_hist": 0.0005024655292519852,
-        "bb_lower": 3.3922613121928626,
-        "bb_upper": 3.4133886878071373,
-        "donchian_high": 3.4124,
-        "donchian_low": 3.3835,
-        "psar": 3.3976064322395714,
-        "momentum_10": 0.014600000000000168,
-        "zscore_20": 1.3609377640826161,
-        "vwma_20": 3.402837551502806,
-        "obv": -2703521.000000001,
-        "vwap": 3.4590044483790803,
-        "stochrsi": 54.54951302763917,
+        "sma_20": 3.4046899999999996,
+        "sma_50": 3.394086000000007,
+        "ema_20": 3.403599910419519,
+        "rsi_14": 58.837044895593735,
+        "macd": 0.0043354466272909065,
+        "macd_signal": 0.003641631018932648,
+        "macd_hist": 0.0006938156083582583,
+        "bb_lower": 3.3950528012322634,
+        "bb_upper": 3.4143271987677357,
+        "donchian_high": 3.4129,
+        "donchian_low": 3.3956,
+        "psar": 3.3985022114509884,
+        "momentum_10": 0.00890000000000013,
+        "zscore_20": 1.3168065274381129,
+        "vwma_20": 3.4041547777899335,
+        "obv": -2702749.500000001,
+        "vwap": 3.4590022691644178,
+        "stochrsi": 76.32931309213795,
         "kc_upper": null,
         "kc_lower": null,
-        "technical_score": 0.5877635431622174
+        "technical_score": 0.5883704489559374
       }
     },
     "5m | SUI/USDC": {
@@ -37045,15 +37045,15 @@
     "max_drawdown": 0.0
   },
   "pause_status": {
-    "global_remaining": 13,
+    "global_remaining": 12,
     "pair_pauses": {
-      "BTC": 6,
-      "LINK": 28,
-      "ETH": 6,
-      "SOL": 28,
-      "XRP": 6,
-      "DOGE": 28
+      "BTC": 5,
+      "LINK": 27,
+      "ETH": 5,
+      "SOL": 27,
+      "XRP": 5,
+      "DOGE": 27
     },
-    "max_remaining": 28
+    "max_remaining": 27
   }
 }

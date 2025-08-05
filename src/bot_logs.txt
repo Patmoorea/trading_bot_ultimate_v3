@@ -159617,3 +159617,13 @@
 2025-08-05T16:22:15.492339 | 🚫 Cycle bloqué - Pause news active
 2025-08-05T16:24:03.315448 | Démarrage cycle trading
 2025-08-05T16:24:03.346780 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T16:25:56.557041 | Démarrage cycle trading
+2025-08-05T16:25:56.582932 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T16:27:06.657258 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T16:27:06.662832 | Initialisation des modèles d'IA...
+2025-08-05T16:27:07.113792 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T16:27:08.645270 | ✅ PPO Strategy initialized successfully
+2025-08-05T16:27:08.653773 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T16:27:08.653849 | ✅ Trading en direct: True
+2025-08-05T16:27:08.653892 | ✅ IA activée: True
+2025-08-05T16:27:08.653930 | ✅ Analyse de news activée: True
