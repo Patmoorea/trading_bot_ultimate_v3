@@ -426,6 +426,34 @@ with tab1:
         )
         st.markdown("#### ⏸️ Pauses actives détaillées")
         df_pauses = pd.DataFrame(active_pauses)
+
+        # === PATCH : TRADUCTION FRANÇAISE DES TYPES ET RAISONS ===
+        pause_type_map = {
+            "news": "Pause News",
+            "impact": "Impact fort",
+            "volatility": "Volatilité extrême",
+            "global": "Pause Globale",
+            "sentiment": "Sentiment critique",
+            "regime": "Changement de régime",
+        }
+        reason_map = {
+            "news": "Pause suite à une news critique",
+            "impact": "Impact de marché important",
+            "volatility": "Volatilité trop élevée",
+            "global": "Pause globale du système",
+            "sentiment": "Sentiment négatif détecté",
+            "regime": "Changement de régime de marché",
+        }
+
+        if "type" in df_pauses.columns:
+            df_pauses["type"] = df_pauses["type"].map(
+                lambda x: pause_type_map.get(x, str(x))
+            )
+        if "reason" in df_pauses.columns:
+            df_pauses["reason"] = df_pauses["reason"].map(
+                lambda x: reason_map.get(x, str(x))
+            )
+
         st.dataframe(df_pauses, use_container_width=True)
 
     st.divider()
