@@ -160248,3 +160248,33 @@
 2025-08-05T18:08:31.006647 | ✅ Trading en direct: True
 2025-08-05T18:08:31.006684 | ✅ IA activée: True
 2025-08-05T18:08:31.006719 | ✅ Analyse de news activée: True
+2025-08-05T18:10:39.403966 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T18:12:04.864919 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0613 | Tendance: -0.0026
+2025-08-05T18:12:04.877707 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T18:12:04.942073 | Démarrage cycle trading
+2025-08-05T18:12:04.961708 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:13:25.128614 | [NEWS] Score sentiment global: 0.31 | Impact: 0.58 | Événements: The Daily: Brit who accidentally dumped 8,000 BTC isn’t done chasing his lost fortune, Solana Mobile begins shipping second-gen Seeker smartphones, and more;  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis
+2025-08-05T18:13:54.620471 | Démarrage cycle trading
+2025-08-05T18:13:54.660474 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:15:46.789833 | Démarrage cycle trading
+2025-08-05T18:15:46.831832 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:17:39.927425 | Démarrage cycle trading
+2025-08-05T18:17:39.960883 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:19:31.147211 | Démarrage cycle trading
+2025-08-05T18:19:31.182543 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:19:57.503545 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T18:19:57.510224 | Initialisation des modèles d'IA...
+2025-08-05T18:19:57.958609 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T18:19:59.683960 | ✅ PPO Strategy initialized successfully
+2025-08-05T18:19:59.701294 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T18:19:59.701363 | ✅ Trading en direct: True
+2025-08-05T18:19:59.701412 | ✅ IA activée: True
+2025-08-05T18:19:59.701456 | ✅ Analyse de news activée: True
+2025-08-05T18:21:59.169492 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T18:23:22.117517 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0613 | Tendance: -0.0025
+2025-08-05T18:23:22.128286 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T18:23:22.203614 | Démarrage cycle trading
+2025-08-05T18:23:22.229985 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T18:24:40.981691 | [NEWS] Score sentiment global: 0.29 | Impact: 0.57 | Événements: The Daily: Brit who accidentally dumped 8,000 BTC isn’t done chasing his lost fortune, Solana Mobile begins shipping second-gen Seeker smartphones, and more;  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis
+2025-08-05T18:25:10.820357 | Démarrage cycle trading
+2025-08-05T18:25:10.870367 | 🚫 Cycle bloqué - Pause news active

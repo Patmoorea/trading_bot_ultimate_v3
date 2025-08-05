@@ -536,7 +536,6 @@ with tab1:
     else:
         st.info("Aucune opportunité d'arbitrage détectée ce cycle.")
 
-# --- TAB2 GRAPHIQUES ---
 with tab2:
     st.subheader("Analyse graphique avancée")
     pairs = list(shared_data.get("market_data", {}).keys()) or ["BTCUSDT", "ETHUSDT"]
@@ -569,12 +568,16 @@ with tab2:
             if isinstance(lows, (int, float)):
                 lows = [lows]
 
-            # 3. Conversion des timestamps en datetime
+            # 3. Conversion des timestamps en datetime (PATCH ms/s)
             try:
                 if isinstance(timestamps[0], str):
                     timestamps = pd.to_datetime(timestamps)
                 elif isinstance(timestamps[0], (int, float)):
-                    timestamps = pd.to_datetime(timestamps, unit="s")
+                    # PATCH: si timestamp > 1e12, c'est en ms
+                    if timestamps[0] > 1e12:
+                        timestamps = pd.to_datetime(timestamps, unit="ms")
+                    else:
+                        timestamps = pd.to_datetime(timestamps, unit="s")
             except Exception as e:
                 print(f"Erreur conversion timestamps: {e}")
                 timestamps = pd.date_range(
