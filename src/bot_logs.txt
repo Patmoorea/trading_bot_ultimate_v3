@@ -160150,3 +160150,35 @@
 2025-08-05T16:59:35.654928 | Démarrage cycle trading
 2025-08-05T17:00:07.180583 | Démarrage cycle trading
 2025-08-05T17:00:38.821020 | Démarrage cycle trading
+2025-08-05T17:02:34.234342 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T17:02:34.247193 | Initialisation des modèles d'IA...
+2025-08-05T17:02:34.701677 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T17:02:36.267514 | ✅ PPO Strategy initialized successfully
+2025-08-05T17:02:36.283237 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T17:02:36.283293 | ✅ Trading en direct: True
+2025-08-05T17:02:36.283336 | ✅ IA activée: True
+2025-08-05T17:02:36.283373 | ✅ Analyse de news activée: True
+2025-08-05T17:04:34.019898 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T17:05:53.065724 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0590 | Tendance: -0.0029
+2025-08-05T17:05:53.078413 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T17:05:53.156920 | Démarrage cycle trading
+2025-08-05T17:05:53.178691 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:07:13.046959 | [NEWS] Score sentiment global: 0.27 | Impact: 0.57 | Événements:  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis; SEC updates staff guidance on accounting rules for USD stablecoins: Bloomberg
+2025-08-05T17:07:42.512466 | Démarrage cycle trading
+2025-08-05T17:07:42.542139 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:09:33.020290 | Démarrage cycle trading
+2025-08-05T17:09:33.057510 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:11:21.953522 | Démarrage cycle trading
+2025-08-05T17:11:21.988045 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:13:09.739158 | Démarrage cycle trading
+2025-08-05T17:13:09.774280 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:15:02.196963 | Démarrage cycle trading
+2025-08-05T17:15:02.228564 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:16:52.815744 | Démarrage cycle trading
+2025-08-05T17:16:52.847993 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:18:42.523678 | Démarrage cycle trading
+2025-08-05T17:18:42.566750 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:20:32.229510 | Démarrage cycle trading
+2025-08-05T17:20:32.261879 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T17:22:21.246674 | Démarrage cycle trading
+2025-08-05T17:22:21.281343 | 🚫 Cycle bloqué - Pause news active
