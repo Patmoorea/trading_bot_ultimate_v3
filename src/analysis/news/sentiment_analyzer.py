@@ -17,7 +17,7 @@ from typing import Any, List, Dict, Optional, Set
 
 
 class SymbolExtractor:
-    self.symbol_mapping = symbol_mapping or {
+    DEFAULT_MAPPING = {
         "bitcoin": "BTC",
         "btc": "BTC",
         "ethereum": "ETH",
@@ -53,6 +53,9 @@ class SymbolExtractor:
     }
 
     def __init__(self, symbol_mapping: Optional[Dict[str, str]] = None):
+        self.symbol_mapping = (
+            symbol_mapping if symbol_mapping is not None else self.DEFAULT_MAPPING
+        )
         self.known_tickers = set(self.symbol_mapping.values())
         self.regex_patterns = [
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
