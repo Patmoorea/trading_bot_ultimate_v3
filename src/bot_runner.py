@@ -5988,7 +5988,7 @@ async def run_clean_bot():
                 print(f"[WARNING] Erreur init indicators: {e}")
                 orderflow_indicators = None
 
-            # Mise à jour des données pour chaque paire et timeframe
+            # PATCH CORRECTIF - Mise à jour des données OHLCV pour chaque paire et timeframe
             for pair in bot.pairs_valid:
                 pair_key = pair.replace("/", "").upper()
                 print(f"\n[DEBUG] Traitement de {pair_key}...")
@@ -5998,15 +5998,65 @@ async def run_clean_bot():
 
                 for tf in bot.config["TRADING"]["timeframes"]:
                     print(f"[DEBUG] Timeframe {tf}...")
-                    if tf not in bot.market_data[pair_key]:
-                        bot.market_data[pair_key][tf] = {
-                            "signals": {
+
+                    df = bot.ws_collector.get_dataframe(pair_key, tf)
+                    if df is not None and not df.empty:
+                        required_cols = [
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                            "timestamp",
+                        ]
+                        if all(col in df.columns for col in required_cols):
+                            # PATCH: Correction taille timestamp
+                            if len(df["timestamp"]) != len(df["close"]):
+                                # Si l'index est datetime et de la bonne taille, prends-le
+                                if (
+                                    hasattr(df.index, "dtype")
+                                    and np.issubdtype(df.index.dtype, np.datetime64)
+                                    and len(df.index) == len(df["close"])
+                                ):
+                                    df["timestamp"] = df.index
+                                else:
+                                    # Génère une série régulière
+                                    df["timestamp"] = pd.date_range(
+                                        end=pd.Timestamp.utcnow(),
+                                        periods=len(df["close"]),
+                                        freq="T",
+                                    )
+
+                            # Conversion explicite des colonnes en listes
+                            ohlcv_dict = {
+                                "open": df["open"].tolist(),
+                                "high": df["high"].tolist(),
+                                "low": df["low"].tolist(),
+                                "close": df["close"].tolist(),
+                                "volume": df["volume"].tolist(),
+                                "timestamp": [
+                                    int(pd.Timestamp(t).timestamp())
+                                    for t in df["timestamp"]
+                                ],
+                            }
+                            # Mise à jour ou création de la structure
+                            bot.market_data[pair_key][tf] = ohlcv_dict
+
+                            # Update signals
+                            indicators_data = bot.add_indicators(df)
+                            bot.market_data[pair_key][tf]["signals"] = {
                                 "technical": {
+                                    "score": float(
+                                        indicators_data.get("technical_score", 0.5)
+                                    ),
+                                    "details": indicators_data,
+                                    "factors": len(indicators_data),
+                                },
+                                "momentum": {
                                     "score": 0.5,
                                     "details": {},
                                     "factors": 0,
                                 },
-                                "momentum": {"score": 0.5, "details": {}, "factors": 0},
                                 "orderflow": {
                                     "score": 0.5,
                                     "details": {},
@@ -6021,103 +6071,12 @@ async def run_clean_bot():
                                     bot.market_data[pair_key].get("sentiment", 0.5)
                                 ),
                             }
-                        }
 
-                    df = bot.ws_collector.get_dataframe(pair_key, tf)
-                    if df is not None and not df.empty:
-                        required_cols = [
-                            "open",
-                            "high",
-                            "low",
-                            "close",
-                            "volume",
-                            "timestamp",
-                        ]
-                        if all(col in df.columns for col in required_cols):
-                            indicators_data = bot.add_indicators(df)
-                            if indicators_data is None:
-                                indicators_data = {}
-
+                            # DEBUG optionnel
                             print(f"[DEBUG] {pair_key}-{tf} Indicateurs calculés:")
                             print(
                                 f"- Technical score: {indicators_data.get('technical_score', 0.5)}"
                             )
-
-                            bot.market_data[pair_key][tf].update(
-                                {
-                                    "open": df["open"].tolist(),
-                                    "high": df["high"].tolist(),
-                                    "low": df["low"].tolist(),
-                                    "close": df["close"].tolist(),
-                                    "volume": df["volume"].tolist(),
-                                    "timestamp": [
-                                        int(pd.Timestamp(t).timestamp())
-                                        for t in df["timestamp"]
-                                    ],
-                                    "signals": {
-                                        "technical": {
-                                            "score": float(
-                                                indicators_data.get(
-                                                    "technical_score", 0.5
-                                                )
-                                            ),
-                                            "details": indicators_data,
-                                            "factors": len(indicators_data),
-                                        },
-                                        "momentum": {
-                                            "score": 0.5,
-                                            "details": {},
-                                            "factors": 0,
-                                        },
-                                        "orderflow": {
-                                            "score": 0.5,
-                                            "details": {},
-                                            "factors": 0,
-                                            "liquidity": 0.5,
-                                            "market_pressure": 0.5,
-                                        },
-                                        "ai": float(
-                                            bot.market_data[pair_key].get(
-                                                "ai_prediction", 0.5
-                                            )
-                                        ),
-                                        "sentiment": float(
-                                            bot.market_data[pair_key].get(
-                                                "sentiment", 0.5
-                                            )
-                                        ),
-                                    },
-                                }
-                            )
-
-            # 5. === ANALYSE DU MARCHÉ ===
-            print("\n[DEBUG] Analyse du marché...")
-            regime, market_data, indicators = await bot.study_market("7d")
-            strategy = bot.choose_strategy(regime, indicators)
-            log_dashboard(f"🎯 Stratégie: {strategy}")
-            news_list = []
-            try:
-                with open(self.data_file, "r") as f:
-                    shared_data = json.load(f)
-                    news_sentiment = shared_data.get("sentiment", {})
-                    news_list = news_sentiment.get("scores", [])
-
-                print(f"\n[DEBUG] News disponibles: {len(news_list)}")
-                if news_list:
-                    print("Premières news:")
-                    for news in news_list[:3]:
-                        print(
-                            f"- {news.get('title')} | Sentiment: {news.get('sentiment')} | Processed: {news.get('processed')}"
-                        )
-
-                unprocessed_news = [n for n in news_list if not n.get("processed")]
-                print(f"News non traitées: {len(unprocessed_news)}")
-
-                if unprocessed_news:
-                    triggered = self.news_pause_manager.scan_news(unprocessed_news)
-                    print(f"Scan_news résultat: {triggered}")
-            except Exception as e:
-                print(f"[ERROR] Erreur analyse news: {e}")
 
             # 6. === INITIALISATION DES DÉCISIONS ===
             trade_decisions = []
