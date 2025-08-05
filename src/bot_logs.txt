@@ -156295,3 +156295,12 @@
 2025-08-05T01:11:20.682813 | [NEWS CHECK] ⚠️ News sans symboles: Bernstein says SEC’s Project Crypto could rewrite the rules of Wall Street
 2025-08-05T01:11:20.682835 | [NEWS CHECK] ⚠️ News sans symboles: Ethena’s USDe jumps to third-largest stablecoin as market cap surges 75% to $9.3
 2025-08-05T01:11:20.682855 | [NEWS CHECK] ⚠️ News sans symboles: CFTC kicks off new ‘Sprint’ initiative to advance Trump’s crypto regulatory road
+2025-08-05T03:09:06.983039 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T03:09:06.996152 | Initialisation des modèles d'IA...
+2025-08-05T03:09:07.541487 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T03:09:09.169998 | ✅ PPO Strategy initialized successfully
+2025-08-05T03:09:09.186577 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T03:09:09.186644 | ✅ Trading en direct: True
+2025-08-05T03:09:09.186680 | ✅ IA activée: True
+2025-08-05T03:09:09.186713 | ✅ Analyse de news activée: True
+2025-08-05T03:11:04.128363 | [NEWS] Lancement boucle d'analyse des news…
