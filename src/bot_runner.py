@@ -6020,6 +6020,8 @@ async def run_clean_bot():
                                         periods=len(df["close"]),
                                         freq="T",
                                     )
+
+                            # === PATCH FONDAMENTAL : timestamp DOIT être une LISTE d'entiers UNIX ===
                             ohlcv_dict = {
                                 "open": df["open"].tolist(),
                                 "high": df["high"].tolist(),
@@ -6031,12 +6033,14 @@ async def run_clean_bot():
                                     for t in df["timestamp"]
                                 ],
                             }
+
+                            # Initialisation de la structure si besoin
                             if tf not in bot.market_data[pair_key]:
                                 bot.market_data[pair_key][tf] = {
                                     k: [] for k in ohlcv_dict
                                 }
 
-                            # PATCH: Ajout SANS DOUBLONS, accumulation des bougies
+                            # Accumulation SANS DOUBLONS
                             last_ts = (
                                 bot.market_data[pair_key][tf]["timestamp"][-1]
                                 if bot.market_data[pair_key][tf]["timestamp"]
@@ -6064,13 +6068,15 @@ async def run_clean_bot():
                                     [ohlcv_dict[k][i] for i in new_indices]
                                 )
 
-                            # (Optionnel) print pour debug
+                            # DEBUG : Vérifie la taille des listes après update
                             print(
-                                f"[DEBUG] {pair_key}-{tf} bougies après update :",
-                                len(bot.market_data[pair_key][tf]["close"]),
+                                f"[DEBUG] {pair_key}-{tf} nb bougies : {len(bot.market_data[pair_key][tf]['close'])}"
+                            )
+                            print(
+                                f"[DEBUG] {pair_key}-{tf} timestamp (type): {type(bot.market_data[pair_key][tf]['timestamp'])}"
                             )
 
-                            # Calcul des indicateurs et signaux (inchangé)
+                            # Calcul des indicateurs (inchangé)
                             indicators_data = bot.add_indicators(df)
                             bot.market_data[pair_key][tf]["signals"] = {
                                 "technical": {
