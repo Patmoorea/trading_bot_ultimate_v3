@@ -722,13 +722,12 @@ with tab3:
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
 
-    # 1. Affichage du portefeuille spot Binance
+    # 1. Positions Binance Spot
     positions_binance = shared_data.get("positions_binance", {})
     st.markdown("#### Positions ouvertes Binance (Spot)")
     if positions_binance:
         df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
         df_pos_binance.index.name = "Paire"
-        # Ajout formatage % plus-value si dispo
         if "pnl_pct" in df_pos_binance.columns:
             df_pos_binance["% Plus-Value"] = df_pos_binance["pnl_pct"].map(
                 lambda x: f"{x:.2f}%" if x is not None else "N/A"
@@ -737,7 +736,7 @@ with tab4:
     else:
         st.info("Aucune position ouverte sur Binance spot.")
 
-    # 2. Historique des positions fermées
+    # 2. Positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])
     if closed:
@@ -752,83 +751,70 @@ with tab4:
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
 
-    # 3. Alertes de ventes à venir
+    # 3. Alertes de ventes
     st.markdown("#### Alertes de ventes à venir")
     pending_sales = shared_data.get("pending_sales", [])
     if pending_sales:
-        df_pending = pd.DataFrame(pending_sales)
-        # ---- PATCH: Ajoute les colonnes manquantes si besoin pour éviter KeyError ---
-        required_cols = [
-            "symbol",
-            "reason",
-            "decision",
-            "entry_price",
-            "current_price",
-            "amount",
-            "% Gain/Perte",
-            "tps_position_h",  # Attention, c'est probablement "temps_en_position_h" dans le dict source
-            "pause_bloc",
-            "note",
-        ]
-        for col in required_cols:
-            if col not in df_pending.columns:
-                df_pending[col] = ""
-        # Formatage visuel des colonnes
-        if "pnl_pct" in df_pending.columns:
-            df_pending["% Gain/Perte"] = df_pending["pnl_pct"].map(
-                lambda x: f"{x:.2f}%" if x is not None else "N/A"
-            )
-        if "temps_en_position_h" in df_pending.columns:
-            df_pending["Durée position (h)"] = df_pending["temps_en_position_h"].map(
-                lambda x: f"{x}h" if x not in ["", "N/A", None] else "N/A"
-            )
-        # Ajout sizing (%) selon la confiance et le Kelly
-        perf = shared_data.get("bot_status", {}).get("performance", {})
-        win_rate = perf.get("win_rate", 0.55)
-        profit_factor = perf.get("profit_factor", 1.7)
-        from src.risk_tools import kelly_criterion
+        try:
+            df_pending = pd.DataFrame(pending_sales)
 
-        def sizing_pct(conf):
-            try:
-                conf = float(conf)
-            except:
-                conf = 0.5
-            if conf > 0.7:
-                rp = 0.09
-            elif conf > 0.4:
-                rp = 0.04
-            else:
-                rp = 0.02
-            kelly = kelly_criterion(win_rate, profit_factor)
-            if kelly > 0:
-                rp = min(rp + kelly * 0.5, 0.12)
-            return f"{rp*100:.1f}%"
+            # Colonnes requises
+            display_cols = [
+                "symbol",
+                "reason",
+                "decision",
+                "entry_price",
+                "current_price",
+                "amount",
+                "% Gain/Perte",
+                "pause_blocage",
+                "note",
+            ]
 
-        # Si colonne 'confidence' existe, sinon fallback sur 0.5
-        if "confidence" in df_pending.columns:
-            df_pending["Sizing (%)"] = df_pending["confidence"].map(sizing_pct)
-        else:
-            df_pending["Sizing (%)"] = "N/A"
-        # Trie d'abord par urgence (Signal SELL > SL > TP > perte > gain), puis par %PnL
-        order = [
-            "🔴 Signal SELL",
-            "🔴 Stop-loss imminent",
-            "🟠 TP proche",
-            "🔴 Perte latente > 5.0%",
-            "🟢 Gain latent > 7.0%",
-        ]
-        df_pending["prio"] = df_pending["reason"].map(
-            lambda r: order.index(r) if r in order else 99
-        )
-        df_pending = df_pending.sort_values(
-            ["prio", "pnl_pct"] if "pnl_pct" in df_pending.columns else ["prio"],
-            ascending=[True, False] if "pnl_pct" in df_pending.columns else [True],
-        )
-        # Affichage
-        st.dataframe(
-            df_pending[required_cols + ["Sizing (%)"]],
-            use_container_width=True,
-        )
+            # Ajout colonnes manquantes
+            for col in display_cols:
+                if col not in df_pending.columns:
+                    df_pending[col] = "N/A"
+
+            # Calcul du sizing
+            if "confidence" in df_pending.columns:
+                perf = shared_data.get("bot_status", {}).get("performance", {})
+                win_rate = perf.get("win_rate", 0.55)
+                profit_factor = perf.get("profit_factor", 1.7)
+
+                def calc_sizing(conf):
+                    try:
+                        conf = float(conf)
+                        base = 0.09 if conf > 0.7 else 0.06 if conf > 0.5 else 0.04
+                        kelly = kelly_criterion(win_rate, profit_factor)
+                        if kelly > 0:
+                            base *= 1 + kelly * 0.5
+                        return f"{min(base * 100, 12):.1f}%"
+                    except:
+                        return "N/A"
+
+                df_pending["Sizing (%)"] = df_pending["confidence"].map(calc_sizing)
+                display_cols.append("Sizing (%)")
+
+            # Tri par priorité
+            priority = {
+                "🔴 Signal SELL": 1,
+                "🔴 Perte latente": 2,
+                "🟢 Gain latent": 3,
+                "Position normale": 4,
+            }
+            df_pending["_priority"] = df_pending["reason"].map(
+                lambda x: next((p for k, p in priority.items() if k in x), 99)
+            )
+            df_pending = df_pending.sort_values(
+                ["_priority", "pnl_pct"], ascending=[True, True]
+            )
+
+            # Affichage
+            st.dataframe(df_pending[display_cols], use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Erreur affichage alertes: {e}")
     else:
         st.info("Aucune vente imminente détectée.")
 

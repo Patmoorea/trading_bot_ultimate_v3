@@ -3124,111 +3124,88 @@ class TradingBotM4:
 
     def get_pending_sales(self):
         """
-        Affiche TOUTES les positions spot Binance avec leur état actuel, raison, action du signal, etc.
-        Permet d'avoir un état des lieux complet, même si le signal n'est pas SELL.
+        Affiche TOUTES les positions spot Binance avec leur état actuel.
         """
         try:
-            # 1. Charger l'existant d'abord
-            try:
-                with open(self.data_file, "r") as f:
-                    shared_data = json.load(f)
-                existing_pending = shared_data.get("pending_sales", [])
-            except Exception as e:
-                print(f"[WARNING] Erreur lecture shared_data: {e}")
-                existing_pending = []
-
             pending = []
             now = datetime.utcnow()
 
+            # Vérification des pauses actives
+            pause_active = False
+            pause_reason = ""
+            if hasattr(self, "news_pause_manager"):
+                active_pauses = self.news_pause_manager.get_active_pauses()
+                if active_pauses:
+                    pause_active = True
+                    pause_reason = ", ".join(
+                        [p.get("type", "pause") for p in active_pauses]
+                    )
+
+            # Traitement des positions Binance
             if hasattr(self, "positions_binance"):
                 for symbol, pos in self.positions_binance.items():
                     entry_price = pos.get("entry_price")
                     current_price = pos.get("current_price")
                     amount = pos.get("amount")
+
+                    # Calcul PnL
                     pnl_pct = (
                         (current_price - entry_price) / entry_price * 100
                         if entry_price and current_price
                         else 0
                     )
 
-                    # Récupère le signal du tableau "Scores de décision et signaux"
+                    # Signal actuel
                     td = self.trade_decisions.get(symbol, {})
                     action = td.get("action", "neutral")
-                    confidence = td.get("confidence", None)
+                    confidence = td.get("confidence", 0.5)
 
-                    # --- INITIALISATION SYSTÉMATIQUE DES VARIABLES ---
-                    decision = ""
-                    pause_status = "Non"
-                    note = ""
-
-                    # Raison
+                    # Détermination raison/décision
                     if action == "SELL":
                         reason = "🔴 Signal SELL"
                         decision = "Vente prévue au prochain cycle"
                     elif pnl_pct < -5:
-                        reason = (
-                            f"🔴 Perte latente {pnl_pct:.1f}%, signal: {action.upper()}"
-                        )
-                        decision = "Surveillance, risque de vente auto si perte aggrave"
+                        reason = f"🔴 Perte latente {pnl_pct:.1f}%"
+                        decision = "Surveillance stop-loss"
                     elif pnl_pct > 7:
-                        reason = (
-                            f"🟢 Gain latent {pnl_pct:.1f}%, signal: {action.upper()}"
+                        reason = f"🟢 Gain latent {pnl_pct:.1f}%"
+                        decision = "Surveillance TP"
+                    else:
+                        reason = f"Position normale ({action})"
+                        decision = "Position maintenue"
+
+                    # Note et pause
+                    if pause_active:
+                        note = f"Trading suspendu ({pause_reason})"
+                        pause_status = "Oui"
+                    else:
+                        note = (
+                            "Risque stop-loss"
+                            if pnl_pct < -5
+                            else "Zone de profit" if pnl_pct > 7 else ""
                         )
-                        decision = "Surveillance, possibilité de prise de profit"
-                    else:
-                        reason = f"Signal actuel: {action.upper()}"
-                        decision = "Aucune action prévue, position maintenue"
+                        pause_status = "Non"
 
-                    # Pause
-                    if hasattr(self, "news_pause_manager"):
-                        pauses = self.news_pause_manager.get_active_pauses()
-                        if any(symbol in p.get("asset", "") for p in pauses):
-                            pause_status = "Oui"
-                            note = "Trading suspendu (pause active)"
-                    elif reason.startswith("🟢 Gain latent"):
-                        note = "En zone de profit, TP possible"
-                    elif reason.startswith("🔴 Perte latente"):
-                        note = "Risque de stop-loss"
-                    else:
-                        note = ""
-
-                    # Créer l'entrée pour cette position
-                    new_entry = {
-                        "symbol": symbol,
-                        "reason": reason,
-                        "decision": decision,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
-                        "amount": amount,
-                        "% Gain/Perte": f"{pnl_pct:.2f}%",
-                        "temps_en_position_h": "N/A",  # À calculer si besoin
-                        "pause_blocage": pause_status,
-                        "note": note,
-                    }
-
-                    # Chercher si cette position existe déjà
-                    existing_entry = next(
-                        (item for item in existing_pending if item["symbol"] == symbol),
-                        None,
+                    # Construction de l'entrée
+                    pending.append(
+                        {
+                            "symbol": symbol,
+                            "reason": reason,
+                            "decision": decision,
+                            "entry_price": entry_price,
+                            "current_price": current_price,
+                            "amount": amount,
+                            "pnl_pct": pnl_pct,  # Pour le tri
+                            "% Gain/Perte": f"{pnl_pct:.2f}%",
+                            "temps_en_position_h": "N/A",
+                            "pause_blocage": pause_status,
+                            "note": note,
+                            "confidence": confidence,
+                        }
                     )
 
-                    if existing_entry:
-                        # Mise à jour de l'entrée existante
-                        existing_entry.update(new_entry)
-                        pending.append(existing_entry)
-                    else:
-                        # Nouvelle entrée
-                        pending.append(new_entry)
-
-            print("[DEBUG] Pending sales mis à jour:", pending)
-
-            # Fusion avec l'existant et sauvegarde
-            self.safe_update_shared_data(
-                {"pending_sales": pending},
-                self.data_file,
-                merge=True,  # Indique qu'il faut fusionner au lieu d'écraser
-            )
-
+            # Sauvegarde dans shared_data.json
+            self.safe_update_shared_data({"pending_sales": pending})
             return pending
 
         except Exception as e:
@@ -4040,7 +4017,202 @@ class TradingBotM4:
         log_dashboard(f"✅ IA activée: {self.ai_enabled}")
         log_dashboard(f"✅ Analyse de news activée: {self.news_enabled}")
 
-    # Ajoute la méthode get_input_dim à ta classe TradingBotM4 si ce n'est pas déjà fait :
+    def calculate_sharpe(self, returns=None):
+        """Calcule le ratio de Sharpe"""
+        try:
+            if returns is None:
+                # Récupère l'historique des rendements depuis equity_history
+                with open(self.data_file, "r") as f:
+                    data = json.load(f)
+                equity_history = data.get("equity_history", [])
+                if not equity_history or len(equity_history) < 2:
+                    return 0.0
+
+                balances = [pt["balance"] for pt in equity_history if "balance" in pt]
+                if len(balances) < 2:
+                    return 0.0
+
+                returns = np.diff(balances) / balances[:-1]
+
+            if len(returns) == 0:
+                return 0.0
+
+            # Annualisation (252 jours de trading)
+            avg_return = np.mean(returns) * 252
+            std_return = np.std(returns) * np.sqrt(252)
+
+            # Risk-free rate (utilise 2% comme taux sans risque)
+            risk_free = 0.02
+
+            if std_return == 0:
+                return 0.0
+
+            sharpe = (avg_return - risk_free) / std_return
+            return float(sharpe)
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul Sharpe: {e}")
+            return 0.0
+
+    def calculate_sortino(self, returns=None):
+        """Calcule le ratio de Sortino"""
+        try:
+            if returns is None:
+                # Récupère l'historique des rendements
+                with open(self.data_file, "r") as f:
+                    data = json.load(f)
+                equity_history = data.get("equity_history", [])
+                if not equity_history or len(equity_history) < 2:
+                    return 0.0
+
+                balances = [pt["balance"] for pt in equity_history if "balance" in pt]
+                if len(balances) < 2:
+                    return 0.0
+
+                returns = np.diff(balances) / balances[:-1]
+
+            if len(returns) == 0:
+                return 0.0
+
+            # Annualisation
+            avg_return = np.mean(returns) * 252
+
+            # Calcul de la volatilité négative uniquement
+            negative_returns = returns[returns < 0]
+            if len(negative_returns) == 0:
+                return float("inf") if avg_return > 0 else 0.0
+
+            downside_std = np.std(negative_returns) * np.sqrt(252)
+
+            # Risk-free rate
+            risk_free = 0.02
+
+            if downside_std == 0:
+                return 0.0
+
+            sortino = (avg_return - risk_free) / downside_std
+            return float(sortino)
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul Sortino: {e}")
+            return 0.0
+
+    def calculate_calmar(self):
+        """Calcule le ratio de Calmar"""
+        try:
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+            equity_history = data.get("equity_history", [])
+
+            if not equity_history or len(equity_history) < 2:
+                return 0.0
+
+            balances = np.array(
+                [pt["balance"] for pt in equity_history if "balance" in pt]
+            )
+            if len(balances) < 2:
+                return 0.0
+
+            # Calcul du rendement annualisé
+            total_return = (balances[-1] / balances[0]) - 1
+            n_days = len(balances)
+            annual_return = (1 + total_return) ** (252 / n_days) - 1
+
+            # Calcul du Max Drawdown
+            max_dd = self.get_max_drawdown()
+            if max_dd == 0:
+                return 0.0
+
+            calmar = annual_return / abs(max_dd)
+            return float(calmar)
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul Calmar: {e}")
+            return 0.0
+
+    def get_win_rate(self):
+        """Calcule le win rate sur l'historique des trades"""
+        try:
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+            trade_history = data.get("trade_history", [])
+
+            if not trade_history:
+                return 0.0
+
+            wins = sum(1 for trade in trade_history if trade.get("pnl_usd", 0) > 0)
+            return float(wins / len(trade_history)) if trade_history else 0.0
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul win rate: {e}")
+            return 0.0
+
+    def get_avg_profit(self):
+        """Calcule le profit moyen par trade"""
+        try:
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+            trade_history = data.get("trade_history", [])
+
+            if not trade_history:
+                return 0.0
+
+            profits = [trade.get("pnl_usd", 0) for trade in trade_history]
+            return float(np.mean(profits)) if profits else 0.0
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul profit moyen: {e}")
+            return 0.0
+
+    def get_max_drawdown(self):
+        """Calcule le maximum drawdown"""
+        try:
+            with open(self.data_file, "r") as f:
+                data = json.load(f)
+            equity_history = data.get("equity_history", [])
+
+            if not equity_history or len(equity_history) < 2:
+                return 0.0
+
+            balances = np.array(
+                [pt["balance"] for pt in equity_history if "balance" in pt]
+            )
+            if len(balances) < 2:
+                return 0.0
+
+            peaks = np.maximum.accumulate(balances)
+            drawdowns = (balances - peaks) / peaks
+            max_dd = float(np.min(drawdowns))
+            return max_dd
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul max drawdown: {e}")
+            return 0.0
+
+    def track_advanced_metrics(self):
+        """Suivi des métriques avancées"""
+        try:
+            metrics = {
+                "sharpe_ratio": self.calculate_sharpe(),
+                "sortino_ratio": self.calculate_sortino(),
+                "calmar_ratio": self.calculate_calmar(),
+                "win_rate": self.get_win_rate(),
+                "avg_profit": self.get_avg_profit(),
+                "max_drawdown": self.get_max_drawdown(),
+            }
+            return metrics
+
+        except Exception as e:
+            print(f"[ERROR] Erreur calcul métriques avancées: {e}")
+            return {
+                "sharpe_ratio": 0.0,
+                "sortino_ratio": 0.0,
+                "calmar_ratio": 0.0,
+                "win_rate": 0.0,
+                "avg_profit": 0.0,
+                "max_drawdown": 0.0,
+            }
+
     def get_input_dim(self):
         return self.N_FEATURES * self.N_STEPS * len(self.pairs_valid)
 
@@ -7204,12 +7376,14 @@ async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, durati
         # 1. Rapport des trades
         await send_trade_summary(bot, trade_decisions)
 
-        # 2. Préparation des données
+        # 2. Préparation des données d'analyse avec le cycle courant
         analysis_data = await prepare_analysis_data(bot, trade_decisions)
-
-        # Ajout du cycle courant
         analysis_data.update(
-            {"cycle": current_cycle, "regime": regime, "duration": duration}
+            {
+                "cycle": current_cycle,  # Ajout du cycle courant ici
+                "regime": regime,
+                "duration": duration,
+            }
         )
 
         # 3. Génération et envoi du rapport
@@ -7228,28 +7402,28 @@ async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, durati
 
 async def send_trade_summary(bot, trade_decisions):
     """Envoi du résumé des trades"""
-    if trade_decisions:
-        trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
-        for trade in trade_decisions:
-            emoji = (
-                "🟢"
-                if trade["action"] == "buy"
-                else "🔴" if trade["action"] == "sell" else "⚪️"
-            )
-            pair = trade.get("pair", "INCONNU")
-            signals = trade.get("signals", {})
+    try:
+        if trade_decisions:
+            trade_report = "💹 <b>Résumé des trades du cycle</b>\n\n"
+            for trade in trade_decisions:
+                emoji = (
+                    "🟢"
+                    if trade["action"] == "buy"
+                    else "🔴" if trade["action"] == "sell" else "⚪️"
+                )
+                pair = trade.get("pair", "INCONNU")
+                signals = trade.get("signals", {})
 
-            # Utilisation de format strings pour plus de clarté
-            trade_report += (
-                f"{emoji} {pair}: {trade['action'].upper()} "
-                f"({trade.get('confidence', 0):.0%}) | "
-                f"Tech {signals.get('technical', 0):.0%} | "
-                f"IA {signals.get('ai', 0):.2f} | "
-                f"Sent {signals.get('sentiment', 0):.2f}\n"
-            )
-        await bot.telegram.send_message(trade_report)
-    else:
-        await bot.telegram.send_cycle_update(cycle, regime, duration)
+                trade_report += (
+                    f"{emoji} {pair}: {trade['action'].upper()} "
+                    f"({trade.get('confidence', 0):.0%}) | "
+                    f"Tech {signals.get('technical', 0):.0%} | "
+                    f"IA {signals.get('ai', 0):.2f} | "
+                    f"Sent {signals.get('sentiment', 0):.2f}\n"
+                )
+            await bot.telegram.send_message(trade_report)
+    except Exception as e:
+        print(f"❌ Erreur envoi résumé trades: {e}")
 
 
 async def prepare_analysis_data(bot, trade_decisions):
