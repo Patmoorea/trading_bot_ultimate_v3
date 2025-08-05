@@ -6415,6 +6415,8 @@ async def run_clean_bot():
                 print("\n[DEBUG] Sauvegarde des données...")
                 current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
+                regime = getattr(bot, "regime", "Indéterminé")
+
                 # 1. Lecture des données existantes
                 try:
                     with open(bot.data_file, "r") as f:
