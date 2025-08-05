@@ -159564,3 +159564,56 @@
 2025-08-05T16:16:42.097029 | [TRADE-DECISION] XRPUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0438 | Tech: 0.07 | AI: 0.66
 2025-08-05T16:16:42.266132 | [TRADE-DECISION] XRPUSDC | Action: SELL | Confiance: 0.33 | Score: -0.3291 | Tech: 0.06 | AI: 0.66
 2025-08-05T16:16:42.439736 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0946 | Tech: 0.01 | AI: 0.66
+2025-08-05T16:16:42.609160 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: 0.0965 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:42.787074 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1672 | Tech: -0.02 | AI: 0.66
+2025-08-05T16:16:42.954879 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0928 | Tech: 0.02 | AI: 0.66
+2025-08-05T16:16:43.123882 | [TRADE-DECISION] DOGEUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0088 | Tech: 0.02 | AI: 0.66
+2025-08-05T16:16:43.233770 | [TRADE-DECISION] DOGEUSDC | Action: SELL | Confiance: 0.31 | Score: -0.3085 | Tech: -0.08 | AI: 0.66
+2025-08-05T16:16:43.435459 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: 0.1700 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:43.602829 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1161 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:43.775010 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.22 | Score: -0.2212 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:43.939590 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.17 | Score: -0.1745 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:44.107384 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1081 | Tech: -0.05 | AI: 0.66
+2025-08-05T16:16:44.276054 | [TRADE-DECISION] BNBUSDC | Action: NEUTRAL | Confiance: 0.13 | Score: -0.1275 | Tech: 0.02 | AI: 0.66
+2025-08-05T16:16:44.449610 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: 0.0934 | Tech: 0.01 | AI: 0.66
+2025-08-05T16:16:44.617630 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.14 | Score: 0.1380 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:44.786893 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1618 | Tech: -0.02 | AI: 0.66
+2025-08-05T16:16:44.957174 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.0983 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:45.123399 | [TRADE-DECISION] ADAUSDC | Action: NEUTRAL | Confiance: 0.02 | Score: -0.0186 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:45.289221 | [TRADE-DECISION] ADAUSDC | Action: SELL | Confiance: 0.37 | Score: -0.3675 | Tech: 0.01 | AI: 0.66
+2025-08-05T16:16:45.472447 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: -0.0117 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:45.647327 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.04 | Score: 0.0434 | Tech: -0.00 | AI: 0.66
+2025-08-05T16:16:45.821556 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.09 | Score: -0.0911 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:45.997372 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1170 | Tech: -0.03 | AI: 0.66
+2025-08-05T16:16:46.192415 | [TRADE-DECISION] SOLUSDC | Action: NEUTRAL | Confiance: 0.05 | Score: -0.0451 | Tech: 0.01 | AI: 0.66
+2025-08-05T16:16:46.357583 | [TRADE-DECISION] SOLUSDC | Action: SELL | Confiance: 0.35 | Score: -0.3479 | Tech: -0.04 | AI: 0.66
+2025-08-05T16:16:46.527974 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.00 | Score: 0.0012 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:46.701453 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: 0.1986 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:46.869335 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.10 | Score: -0.1016 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:47.038715 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.20 | Score: -0.2012 | Tech: -0.00 | AI: 0.66
+2025-08-05T16:16:47.209113 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.06 | Score: 0.0573 | Tech: 0.06 | AI: 0.66
+2025-08-05T16:16:47.398732 | [TRADE-DECISION] TRXUSDC | Action: NEUTRAL | Confiance: 0.19 | Score: 0.1858 | Tech: 0.16 | AI: 0.66
+2025-08-05T16:16:47.597182 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.01 | Score: 0.0091 | Tech: 0.00 | AI: 0.66
+2025-08-05T16:16:47.784724 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: 0.1240 | Tech: -0.01 | AI: 0.66
+2025-08-05T16:16:47.946579 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.16 | Score: -0.1581 | Tech: -0.06 | AI: 0.66
+2025-08-05T16:16:48.112855 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.12 | Score: -0.1154 | Tech: -0.04 | AI: 0.66
+2025-08-05T16:16:48.282085 | [TRADE-DECISION] SUIUSDC | Action: NEUTRAL | Confiance: 0.11 | Score: -0.1067 | Tech: -0.03 | AI: 0.66
+2025-08-05T16:16:48.384731 | [TRADE-DECISION] SUIUSDC | Action: SELL | Confiance: 0.29 | Score: -0.2875 | Tech: 0.01 | AI: 0.66
+2025-08-05T16:17:09.769030 | ✅ ArbitrageEngine initialisé avec succès
+2025-08-05T16:17:09.775530 | Initialisation des modèles d'IA...
+2025-08-05T16:17:10.252008 | ✅ Modèles d'IA initialisés avec succès
+2025-08-05T16:17:11.961581 | ✅ PPO Strategy initialized successfully
+2025-08-05T16:17:11.979571 | ✅ Bot initialisé avec Telegram: True
+2025-08-05T16:17:11.979646 | ✅ Trading en direct: True
+2025-08-05T16:17:11.979698 | ✅ IA activée: True
+2025-08-05T16:17:11.979747 | ✅ Analyse de news activée: True
+2025-08-05T16:19:05.469298 | [NEWS] Lancement boucle d'analyse des news…
+2025-08-05T16:20:25.145040 | [MARKET ANALYSIS] Régime détecté: Range/Scalping | Volatilité: 0.0591 | Tendance: -0.0031
+2025-08-05T16:20:25.162759 | 🔈 Régime de marché détecté: Range/Scalping
+2025-08-05T16:20:25.239729 | Démarrage cycle trading
+2025-08-05T16:20:25.259632 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T16:21:45.960822 | [NEWS] Score sentiment global: 0.28 | Impact: 0.56 | Événements:  Ether-stacking BitMine crosses $3B milestone as ETH rallies 6% ; Bitcoin Bounces, Ethereum and XRP Flash Strong Signals: Analysis; SEC updates staff guidance on accounting rules for USD stablecoins: Bloomberg
+2025-08-05T16:22:15.456416 | Démarrage cycle trading
+2025-08-05T16:22:15.492339 | 🚫 Cycle bloqué - Pause news active
+2025-08-05T16:24:03.315448 | Démarrage cycle trading
+2025-08-05T16:24:03.346780 | 🚫 Cycle bloqué - Pause news active
