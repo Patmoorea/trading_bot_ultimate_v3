@@ -45,6 +45,30 @@ CONFIG_FILE = "config.json"
 CURRENT_USER = "Patmoorea"
 
 
+def calc_sizing(confidence, tech, ai, sentiment, win_rate=0.55, profit_factor=1.7):
+    # Sizing base selon confiance
+    if confidence > 0.8:
+        base = 0.09
+    elif confidence > 0.6:
+        base = 0.06
+    elif confidence > 0.4:
+        base = 0.04
+    else:
+        base = 0.02
+    # Ajustements
+    if tech > 0.7:
+        base *= 1.2
+    if ai > 0.7:
+        base *= 1.1
+    if abs(sentiment) > 0.7:
+        base *= 0.8
+    # Kelly Criterion
+    kelly = kelly_criterion(win_rate, profit_factor)
+    if kelly > 0:
+        base *= 1 + min(kelly * 0.5, 0.5)
+    return f"{min(base * 100, 12):.1f}%"
+
+
 def get_current_time():
     utc_now = datetime.utcnow()
     polynesie_offset = timedelta(hours=-10)
@@ -609,7 +633,9 @@ with tab1:
                 "tech": tech_score,
                 "ai": ai_pred,
                 "sentiment": sentiment,
-                "Sizing (%)": f"{min(base_size * 100, 12.0):.1f}%",
+                "Sizing (%)": calc_sizing(
+                    confidence, tech_score, ai_pred, sentiment, win_rate, profit_factor
+                ),
                 "timestamp": current_time,
             }
             decisions_data.append(row_data)
@@ -849,6 +875,25 @@ with tab4:
     else:
         st.info("Aucune position ouverte sur Binance spot.")
 
+    # 1bis. Positions BingX (Futures) - Shorts et Longs
+    positions_bingx = shared_data.get("positions_bingx", {})
+    st.markdown("#### Positions ouvertes BingX (Futures / Shorts/Longs)")
+    if positions_bingx:
+        df_bingx = pd.DataFrame.from_dict(positions_bingx, orient="index")
+        df_bingx.index.name = "Paire"
+        if "pnl_pct" in df_bingx.columns:
+            df_bingx["% Plus-Value"] = df_bingx["pnl_pct"].map(
+                lambda x: f"{x:.2f}%" if x is not None else "N/A"
+            )
+        # Ajout indicateur "side" pour repérage short
+        if "side" in df_bingx.columns:
+            df_bingx["Type"] = df_bingx["side"].map(
+                lambda x: "SHORT" if x == "short" else "LONG"
+            )
+        st.dataframe(df_bingx, use_container_width=True)
+    else:
+        st.info("Aucune position ouverte sur BingX futures.")
+
     # 2. Positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])
@@ -895,18 +940,17 @@ with tab4:
                 win_rate = perf.get("win_rate", 0.55)
                 profit_factor = perf.get("profit_factor", 1.7)
 
-                def calc_sizing(conf):
-                    try:
-                        conf = float(conf)
-                        base = 0.09 if conf > 0.7 else 0.06 if conf > 0.5 else 0.04
-                        kelly = kelly_criterion(win_rate, profit_factor)
-                        if kelly > 0:
-                            base *= 1 + kelly * 0.5
-                        return f"{min(base * 100, 12):.1f}%"
-                    except:
-                        return "N/A"
-
-                df_pending["Sizing (%)"] = df_pending["confidence"].map(calc_sizing)
+                df_pending["Sizing (%)"] = df_pending.apply(
+                    lambda row: calc_sizing(
+                        float(row.get("confidence", 0.5)),
+                        float(row.get("tech", 0.5)),
+                        float(row.get("ai", 0.5)),
+                        float(row.get("sentiment", 0.0)),
+                        win_rate,
+                        profit_factor,
+                    ),
+                    axis=1,
+                )
                 display_cols.append("Sizing (%)")
 
             # Tri par priorité

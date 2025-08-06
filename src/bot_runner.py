@@ -1125,6 +1125,29 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def calc_sizing(confidence, tech, ai, sentiment, win_rate=0.55, profit_factor=1.7):
+        # Sizing base selon confiance
+        if confidence > 0.8:
+            base = 0.09
+        elif confidence > 0.6:
+            base = 0.06
+        elif confidence > 0.4:
+            base = 0.04
+        else:
+            base = 0.02
+        # Ajustements
+        if tech > 0.7:
+            base *= 1.2
+        if ai > 0.7:
+            base *= 1.1
+        if abs(sentiment) > 0.7:
+            base *= 0.8
+        # Kelly Criterion
+        kelly = kelly_criterion(win_rate, profit_factor)
+        if kelly > 0:
+            base *= 1 + min(kelly * 0.5, 0.5)
+        return f"{min(base * 100, 12):.1f}%"
+
     def validate_trade(self, signals):
         """Valide si un trade peut être pris selon les critères de risque"""
         try:
