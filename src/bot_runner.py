@@ -1125,6 +1125,41 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def fetch_trades_fifo(self, binance_client, symbol):
+        """
+        Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée,
+        formatée pour le calcul FIFO.
+        Doit retourner:
+            buys: [{"qty":..., "price":..., "time":..., "id":...}, ...]
+            sells: [{"qty":..., "price":..., "time":..., "id":...}, ...]
+        """
+        buys, sells = [], []
+        try:
+            # Récupère l'historique spot des trades sur la paire (ex: "BTCUSDC")
+            trades = binance_client.get_my_trades(symbol)
+            for trade in trades:
+                qty = float(trade["qty"])
+                price = float(trade["price"])
+                time = int(trade["time"])
+                trade_id = trade.get("id", trade.get("orderId", None))
+                trade_dict = {
+                    "qty": qty,
+                    "price": price,
+                    "time": time,
+                    "id": trade_id,
+                }
+                if trade["isBuyer"]:
+                    buys.append(trade_dict)
+                else:
+                    sells.append(trade_dict)
+            # Tri par ordre chronologique (optionnel mais recommandé)
+            buys = sorted(buys, key=lambda x: x["time"])
+            sells = sorted(sells, key=lambda x: x["time"])
+            return buys, sells
+        except Exception as e:
+            print(f"[DEBUG FIFO] Erreur fetch_trades_fifo pour {symbol}: {e}")
+            return [], []
+
     def get_last_fifo_pnl(self, symbol):
         """
         Récupère la plus-value FIFO de la dernière vente spot pour une paire donnée.
