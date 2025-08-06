@@ -909,7 +909,7 @@
             "tech": 0.017941537738309716,
             "ai": 0.4636764049530029,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "ETH/USDC": {
             "action": "neutral",
@@ -917,7 +917,7 @@
             "tech": 0.08114430954544985,
             "ai": 0.3284517228603363,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "LTC/USDC": {
             "action": "neutral",
@@ -925,7 +925,7 @@
             "tech": 0.05721214555984027,
             "ai": 0.31647916287183764,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "XRP/USDC": {
             "action": "neutral",
@@ -933,7 +933,7 @@
             "tech": 0.0,
             "ai": 0.34145429432392116,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "DOGE/USDC": {
             "action": "neutral",
@@ -941,7 +941,7 @@
             "tech": 0.06923347145942534,
             "ai": 0.3398230403661728,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "BNB/USDC": {
             "action": "neutral",
@@ -949,7 +949,7 @@
             "tech": 0.019512369415671332,
             "ai": 0.3290422528982162,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "ADA/USDC": {
             "action": "neutral",
@@ -957,7 +957,7 @@
             "tech": 0.0598981628479342,
             "ai": 0.33662451505661006,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "SOL/USDC": {
             "action": "neutral",
@@ -965,7 +965,7 @@
             "tech": 0.02630017297855862,
             "ai": 0.3381397783756256,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "TRX/USDC": {
             "action": "neutral",
@@ -973,7 +973,7 @@
             "tech": 0.013530724353630444,
             "ai": 0.3259925335645676,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         },
         "SUI/USDC": {
             "action": "neutral",
@@ -981,7 +981,7 @@
             "tech": 0.029451558739906875,
             "ai": 0.34036713242530825,
             "sentiment": 0.7517869412899018,
-            "timestamp": "2025-08-06 19:26:31"
+            "timestamp": "2025-08-06 19:32:17"
         }
     },
     "market_data": {
@@ -4923,11 +4923,11 @@
                 "tech": 0.645,
                 "ai": 0.4637,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825292
+            "sentiment_timestamp": 1754544629.612356
         },
         "ETHUSDC": {
             "1m": {
@@ -8867,11 +8867,11 @@
                 "tech": 0.6052,
                 "ai": 0.3285,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825316
+            "sentiment_timestamp": 1754544629.61238
         },
         "LTCUSDC": {
             "1m": {
@@ -12811,11 +12811,11 @@
                 "tech": 0.5679,
                 "ai": 0.3165,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825327
+            "sentiment_timestamp": 1754544629.612394
         },
         "XRPUSDC": {
             "1m": {
@@ -16755,11 +16755,11 @@
                 "tech": 0.5939,
                 "ai": 0.3415,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825336
+            "sentiment_timestamp": 1754544629.612404
         },
         "DOGEUSDC": {
             "1m": {
@@ -20699,11 +20699,11 @@
                 "tech": 0.6132,
                 "ai": 0.3398,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825346
+            "sentiment_timestamp": 1754544629.612413
         },
         "BNBUSDC": {
             "1m": {
@@ -24643,11 +24643,11 @@
                 "tech": 0.6643,
                 "ai": 0.329,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825356
+            "sentiment_timestamp": 1754544629.612422
         },
         "ADAUSDC": {
             "1m": {
@@ -28587,11 +28587,11 @@
                 "tech": 0.5989,
                 "ai": 0.3366,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825365
+            "sentiment_timestamp": 1754544629.612431
         },
         "SOLUSDC": {
             "1m": {
@@ -32531,11 +32531,11 @@
                 "tech": 0.6026,
                 "ai": 0.3381,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825374
+            "sentiment_timestamp": 1754544629.61244
         },
         "TRXUSDC": {
             "1m": {
@@ -36475,11 +36475,11 @@
                 "tech": 0.6128,
                 "ai": 0.326,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825383
+            "sentiment_timestamp": 1754544629.61245
         },
         "SUIUSDC": {
             "1m": {
@@ -40419,188 +40419,159 @@
                 "tech": 0.6012,
                 "ai": 0.3404,
                 "sentiment": 0.2506,
-                "timestamp": "2025-08-06 19:27:07"
+                "timestamp": "2025-08-06 19:32:17"
             },
-            "last_update": "2025-08-06 19:27:07",
+            "last_update": "2025-08-06 19:32:17",
             "sentiment": 0.7517869412899018,
-            "sentiment_timestamp": 1754544284.825393
+            "sentiment_timestamp": 1754544629.612459
         }
     },
     "cycle_metrics": {
-        "cycle": 5,
+        "cycle": 8,
         "regime": "Range/Scalping",
         "balance": 60.85659068,
-        "timestamp": "2025-08-06 19:26:31"
+        "timestamp": "2025-08-06 19:32:17"
     },
     "bot_status": {
         "regime": "Range/Scalping",
-        "cycle": 5,
-        "last_update": "2025-08-06 19:26:31",
+        "cycle": 8,
+        "last_update": "2025-08-06 19:32:17",
         "performance": {
             "balance": 60.85659068
         }
     },
     "active_pauses": [
         {
-            "asset": "BTC",
-            "action": "BUY",
-            "cycles_left": 1,
-            "type": "BUY",
-            "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
-        },
-        {
-            "asset": "ETH",
-            "action": "BUY",
-            "cycles_left": 1,
-            "type": "BUY",
-            "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
-        },
-        {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 26,
+            "cycles_left": 23,
             "type": "FULL",
             "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
+            "max_cycles": 38,
+            "total_remaining": 38
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 26,
+            "cycles_left": 23,
             "type": "FULL",
             "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
+            "max_cycles": 38,
+            "total_remaining": 38
         },
         {
             "asset": "XRP",
             "action": "FULL",
-            "cycles_left": 26,
+            "cycles_left": 23,
             "type": "FULL",
             "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
+            "max_cycles": 38,
+            "total_remaining": 38
         },
         {
             "asset": "DOGE",
             "action": "FULL",
-            "cycles_left": 41,
+            "cycles_left": 38,
             "type": "FULL",
             "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
-        },
-        {
-            "asset": "GLOBAL",
-            "action": "ALL",
-            "cycles_left": 3,
-            "type": "GLOBAL",
-            "reason": "Binance founder Changpeng Zhao seeks dismissal of FTX estate\u2019s $1.76 billion clawback lawsuit",
-            "max_cycles": 41,
-            "total_remaining": 41
+            "max_cycles": 38,
+            "total_remaining": 38
         }
     ],
     "pause_status": {
-        "global_remaining": 3,
+        "global_remaining": 0,
         "pair_pauses": {
-            "BTC": 1,
-            "ETH": 1,
-            "LINK": 26,
-            "SOL": 26,
-            "XRP": 26,
-            "DOGE": 41
+            "LINK": 23,
+            "SOL": 23,
+            "XRP": 23,
+            "DOGE": 38
         },
-        "max_remaining": 41
+        "max_remaining": 38
     },
     "positions_binance": {
         "BTC/USDC": {
             "side": "long",
             "amount": 9e-05,
             "entry_price": 108157.62198198192,
-            "current_price": 115511.52,
+            "current_price": 115408.15,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": 0.6618508216216273,
-            "value_usd": 10.396036800000001
+            "pnl_usd": 0.6525475216216264,
+            "value_usd": 10.3867335
         },
         "LTC/USDC": {
             "side": "long",
             "amount": 0.102,
             "entry_price": 70.07813412060145,
-            "current_price": 120.98,
+            "current_price": 120.03,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": 5.191990319698652,
-            "value_usd": 12.33996
+            "pnl_usd": 5.095090319698652,
+            "value_usd": 12.24306
         },
         "ETH/USDC": {
             "side": "long",
             "amount": 0.0033,
             "entry_price": 3654.1087878787876,
-            "current_price": 3681.5,
+            "current_price": 3676.49,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": 0.09039100000000108,
-            "value_usd": 12.14895
+            "pnl_usd": 0.07385800000000035,
+            "value_usd": 12.132416999999998
         },
         "BNB/USDC": {
             "side": "long",
             "amount": 0.02491053,
             "entry_price": 719.1871428571428,
-            "current_price": 773.14,
+            "current_price": 772.76,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": 1.343994266442858,
-            "value_usd": 19.2593271642
+            "pnl_usd": 1.3345282650428578,
+            "value_usd": 19.2498611628
         },
         "TRX/USDC": {
             "side": "long",
             "amount": 37.2,
             "entry_price": 0.309744424778761,
-            "current_price": 0.3357,
+            "current_price": 0.3358,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": 0.9655473982300902,
-            "value_usd": 12.488040000000002
+            "pnl_usd": 0.9692673982300897,
+            "value_usd": 12.491760000000001
         },
         "XRP/USDC": {
             "side": "long",
             "amount": 3.4,
             "entry_price": 3.29422,
-            "current_price": 3.014,
+            "current_price": 3.0087,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -0.9527480000000011,
-            "value_usd": 10.247599999999998
+            "pnl_usd": -0.970768,
+            "value_usd": 10.22958
         },
         "ADA/USDC": {
             "side": "long",
             "amount": 14.2,
             "entry_price": 0.83298,
-            "current_price": 0.7432,
+            "current_price": 0.7422,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -1.274876000000001,
-            "value_usd": 10.553439999999998
+            "pnl_usd": -1.2890760000000012,
+            "value_usd": 10.53924
         },
         "FET/USDC": {
             "side": "long",
@@ -40618,13 +40589,13 @@
             "side": "long",
             "amount": 23.0,
             "entry_price": 0.252465,
-            "current_price": 0.20622,
+            "current_price": 0.20585,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -1.063635,
-            "value_usd": 4.74306
+            "pnl_usd": -1.0721449999999997,
+            "value_usd": 4.7345500000000005
         },
         "LDBNB/USDC": {
             "side": "long",
@@ -40642,13 +40613,13 @@
             "side": "long",
             "amount": 0.058,
             "entry_price": 194.96943548387094,
-            "current_price": 168.85,
+            "current_price": 168.56,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -1.5149272580645148,
-            "value_usd": 9.7933
+            "pnl_usd": -1.5317472580645144,
+            "value_usd": 9.776480000000001
         },
         "NVT/USDC": {
             "side": "long",
@@ -40678,25 +40649,25 @@
             "side": "long",
             "amount": 3.85614,
             "entry_price": null,
-            "current_price": 9.785,
+            "current_price": 9.771,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 37.732329899999996
+            "value_usd": 37.678343940000005
         },
         "GALA/USDC": {
             "side": "long",
             "amount": 1484.74630755,
             "entry_price": null,
-            "current_price": 0.0155,
+            "current_price": 0.01546,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 23.013567767025
+            "value_usd": 22.954177914723
         },
         "PEOPLE/USDC": {
             "side": "long",
@@ -40714,13 +40685,13 @@
             "side": "long",
             "amount": 28.28169,
             "entry_price": null,
-            "current_price": 0.942,
+            "current_price": 0.94,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 26.64135198
+            "value_usd": 26.5847886
         },
         "LUNC/USDC": {
             "side": "long",
@@ -40762,25 +40733,25 @@
             "side": "long",
             "amount": 5.2,
             "entry_price": 3.9549924242424246,
-            "current_price": 3.507,
+            "current_price": 3.5067,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -2.3295606060606073,
-            "value_usd": 18.2364
+            "pnl_usd": -2.3311206060606082,
+            "value_usd": 18.234840000000002
         },
         "TON/USDC": {
             "side": "long",
             "amount": 0.087214,
             "entry_price": null,
-            "current_price": 3.233,
+            "current_price": 3.229,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.281962862
+            "value_usd": 0.28161400600000003
         },
         "AEVO/USDC": {
             "side": "long",
@@ -40798,37 +40769,37 @@
             "side": "long",
             "amount": 0.35478462,
             "entry_price": null,
-            "current_price": 1.032,
+            "current_price": 1.03,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.36613772784
+            "value_usd": 0.3654281586
         },
         "ENA/USDC": {
             "side": "long",
             "amount": 2.85374308,
             "entry_price": null,
-            "current_price": 0.5974,
+            "current_price": 0.5969,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 1.7048261159920002
+            "value_usd": 1.703399244452
         },
         "SAGA/USDC": {
             "side": "long",
             "amount": 0.05435377,
             "entry_price": null,
-            "current_price": 0.2441,
+            "current_price": 0.2439,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.013267755257000002
+            "value_usd": 0.013256884503000001
         },
         "OMNI/USDC": {
             "side": "long",
@@ -40846,49 +40817,49 @@
             "side": "long",
             "amount": 4.05396039,
             "entry_price": null,
-            "current_price": 0.01315,
+            "current_price": 0.01319,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.053309579128500005
+            "value_usd": 0.053471737544100006
         },
         "NOT/USDC": {
             "side": "long",
             "amount": 1116.15,
             "entry_price": 0.01052,
-            "current_price": 0.002026,
+            "current_price": 0.002027,
             "pnl_pct": [
                 null,
                 null
             ],
-            "pnl_usd": -9.4805781,
-            "value_usd": 2.2613199
+            "pnl_usd": -9.479461950000001,
+            "value_usd": 2.2624360500000003
         },
         "LISTA/USDC": {
             "side": "long",
             "amount": 39.51211224,
             "entry_price": null,
-            "current_price": 0.2829,
+            "current_price": 0.2831,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 11.177976552696
+            "value_usd": 11.185878975144
         },
         "IO/USDC": {
             "side": "long",
             "amount": 0.43377579,
             "entry_price": null,
-            "current_price": 0.554,
+            "current_price": 0.555,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.24031178766000003
+            "value_usd": 0.24074556345
         },
         "G/USDC": {
             "side": "long",
@@ -40978,13 +40949,13 @@
             "side": "long",
             "amount": 0.79286793,
             "entry_price": null,
-            "current_price": 0.0611,
+            "current_price": 0.0614,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.048444230523
+            "value_usd": 0.048682090902
         },
         "SOLV/USDC": {
             "side": "long",
@@ -41014,73 +40985,73 @@
             "side": "long",
             "amount": 0.03474063,
             "entry_price": null,
-            "current_price": 0.6019,
+            "current_price": 0.6024,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.020910385197
+            "value_usd": 0.020927755512000004
         },
         "GUN/USDC": {
             "side": "long",
             "amount": 1.1566659,
             "entry_price": null,
-            "current_price": 0.02905,
+            "current_price": 0.02925,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.033601144395
+            "value_usd": 0.033832477575
         },
         "INIT/USDC": {
             "side": "long",
             "amount": 0.13870156,
             "entry_price": null,
-            "current_price": 0.4173,
+            "current_price": 0.4168,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.057880160988
+            "value_usd": 0.057810810208
         },
         "WCT/USDC": {
             "side": "long",
             "amount": 0.18545852,
             "entry_price": null,
-            "current_price": 0.2948,
+            "current_price": 0.2943,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.054673171696
+            "value_usd": 0.054580442436
         },
         "SOPH/USDC": {
             "side": "long",
             "amount": 0.88600535,
             "entry_price": null,
-            "current_price": 0.03962,
+            "current_price": 0.03955,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.035103531967
+            "value_usd": 0.035041511592500005
         },
         "HYPER/USDC": {
             "side": "long",
             "amount": 0.1179094,
             "entry_price": null,
-            "current_price": 0.3983,
+            "current_price": 0.3977,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.04696331402
+            "value_usd": 0.04689256838
         },
         "SIGN/USDC": {
             "side": "long",
@@ -41110,25 +41081,25 @@
             "side": "long",
             "amount": 0.56851639,
             "entry_price": null,
-            "current_price": 0.0852,
+            "current_price": 0.0855,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.048437596427999996
+            "value_usd": 0.048608151345
         },
         "NXPC/USDC": {
             "side": "long",
             "amount": 0.17386141,
             "entry_price": null,
-            "current_price": 0.9092,
+            "current_price": 0.9083,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.158074793972
+            "value_usd": 0.157918318703
         },
         "HAEDAL/USDC": {
             "side": "long",
@@ -41146,25 +41117,25 @@
             "side": "long",
             "amount": 2.49958419,
             "entry_price": null,
-            "current_price": 0.03282,
+            "current_price": 0.03277,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.08203635311580001
+            "value_usd": 0.0819113739063
         },
         "RESOLV/USDC": {
             "side": "long",
             "amount": 0.11578375,
             "entry_price": null,
-            "current_price": 0.1686,
+            "current_price": 0.169,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.01952114025
+            "value_usd": 0.01956745375
         },
         "HOME/USDC": {
             "side": "long",
@@ -41182,112 +41153,112 @@
             "side": "long",
             "amount": 1.36076364,
             "entry_price": null,
-            "current_price": 0.115527,
+            "current_price": 0.115724,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.15720494103828
+            "value_usd": 0.15747301147536
         },
         "NEWT/USDC": {
             "side": "long",
             "amount": 0.10083373,
             "entry_price": null,
-            "current_price": 0.3425,
+            "current_price": 0.3424,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.034535552525
+            "value_usd": 0.034525469152
         },
         "SAHARA/USDC": {
             "side": "long",
             "amount": 1.00786376,
             "entry_price": null,
-            "current_price": 0.08668,
+            "current_price": 0.0865,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.08736163071679999
+            "value_usd": 0.08718021524
         },
         "LA/USDC": {
             "side": "long",
             "amount": 0.16214933,
             "entry_price": null,
-            "current_price": 0.3051,
+            "current_price": 0.3064,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.049471760583
+            "value_usd": 0.049682554712000004
         },
         "ERA/USDC": {
             "side": "long",
             "amount": 0.34099158,
             "entry_price": null,
-            "current_price": 0.9722,
+            "current_price": 0.9696,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.331512014076
+            "value_usd": 0.33062543596800004
         },
         "C/USDC": {
             "side": "long",
             "amount": 0.26255203,
             "entry_price": null,
-            "current_price": 0.2548,
+            "current_price": 0.255,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.066898257244
+            "value_usd": 0.06695076764999999
         },
         "TREE/USDC": {
             "side": "long",
             "amount": 0.10868663,
             "entry_price": null,
-            "current_price": 0.4042,
+            "current_price": 0.4035,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.043931135846
+            "value_usd": 0.04385505520500001
         },
         "TOWNS/USDC": {
             "side": "long",
             "amount": 2.65771927,
             "entry_price": null,
-            "current_price": 0.03348,
+            "current_price": 0.03337,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.08898044115960001
+            "value_usd": 0.08868809203989998
         },
         "PROVE/USDC": {
             "side": "long",
             "amount": 0.12573876,
             "entry_price": null,
-            "current_price": 1.1686,
+            "current_price": 1.178,
             "pnl_pct": [
                 null,
                 null
             ],
             "pnl_usd": 0.0,
-            "value_usd": 0.14693831493600001
+            "value_usd": 0.14812025928
         }
     },
-    "timestamp": "2025-08-06 19:26:31",
+    "timestamp": "2025-08-06 19:32:17",
     "user": "Patmoorea",
     "indicators": {
         "1m | BTC/USDC": {
@@ -41304,27 +41275,27 @@
             },
             "dominant_signal": "NEUTRE",
             "ta": {
-                "sma_20": 115480.44449999998,
-                "sma_50": 115459.66739999993,
-                "ema_20": 115476.22488266925,
-                "rsi_14": 56.61023496166324,
-                "macd": 7.189049234322738,
-                "macd_signal": 2.7399161517503754,
-                "macd_hist": 4.449133082572363,
-                "bb_lower": 115395.14656986641,
-                "bb_upper": 115565.74243013356,
-                "donchian_high": 115557.08,
+                "sma_20": 115469.41849999999,
+                "sma_50": 115452.05199999992,
+                "ema_20": 115477.18387715005,
+                "rsi_14": 45.506824639617676,
+                "macd": 2.801129984058207,
+                "macd_signal": 5.195189312535198,
+                "macd_hist": -2.394059328476991,
+                "bb_lower": 115402.91790577033,
+                "bb_upper": 115535.91909422964,
+                "donchian_high": 115525.45,
                 "donchian_low": 115374.24,
-                "psar": 115390.0154413884,
-                "momentum_10": 53.30000000000291,
-                "zscore_20": 1.0285345770383767,
-                "vwma_20": 115448.60802579267,
-                "obv": 242.21477999999993,
-                "vwap": 114765.93243980804,
-                "stochrsi": 87.52773324416209,
+                "psar": 115415.0203585966,
+                "momentum_10": -36.01999999998952,
+                "zscore_20": -0.6867691138132095,
+                "vwma_20": 115442.70847607369,
+                "obv": 240.40224999999995,
+                "vwap": 114766.67727715296,
+                "stochrsi": 24.6119195122393,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5661023496166324
+                "technical_score": 0.45506824639617677
             }
         },
         "5m | BTC/USDC": {
@@ -41341,27 +41312,27 @@
             },
             "dominant_signal": "NEUTRE",
             "ta": {
-                "sma_20": 115506.99249999998,
-                "sma_50": 115340.48920000007,
-                "ema_20": 115452.39809391087,
-                "rsi_14": 56.73638150084253,
-                "macd": 48.14422681494034,
-                "macd_signal": 64.34682242149944,
-                "macd_hist": -16.2025956065591,
-                "bb_lower": 115302.9698109188,
-                "bb_upper": 115711.01518908115,
+                "sma_20": 115506.50899999999,
+                "sma_50": 115350.84900000007,
+                "ema_20": 115451.78779925269,
+                "rsi_14": 51.564571483327235,
+                "macd": 42.469192677293904,
+                "macd_signal": 59.97129647265833,
+                "macd_hist": -17.502103795364427,
+                "bb_lower": 115301.95685884017,
+                "bb_upper": 115711.06114115981,
                 "donchian_high": 115732.71,
                 "donchian_low": 115328.64,
                 "psar": 115439.00421064405,
-                "momentum_10": 68.59999999999127,
-                "zscore_20": 0.1763543627378665,
-                "vwma_20": 115469.8335734286,
-                "obv": 182.03663999999972,
-                "vwap": 114766.6774296994,
-                "stochrsi": 38.834315792610546,
+                "momentum_10": 87.99000000000524,
+                "zscore_20": -0.5767392542954832,
+                "vwma_20": 115470.33073181905,
+                "obv": 181.85810999999973,
+                "vwap": 114766.7459556777,
+                "stochrsi": 41.62241984112083,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5673638150084254
+                "technical_score": 0.5156457148332724
             }
         },
         "15m | BTC/USDC": {
@@ -41378,27 +41349,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 115255.17550000004,
-                "sma_50": 114563.2608,
-                "ema_20": 115185.89932550339,
-                "rsi_14": 61.632644635497236,
-                "macd": 287.55335772177204,
-                "macd_signal": 307.3789347215983,
-                "macd_hist": -19.82557699982624,
-                "bb_lower": 114670.03912097876,
-                "bb_upper": 115840.31187902132,
+                "sma_20": 115312.55650000004,
+                "sma_50": 114587.2722,
+                "ema_20": 115210.66986593163,
+                "rsi_14": 61.67292061087464,
+                "macd": 273.5899990860635,
+                "macd_signal": 300.62114759449133,
+                "macd_hist": -27.03114850842786,
+                "bb_lower": 114920.89217032994,
+                "bb_upper": 115704.22082967013,
                 "donchian_high": 115732.71,
-                "donchian_low": 114026.01,
+                "donchian_low": 114155.73,
                 "psar": 115276.70527580823,
-                "momentum_10": 290.27999999999884,
-                "zscore_20": 0.6297276990781939,
-                "vwma_20": 115227.7505240534,
-                "obv": -2719.6567499999983,
-                "vwap": 114762.29697883314,
-                "stochrsi": 18.587419547701742,
+                "momentum_10": 260.0100000000093,
+                "zscore_20": 0.6641140310076988,
+                "vwma_20": 115260.14321679695,
+                "obv": -2719.478219999998,
+                "vwap": 114762.3659370098,
+                "stochrsi": 18.48400775298415,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6163264463549724
+                "technical_score": 0.6167292061087464
             }
         },
         "1h | BTC/USDC": {
@@ -41526,27 +41497,27 @@
             },
             "dominant_signal": "NEUTRE",
             "ta": {
-                "sma_20": 3681.3655000000012,
-                "sma_50": 3680.155800000003,
-                "ema_20": 3680.3280326646177,
-                "rsi_14": 51.99028598726984,
-                "macd": -0.22826586369001234,
-                "macd_signal": -0.09246291894508349,
-                "macd_hist": -0.13580294474492885,
-                "bb_lower": 3676.4542701196237,
-                "bb_upper": 3686.2767298803788,
-                "donchian_high": 3687.49,
-                "donchian_low": 3677.91,
+                "sma_20": 3679.9250000000015,
+                "sma_50": 3679.427000000003,
+                "ema_20": 3679.6672750435964,
+                "rsi_14": 42.46427203870058,
+                "macd": -0.6142635539304138,
+                "macd_signal": -0.29570755487706984,
+                "macd_hist": -0.3185559990533439,
+                "bb_lower": 3677.0359690331647,
+                "bb_upper": 3682.8140309668383,
+                "donchian_high": 3683.99,
+                "donchian_low": 3677.3,
                 "psar": 3680.3877555926724,
-                "momentum_10": 0.21000000000003638,
-                "zscore_20": -0.06569004104555509,
-                "vwma_20": 3682.4231529513254,
-                "obv": 13301.791699999998,
-                "vwap": 3630.5202193150462,
-                "stochrsi": 62.34246441358467,
+                "momentum_10": -1.1199999999998909,
+                "zscore_20": -1.7712053171979194,
+                "vwma_20": 3680.8974476977073,
+                "obv": 13301.275399999999,
+                "vwap": 3630.5204120476415,
+                "stochrsi": 3.0871311129892263,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5199028598726985
+                "technical_score": 0.4246427203870058
             }
         },
         "5m | ETH/USDC": {
@@ -41563,27 +41534,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3682.753499999998,
-                "sma_50": 3664.121400000001,
-                "ema_20": 3677.657787258404,
-                "rsi_14": 56.300110719158646,
-                "macd": 5.053541525902801,
-                "macd_signal": 6.704660382960011,
-                "macd_hist": -1.6511188570572095,
-                "bb_lower": 3670.151264840254,
-                "bb_upper": 3695.355735159742,
+                "sma_20": 3682.8319999999985,
+                "sma_50": 3665.1092000000003,
+                "ema_20": 3677.623712281413,
+                "rsi_14": 52.43762198069602,
+                "macd": 4.459092428426175,
+                "macd_signal": 6.255546792053243,
+                "macd_hist": -1.7964543636270687,
+                "bb_lower": 3670.387165569712,
+                "bb_upper": 3695.276834430285,
                 "donchian_high": 3699.59,
                 "donchian_low": 3673.31,
                 "psar": 3676.6229414182258,
-                "momentum_10": 1.919999999999618,
-                "zscore_20": -0.24030094381798248,
-                "vwma_20": 3684.65902359792,
-                "obv": 39347.59879999998,
-                "vwap": 3630.7999296680855,
-                "stochrsi": 11.575818085614232,
+                "momentum_10": -0.8999999999996362,
+                "zscore_20": -0.866532481672121,
+                "vwma_20": 3685.9478453420547,
+                "obv": 39347.57429999998,
+                "vwap": 3630.799938385146,
+                "stochrsi": 8.79107264395589,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5630011071915865
+                "technical_score": 0.5243762198069603
             }
         },
         "15m | ETH/USDC": {
@@ -41600,27 +41571,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3657.873499999999,
-                "sma_50": 3633.4257999999995,
-                "ema_20": 3659.768761242162,
-                "rsi_14": 63.82420190073928,
-                "macd": 16.783500966621887,
-                "macd_signal": 15.100970137200338,
-                "macd_hist": 1.6825308294215482,
-                "bb_lower": 3613.69667789796,
-                "bb_upper": 3702.0503221020376,
+                "sma_20": 3661.2299999999987,
+                "sma_50": 3634.146199999999,
+                "ema_20": 3661.438403028623,
+                "rsi_14": 62.00469745719296,
+                "macd": 16.091620484002306,
+                "macd_signal": 15.299100206560732,
+                "macd_hist": 0.7925202774415734,
+                "bb_lower": 3622.1546850296677,
+                "bb_upper": 3700.3053149703296,
                 "donchian_high": 3699.59,
-                "donchian_low": 3595.0,
+                "donchian_low": 3602.73,
                 "psar": 3673.31,
-                "momentum_10": 33.9399999999996,
-                "zscore_20": 0.9860679399953128,
-                "vwma_20": 3655.102639449817,
-                "obv": -91320.50470000003,
-                "vwap": 3630.4630725535817,
-                "stochrsi": 36.896951726494216,
+                "momentum_10": 30.75,
+                "zscore_20": 0.8016876395843114,
+                "vwma_20": 3657.286388901098,
+                "obv": -91320.52920000003,
+                "vwap": 3630.4630813340414,
+                "stochrsi": 33.735351207596075,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6382420190073929
+                "technical_score": 0.6200469745719296
             }
         },
         "1h | ETH/USDC": {
@@ -41748,27 +41719,27 @@
             },
             "dominant_signal": "NEUTRE",
             "ta": {
-                "sma_20": 120.06999999999996,
-                "sma_50": 119.4372000000001,
-                "ema_20": 120.21249955311305,
-                "rsi_14": 76.43139973335832,
-                "macd": 0.46148624591097587,
-                "macd_signal": 0.3627575183373074,
-                "macd_hist": 0.09872872757366846,
-                "bb_lower": 118.90458162016353,
-                "bb_upper": 121.2354183798364,
-                "donchian_high": 121.08,
-                "donchian_low": 119.29,
-                "psar": 120.5725824,
-                "momentum_10": 1.210000000000008,
-                "zscore_20": 1.4384950987152,
-                "vwma_20": 119.74311110629188,
-                "obv": 1605.1639999999938,
-                "vwap": 117.30385989993525,
-                "stochrsi": 88.68135788547083,
+                "sma_20": 120.34549999999994,
+                "sma_50": 119.5948000000001,
+                "ema_20": 120.35610809109855,
+                "rsi_14": 48.622855504516934,
+                "macd": 0.31014210404519815,
+                "macd_signal": 0.3806861706763056,
+                "macd_hist": -0.07054406663110746,
+                "bb_lower": 119.26764147491924,
+                "bb_upper": 121.42335852508064,
+                "donchian_high": 121.12,
+                "donchian_low": 119.47,
+                "psar": 120.763252736,
+                "momentum_10": -0.4200000000000017,
+                "zscore_20": -0.37165661194531124,
+                "vwma_20": 119.97404477002702,
+                "obv": 1368.9899999999939,
+                "vwap": 117.32696444248666,
+                "stochrsi": -2.0724163126336254e-14,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.7643139973335832
+                "technical_score": 0.4862285550451693
             }
         },
         "5m | LTC/USDC": {
@@ -41785,27 +41756,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 119.19149999999995,
-                "sma_50": 118.37579999999994,
-                "ema_20": 119.32307408064237,
-                "rsi_14": 79.97561829489874,
-                "macd": 0.6087387299146485,
-                "macd_signal": 0.4580148620791801,
-                "macd_hist": 0.15072386783546843,
-                "bb_lower": 117.84912486605775,
-                "bb_upper": 120.53387513394215,
+                "sma_20": 119.27849999999994,
+                "sma_50": 118.43199999999996,
+                "ema_20": 119.40087654915263,
+                "rsi_14": 63.75471733892451,
+                "macd": 0.5979006157194107,
+                "macd_signal": 0.4859920128072262,
+                "macd_hist": 0.11190860291218446,
+                "bb_lower": 117.92708185589005,
+                "bb_upper": 120.62991814410982,
                 "donchian_high": 120.93,
-                "donchian_low": 118.26,
-                "psar": 119.28258084795333,
-                "momentum_10": 2.0,
-                "zscore_20": 2.5246000974047593,
-                "vwma_20": 119.08734359352832,
-                "obv": 24147.576999999972,
-                "vwap": 117.30481269872581,
-                "stochrsi": 100.0,
+                "donchian_low": 118.37,
+                "psar": 119.5461679122808,
+                "momentum_10": 1.4200000000000017,
+                "zscore_20": 1.2426743514109526,
+                "vwma_20": 119.1383354996606,
+                "obv": 24146.758999999973,
+                "vwap": 117.30487713181479,
+                "stochrsi": 76.14672086239214,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.7997561829489874
+                "technical_score": 0.637547173389245
             }
         },
         "15m | LTC/USDC": {
@@ -41822,27 +41793,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 118.16899999999995,
-                "sma_50": 117.33140000000002,
-                "ema_20": 118.30759360563697,
-                "rsi_14": 72.18477740590932,
-                "macd": 0.6901631729903102,
-                "macd_signal": 0.4840982769948834,
-                "macd_hist": 0.20606489599542677,
-                "bb_lower": 116.42200372062986,
-                "bb_upper": 119.91599627937005,
-                "donchian_high": 119.99,
-                "donchian_low": 116.05,
-                "psar": 118.14964582016002,
-                "momentum_10": 2.219999999999999,
-                "zscore_20": 1.9203513213986365,
-                "vwma_20": 118.20169077816993,
-                "obv": 24487.71999999994,
-                "vwap": 117.32892032119717,
+                "sma_20": 118.34949999999995,
+                "sma_50": 117.37280000000003,
+                "ema_20": 118.48210850033821,
+                "rsi_14": 73.77704312182831,
+                "macd": 0.747499327367052,
+                "macd_signal": 0.5367784870693171,
+                "macd_hist": 0.21072084029773497,
+                "bb_lower": 116.57147328474989,
+                "bb_upper": 120.12752671525001,
+                "donchian_high": 120.14,
+                "donchian_low": 116.15,
+                "psar": 118.37048832174081,
+                "momentum_10": 2.1400000000000006,
+                "zscore_20": 1.9630340899995742,
+                "vwma_20": 118.27814090693843,
+                "obv": 24488.53799999994,
+                "vwap": 117.32898420870248,
                 "stochrsi": 100.00000000000011,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.7218477740590932
+                "technical_score": 0.7377704312182831
             }
         },
         "1h | LTC/USDC": {
@@ -41970,27 +41941,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3.0110299999999985,
-                "sma_50": 3.006881999999998,
-                "ema_20": 3.0107677397425356,
-                "rsi_14": 58.401624236751104,
-                "macd": 0.00195584456868092,
-                "macd_signal": 0.0018573233715978136,
-                "macd_hist": 9.852119708310641e-05,
-                "bb_lower": 3.006362623860657,
-                "bb_upper": 3.01569737613934,
+                "sma_20": 3.011304999999999,
+                "sma_50": 3.0068879999999973,
+                "ema_20": 3.0109987169780457,
+                "rsi_14": 46.51521612970196,
+                "macd": 0.0010713828198647413,
+                "macd_signal": 0.0016096138573961133,
+                "macd_hist": -0.000538231037531372,
+                "bb_lower": 3.0066071387816757,
+                "bb_upper": 3.016002861218322,
                 "donchian_high": 3.0153,
                 "donchian_low": 3.0046,
-                "psar": 3.007163170155487,
-                "momentum_10": 0.0038999999999997925,
-                "zscore_20": 0.9898453401269534,
-                "vwma_20": 3.010310766079928,
-                "obv": 3238277.3999999994,
-                "vwap": 2.967878067888621,
-                "stochrsi": 47.999914983830685,
+                "psar": 3.0086654510997675,
+                "momentum_10": -0.0043999999999999595,
+                "zscore_20": -0.914955999941488,
+                "vwma_20": 3.0101462414051783,
+                "obv": 3237088.1999999993,
+                "vwap": 2.9678802159161104,
+                "stochrsi": 1.3121277706479735,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.584016242367511
+                "technical_score": 0.46515216129701964
             }
         },
         "5m | XRP/USDC": {
@@ -42007,27 +41978,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3.008070000000001,
-                "sma_50": 2.9965619999999995,
-                "ema_20": 3.006015780405133,
-                "rsi_14": 60.6137185556357,
-                "macd": 0.004890261551905084,
-                "macd_signal": 0.004936710618125693,
-                "macd_hist": -4.644906622060935e-05,
-                "bb_lower": 2.997321958320818,
-                "bb_upper": 3.0188180416791837,
+                "sma_20": 3.008595000000001,
+                "sma_50": 2.9972339999999993,
+                "ema_20": 3.006309515604644,
+                "rsi_14": 55.49908226797994,
+                "macd": 0.004555822074628679,
+                "macd_signal": 0.00486053290942629,
+                "macd_hist": -0.00030471083479761095,
+                "bb_lower": 2.9987616943533144,
+                "bb_upper": 3.0184283056466876,
                 "donchian_high": 3.0194,
                 "donchian_low": 2.9965,
-                "psar": 2.9977806528000004,
-                "momentum_10": 0.008699999999999708,
-                "zscore_20": 0.9666954296116105,
-                "vwma_20": 3.0078414228716346,
+                "psar": 2.9987418136320003,
+                "momentum_10": 0.008999999999999897,
+                "zscore_20": 0.10011142375442343,
+                "vwma_20": 3.0083617383685763,
                 "obv": 141355.09999999235,
                 "vwap": 2.9681941276356016,
-                "stochrsi": 63.64015222959876,
+                "stochrsi": 63.52327710546072,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.606137185556357
+                "technical_score": 0.5549908226797994
             }
         },
         "15m | XRP/USDC": {
@@ -42044,27 +42015,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 2.9926950000000057,
-                "sma_50": 2.9641219999999997,
-                "ema_20": 2.991805650418702,
-                "rsi_14": 62.83939090954266,
-                "macd": 0.013775947191204896,
-                "macd_signal": 0.01313486342151714,
-                "macd_hist": 0.0006410837696877551,
-                "bb_lower": 2.96376892353193,
-                "bb_upper": 3.0216210764680813,
+                "sma_20": 2.995035000000006,
+                "sma_50": 2.9651599999999996,
+                "ema_20": 2.9934527313312063,
+                "rsi_14": 61.71166477660862,
+                "macd": 0.013466144987788198,
+                "macd_signal": 0.013201119734771352,
+                "macd_hist": 0.00026502525301684565,
+                "bb_lower": 2.9688841090049007,
+                "bb_upper": 3.021185890995111,
                 "donchian_high": 3.0194,
-                "donchian_low": 2.9451,
-                "psar": 2.97840543893504,
-                "momentum_10": 0.028999999999999915,
-                "zscore_20": 1.2268541931366959,
-                "vwma_20": 2.9884951199546808,
+                "donchian_low": 2.9552,
+                "psar": 2.980045221377638,
+                "momentum_10": 0.029400000000000315,
+                "zscore_20": 1.048443530803633,
+                "vwma_20": 2.990670464936067,
                 "obv": -45116345.89999995,
                 "vwap": 2.9677329315828405,
-                "stochrsi": 47.293150124893806,
+                "stochrsi": 52.51872000359784,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6283939090954266
+                "technical_score": 0.6171166477660862
             }
         },
         "1h | XRP/USDC": {
@@ -42192,27 +42163,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.20600550000000023,
-                "sma_50": 0.20596020000000015,
-                "ema_20": 0.20595430615144242,
-                "rsi_14": 55.89118319791858,
-                "macd": 2.582590157673703e-06,
-                "macd_signal": -4.0933435964255184e-06,
-                "macd_hist": 6.675933754099222e-06,
-                "bb_lower": 0.20568192775206057,
-                "bb_upper": 0.2063290722479399,
-                "donchian_high": 0.20647,
+                "sma_20": 0.20597800000000027,
+                "sma_50": 0.20593000000000014,
+                "ema_20": 0.20600302063716847,
+                "rsi_14": 47.711352963713445,
+                "macd": 2.677774144488332e-05,
+                "macd_signal": 1.884607184481312e-05,
+                "macd_hist": 7.931669600070197e-06,
+                "bb_lower": 0.205757310173421,
+                "bb_upper": 0.20619868982657955,
+                "donchian_high": 0.20618,
                 "donchian_low": 0.20567,
                 "psar": 0.20579225993478653,
-                "momentum_10": 0.00017000000000000348,
-                "zscore_20": 0.8102943596192367,
-                "vwma_20": 0.20623799738362597,
-                "obv": 4787232.0,
-                "vwap": 0.20257987643573197,
-                "stochrsi": 62.86455698170269,
+                "momentum_10": 3.0000000000002247e-05,
+                "zscore_20": -0.4239852228104662,
+                "vwma_20": 0.20596765298790454,
+                "obv": 4784185.0,
+                "vwap": 0.20258006946471008,
+                "stochrsi": 57.21399732599682,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5589118319791858
+                "technical_score": 0.47711352963713444
             }
         },
         "5m | DOGE/USDC": {
@@ -42229,27 +42200,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.20610699999999946,
-                "sma_50": 0.20491240000000005,
-                "ema_20": 0.20580915423759405,
-                "rsi_14": 57.76156801019883,
-                "macd": 0.00032423128612088514,
-                "macd_signal": 0.0004310924966640496,
-                "macd_hist": -0.00010686121054316448,
-                "bb_lower": 0.20535291512353362,
-                "bb_upper": 0.2068610848764653,
+                "sma_20": 0.2061284999999995,
+                "sma_50": 0.20497840000000006,
+                "ema_20": 0.20582066335782317,
+                "rsi_14": 54.44763681207263,
+                "macd": 0.0002977992008292851,
+                "macd_signal": 0.00040443383749709673,
+                "macd_hist": -0.0001066346366678116,
+                "bb_lower": 0.2054218381283605,
+                "bb_upper": 0.20683516187163847,
                 "donchian_high": 0.20718,
                 "donchian_low": 0.20537,
                 "psar": 0.20573937606856535,
-                "momentum_10": 0.00011999999999998123,
-                "zscore_20": 0.08530716466366281,
-                "vwma_20": 0.20613421850700286,
+                "momentum_10": 1.9999999999992246e-05,
+                "zscore_20": -0.5475712661692055,
+                "vwma_20": 0.20618514519098288,
                 "obv": 20523339.0,
                 "vwap": 0.2025979098255241,
-                "stochrsi": 21.083360369263573,
+                "stochrsi": 22.349652362676665,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5776156801019883
+                "technical_score": 0.5444763681207263
             }
         },
         "15m | DOGE/USDC": {
@@ -42266,27 +42237,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.20452949999999986,
-                "sma_50": 0.2021622000000003,
-                "ema_20": 0.20452280480071733,
-                "rsi_14": 62.47206590386065,
-                "macd": 0.001257540926533962,
-                "macd_signal": 0.001240436589884278,
-                "macd_hist": 1.7104336649684032e-05,
-                "bb_lower": 0.2016743819638706,
-                "bb_upper": 0.20738461803612912,
+                "sma_20": 0.20475299999999988,
+                "sma_50": 0.20225240000000028,
+                "ema_20": 0.2046568233911252,
+                "rsi_14": 63.22346505876683,
+                "macd": 0.0012160607859725836,
+                "macd_signal": 0.0012355614291019391,
+                "macd_hist": -1.950064312935553e-05,
+                "bb_lower": 0.20221138555240678,
+                "bb_upper": 0.20729461444759298,
                 "donchian_high": 0.20718,
-                "donchian_low": 0.20022,
-                "psar": 0.20555,
-                "momentum_10": 0.0019699999999999995,
-                "zscore_20": 0.853790713669477,
-                "vwma_20": 0.20410843944268087,
+                "donchian_low": 0.20072,
+                "psar": 0.20562,
+                "momentum_10": 0.0020699999999999885,
+                "zscore_20": 0.9027314866683357,
+                "vwma_20": 0.2042450338490813,
                 "obv": -168931587.0,
                 "vwap": 0.20257985773812012,
-                "stochrsi": 32.72914403981941,
+                "stochrsi": 34.7938791326556,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6247206590386065
+                "technical_score": 0.6322346505876683
             }
         },
         "1h | DOGE/USDC": {
@@ -42414,27 +42385,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 772.9280000000001,
-                "sma_50": 772.9419999999997,
-                "ema_20": 772.9898731830624,
-                "rsi_14": 51.312384621893614,
-                "macd": 0.038043109241243656,
-                "macd_signal": 0.012899096709959344,
-                "macd_hist": 0.025144012531284312,
-                "bb_lower": 772.4873822514933,
-                "bb_upper": 773.368617748507,
-                "donchian_high": 773.28,
-                "donchian_low": 772.05,
-                "psar": 772.0723999999999,
-                "momentum_10": 0.14999999999997726,
-                "zscore_20": 0.49550476387607556,
-                "vwma_20": 772.735069376884,
-                "obv": 1010.0549999999988,
-                "vwap": 766.5334270864971,
-                "stochrsi": 88.45912500755928,
+                "sma_20": 772.9595,
+                "sma_50": 772.9349999999997,
+                "ema_20": 772.9936600879136,
+                "rsi_14": 49.22804301620831,
+                "macd": 0.017629785058261405,
+                "macd_signal": 0.02291370608750628,
+                "macd_hist": -0.005283921029244874,
+                "bb_lower": 772.5687328050261,
+                "bb_upper": 773.350267194974,
+                "donchian_high": 773.22,
+                "donchian_low": 772.2,
+                "psar": 772.2639347434291,
+                "momentum_10": -0.1999999999999318,
+                "zscore_20": -0.047391156492346855,
+                "vwma_20": 772.745682282684,
+                "obv": 1009.8899999999987,
+                "vwap": 766.5334884013339,
+                "stochrsi": 34.41030009896265,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5131238462189361
+                "technical_score": 0.4922804301620831
             }
         },
         "5m | BNB/USDC": {
@@ -42451,27 +42422,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 773.2304999999993,
-                "sma_50": 770.2292000000007,
-                "ema_20": 772.4964188921537,
-                "rsi_14": 59.007226157732205,
-                "macd": 0.8289347584135385,
-                "macd_signal": 1.050959064349693,
-                "macd_hist": -0.22202430593615463,
-                "bb_lower": 771.8708165795803,
-                "bb_upper": 774.5901834204184,
+                "sma_20": 773.2579999999994,
+                "sma_50": 770.3340000000006,
+                "ema_20": 772.5396170929009,
+                "rsi_14": 58.0896052278133,
+                "macd": 0.770390178603634,
+                "macd_signal": 0.9948452872004813,
+                "macd_hist": -0.22445510859684725,
+                "bb_lower": 771.9451770857917,
+                "bb_upper": 774.570822914207,
                 "donchian_high": 775.0,
-                "donchian_low": 771.4,
+                "donchian_low": 771.69,
                 "psar": 772.012395369512,
-                "momentum_10": 0.39999999999997726,
-                "zscore_20": -0.2731171531164201,
-                "vwma_20": 773.6294885160266,
-                "obv": 2775.8999999999983,
-                "vwap": 766.564996466239,
-                "stochrsi": 22.270559920290236,
+                "momentum_10": -0.009999999999990905,
+                "zscore_20": -0.45733702989770003,
+                "vwma_20": 773.6730326797921,
+                "obv": 2775.7859999999982,
+                "vwap": 766.5650385387617,
+                "stochrsi": 24.45481418627133,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5900722615773221
+                "technical_score": 0.580896052278133
             }
         },
         "15m | BNB/USDC": {
@@ -42488,27 +42459,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 769.846,
-                "sma_50": 765.1209999999995,
-                "ema_20": 769.8565693143937,
-                "rsi_14": 64.60153918429182,
-                "macd": 2.6823183747698067,
-                "macd_signal": 2.528442560259548,
-                "macd_hist": 0.15387581451025856,
-                "bb_lower": 764.2892801039438,
-                "bb_upper": 775.4027198960562,
+                "sma_20": 770.1755,
+                "sma_50": 765.3501999999994,
+                "ema_20": 770.151181760642,
+                "rsi_14": 64.67365774167962,
+                "macd": 2.6011396010352428,
+                "macd_signal": 2.5429819684146873,
+                "macd_hist": 0.05815763262055551,
+                "bb_lower": 764.7038111379668,
+                "bb_upper": 775.6471888620333,
                 "donchian_high": 775.0,
-                "donchian_low": 763.56,
+                "donchian_low": 765.09,
                 "psar": 770.91296,
-                "momentum_10": 5.199999999999932,
-                "zscore_20": 1.0783932383917092,
-                "vwma_20": 769.4630281580479,
-                "obv": -36465.40599999996,
-                "vwap": 766.6234924782005,
-                "stochrsi": 54.38842483299154,
+                "momentum_10": 5.160000000000082,
+                "zscore_20": 0.9884509734761051,
+                "vwma_20": 769.6215250280047,
+                "obv": -36465.29199999996,
+                "vwap": 766.6235341652771,
+                "stochrsi": 52.86467933981641,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6460153918429182
+                "technical_score": 0.6467365774167962
             }
         },
         "1h | BNB/USDC": {
@@ -42636,27 +42607,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.7430549999999995,
-                "sma_50": 0.743702,
-                "ema_20": 0.7429810344397161,
-                "rsi_14": 51.503268752280974,
-                "macd": -0.0002691433017895095,
-                "macd_signal": -0.0003221605963666389,
-                "macd_hist": 5.301729457712938e-05,
-                "bb_lower": 0.7416860953278648,
-                "bb_upper": 0.7444239046721342,
-                "donchian_high": 0.7447,
+                "sma_20": 0.7428049999999995,
+                "sma_50": 0.7434139999999997,
+                "ema_20": 0.7429753144682628,
+                "rsi_14": 43.42925890583385,
+                "macd": -0.0001665301756818005,
+                "macd_signal": -0.00021577351737407652,
+                "macd_hist": 4.924334169227601e-05,
+                "bb_lower": 0.7420421762972232,
+                "bb_upper": 0.7435678237027757,
+                "donchian_high": 0.7435,
                 "donchian_low": 0.742,
                 "psar": 0.74285861665792,
-                "momentum_10": 0.00029999999999996696,
-                "zscore_20": 0.3488869114201272,
-                "vwma_20": 0.7430944481135937,
-                "obv": 403246.0000000008,
-                "vwap": 0.7338287738463274,
-                "stochrsi": 79.54366810296159,
+                "momentum_10": -0.00040000000000006697,
+                "zscore_20": -1.0349578024019217,
+                "vwma_20": 0.7425332984906663,
+                "obv": 402931.60000000085,
+                "vwap": 0.7338291257165225,
+                "stochrsi": 71.22685146774867,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5150326875228097
+                "technical_score": 0.43429258905833845
             }
         },
         "5m | ADA/USDC": {
@@ -42673,27 +42644,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.7441199999999993,
-                "sma_50": 0.7408119999999996,
-                "ema_20": 0.7430439084899192,
-                "rsi_14": 53.02996619711479,
-                "macd": 0.0006850857665028354,
-                "macd_signal": 0.0011505140424156084,
-                "macd_hist": -0.00046542827591277303,
-                "bb_lower": 0.741158513885747,
-                "bb_upper": 0.7470814861142516,
+                "sma_20": 0.7441399999999992,
+                "sma_50": 0.7409839999999994,
+                "ema_20": 0.7429825838718317,
+                "rsi_14": 49.54522039668441,
+                "macd": 0.0005630081191920766,
+                "macd_signal": 0.001033012857770902,
+                "macd_hist": -0.0004700047385788255,
+                "bb_lower": 0.741231117051855,
+                "bb_upper": 0.7470488829481435,
                 "donchian_high": 0.7483,
-                "donchian_low": 0.7415,
+                "donchian_low": 0.7416,
                 "psar": 0.743237010314547,
-                "momentum_10": -0.0009000000000000119,
-                "zscore_20": -0.5397541002447092,
-                "vwma_20": 0.7443743905577451,
-                "obv": -85577.39999999972,
-                "vwap": 0.7339726286132172,
-                "stochrsi": 14.05087304156863,
+                "momentum_10": -0.001100000000000101,
+                "zscore_20": -1.1660436303693458,
+                "vwma_20": 0.7445835186614573,
+                "obv": -85932.19999999972,
+                "vwap": 0.7339729359275945,
+                "stochrsi": 15.895802080110983,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5302996619711479
+                "technical_score": 0.4954522039668441
             }
         },
         "15m | ADA/USDC": {
@@ -42710,27 +42681,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.7395650000000008,
-                "sma_50": 0.7312919999999997,
-                "ema_20": 0.7391800143454366,
-                "rsi_14": 60.29171913332944,
-                "macd": 0.0038775379319699876,
-                "macd_signal": 0.004020778509996575,
-                "macd_hist": -0.00014324057802658774,
-                "bb_lower": 0.7312031162413322,
-                "bb_upper": 0.7479268837586694,
+                "sma_20": 0.7401500000000008,
+                "sma_50": 0.7316019999999998,
+                "ema_20": 0.7394866796458712,
+                "rsi_14": 60.8022289432481,
+                "macd": 0.003663771249186487,
+                "macd_signal": 0.003949377057834558,
+                "macd_hist": -0.0002856058086480708,
+                "bb_lower": 0.7327715177716602,
+                "bb_upper": 0.7475284822283413,
                 "donchian_high": 0.7483,
-                "donchian_low": 0.7256,
-                "psar": 0.7372109313126399,
-                "momentum_10": 0.0048000000000000265,
-                "zscore_20": 0.5909702735885196,
-                "vwma_20": 0.7393999267750553,
-                "obv": -38942564.099999964,
-                "vwap": 0.7338329227417523,
-                "stochrsi": 16.87101478581977,
+                "donchian_low": 0.7286,
+                "psar": 0.7376544940601343,
+                "momentum_10": 0.005599999999999938,
+                "zscore_20": 0.5944389806970357,
+                "vwma_20": 0.740022755092681,
+                "obv": -38942209.29999997,
+                "vwap": 0.7338332351506746,
+                "stochrsi": 12.924735326395199,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6029171913332944
+                "technical_score": 0.608022289432481
             }
         },
         "1h | ADA/USDC": {
@@ -42858,27 +42829,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 168.61350000000022,
-                "sma_50": 168.64100000000013,
-                "ema_20": 168.5726400218031,
-                "rsi_14": 54.24128232902278,
-                "macd": -0.05267097697830536,
-                "macd_signal": -0.0534123631024869,
-                "macd_hist": 0.0007413861241815367,
-                "bb_lower": 168.30068855545485,
-                "bb_upper": 168.92631144454558,
-                "donchian_high": 168.88,
+                "sma_20": 168.6560000000002,
+                "sma_50": 168.64940000000013,
+                "ema_20": 168.71458100212178,
+                "rsi_14": 47.554226630203424,
+                "macd": 0.05345741362654621,
+                "macd_signal": 0.012164345380286672,
+                "macd_hist": 0.04129306824625954,
+                "bb_lower": 168.20903691446188,
+                "bb_upper": 169.10296308553853,
+                "donchian_high": 169.09,
                 "donchian_low": 168.26,
-                "psar": 168.26,
-                "momentum_10": 0.009999999999990905,
-                "zscore_20": 0.6636800634800788,
-                "vwma_20": 168.5935247257499,
-                "obv": 14543.071999999991,
-                "vwap": 166.0153577490297,
-                "stochrsi": 68.13917250420026,
+                "psar": 168.456709165056,
+                "momentum_10": 0.18999999999999773,
+                "zscore_20": -0.1570083112544539,
+                "vwma_20": 168.49135782793385,
+                "obv": 14546.965999999991,
+                "vwap": 166.01574157953374,
+                "stochrsi": 78.39084378370639,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5424128232902278
+                "technical_score": 0.4755422663020342
             }
         },
         "5m | SOL/USDC": {
@@ -42895,27 +42866,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 168.88049999999993,
-                "sma_50": 168.44299999999964,
-                "ema_20": 168.63227789169585,
-                "rsi_14": 52.92508927983596,
-                "macd": 0.06606006392968311,
-                "macd_signal": 0.14795867276643573,
-                "macd_hist": -0.08189860883675262,
-                "bb_lower": 167.9614902065786,
-                "bb_upper": 169.79950979342127,
+                "sma_20": 168.87599999999992,
+                "sma_50": 168.45359999999965,
+                "ema_20": 168.6311085686772,
+                "rsi_14": 51.058498832597245,
+                "macd": 0.05962385419132943,
+                "macd_signal": 0.13029170905141446,
+                "macd_hist": -0.07066785486008503,
+                "bb_lower": 167.9528228769976,
+                "bb_upper": 169.79917712300224,
                 "donchian_high": 169.96,
                 "donchian_low": 168.26,
                 "psar": 168.91863222282217,
-                "momentum_10": 0.13999999999998636,
-                "zscore_20": -0.3404447926248763,
-                "vwma_20": 169.02797403338002,
-                "obv": -8935.720999999996,
-                "vwap": 166.0237856204582,
-                "stochrsi": 30.55605165384841,
+                "momentum_10": 0.06999999999999318,
+                "zscore_20": -0.5405635150012649,
+                "vwma_20": 169.0524664509533,
+                "obv": -8959.002999999995,
+                "vwap": 166.0239414669185,
+                "stochrsi": 50.46924942783622,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5292508927983596
+                "technical_score": 0.5105849883259724
             }
         },
         "15m | SOL/USDC": {
@@ -42932,27 +42903,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 168.2470000000001,
-                "sma_50": 165.67099999999965,
-                "ema_20": 167.84902218401234,
-                "rsi_14": 57.85474010575976,
-                "macd": 0.9091449238540008,
-                "macd_signal": 1.037631486632724,
-                "macd_hist": -0.12848656277872328,
-                "bb_lower": 166.86213755195317,
-                "bb_upper": 169.63186244804703,
+                "sma_20": 168.3460000000001,
+                "sma_50": 165.7569999999997,
+                "ema_20": 167.92244864267784,
+                "rsi_14": 59.97988870362951,
+                "macd": 0.8622090234974848,
+                "macd_signal": 1.0025469940056762,
+                "macd_hist": -0.1403379705081913,
+                "bb_lower": 167.16702756604738,
+                "bb_upper": 169.5249724339528,
                 "donchian_high": 169.96,
-                "donchian_low": 164.64,
-                "psar": 167.44710018489602,
-                "momentum_10": 0.539999999999992,
-                "zscore_20": 0.0886800049473476,
-                "vwma_20": 168.15303207009725,
-                "obv": -517849.56899999897,
-                "vwap": 165.98379249849498,
-                "stochrsi": 1.063228624319392,
+                "donchian_low": 166.19,
+                "psar": 167.4973581811981,
+                "momentum_10": 1.1299999999999955,
+                "zscore_20": 0.45304225502921386,
+                "vwma_20": 168.29459773879492,
+                "obv": -517826.28699999896,
+                "vwap": 165.98395074800933,
+                "stochrsi": 5.860700800843489,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5785474010575976
+                "technical_score": 0.5997988870362951
             }
         },
         "1h | SOL/USDC": {
@@ -43080,27 +43051,27 @@
             },
             "dominant_signal": "NEUTRE",
             "ta": {
-                "sma_20": 0.33525,
-                "sma_50": 0.3348499999999999,
-                "ema_20": 0.3353121867257608,
-                "rsi_14": 73.31070419122766,
-                "macd": 0.0002291314251359755,
-                "macd_signal": 0.00021154949887380666,
-                "macd_hist": 1.7581926262168847e-05,
-                "bb_lower": 0.3345973132455437,
-                "bb_upper": 0.3359026867544563,
-                "donchian_high": 0.3357,
-                "donchian_low": 0.3345,
-                "psar": 0.33513780885221367,
-                "momentum_10": 0.00030000000000002247,
-                "zscore_20": 1.0453339201824463,
-                "vwma_20": 0.33511721836039077,
+                "sma_20": 0.335495,
+                "sma_50": 0.3349999999999999,
+                "ema_20": 0.3354783130092692,
+                "rsi_14": 70.56030747072488,
+                "macd": 0.00022272316733085162,
+                "macd_signal": 0.00022627424876257198,
+                "macd_hist": -3.5510814317203556e-06,
+                "bb_lower": 0.33507798681121265,
+                "bb_upper": 0.33591201318878733,
+                "donchian_high": 0.3358,
+                "donchian_low": 0.3349,
+                "psar": 0.3353950446769024,
+                "momentum_10": 9.999999999998899e-05,
+                "zscore_20": 0.9582875996327733,
+                "vwma_20": 0.3352123003133114,
                 "obv": 768963.1999999998,
-                "vwap": 0.334704261108757,
-                "stochrsi": 65.65873265035285,
+                "vwap": 0.3347042658541455,
+                "stochrsi": 3.6359442974251883,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.7331070419122766
+                "technical_score": 0.7056030747072488
             }
         },
         "5m | TRX/USDC": {
@@ -43117,27 +43088,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.3347300000000003,
-                "sma_50": 0.3345959999999993,
-                "ema_20": 0.3348788584612866,
-                "rsi_14": 67.63809705597355,
-                "macd": 0.00024329340134532362,
-                "macd_signal": 0.00011631180863521224,
-                "macd_hist": 0.00012698159271011137,
-                "bb_lower": 0.3338331165074742,
-                "bb_upper": 0.3356268834925264,
-                "donchian_high": 0.3356,
+                "sma_20": 0.33478500000000033,
+                "sma_50": 0.33461599999999925,
+                "ema_20": 0.33495706241735457,
+                "rsi_14": 68.99947116242082,
+                "macd": 0.00027715744724921,
+                "macd_signal": 0.00014848093635801179,
+                "macd_hist": 0.0001286765108911982,
+                "bb_lower": 0.3337965163131682,
+                "bb_upper": 0.33577348368683246,
+                "donchian_high": 0.3357,
                 "donchian_low": 0.3341,
-                "psar": 0.334475229662847,
-                "momentum_10": 0.0014000000000000123,
-                "zscore_20": 1.8909281185892222,
-                "vwma_20": 0.33458632983747344,
+                "psar": 0.33456521128981925,
+                "momentum_10": 0.0013000000000000234,
+                "zscore_20": 1.8044439054163115,
+                "vwma_20": 0.3345849986499512,
                 "obv": -1672972.6000000006,
                 "vwap": 0.3346827053197413,
                 "stochrsi": 99.99999999999984,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6763809705597355
+                "technical_score": 0.6899947116242082
             }
         },
         "15m | TRX/USDC": {
@@ -43154,27 +43125,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 0.33457000000000037,
-                "sma_50": 0.3344659999999999,
-                "ema_20": 0.33463742300269295,
-                "rsi_14": 65.32060570123299,
-                "macd": 0.0001651050352757255,
-                "macd_signal": 9.976428380062746e-05,
-                "macd_hist": 6.534075147509804e-05,
-                "bb_lower": 0.3339500000008977,
-                "bb_upper": 0.33518999999910304,
-                "donchian_high": 0.3354,
-                "donchian_low": 0.3337,
-                "psar": 0.33409144481911573,
-                "momentum_10": 0.0010999999999999899,
-                "zscore_20": 2.6096255825979364,
-                "vwma_20": 0.3345302991683242,
+                "sma_20": 0.3346350000000004,
+                "sma_50": 0.33451999999999993,
+                "ema_20": 0.33473862081196026,
+                "rsi_14": 68.74677352426521,
+                "macd": 0.0002296187948647721,
+                "macd_signal": 0.0001257351860134564,
+                "macd_hist": 0.0001038836088513157,
+                "bb_lower": 0.3338494428736451,
+                "bb_upper": 0.3354205571263557,
+                "donchian_high": 0.3357,
+                "donchian_low": 0.334,
+                "psar": 0.3341961292335865,
+                "momentum_10": 0.0010000000000000009,
+                "zscore_20": 2.6427959516844406,
+                "vwma_20": 0.33453308801198534,
                 "obv": 5119470.900000011,
                 "vwap": 0.33467509149654395,
-                "stochrsi": 83.32968239096637,
+                "stochrsi": 100.00000000000006,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6532060570123299
+                "technical_score": 0.687467735242652
             }
         },
         "1h | TRX/USDC": {
@@ -43302,27 +43273,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3.5057100000000028,
-                "sma_50": 3.503643999999998,
-                "ema_20": 3.5053414887851355,
-                "rsi_14": 59.67510936027837,
-                "macd": 0.0014370755438317673,
-                "macd_signal": 0.0008582337565468306,
-                "macd_hist": 0.0005788417872849366,
-                "bb_lower": 3.498198968119208,
-                "bb_upper": 3.5132210318807977,
-                "donchian_high": 3.5126,
+                "sma_20": 3.506010000000002,
+                "sma_50": 3.503159999999998,
+                "ema_20": 3.5071142319544455,
+                "rsi_14": 51.39274153491645,
+                "macd": 0.0017904240692194762,
+                "macd_signal": 0.0015219031497013728,
+                "macd_hist": 0.0002685209195181033,
+                "bb_lower": 3.4981961917136504,
+                "bb_upper": 3.5138238082863538,
+                "donchian_high": 3.5118,
                 "donchian_low": 3.4976,
-                "psar": 3.499072633286854,
-                "momentum_10": 0.008700000000000152,
-                "zscore_20": 1.4248348764642949,
-                "vwma_20": 3.5047016159787505,
-                "obv": 1837563.599999998,
-                "vwap": 3.4463789115515167,
-                "stochrsi": 62.10147617854016,
+                "psar": 3.5020511190042476,
+                "momentum_10": 0.00039999999999995595,
+                "zscore_20": 0.32182424336246696,
+                "vwma_20": 3.5027928853916546,
+                "obv": 1840373.099999998,
+                "vwap": 3.446391154369845,
+                "stochrsi": 54.533609757841624,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5967510936027837
+                "technical_score": 0.5139274153491645
             }
         },
         "5m | SUI/USDC": {
@@ -43339,27 +43310,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3.507280000000006,
-                "sma_50": 3.4882959999999987,
-                "ema_20": 3.5018079721547846,
-                "rsi_14": 58.59909883783742,
-                "macd": 0.005618331408888899,
-                "macd_signal": 0.006823785493265281,
-                "macd_hist": -0.0012054540843763817,
-                "bb_lower": 3.489869014967737,
-                "bb_upper": 3.524690985032275,
+                "sma_20": 3.507885000000006,
+                "sma_50": 3.4891679999999985,
+                "ema_20": 3.5023310224257576,
+                "rsi_14": 55.66452074738344,
+                "macd": 0.005417377646341315,
+                "macd_signal": 0.006542503923880488,
+                "macd_hist": -0.0011251262775391728,
+                "bb_lower": 3.491377634983359,
+                "bb_upper": 3.524392365016653,
                 "donchian_high": 3.5313,
-                "donchian_low": 3.4912,
+                "donchian_low": 3.4932,
                 "psar": 3.5033,
-                "momentum_10": 0.0038000000000000256,
-                "zscore_20": 0.43888882504861965,
-                "vwma_20": 3.509908704681626,
-                "obv": -3111171.5000000033,
-                "vwap": 3.4470334274980727,
-                "stochrsi": 36.36428667630336,
+                "momentum_10": 0.0038999999999997925,
+                "zscore_20": -0.06908279648285923,
+                "vwma_20": 3.511071002328798,
+                "obv": -3111181.900000003,
+                "vwap": 3.4470334692475286,
+                "stochrsi": 42.715474697811686,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.5859909883783742
+                "technical_score": 0.5566452074738344
             }
         },
         "15m | SUI/USDC": {
@@ -43376,27 +43347,27 @@
             },
             "dominant_signal": "ATTENTE",
             "ta": {
-                "sma_20": 3.4820950000000024,
-                "sma_50": 3.4425879999999984,
-                "ema_20": 3.480060647095193,
-                "rsi_14": 61.34187867018266,
-                "macd": 0.019987046061361813,
-                "macd_signal": 0.019653899498873018,
-                "macd_hist": 0.00033314656248879457,
-                "bb_lower": 3.440471137854444,
-                "bb_upper": 3.523718862145561,
+                "sma_20": 3.4857150000000026,
+                "sma_50": 3.444049999999998,
+                "ema_20": 3.482654871181365,
+                "rsi_14": 62.310686477364484,
+                "macd": 0.019716060667300805,
+                "macd_signal": 0.019666331732558575,
+                "macd_hist": 4.972893474223042e-05,
+                "bb_lower": 3.4488136030086847,
+                "bb_upper": 3.5226163969913205,
                 "donchian_high": 3.5313,
-                "donchian_low": 3.4112,
-                "psar": 3.4698582698496,
-                "momentum_10": 0.03310000000000013,
-                "zscore_20": 1.0071377405897124,
-                "vwma_20": 3.4797311858497584,
-                "obv": -26893485.299999963,
-                "vwap": 3.4465977159961607,
-                "stochrsi": 32.26663837005166,
+                "donchian_low": 3.4248,
+                "psar": 3.472315939055616,
+                "momentum_10": 0.04249999999999998,
+                "zscore_20": 1.1402525274307167,
+                "vwma_20": 3.48269187108153,
+                "obv": -26893474.899999965,
+                "vwap": 3.4465977580600122,
+                "stochrsi": 40.647441507180496,
                 "kc_upper": null,
                 "kc_lower": null,
-                "technical_score": 0.6134187867018266
+                "technical_score": 0.6231068647736449
             }
         },
         "1h | SUI/USDC": {
@@ -43512,7 +43483,7 @@
         }
     },
     "sentiment": {
-        "timestamp": "2025-08-06 19:24:44",
+        "timestamp": "2025-08-06 19:30:29",
         "scores": [
             {
                 "title": "Nouvelle agression li\u00e9e aux cryptos ? Un homme d\u00e9pouill\u00e9 de 2 millions d'euros en Bitcoin dans un palace parisien",

@@ -800,11 +800,15 @@ with tab4:
     # Colonne FIFO (plus-value sur la dernière vente spot)
     df_pos_binance["% Plus-Value"] = [
         (
-            f"{fifo_pnl_map.get(pair, 'N/A'):.2f}%"
+            f"{fifo_pnl_map.get(pair, None):.2f}%"
             if fifo_pnl_map.get(pair, None) is not None
-            else "N/A"
+            else (
+                f"{((row['current_price'] - row['entry_price']) / row['entry_price'] * 100):.2f}%"
+                if row["entry_price"] and row["current_price"]
+                else "N/A"
+            )
         )
-        for pair in df_pos_binance.index
+        for pair, row in df_pos_binance.iterrows()
     ]
     st.dataframe(df_pos_binance, use_container_width=True)
 
