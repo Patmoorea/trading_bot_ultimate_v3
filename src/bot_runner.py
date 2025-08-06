@@ -1125,6 +1125,97 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def fetch_trades_fifo(client, symbol):
+        """
+        Récupère l'historique des trades spot Binance pour une paire.
+        Retourne la liste des achats et des ventes triés par date (FIFO).
+        """
+        trades = client.get_my_trades(symbol=symbol)
+        # Trie par date/ID croissant (FIFO)
+        trades_sorted = sorted(trades, key=lambda t: t["time"])
+        buys = []
+        sells = []
+        for t in trades_sorted:
+            if t["isBuyer"]:
+                buys.append(
+                    {
+                        "qty": float(t["qty"]),
+                        "price": float(t["price"]),
+                        "time": t["time"],
+                        "id": t["id"],
+                    }
+                )
+            else:
+                sells.append(
+                    {
+                        "qty": float(t["qty"]),
+                        "price": float(t["price"]),
+                        "time": t["time"],
+                        "id": t["id"],
+                    }
+                )
+        return buys, sells
+
+    def fifo_pnl(buys, sells):
+        """
+        Calcule la plus-value de chaque vente (FIFO).
+        Associe chaque vente aux achats les plus anciens restants.
+        Retourne une liste de dicts: vente, prix achat, prix vente, PnL.
+        """
+        buy_queue = buys.copy()  # Liste FIFO
+        results = []
+        for sell in sells:
+            qty_to_sell = sell["qty"]
+            total_cost = 0.0
+            qty_used = 0.0
+            buy_used = []
+            # On consomme les achats FIFO tant que la vente n'est pas satisfaite
+            while qty_to_sell > 0 and buy_queue:
+                buy = buy_queue[0]
+                available_qty = buy["qty"]
+                take_qty = min(qty_to_sell, available_qty)
+                total_cost += take_qty * buy["price"]
+                qty_used += take_qty
+                buy_used.append((take_qty, buy["price"]))
+                # Met à jour le reste à vendre et le reste d'achat
+                qty_to_sell -= take_qty
+                buy["qty"] -= take_qty
+                if buy["qty"] <= 0.0000001:  # Tolérance flottante
+                    buy_queue.pop(0)
+            if qty_used > 0:
+                entry_price = total_cost / qty_used
+                pnl_usd = (sell["price"] - entry_price) * qty_used
+                pnl_pct = (sell["price"] - entry_price) / entry_price * 100
+            else:
+                entry_price = None
+                pnl_usd = None
+                pnl_pct = None
+            results.append(
+                {
+                    "sell_qty": qty_used,
+                    "sell_price": sell["price"],
+                    "entry_price": entry_price,
+                    "pnl_usd": pnl_usd,
+                    "pnl_pct": pnl_pct,
+                    "buy_details": buy_used,
+                    "sell_time": sell["time"],
+                    "sell_id": sell["id"],
+                }
+            )
+        return results
+
+    def print_fifo_pnl(results):
+        """
+        Affiche le récapitulatif FIFO de chaque vente spot.
+        """
+        print("=== FIFO PnL par vente ===")
+        for r in results:
+            print(
+                f"Vente {r['sell_qty']} à {r['sell_price']:.2f} USDC, entrée {r['entry_price']:.2f} USDC, PnL {r['pnl_usd']:.2f} USDC ({r['pnl_pct']:.2f}%)"
+            )
+            print(f"    Détail achats utilisés: {r['buy_details']}")
+            print(f"    Time: {r['sell_time']} | TradeID: {r['sell_id']}")
+
     def calc_sizing(confidence, tech, ai, sentiment, win_rate=0.55, profit_factor=1.7):
         # Sizing base selon confiance
         if confidence > 0.8:
