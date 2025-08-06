@@ -65,27 +65,26 @@ def load_json_file(path):
 def get_pending_sales(self):
     """
     Retourne la liste détaillée des positions avec leur situation exacte, raison, prix, %PnL, et DECISION EXPLICITE.
-    Affiche pour chaque position : symbol, raison détaillée, décision attendue, prix achat, prix actuel, montant, %PnL, durée, blocage/pause, note complémentaire.
+    Affiche pour chaque position : symbol, raison détaillée, décision attendue, prix achat, prix actuel, montant, %PnL, durée, blocage/pause, note complémentaire.
+    Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
     """
     pending = []
     GAIN_ALERT_PCT = 0.07  # 7%
     LOSS_ALERT_PCT = -0.05  # -5%
     now = datetime.utcnow()
 
-    # Gestion des pauses
-    pause_active = False
-    pause_reason = ""
-    if (
-        hasattr(self, "news_pause_manager")
-        and self.news_pause_manager.get_active_pauses()
-    ):
-        pause_active = True
-        pause_reason = ", ".join(
-            [
-                p.get("type", "pause")
-                for p in self.news_pause_manager.get_active_pauses()
-            ]
-        )
+    # Récupération des pauses actives
+    pauses = []
+    if hasattr(self, "news_pause_manager"):
+        pauses = self.news_pause_manager.get_active_pauses()
+
+    def is_paused(symbol):
+        # Vérifie si la pause est globale ou concerne la position
+        for p in pauses:
+            asset = p.get("asset", "GLOBAL")
+            if asset == "GLOBAL" or asset == symbol:
+                return True, p.get("reason", "Indéterminée")
+        return False, ""
 
     # 1. Positions bot virtuelles
     for symbol, pos in self.positions.items():
@@ -112,35 +111,45 @@ def get_pending_sales(self):
         reason = ""
         decision = ""
         note = ""
-        # Analyse situation précise
-        if pause_active:
+        # Pause spécifique à la position
+        pause_for_pos, pause_reason = is_paused(symbol)
+        if pause_for_pos:
             decision = f"Vente bloquée (pause: {pause_reason})"
             note = "Trading suspendu"
+            pause_blocage = "Oui"
         elif action == "SELL" and pos.get("side") == "long":
             reason = "Signal SELL détecté"
             decision = "Vente prévue au prochain cycle"
+            pause_blocage = "Non"
         elif self.exit_manager.is_tp_near(pos):
             reason = "Take Profit proche"
             decision = "Vente partielle possible (TP)"
+            pause_blocage = "Non"
         elif self.check_stop_loss(symbol):
             reason = "Stop-loss imminent"
             decision = "Vente automatique si perte aggrave"
+            pause_blocage = "Non"
         elif pnl_pct > GAIN_ALERT_PCT * 100:
             reason = "Gain latent élevé"
             decision = "Surveillance, possibilité de prise de profit"
+            pause_blocage = "Non"
         elif pnl_pct < LOSS_ALERT_PCT * 100:
             reason = "Perte latente élevée"
             decision = "Surveillance, risque de vente auto si perte aggrave"
+            pause_blocage = "Non"
         else:
             reason = f"Signal actuel: {action.upper()}"
             decision = "Aucune action prévue, position maintenue"
+            pause_blocage = "Non"
         # Note complémentaire
-        if pause_active:
+        if pause_for_pos:
             note = f"Vente bloquée: {pause_reason}"
         elif reason.startswith("Gain latent"):
             note = "En zone de profit, TP possible"
         elif reason.startswith("Perte latente"):
             note = "Risque de stop-loss"
+        else:
+            note = ""
         pending.append(
             {
                 "symbol": symbol,
@@ -155,7 +164,7 @@ def get_pending_sales(self):
                     if temps_en_position is not None
                     else "N/A"
                 ),
-                "pause_blocage": "Oui" if pause_active else "Non",
+                "pause_blocage": pause_blocage,
                 "note": note,
             }
         )
@@ -179,33 +188,43 @@ def get_pending_sales(self):
             reason = ""
             decision = ""
             note = ""
-            if pause_active:
+            pause_for_pos, pause_reason = is_paused(symbol)
+            if pause_for_pos:
                 decision = f"Vente bloquée (pause: {pause_reason})"
                 note = "Trading suspendu"
+                pause_blocage = "Oui"
             elif action == "SELL" and pos.get("side") == "long":
                 reason = "Signal SELL détecté"
                 decision = "Vente prévue au prochain cycle"
+                pause_blocage = "Non"
             elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
                 reason = "Take Profit proche"
                 decision = "Vente partielle possible (TP)"
+                pause_blocage = "Non"
             elif self.check_stop_loss(symbol):
                 reason = "Stop-loss imminent"
                 decision = "Vente automatique si perte aggrave"
+                pause_blocage = "Non"
             elif pnl_pct > GAIN_ALERT_PCT * 100:
                 reason = "Gain latent élevé"
                 decision = "Surveillance, possibilité de prise de profit"
+                pause_blocage = "Non"
             elif pnl_pct < LOSS_ALERT_PCT * 100:
                 reason = "Perte latente élevée"
                 decision = "Surveillance, risque de vente auto si perte aggrave"
+                pause_blocage = "Non"
             else:
                 reason = f"Signal actuel: {action.upper()}"
                 decision = "Aucune action prévue, position maintenue"
-            if pause_active:
+                pause_blocage = "Non"
+            if pause_for_pos:
                 note = f"Vente bloquée: {pause_reason}"
             elif reason.startswith("Gain latent"):
                 note = "En zone de profit, TP possible"
             elif reason.startswith("Perte latente"):
                 note = "Risque de stop-loss"
+            else:
+                note = ""
             pending.append(
                 {
                     "symbol": symbol,
@@ -216,7 +235,90 @@ def get_pending_sales(self):
                     "amount": amount,
                     "% Gain/Perte": f"{pnl_pct:.2f}%",
                     "temps_en_position_h": "N/A",
-                    "pause_blocage": "Oui" if pause_active else "Non",
+                    "pause_blocage": pause_blocage,
+                    "note": note,
+                }
+            )
+
+    print("DEBUG pending_sales tableau:", pending)
+    # Sauvegarde dans shared_data.json
+    try:
+        with open(self.data_file, "r") as f:
+            shared_data = json.load(f)
+    except Exception:
+        shared_data = {}
+    shared_data["pending_sales"] = pending
+    with open(self.data_file, "w") as f:
+        json.dump(shared_data, f, indent=4)
+    return pending
+
+    # 2. Positions SPOT Binance
+    if hasattr(self, "positions_binance"):
+        for symbol, pos in self.positions_binance.items():
+            entry_price = pos.get("entry_price")
+            current_price = pos.get("current_price")
+            amount = pos.get("amount")
+            pnl_pct = (
+                (current_price - entry_price) / entry_price * 100
+                if entry_price and current_price
+                else 0
+            )
+            date_achat = None
+            temps_en_position = None
+
+            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
+            action = td.get("action", "neutral")
+            reason = ""
+            decision = ""
+            note = ""
+            pause_for_pos, pause_reason = is_paused(symbol)
+            if pause_for_pos:
+                decision = f"Vente bloquée (pause: {pause_reason})"
+                note = "Trading suspendu"
+                pause_blocage = "Oui"
+            elif action == "SELL" and pos.get("side") == "long":
+                reason = "Signal SELL détecté"
+                decision = "Vente prévue au prochain cycle"
+                pause_blocage = "Non"
+            elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
+                reason = "Take Profit proche"
+                decision = "Vente partielle possible (TP)"
+                pause_blocage = "Non"
+            elif self.check_stop_loss(symbol):
+                reason = "Stop-loss imminent"
+                decision = "Vente automatique si perte aggrave"
+                pause_blocage = "Non"
+            elif pnl_pct > GAIN_ALERT_PCT * 100:
+                reason = "Gain latent élevé"
+                decision = "Surveillance, possibilité de prise de profit"
+                pause_blocage = "Non"
+            elif pnl_pct < LOSS_ALERT_PCT * 100:
+                reason = "Perte latente élevée"
+                decision = "Surveillance, risque de vente auto si perte aggrave"
+                pause_blocage = "Non"
+            else:
+                reason = f"Signal actuel: {action.upper()}"
+                decision = "Aucune action prévue, position maintenue"
+                pause_blocage = "Non"
+            if pause_for_pos:
+                note = f"Vente bloquée: {pause_reason}"
+            elif reason.startswith("Gain latent"):
+                note = "En zone de profit, TP possible"
+            elif reason.startswith("Perte latente"):
+                note = "Risque de stop-loss"
+            else:
+                note = ""
+            pending.append(
+                {
+                    "symbol": symbol,
+                    "reason": reason,
+                    "decision": decision,
+                    "entry_price": entry_price,
+                    "current_price": current_price,
+                    "amount": amount,
+                    "% Gain/Perte": f"{pnl_pct:.2f}%",
+                    "temps_en_position_h": "N/A",
+                    "pause_blocage": pause_blocage,
                     "note": note,
                 }
             )
