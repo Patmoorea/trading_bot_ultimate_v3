@@ -6948,7 +6948,20 @@ async def run_clean_bot():
                     duration = (datetime.utcnow() - start).total_seconds()
                     print(f"✅ Cycle terminé en {duration:.1f}s")
 
-                    # Envoi des rapports
+                    # Envoi du résumé synthétique Telegram
+                    send_telegram_if_needed(
+                        bot,
+                        cycle,
+                        regime,
+                        bot.get_performance_metrics(),
+                        shared_data.get("sentiment", {}),
+                        shared_data.get("alerts", []),
+                        shared_data.get("pending_sales", []),
+                        shared_data.get("active_pauses", []),
+                        bot.get_performance_metrics().get("max_drawdown", 0.0),
+                    )
+
+                    # Envoi des rapports complets
                     await send_cycle_reports(
                         bot, trade_decisions, cycle, regime, duration
                     )
@@ -7390,30 +7403,105 @@ async def send_trade_notification(bot, decision, trade_result, amount):
         logging.error(f"Erreur envoi notification: {e}")
 
 
-def build_telegram_summary(bot, trade_decisions, news_sentiment):
-    summary = "🟢 <b>Résumé du cycle</b>\n"
-    # Régime
-    summary += f"📊 Régime de marché : {bot.regime}\n"
-    # Paires principales (top 5)
-    top_pairs = (
-        ", ".join([d["pair"] for d in trade_decisions[:5]])
-        if trade_decisions
-        else "N/A"
-    )
-    summary += f"📈 Paires principales : {top_pairs}\n"
-    # Décisions de trade principales (top 5)
-    for d in trade_decisions[:5]:
-        emoji = (
-            "🟢" if d["action"] == "buy" else "🔴" if d["action"] == "sell" else "⚪️"
+def should_send_summary(latest, previous):
+    """Détermine si le résumé doit être envoyé selon le changement des données."""
+    # Envoi si :
+    # - Changement de régime
+    # - Drawdown critique
+    # - Pause active
+    # - Sentiment news extrême
+    # - Position à risque
+    # - Au moins toutes les 6h
+    last_sent = previous.get("timestamp", 0)
+    now = time.time()
+    if now - last_sent > 21600:  # 6h
+        return True
+    keys_to_check = ["regime", "drawdown", "pauses", "sentiment", "risky_positions"]
+    for k in keys_to_check:
+        if latest.get(k) != previous.get(k):
+            return True
+    return False
+
+
+def build_telegram_summary(
+    cycle, regime, perf, news_sentiment, alerts, trades, pauses, drawdown
+):
+    summary = f"🟢 <b>Résumé du cycle Trading</b>\n"
+    summary += f"Cycle: <b>{cycle}</b> | Régime: <b>{regime}</b>\n"
+    summary += f"Balance: <b>${perf.get('balance', 0):,.0f}</b> | Win Rate: <b>{perf.get('win_rate', 0)*100:.1f}%</b>\n"
+
+    # Drawdown critique
+    if drawdown is not None and drawdown < -0.15:
+        summary += f"🚨 <b>Drawdown:</b> {drawdown:.1%}\n"
+
+    # Pauses actives (si présentes)
+    if pauses:
+        summary += "\n⏸️ <b>Pauses actives</b> :\n"
+        for p in pauses:
+            asset = p.get("asset", "GLOBAL")
+            reason = p.get("reason", "Indéterminée")
+            cycles_left = p.get("cycles_left", "N/A")
+            summary += f"• {asset} | Raison: {reason} | Restant: {cycles_left}\n"
+
+    # Alertes critiques (rare)
+    if alerts:
+        summary += "\n🚨 <b>Alertes critiques</b> :\n"
+        for a in alerts:
+            summary += f"• {a['message']} ({a['timestamp']})\n"
+
+    # News sentiment (si extrême)
+    if news_sentiment and abs(news_sentiment.get("overall_sentiment", 0)) > 0.7:
+        summary += (
+            f"\n📰 <b>Sentiment News</b>: "
+            f"{news_sentiment.get('overall_sentiment', 0):.2%} ({news_sentiment.get('n_news', 0)} news)\n"
         )
-        conf = int(d["confidence"] * 100)
-        summary += f"{emoji} {d['pair']} : {d['action'].upper()} ({conf}%)\n"
-    # News principales (top 3)
-    if news_sentiment and "latest_news" in news_sentiment:
-        summary += "\n📰 News principales :\n"
-        for title in news_sentiment["latest_news"][:3]:
-            summary += f"• {title}\n"
+        if news_sentiment.get("major_events"):
+            summary += f"Événement majeur: {news_sentiment.get('major_events')}\n"
+
+    # Positions à risque
+    risky_trades = [t for t in trades if "Perte latente" in t.get("reason", "")]
+    if risky_trades:
+        summary += "\n📋 <b>Positions à risque</b> :\n"
+        for t in risky_trades:
+            summary += f"• {t['symbol']} | PnL: {t['% Gain/Perte']} | {t['reason']} | Pause: {t['pause_blocage']}\n"
+
     return summary
+
+
+# --- Usage dans ton bot (exemple d'intégration dans le cycle principal) ---
+# Charger les infos du cycle
+def send_telegram_if_needed(
+    bot, cycle, regime, perf, news_sentiment, alerts, trades, pauses, drawdown
+):
+    # Charger l'ancien résumé envoyé (peut être dans un fichier ou shared_data)
+    try:
+        with open("src/last_telegram_summary.json", "r") as f:
+            previous = json.load(f)
+    except Exception:
+        previous = {}
+
+    latest = {
+        "regime": regime,
+        "drawdown": drawdown,
+        "pauses": pauses,
+        "sentiment": (
+            news_sentiment.get("overall_sentiment", 0) if news_sentiment else 0
+        ),
+        "risky_positions": [
+            t["symbol"] for t in trades if "Perte latente" in t.get("reason", "")
+        ],
+        "timestamp": time.time(),
+    }
+
+    if should_send_summary(latest, previous):
+        summary = build_telegram_summary(
+            cycle, regime, perf, news_sentiment, alerts, trades, pauses, drawdown
+        )
+        # Envoi Telegram
+        bot.telegram.send_message(summary)
+        # Sauvegarde du dernier résumé envoyé
+        with open("src/last_telegram_summary.json", "w") as f:
+            json.dump(latest, f, indent=2)
 
 
 async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, duration):
