@@ -5,6 +5,7 @@ import pandas as pd
 import optuna
 import time
 import functools
+import asyncio
 
 from datetime import datetime
 from src.backtesting.core.backtest_engine import BacktestEngine
@@ -277,6 +278,40 @@ def optuna_callback(study, trial):
     save_best_params(study, trial)
 
 
+async def analyze_pair_tf(pair, tf, bot, fusion_params, window):
+    df = fetch_binance_ohlcv(
+        symbol=pair.replace("/", ""),
+        interval=BINANCE_INTERVAL_MAP[tf],
+        start_str="1 Jan, 2023",
+        end_str="now",
+        api_key=BINANCE_API_KEY,
+        api_secret=BINANCE_API_SECRET,
+    )
+    if df is None or len(df) < window + 10:
+        return None
+    import pandas_ta as pta
+
+    df["rsi"] = pta.rsi(df["close"], length=14)
+    macd = pta.macd(df["close"])
+    if macd is not None and not macd.empty:
+        df["macd"] = macd["MACD_12_26_9"]
+    else:
+        df["macd"] = 0.0
+    returns = np.log(df["close"]).diff()
+    df["volatility"] = returns.rolling(14).std()
+    for col in ["rsi", "macd", "volatility"]:
+        df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+        df[col] = df[col].fillna(method="ffill").fillna(method="bfill").fillna(0)
+    df = enrich_signals_with_real_values(
+        bot, df, pair_key=pair.replace("/", ""), window=window
+    )
+    results = run_full_backtest(df, fusion_params, initial_capital=10000)
+    profit = results.get("final_capital", 0) - 10000 if results else -9999
+    if profit is None or np.isnan(profit):
+        profit = -99999
+    return profit
+
+
 def optimize_signal_fusion_and_mm(n_trials=50):
     print("=== [DIAG] OPTIMIZATION FUNCTION CALLED ===")
     config = {
@@ -388,54 +423,17 @@ def optimize_signal_fusion_and_mm(n_trials=50):
         bot = DummyBot(config, dl_model)
         fetch_result = bot.news_analyzer.fetch_all_news()
         if hasattr(fetch_result, "__await__"):
-            import asyncio
-
             asyncio.run(fetch_result)
 
-        all_scores = []
-        for pair in pairs:
-            for tf in timeframes:
-                print(f"[TRIAL] Fetching OHLCV for {pair} {tf}")
-                df = fetch_binance_ohlcv(
-                    symbol=pair.replace("/", ""),
-                    interval=BINANCE_INTERVAL_MAP[tf],
-                    start_str="1 Jan, 2023",
-                    end_str="now",
-                    api_key=BINANCE_API_KEY,
-                    api_secret=BINANCE_API_SECRET,
-                )
-                if df is None or len(df) < window + 10:
-                    print(f"[TRIAL] No data for {pair} {tf}")
-                    continue
-                import pandas_ta as pta
-
-                df["rsi"] = pta.rsi(df["close"], length=14)
-                macd = pta.macd(df["close"])
-                if macd is not None and not macd.empty:
-                    df["macd"] = macd["MACD_12_26_9"]
-                else:
-                    df["macd"] = 0.0
-                returns = np.log(df["close"]).diff()
-                df["volatility"] = returns.rolling(14).std()
-                for col in ["rsi", "macd", "volatility"]:
-                    df[col] = df[col].replace([np.inf, -np.inf], np.nan)
-                    df[col] = (
-                        df[col].fillna(method="ffill").fillna(method="bfill").fillna(0)
-                    )
-                df = enrich_signals_with_real_values(
-                    bot, df, pair_key=pair.replace("/", ""), window=window
-                )
-                print(
-                    f"[TRIAL] Sentiment values for {pair} {tf}: {df['signal_sentiment'].iloc[0]}"
-                )
-                print(f"[TRIAL] IA values for {pair} {tf}: {df['signal_ia'].iloc[-1]}")
-                results = run_full_backtest(df, fusion_params, initial_capital=10000)
-                profit = results.get("final_capital", 0) - 10000 if results else -9999
-                if profit is None or np.isnan(profit):
-                    profit = -99999
-                all_scores.append(profit)
-                time.sleep(1)
-
+        # === PARALLELISATION ANALYSE ===
+        loop = asyncio.get_event_loop()
+        tasks = [
+            analyze_pair_tf(pair, tf, bot, fusion_params, window)
+            for pair in pairs
+            for tf in timeframes
+        ]
+        all_scores = loop.run_until_complete(asyncio.gather(*tasks))
+        all_scores = [s for s in all_scores if s is not None]
         avg_profit = np.mean(all_scores) if all_scores else -99999
         print(f"[OPTUNA] Params: {fusion_params} | Score: {avg_profit:.2f}")
         return avg_profit

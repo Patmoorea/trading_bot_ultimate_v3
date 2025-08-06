@@ -3166,21 +3166,24 @@ class TradingBotM4:
     def get_pending_sales(self):
         """
         Affiche TOUTES les positions spot Binance avec leur état actuel.
+        Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
         """
         try:
             pending = []
             now = datetime.utcnow()
 
-            # Vérification des pauses actives
-            pause_active = False
-            pause_reason = ""
+            # Récupération des pauses actives
+            pauses = []
             if hasattr(self, "news_pause_manager"):
-                active_pauses = self.news_pause_manager.get_active_pauses()
-                if active_pauses:
-                    pause_active = True
-                    pause_reason = ", ".join(
-                        [p.get("type", "pause") for p in active_pauses]
-                    )
+                pauses = self.news_pause_manager.get_active_pauses()
+
+            def is_paused(symbol):
+                # Vérifie si la pause est globale ou concerne la position
+                for p in pauses:
+                    asset = p.get("asset", "GLOBAL")
+                    if asset == "GLOBAL" or asset == symbol:
+                        return True, p.get("reason", "Indéterminée")
+                return False, ""
 
             # Traitement des positions Binance
             if hasattr(self, "positions_binance"):
@@ -3201,6 +3204,9 @@ class TradingBotM4:
                     action = td.get("action", "neutral")
                     confidence = td.get("confidence", 0.5)
 
+                    # Pause spécifique à la position
+                    pause_for_pos, pause_reason = is_paused(symbol)
+
                     # Détermination raison/décision
                     if action == "SELL":
                         reason = "🔴 Signal SELL"
@@ -3216,7 +3222,7 @@ class TradingBotM4:
                         decision = "Position maintenue"
 
                     # Note et pause
-                    if pause_active:
+                    if pause_for_pos:
                         note = f"Trading suspendu ({pause_reason})"
                         pause_status = "Oui"
                     else:
@@ -7073,7 +7079,7 @@ async def handle_arbitrage_opportunities(bot):
             return
 
         print(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
-        log_dashboard(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
+        # log_dashboard(f"💹 {len(opportunities)} opportunités d'arbitrage détectées")
         for opp in opportunities:
             # Logging de l'opportunité
             print(
@@ -7388,7 +7394,7 @@ def build_telegram_summary(bot, trade_decisions, news_sentiment):
 
 
 async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, duration):
-    """Envoi des rapports de cycle"""
+    """Envoi des rapports de cycle AVEC PAUSES, SIGNALS 1H, POSITIONS À RISQUE"""
     try:
         # 1. Rapport des trades
         await send_trade_summary(bot, trade_decisions)
@@ -7399,9 +7405,48 @@ async def send_cycle_reports(bot, trade_decisions, current_cycle, regime, durati
             {"cycle": current_cycle, "regime": regime, "duration": duration}
         )
 
-        # 3. Génération et envoi du rapport
+        # 3. Génération et envoi du rapport principal
         report = await bot.generate_market_analysis_report(cycle=current_cycle)
         await bot.telegram.send_message(report)
+
+        # --- AJOUT : Pauses actives et leur raison ---
+        pauses = bot.get_active_pauses()
+        if pauses:
+            msg = "⏸️ <b>Pauses actives</b> :\n"
+            for pause in pauses:
+                asset = pause.get("asset", "GLOBAL")
+                reason = pause.get("reason", "Indéterminée")
+                cycles_left = pause.get("cycles_left", "N/A")
+                typ = pause.get("type", "pause")
+                msg += (
+                    f"• Paire: <b>{asset}</b> | Type: {typ} | Raison: <i>{reason}</i> | "
+                    f"Restant: {cycles_left} cycles\n"
+                )
+            await bot.telegram.send_message(msg)
+
+        # --- AJOUT : Signaux uniquement sur 1h ---
+        message_1h = "🔎 <b>Signaux 1h par paire</b> :\n"
+        for pair in bot.pairs_valid:
+            pair_key = pair.replace("/", "").upper()
+            signals_1h = bot.market_data.get(pair_key, {}).get("1h", {})
+            tech = signals_1h.get("signals", {}).get("technical", {}).get("score", 0.5)
+            ai = bot.market_data.get(pair_key, {}).get("ai_prediction", 0.5)
+            sentiment = bot.market_data.get(pair_key, {}).get("sentiment", 0.5)
+            message_1h += (
+                f"{pair}: Tech={tech:.2f} | AI={ai:.2f} | Sentiment={sentiment:.2f}\n"
+            )
+        await bot.telegram.send_message(message_1h)
+
+        # --- AJOUT : Positions à risque ou en attente ---
+        pending = bot.get_pending_sales()
+        if pending:
+            msg = "📋 <b>Positions à risque ou en attente</b> :\n"
+            for pos in pending:
+                msg += (
+                    f"• {pos['symbol']} | {pos['reason']} | PnL: {pos['% Gain/Perte']} | "
+                    f"Pause: {pos['pause_blocage']} | Note: {pos['note']}\n"
+                )
+            await bot.telegram.send_message(msg)
 
         # 4. Sauvegarde des données
         await save_cycle_data(bot, analysis_data)
