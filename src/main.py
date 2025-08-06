@@ -857,7 +857,6 @@ with tab3:
             df_ta = pd.DataFrame(indic["ta"], index=[0]).T
             st.dataframe(df_ta, use_container_width=True)
 
-# --- TAB4 PORTEFEUILLE / POSITIONS ---
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
 
@@ -974,6 +973,42 @@ with tab4:
             st.error(f"Erreur affichage alertes: {e}")
     else:
         st.info("Aucune vente imminente détectée.")
+
+    # 4. Plus-value réelle FIFO (spot)
+    st.markdown("#### Plus-values réelles (FIFO) sur LTC/USDC")
+    fifo_pnl = shared_data.get("fifo_pnl_LTCUSDC", [])
+    if fifo_pnl:
+        df_fifo = pd.DataFrame(fifo_pnl)
+        df_fifo["% Plus-Value"] = df_fifo["pnl_pct"].map(
+            lambda x: f"{x:.2f}%" if x is not None else "N/A"
+        )
+        df_fifo["Gain ($)"] = df_fifo["pnl_usd"].map(
+            lambda x: f"{x:.2f}" if x is not None else "N/A"
+        )
+        df_fifo = df_fifo.rename(
+            columns={
+                "sell_qty": "Qte vendue",
+                "sell_price": "Prix vente",
+                "entry_price": "Prix achat moyen",
+                "sell_time": "Timestamp",
+            }
+        )
+        st.dataframe(
+            df_fifo[
+                [
+                    "Timestamp",
+                    "Qte vendue",
+                    "Prix achat moyen",
+                    "Prix vente",
+                    "% Plus-Value",
+                    "Gain ($)",
+                    "buy_details",
+                ]
+            ],
+            use_container_width=True,
+        )
+    else:
+        st.info("Aucune vente spot détectée pour LTC/USDC (FIFO).")
 
 # --- TAB5 BACKTEST ---
 with tab5:
