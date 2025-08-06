@@ -199,11 +199,12 @@ def get_pending_sales(self):
             entry_price = pos.get("entry_price")
             current_price = pos.get("current_price")
             amount = pos.get("amount")
-            pnl_pct = (
-                (current_price - entry_price) / entry_price * 100
-                if entry_price and current_price
-                else 0
-            )
+
+            # Utilise le calcul FIFO !
+            pnl_pct, _ = self.get_last_fifo_pnl(symbol)
+            if pnl_pct is None:
+                pnl_pct = 0
+
             date_achat = None
             temps_en_position = None
 
@@ -230,94 +231,11 @@ def get_pending_sales(self):
                 decision = "Vente automatique si perte aggrave"
                 pause_blocage = "Non"
             elif pnl_pct > GAIN_ALERT_PCT * 100:
-                reason = "Gain latent élevé"
+                reason = f"Gain latent élevé {pnl_pct:.1f}%"
                 decision = "Surveillance, possibilité de prise de profit"
                 pause_blocage = "Non"
             elif pnl_pct < LOSS_ALERT_PCT * 100:
-                reason = "Perte latente élevée"
-                decision = "Surveillance, risque de vente auto si perte aggrave"
-                pause_blocage = "Non"
-            else:
-                reason = f"Signal actuel: {action.upper()}"
-                decision = "Aucune action prévue, position maintenue"
-                pause_blocage = "Non"
-            if pause_for_pos:
-                note = f"Vente bloquée: {pause_reason}"
-            elif reason.startswith("Gain latent"):
-                note = "En zone de profit, TP possible"
-            elif reason.startswith("Perte latente"):
-                note = "Risque de stop-loss"
-            else:
-                note = ""
-            pending.append(
-                {
-                    "symbol": symbol,
-                    "reason": reason,
-                    "decision": decision,
-                    "entry_price": entry_price,
-                    "current_price": current_price,
-                    "amount": amount,
-                    "% Gain/Perte": f"{pnl_pct:.2f}%",
-                    "temps_en_position_h": "N/A",
-                    "pause_blocage": pause_blocage,
-                    "note": note,
-                }
-            )
-
-    print("DEBUG pending_sales tableau:", pending)
-    # Sauvegarde dans shared_data.json
-    try:
-        with open(self.data_file, "r") as f:
-            shared_data = json.load(f)
-    except Exception:
-        shared_data = {}
-    shared_data["pending_sales"] = pending
-    with open(self.data_file, "w") as f:
-        json.dump(shared_data, f, indent=4)
-    return pending
-
-    # 2. Positions SPOT Binance
-    if hasattr(self, "positions_binance"):
-        for symbol, pos in self.positions_binance.items():
-            entry_price = pos.get("entry_price")
-            current_price = pos.get("current_price")
-            amount = pos.get("amount")
-            pnl_pct = (
-                (current_price - entry_price) / entry_price * 100
-                if entry_price and current_price
-                else 0
-            )
-            date_achat = None
-            temps_en_position = None
-
-            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
-            action = td.get("action", "neutral")
-            reason = ""
-            decision = ""
-            note = ""
-            pause_for_pos, pause_reason = is_paused(symbol)
-            if pause_for_pos:
-                decision = f"Vente bloquée (pause: {pause_reason})"
-                note = "Trading suspendu"
-                pause_blocage = "Oui"
-            elif action == "SELL" and pos.get("side") == "long":
-                reason = "Signal SELL détecté"
-                decision = "Vente prévue au prochain cycle"
-                pause_blocage = "Non"
-            elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
-                reason = "Take Profit proche"
-                decision = "Vente partielle possible (TP)"
-                pause_blocage = "Non"
-            elif self.check_stop_loss(symbol):
-                reason = "Stop-loss imminent"
-                decision = "Vente automatique si perte aggrave"
-                pause_blocage = "Non"
-            elif pnl_pct > GAIN_ALERT_PCT * 100:
-                reason = "Gain latent élevé"
-                decision = "Surveillance, possibilité de prise de profit"
-                pause_blocage = "Non"
-            elif pnl_pct < LOSS_ALERT_PCT * 100:
-                reason = "Perte latente élevée"
+                reason = f"Perte latente élevée {pnl_pct:.1f}%"
                 decision = "Surveillance, risque de vente auto si perte aggrave"
                 pause_blocage = "Non"
             else:
