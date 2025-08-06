@@ -88,13 +88,13 @@ def load_json_file(path):
 
 def get_pending_sales(self):
     """
-    Retourne la liste détaillée des positions avec leur situation exacte, raison, prix, %PnL, et DECISION EXPLICITE.
-    Affiche pour chaque position : symbol, raison détaillée, décision attendue, prix achat, prix actuel, montant, %PnL, durée, blocage/pause, note complémentaire.
+    Retourne la liste détaillée des positions avec leur situation exacte, raison, prix, %PnL latente, plus-value FIFO, et DECISION EXPLICITE.
+    Affiche pour chaque position : symbol, raison détaillée, décision attendue, prix achat, prix actuel, montant, %PnL latente, %PnL FIFO, durée, blocage/pause, note complémentaire.
     Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
     """
     pending = []
-    GAIN_ALERT_PCT = 0.07  # 7%
-    LOSS_ALERT_PCT = -0.05  # -5%
+    GAIN_ALERT_PCT = 0.07  # 7% (latente)
+    LOSS_ALERT_PCT = -0.05  # -5% (latente)
     now = datetime.utcnow()
 
     # Récupération des pauses actives
@@ -115,7 +115,8 @@ def get_pending_sales(self):
         entry_price = pos.get("entry_price")
         current_price = pos.get("current_price")
         amount = pos.get("amount")
-        pnl_pct = (
+        # Plus-value latente
+        pnl_latent = (
             (current_price - entry_price) / entry_price * 100
             if entry_price and current_price
             else 0
@@ -153,11 +154,11 @@ def get_pending_sales(self):
             reason = "Stop-loss imminent"
             decision = "Vente automatique si perte aggrave"
             pause_blocage = "Non"
-        elif pnl_pct > GAIN_ALERT_PCT * 100:
+        elif pnl_latent > GAIN_ALERT_PCT * 100:
             reason = "Gain latent élevé"
             decision = "Surveillance, possibilité de prise de profit"
             pause_blocage = "Non"
-        elif pnl_pct < LOSS_ALERT_PCT * 100:
+        elif pnl_latent < LOSS_ALERT_PCT * 100:
             reason = "Perte latente élevée"
             decision = "Surveillance, risque de vente auto si perte aggrave"
             pause_blocage = "Non"
@@ -182,7 +183,7 @@ def get_pending_sales(self):
                 "entry_price": entry_price,
                 "current_price": current_price,
                 "amount": amount,
-                "% Gain/Perte": f"{pnl_pct:.2f}%",
+                "% Gain/Perte latente": f"{pnl_latent:.2f}%",
                 "temps_en_position_h": (
                     f"{temps_en_position:.1f}"
                     if temps_en_position is not None
@@ -200,10 +201,16 @@ def get_pending_sales(self):
             current_price = pos.get("current_price")
             amount = pos.get("amount")
 
-            # Utilise le calcul FIFO !
-            pnl_pct, _ = self.get_last_fifo_pnl(symbol)
-            if pnl_pct is None:
-                pnl_pct = 0
+            # Calcul latente sur le solde restant
+            pnl_latent = (
+                (current_price - entry_price) / entry_price * 100
+                if entry_price and current_price
+                else 0
+            )
+            # Calcul FIFO sur la dernière vente (pour reporting)
+            fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
+            if fifo_pnl_pct is None:
+                fifo_pnl_pct = 0
 
             date_achat = None
             temps_en_position = None
@@ -230,12 +237,12 @@ def get_pending_sales(self):
                 reason = "Stop-loss imminent"
                 decision = "Vente automatique si perte aggrave"
                 pause_blocage = "Non"
-            elif pnl_pct > GAIN_ALERT_PCT * 100:
-                reason = f"Gain latent élevé {pnl_pct:.1f}%"
+            elif pnl_latent > GAIN_ALERT_PCT * 100:
+                reason = f"Gain latent élevé {pnl_latent:.1f}%"
                 decision = "Surveillance, possibilité de prise de profit"
                 pause_blocage = "Non"
-            elif pnl_pct < LOSS_ALERT_PCT * 100:
-                reason = f"Perte latente élevée {pnl_pct:.1f}%"
+            elif pnl_latent < LOSS_ALERT_PCT * 100:
+                reason = f"Perte latente élevée {pnl_latent:.1f}%"
                 decision = "Surveillance, risque de vente auto si perte aggrave"
                 pause_blocage = "Non"
             else:
@@ -258,7 +265,8 @@ def get_pending_sales(self):
                     "entry_price": entry_price,
                     "current_price": current_price,
                     "amount": amount,
-                    "% Gain/Perte": f"{pnl_pct:.2f}%",
+                    "% Gain/Perte latente": f"{pnl_latent:.2f}%",
+                    "% Plus-value FIFO": f"{fifo_pnl_pct:.2f}%",
                     "temps_en_position_h": "N/A",
                     "pause_blocage": pause_blocage,
                     "note": note,

@@ -3260,27 +3260,28 @@ class TradingBotM4:
 
     def get_last_fifo_pnl(self, symbol):
         """
-        Récupère la plus-value FIFO de la dernière vente spot pour une paire donnée.
+        Récupère la plus-value FIFO (en %) et en USD de la dernière vente spot pour une paire donnée.
+        Retourne un tuple : (pnl_pct, pnl_usd)
         """
         try:
-            buys, sells = self.fetch_trades_fifo(
-                self.binance_client, symbol.replace("/", "")
-            )
+            # symbol format: "LTC/USDC" => "LTCUSDC"
+            symbol_key = symbol.replace("/", "")
+            buys, sells = self.fetch_trades_fifo(self.binance_client, symbol_key)
             fifo_results = self.fifo_pnl(buys, sells)
             last_result = fifo_results[-1] if fifo_results else None
-            return (
-                (
-                    last_result["pnl_pct"]
-                    if last_result and last_result["pnl_pct"] is not None
-                    else None
-                ),
-                (
-                    last_result["pnl_usd"]
-                    if last_result and last_result["pnl_usd"] is not None
-                    else None
-                ),
+            pnl_pct = (
+                last_result["pnl_pct"]
+                if last_result and last_result["pnl_pct"] is not None
+                else None
             )
-        except Exception:
+            pnl_usd = (
+                last_result["pnl_usd"]
+                if last_result and last_result["pnl_usd"] is not None
+                else None
+            )
+            return (pnl_pct, pnl_usd)
+        except Exception as e:
+            print(f"[DEBUG FIFO] Erreur get_last_fifo_pnl pour {symbol}: {e}")
             return None, None
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
