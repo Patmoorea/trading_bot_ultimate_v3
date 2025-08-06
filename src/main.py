@@ -862,17 +862,33 @@ with tab4:
 
     # 1. Positions Binance Spot
     positions_binance = shared_data.get("positions_binance", {})
-    st.markdown("#### Positions ouvertes Binance (Spot)")
-    if positions_binance:
-        df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
-        df_pos_binance.index.name = "Paire"
-        if "pnl_pct" in df_pos_binance.columns:
-            df_pos_binance["% Plus-Value"] = df_pos_binance["pnl_pct"].map(
-                lambda x: f"{x:.2f}%" if x is not None else "N/A"
-            )
-        st.dataframe(df_pos_binance, use_container_width=True)
-    else:
-        st.info("Aucune position ouverte sur Binance spot.")
+    spot_pairs = list(positions_binance.keys())
+    fifo_pnl_map = {}
+
+    for pair in spot_pairs:
+        symbol = pair.replace("/", "")
+        fifo_key = f"fifo_pnl_{symbol}"
+        fifo_pnl = shared_data.get(fifo_key, [])
+        # On prend la plus-value de la DERNIÈRE vente FIFO (si dispo)
+        last_fifo = fifo_pnl[-1] if fifo_pnl else None
+        fifo_pnl_map[pair] = (
+            last_fifo["pnl_pct"]
+            if last_fifo and last_fifo["pnl_pct"] is not None
+            else None
+        )
+
+    df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
+    df_pos_binance.index.name = "Paire"
+    # Colonne FIFO (plus-value sur la dernière vente spot)
+    df_pos_binance["% Plus-Value"] = [
+        (
+            f"{fifo_pnl_map.get(pair, 'N/A'):.2f}%"
+            if fifo_pnl_map.get(pair, None) is not None
+            else "N/A"
+        )
+        for pair in df_pos_binance.index
+    ]
+    st.dataframe(df_pos_binance, use_container_width=True)
 
     # 1bis. Positions BingX (Futures) - Shorts et Longs
     positions_bingx = shared_data.get("positions_bingx", {})

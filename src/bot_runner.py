@@ -1125,36 +1125,48 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
-    def fetch_trades_fifo(client, symbol):
+    def get_last_fifo_pnl(self, symbol):
         """
-        Récupère l'historique des trades spot Binance pour une paire.
-        Retourne la liste des achats et des ventes triés par date (FIFO).
+        Récupère la plus-value FIFO de la dernière vente spot pour une paire donnée.
         """
-        trades = client.get_my_trades(symbol=symbol)
-        # Trie par date/ID croissant (FIFO)
-        trades_sorted = sorted(trades, key=lambda t: t["time"])
-        buys = []
-        sells = []
-        for t in trades_sorted:
-            if t["isBuyer"]:
-                buys.append(
-                    {
-                        "qty": float(t["qty"]),
-                        "price": float(t["price"]),
-                        "time": t["time"],
-                        "id": t["id"],
-                    }
-                )
-            else:
-                sells.append(
-                    {
-                        "qty": float(t["qty"]),
-                        "price": float(t["price"]),
-                        "time": t["time"],
-                        "id": t["id"],
-                    }
-                )
-        return buys, sells
+        try:
+            buys, sells = self.fetch_trades_fifo(
+                self.binance_client, symbol.replace("/", "")
+            )
+            fifo_results = self.fifo_pnl(buys, sells)
+            last_result = fifo_results[-1] if fifo_results else None
+            return (
+                last_result["pnl_pct"]
+                if last_result and last_result["pnl_pct"] is not None
+                else None
+            )
+        except Exception:
+            return None
+
+    def fetch_trades_fifo_all(self):
+        """
+        Pour chaque paire spot, calcule le FIFO PnL et sauvegarde dans shared_data.json.
+        """
+        all_results = {}
+        for pair in self.pairs_valid:
+            symbol = pair.replace("/", "")
+            try:
+                buys, sells = self.fetch_trades_fifo(symbol)
+                fifo_results = self.fifo_pnl(buys, sells)
+                all_results[f"fifo_pnl_{symbol}"] = fifo_results
+            except Exception as e:
+                all_results[f"fifo_pnl_{symbol}"] = []
+        # Sauvegarde dans shared_data.json
+        shared_data = {}
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+        except Exception:
+            shared_data = {}
+        shared_data.update(all_results)
+        with open(self.data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
+        return all_results
 
     def fifo_pnl(buys, sells):
         """
@@ -3246,7 +3258,35 @@ class TradingBotM4:
             return True, max_price
         return False, max_price
 
+    def get_last_fifo_pnl(self, symbol):
+        """
+        Récupère la plus-value FIFO de la dernière vente spot pour une paire donnée.
+        """
+        try:
+            buys, sells = self.fetch_trades_fifo(
+                self.binance_client, symbol.replace("/", "")
+            )
+            fifo_results = self.fifo_pnl(buys, sells)
+            last_result = fifo_results[-1] if fifo_results else None
+            return (
+                (
+                    last_result["pnl_pct"]
+                    if last_result and last_result["pnl_pct"] is not None
+                    else None
+                ),
+                (
+                    last_result["pnl_usd"]
+                    if last_result and last_result["pnl_usd"] is not None
+                    else None
+                ),
+            )
+        except Exception:
+            return None, None
+
     def log_closed_position(self, symbol, pos, exit_price, reason):
+        # Récupère la plus-value FIFO de la dernière vente
+        fifo_pnl_pct, fifo_pnl_usd = self.get_last_fifo_pnl(symbol)
+
         closed_position = {
             "symbol": symbol,
             "side": pos.get("side", ""),
@@ -3254,14 +3294,22 @@ class TradingBotM4:
             "entry_price": pos.get("entry_price"),
             "exit_price": exit_price,
             "pnl_pct": (
-                (exit_price - pos.get("entry_price")) / pos.get("entry_price") * 100
-                if pos.get("entry_price")
-                else 0
+                fifo_pnl_pct
+                if fifo_pnl_pct is not None
+                else (
+                    (exit_price - pos.get("entry_price")) / pos.get("entry_price") * 100
+                    if pos.get("entry_price")
+                    else 0
+                )
             ),
             "pnl_usd": (
-                (exit_price - pos.get("entry_price")) * pos.get("amount")
-                if pos.get("entry_price")
-                else 0
+                fifo_pnl_usd
+                if fifo_pnl_usd is not None
+                else (
+                    (exit_price - pos.get("entry_price")) * pos.get("amount")
+                    if pos.get("entry_price")
+                    else 0
+                )
             ),
             "date": datetime.utcnow().isoformat(),
             "reason": reason,
@@ -3306,12 +3354,9 @@ class TradingBotM4:
                     current_price = pos.get("current_price")
                     amount = pos.get("amount")
 
-                    # Calcul PnL
-                    pnl_pct = (
-                        (current_price - entry_price) / entry_price * 100
-                        if entry_price and current_price
-                        else 0
-                    )
+                    # Calcul PnL FIFO
+                    fifo_pnl_pct = self.get_last_fifo_pnl(symbol)
+                    pnl_pct = fifo_pnl_pct if fifo_pnl_pct is not None else 0
 
                     # Signal actuel
                     td = self.trade_decisions.get(symbol, {})
@@ -3356,7 +3401,7 @@ class TradingBotM4:
                             "entry_price": entry_price,
                             "current_price": current_price,
                             "amount": amount,
-                            "pnl_pct": pnl_pct,  # Pour le tri
+                            "pnl_pct": pnl_pct,  # Pour le tri/fusion dashboard
                             "% Gain/Perte": f"{pnl_pct:.2f}%",
                             "temps_en_position_h": "N/A",
                             "pause_blocage": pause_status,
@@ -3470,30 +3515,20 @@ class TradingBotM4:
                         self.binance_client, asset, quote="USDC"
                     )
 
-                    # NE PAS fallback sur current_price !
-                    if entry_price is None:
-                        entry_price = None
-                        pnl_pct = None
-                        pnl_usd = None
-
-                    pnl_pct = (
-                        (current_price - entry_price) / entry_price * 100
-                        if entry_price and current_price
-                        else 0.0
-                    )
-                    pnl_usd = (
-                        (current_price - entry_price) * free
-                        if entry_price and current_price
-                        else 0.0
-                    )
+                    # Calcul FIFO de la plus-value sur la dernière vente
+                    fifo_pnl_pct = self.get_last_fifo_pnl(symbol)
 
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
                         "amount": free,
                         "entry_price": entry_price,
                         "current_price": current_price,
-                        "pnl_pct": pnl_pct,
-                        "pnl_usd": pnl_usd,
+                        "pnl_pct": fifo_pnl_pct,  # ICI : calcul FIFO !
+                        "pnl_usd": (
+                            (current_price - entry_price) * free
+                            if entry_price and current_price
+                            else 0.0
+                        ),
                         "value_usd": (
                             free * current_price if free and current_price else 0.0
                         ),
