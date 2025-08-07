@@ -6938,6 +6938,16 @@ async def run_clean_bot():
 
                         pos["price_history"].append(last_price)
 
+                        print(
+                            f"[DEBUG TP] {symbol} entry={pos['entry_price']} last={last_price} amount={pos['amount']} filled_tp_targets={pos['filled_tp_targets']}"
+                        )
+                        to_exit, new_filled = bot.exit_manager.check_tp_partial(
+                            pos["entry_price"], last_price, pos["filled_tp_targets"]
+                        )
+                        print(
+                            f"[DEBUG TP] to_exit={to_exit}, new_filled={new_filled}, pnl={(last_price - pos['entry_price']) / pos['entry_price']:.2%}"
+                        )
+
                         # Take Profit partiel
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
                             pos["entry_price"], last_price, pos["filled_tp_targets"]
