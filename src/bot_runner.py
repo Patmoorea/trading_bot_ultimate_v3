@@ -6846,6 +6846,8 @@ async def run_clean_bot():
             # Boucle principale
             cycle = 0
             while True:
+                print(f"=== NOUVEAU CYCLE {cycle} ===")
+                print(f"[DEBUG CYCLE] Positions (avant TP/SL): {bot.positions}")
                 try:
                     cycle += 1
                     start = datetime.utcnow()
