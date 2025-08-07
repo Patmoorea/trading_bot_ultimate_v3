@@ -3447,7 +3447,7 @@ class TradingBotM4:
                     )
 
             # Sauvegarde dans shared_data.json
-            self.safe_update_shared_data({"pending_sales": pending})
+            self.safe_update_shared_data({"pending_sales": pending}, self.data_file)
             return pending
 
         except Exception as e:
