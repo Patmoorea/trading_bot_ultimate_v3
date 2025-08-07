@@ -6907,11 +6907,22 @@ async def run_clean_bot():
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            print(f"[STOPLOSS] Position fermée pour {symbol}")
+                            bot.positions.pop(symbol, None)
+                            continue  # Passe à la position suivante
 
                     # Gestion des TP et trailing stop
                     for symbol, pos in list(bot.positions.items()):
+                        print(f"\n[DEBUG CYCLE] Analyse {symbol} | pos={pos}")
+
+                        # Filtre seulement les positions "long"
                         if pos.get("side") != "long":
+                            print(
+                                f"[DEBUG SKIP] {symbol}: side={pos.get('side')} (not long)"
+                            )
                             continue
+
+                        # Initialisation des champs si absents
                         if "filled_tp_targets" not in pos:
                             pos["filled_tp_targets"] = [False, False]
                         if "price_history" not in pos:
@@ -6934,6 +6945,7 @@ async def run_clean_bot():
                             if closes:
                                 last_price = closes[-1]
                         if last_price is None:
+                            print(f"[DEBUG SKIP] {symbol}: last_price is None")
                             continue
 
                         pos["price_history"].append(last_price)
@@ -6949,17 +6961,24 @@ async def run_clean_bot():
                         )
 
                         # Take Profit partiel
-                        to_exit, new_filled = bot.exit_manager.check_tp_partial(
-                            pos["entry_price"], last_price, pos["filled_tp_targets"]
-                        )
                         if to_exit > 0 and pos["amount"] > 0:
                             amount_to_sell = pos["amount"] * to_exit
+                            print(
+                                f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
+                            )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
                             pos["amount"] -= amount_to_sell
                             pos["filled_tp_targets"] = new_filled
                             if pos["amount"] <= 0:
+                                print(
+                                    f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
+                                )
                                 bot.positions.pop(symbol)
                                 continue
+                        else:
+                            print(
+                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={pos['amount']})"
+                            )
 
                         # Trailing stop
                         should_exit, new_max = bot.exit_manager.check_trailing(
@@ -6968,9 +6987,23 @@ async def run_clean_bot():
                             pos.get("max_price", pos["entry_price"]),
                         )
                         pos["max_price"] = new_max
+                        print(
+                            f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={new_max}"
+                        )
+
                         if should_exit and pos["amount"] > 0:
+                            print(
+                                f"[DEBUG EXEC TRAILING] SELL {pos['amount']} for {symbol} (Trailing stop)"
+                            )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            print(
+                                f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
+                            )
                             bot.positions.pop(symbol)
+                        else:
+                            print(
+                                f"[DEBUG NO TRAILING] {symbol}: No trailing stop executed"
+                            )
 
                     # Gestion des shorts BingX
                     for symbol, pos in list(bot.positions.items()):
