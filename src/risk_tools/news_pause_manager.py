@@ -51,6 +51,63 @@ class NewsPauseManager:
         self.volatility_thresholds = {"low": 0.02, "medium": 0.05, "high": 0.08}
         self.market_conditions = {}
 
+    def smart_pause_update(self, bot):
+        """
+        Gère dynamiquement la levée ou le maintien des pauses selon plusieurs critères :
+        - Signaux techniques/IA
+        - Sentiment news
+        - Volatilité/volume
+        - Prix qui repart fortement
+        - Pause partielle : autorise les ventes, bloque les achats
+        """
+        # 1. Déblocage anticipé si le marché repart fortement à la hausse
+        regime = getattr(bot, "regime", None)
+        sentiment = None
+        try:
+            sentiment = bot.get_performance_metrics().get("sentiment", 0)
+        except Exception:
+            pass
+
+        # Critère 1 : Marché haussier puissant
+        if regime == "TRENDING_UP":
+            if self.global_cycles_remaining > 2:
+                print("[SMART PAUSE] Marché haussier, réduction de la pause globale !")
+                self.global_cycles_remaining = max(self.global_cycles_remaining // 2, 1)
+
+        # Critère 2 : Sentiment news positif
+        if sentiment is not None and sentiment > 0.5:
+            print(
+                "[SMART PAUSE] Sentiment news positif, réduction de la pause globale !"
+            )
+            self.global_cycles_remaining = max(self.global_cycles_remaining // 2, 1)
+
+        # Critère 3 : Volatilité/Volume normalisés
+        for pair, cycles in list(self.pair_pauses.items()):
+            vol = bot.calculate_volatility(bot.market_data.get(pair, {}).get("1h", {}))
+            avg_vol = bot.calculate_volume_profile(
+                bot.market_data.get(pair, {}).get("1h", {})
+            ).get("strength", 1)
+            if vol < 0.05 and avg_vol > 0.7:
+                print(f"[SMART PAUSE] Volatilité/volume OK sur {pair}, pause réduite !")
+                self.pair_pauses[pair] = max(cycles // 2, 1)
+
+        # Critère 4 : Si le prix monte > 7% pendant la pause, lève la pause sur la paire
+        for pair, cycles in list(self.pair_pauses.items()):
+            market_data = bot.market_data.get(pair, {}).get("1h", {})
+            if "close" in market_data and len(market_data["close"]) > 10:
+                prices = market_data["close"][-10:]
+                if prices[-1] > prices[0] * 1.07:  # +7% sur la période de pause
+                    print(
+                        f"[SMART PAUSE] Prix {pair} +7% pendant la pause, pause levée !"
+                    )
+                    self.pair_pauses[pair] = 0
+
+        # Critère 5 : Maintien pause stricte si news de hack/scam/frozen
+        # (optionnel)
+
+        # Critère 6 : Pause partielle (autorise les ventes, bloque les achats)
+        # géré dans la boucle principale (voir ci-dessous)
+
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
