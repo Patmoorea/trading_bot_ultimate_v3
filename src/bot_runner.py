@@ -1127,16 +1127,16 @@ class TradingBotM4:
 
     def fetch_trades_fifo(self, binance_client, symbol):
         """
-        Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée,
+        Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée (ex: "BTCUSDC"),
         formatée pour le calcul FIFO.
-        Doit retourner:
+        Retourne:
             buys: [{"qty":..., "price":..., "time":..., "id":...}, ...]
             sells: [{"qty":..., "price":..., "time":..., "id":...}, ...]
         """
         buys, sells = [], []
         try:
-            # Récupère l'historique spot des trades sur la paire (ex: "BTCUSDC")
-            trades = binance_client.get_my_trades(symbol)
+            # Appel correct de l'API Binance : paramètre passé en mot-clé !
+            trades = binance_client.get_my_trades(symbol=symbol)
             for trade in trades:
                 qty = float(trade["qty"])
                 price = float(trade["price"])
@@ -1152,7 +1152,7 @@ class TradingBotM4:
                     buys.append(trade_dict)
                 else:
                     sells.append(trade_dict)
-            # Tri par ordre chronologique (optionnel mais recommandé)
+            # Tri chronologique (optionnel mais conseillé)
             buys = sorted(buys, key=lambda x: x["time"])
             sells = sorted(sells, key=lambda x: x["time"])
             return buys, sells
@@ -1203,7 +1203,7 @@ class TradingBotM4:
             json.dump(shared_data, f, indent=4)
         return all_results
 
-    def fifo_pnl(buys, sells):
+    def fifo_pnl(self, buys, sells):
         """
         Calcule la plus-value de chaque vente (FIFO).
         Associe chaque vente aux achats les plus anciens restants.
