@@ -6812,12 +6812,11 @@ async def run_clean_bot():
                     bot.get_pending_sales()
 
                     # Gestion des news et pauses
-                    news_list = []
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
-                            news_sentiment = shared_data.get("sentiment", {})
-                            news_list = news_sentiment.get("scores", [])
+                        news_sentiment = shared_data.get("sentiment", {})
+                        news_list = news_sentiment.get("scores", [])
                     except Exception:
                         news_list = []
 
@@ -6830,22 +6829,7 @@ async def run_clean_bot():
                         for n in unprocessed_news:
                             n["processed"] = True
 
-                        # Sauvegarde sécurisée des news traitées
-                        try:
-                            with open(bot.data_file, "r") as f:
-                                shared_data = json.load(f)
-                        except Exception:
-                            shared_data = {}
-
-                        if "sentiment" not in shared_data:
-                            shared_data["sentiment"] = {}
-
-                        try:
-                            with open(bot.data_file, "r") as f:
-                                shared_data = json.load(f)
-                        except Exception:
-                            shared_data = {}
-
+                        # Merge processed flags before saving
                         old_scores = shared_data.get("sentiment", {}).get("scores", [])
                         news_list = merge_news_processed(old_scores, news_list)
 
@@ -6859,7 +6843,7 @@ async def run_clean_bot():
                             bot.data_file,
                         )
 
-                    # DECOMPTE PAUSES : APPELER on_cycle_end A CHAQUE CYCLE
+                    # Décompte des pauses à chaque tick
                     bot.news_pause_manager.on_cycle_end()
                     active_pauses = bot.get_active_pauses()
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
@@ -6886,8 +6870,6 @@ async def run_clean_bot():
                     for symbol, pos in list(bot.positions.items()):
                         if pos.get("side") != "long":
                             continue
-
-                        # Initialisation des données de position si nécessaire
                         if "filled_tp_targets" not in pos:
                             pos["filled_tp_targets"] = [False, False]
                         if "price_history" not in pos:
@@ -7013,8 +6995,6 @@ async def run_clean_bot():
                     td_dict = {}
                     for pair in bot.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
-
-                        # Récupération des signaux existants
                         tech_score = 0.5
                         ai_score = 0.5
                         sentiment_score = 0.5
@@ -7031,7 +7011,6 @@ async def run_clean_bot():
                                             "score", 0.5
                                         )
                                     )
-
                             ai_score = float(
                                 bot.market_data[pair_key].get("ai_prediction", 0.5)
                             )
