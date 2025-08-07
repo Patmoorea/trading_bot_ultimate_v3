@@ -6757,32 +6757,43 @@ async def run_clean_bot():
                         # Recherche des pauses
                         action = decision.get("action")
                         pair = decision.get("pair")
-                        trading_paused = bot.news_pause_manager.global_cycles_remaining > 0
-                        pair_paused = pair in bot.news_pause_manager.pair_pauses and bot.news_pause_manager.pair_pauses[pair] > 0
+                        trading_paused = (
+                            bot.news_pause_manager.global_cycles_remaining > 0
+                        )
+                        pair_paused = (
+                            pair in bot.news_pause_manager.pair_pauses
+                            and bot.news_pause_manager.pair_pauses[pair] > 0
+                        )
                         buy_paused = pair in bot.news_pause_manager.buy_paused_pairs
 
                         # Autorise les ventes même en pause
                         if trading_paused and action == "buy":
-                            print(f"[SMART PAUSE] Achat {pair} bloqué par pause globale/news.")
+                            print(
+                                f"[SMART PAUSE] Achat {pair} bloqué par pause globale/news."
+                            )
                             continue
                         if pair_paused and action == "buy":
-                            print(f"[SMART PAUSE] Achat {pair} bloqué par pause sur la paire.")
+                            print(
+                                f"[SMART PAUSE] Achat {pair} bloqué par pause sur la paire."
+                            )
                             continue
                         if buy_paused and action == "buy":
-                            print(f"[SMART PAUSE] Achat {pair} bloqué par pause BUY (régulation/news).")
+                            print(
+                                f"[SMART PAUSE] Achat {pair} bloqué par pause BUY (régulation/news)."
+                            )
                             continue
                         # Si la volatilité est trop élevée, skip
                         if volatility > 0.08:
-                            print(f"[FILTER] Volatilité trop élevée sur {pair}, trade ignoré.")
+                            print(
+                                f"[FILTER] Volatilité trop élevée sur {pair}, trade ignoré."
+                            )
                             continue
 
                         base_size = 12
                         confidence = decision.get("confidence", 0.5)
                         sizing_multiplier = decision.get("sizing_multiplier", 1.0)
 
-                        final_size = (
-                            base_size * sizing_multiplier * (confidence / 0.5)
-                        )
+                        final_size = base_size * sizing_multiplier * (confidence / 0.5)
                         final_size = max(12, min(final_size, 50))
 
                         decision["amount"] = final_size
@@ -6805,9 +6816,9 @@ async def run_clean_bot():
 
             return trade_decisions, regime
 
-            except Exception as e:
-                logger.error(f"❌ Erreur cycle trading: {e}")
-                raise
+        except Exception as e:
+            logger.error(f"❌ Erreur cycle trading: {e}")
+            raise
 
     async def main():
         try:
