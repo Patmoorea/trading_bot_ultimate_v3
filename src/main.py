@@ -103,7 +103,9 @@ def get_pending_sales(self):
         pauses = self.news_pause_manager.get_active_pauses()
 
     def is_paused(symbol):
-        # Vérifie si la pause est globale ou concerne la position
+        # Ne jamais retourner True si pauses est vide !
+        if not pauses:
+            return False, ""
         for p in pauses:
             asset = p.get("asset", "GLOBAL")
             if asset == "GLOBAL" or asset == symbol:
@@ -136,44 +138,41 @@ def get_pending_sales(self):
         reason = ""
         decision = ""
         note = ""
-        # Pause spécifique à la position
         pause_for_pos, pause_reason = is_paused(symbol)
         if pause_for_pos:
-            decision = f"Vente bloquée (pause: {pause_reason})"
-            note = "Trading suspendu"
             pause_blocage = "Oui"
+            note = "Trading suspendu"
+            reason = "Pause active"
+            decision = f"Vente bloquée (pause: {pause_reason})"
         elif action == "SELL" and pos.get("side") == "long":
+            pause_blocage = "Non"
             reason = "Signal SELL détecté"
             decision = "Vente prévue au prochain cycle"
-            pause_blocage = "Non"
+            note = ""
         elif self.exit_manager.is_tp_near(pos):
+            pause_blocage = "Non"
             reason = "Take Profit proche"
             decision = "Vente partielle possible (TP)"
-            pause_blocage = "Non"
+            note = ""
         elif self.check_stop_loss(symbol):
+            pause_blocage = "Non"
             reason = "Stop-loss imminent"
             decision = "Vente automatique si perte aggrave"
-            pause_blocage = "Non"
+            note = ""
         elif pnl_latent > GAIN_ALERT_PCT * 100:
+            pause_blocage = "Non"
             reason = "Gain latent élevé"
             decision = "Surveillance, possibilité de prise de profit"
-            pause_blocage = "Non"
+            note = "En zone de profit, TP possible"
         elif pnl_latent < LOSS_ALERT_PCT * 100:
+            pause_blocage = "Non"
             reason = "Perte latente élevée"
             decision = "Surveillance, risque de vente auto si perte aggrave"
-            pause_blocage = "Non"
-        else:
-            reason = f"Signal actuel: {action.upper()}"
-            decision = "Aucune action prévue, position maintenue"
-            pause_blocage = "Non"
-        # Note complémentaire
-        if pause_for_pos:
-            note = f"Vente bloquée: {pause_reason}"
-        elif reason.startswith("Gain latent"):
-            note = "En zone de profit, TP possible"
-        elif reason.startswith("Perte latente"):
             note = "Risque de stop-loss"
         else:
+            pause_blocage = "Non"
+            reason = f"Signal actuel: {action.upper()}"
+            decision = "Aucune action prévue, position maintenue"
             note = ""
         pending.append(
             {
@@ -201,62 +200,54 @@ def get_pending_sales(self):
             current_price = pos.get("current_price")
             amount = pos.get("amount")
 
-            # Calcul latente sur le solde restant
             pnl_latent = (
                 (current_price - entry_price) / entry_price * 100
                 if entry_price and current_price
                 else 0
             )
-            # Calcul FIFO sur la dernière vente (pour reporting)
             fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
             if fifo_pnl_pct is None:
                 fifo_pnl_pct = 0
 
-            date_achat = None
-            temps_en_position = None
-
             td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
             action = td.get("action", "neutral")
-            reason = ""
-            decision = ""
-            note = ""
             pause_for_pos, pause_reason = is_paused(symbol)
             if pause_for_pos:
-                decision = f"Vente bloquée (pause: {pause_reason})"
-                note = "Trading suspendu"
                 pause_blocage = "Oui"
+                note = "Trading suspendu"
+                reason = "Pause active"
+                decision = f"Vente bloquée (pause: {pause_reason})"
             elif action == "SELL" and pos.get("side") == "long":
+                pause_blocage = "Non"
                 reason = "Signal SELL détecté"
                 decision = "Vente prévue au prochain cycle"
-                pause_blocage = "Non"
+                note = ""
             elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
+                pause_blocage = "Non"
                 reason = "Take Profit proche"
                 decision = "Vente partielle possible (TP)"
-                pause_blocage = "Non"
+                note = ""
             elif self.check_stop_loss(symbol):
+                pause_blocage = "Non"
                 reason = "Stop-loss imminent"
                 decision = "Vente automatique si perte aggrave"
-                pause_blocage = "Non"
+                note = ""
             elif pnl_latent > GAIN_ALERT_PCT * 100:
+                pause_blocage = "Non"
                 reason = f"Gain latent élevé {pnl_latent:.1f}%"
                 decision = "Surveillance, possibilité de prise de profit"
-                pause_blocage = "Non"
+                note = "En zone de profit, TP possible"
             elif pnl_latent < LOSS_ALERT_PCT * 100:
+                pause_blocage = "Non"
                 reason = f"Perte latente élevée {pnl_latent:.1f}%"
                 decision = "Surveillance, risque de vente auto si perte aggrave"
-                pause_blocage = "Non"
-            else:
-                reason = f"Signal actuel: {action.upper()}"
-                decision = "Aucune action prévue, position maintenue"
-                pause_blocage = "Non"
-            if pause_for_pos:
-                note = f"Vente bloquée: {pause_reason}"
-            elif reason.startswith("Gain latent"):
-                note = "En zone de profit, TP possible"
-            elif reason.startswith("Perte latente"):
                 note = "Risque de stop-loss"
             else:
+                pause_blocage = "Non"
+                reason = f"Signal actuel: {action.upper()}"
+                decision = "Aucune action prévue, position maintenue"
                 note = ""
+
             pending.append(
                 {
                     "symbol": symbol,

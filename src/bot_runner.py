@@ -3377,6 +3377,7 @@ class TradingBotM4:
         """
         Affiche TOUTES les positions spot Binance avec leur état actuel.
         Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
+        Les autres champs sont calculés intelligemment.
         """
         try:
             pending = []
@@ -3386,61 +3387,68 @@ class TradingBotM4:
             pauses = []
             if hasattr(self, "news_pause_manager"):
                 pauses = self.news_pause_manager.get_active_pauses()
+            print("[DEBUG PATCH] pauses:", pauses)
 
             def is_paused(symbol):
-                # Vérifie si la pause est globale ou concerne la position
+                # Ne jamais retourner True si pauses est vide !
+                if not pauses:
+                    return False, ""
                 for p in pauses:
                     asset = p.get("asset", "GLOBAL")
                     if asset == "GLOBAL" or asset == symbol:
                         return True, p.get("reason", "Indéterminée")
                 return False, ""
 
-            # Traitement des positions Binance
+            # Pour chaque position SPOT Binance
             if hasattr(self, "positions_binance"):
                 for symbol, pos in self.positions_binance.items():
                     entry_price = pos.get("entry_price")
                     current_price = pos.get("current_price")
                     amount = pos.get("amount")
 
-                    # Calcul PnL FIFO
+                    # Calcul PnL (FIFO ou classique)
                     fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
-                    pnl_pct = fifo_pnl_pct if fifo_pnl_pct is not None else 0
+                    pnl_pct = (
+                        fifo_pnl_pct
+                        if fifo_pnl_pct is not None
+                        else (
+                            (current_price - entry_price) / entry_price * 100
+                            if entry_price and current_price
+                            else 0
+                        )
+                    )
 
-                    # Signal actuel
-                    td = self.trade_decisions.get(symbol, {})
+                    td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
                     action = td.get("action", "neutral")
                     confidence = td.get("confidence", 0.5)
 
-                    # Pause spécifique à la position
                     pause_for_pos, pause_reason = is_paused(symbol)
-
-                    # Détermination raison/décision
-                    if action == "SELL":
-                        reason = "🔴 Signal SELL"
+                    if pause_for_pos:
+                        pause_blocage = "Oui"
+                        note = f"Trading suspendu ({pause_reason})"
+                        reason = "Pause active"
+                        decision = "Vente bloquée"
+                    elif action == "SELL":
+                        pause_blocage = "Non"
+                        note = ""
+                        reason = "Signal SELL détecté"
                         decision = "Vente prévue au prochain cycle"
                     elif pnl_pct < -5:
-                        reason = f"🔴 Perte latente {pnl_pct:.1f}%"
+                        pause_blocage = "Non"
+                        note = "Risque de stop-loss"
+                        reason = f"Perte latente {pnl_pct:.1f}%"
                         decision = "Surveillance stop-loss"
                     elif pnl_pct > 7:
-                        reason = f"🟢 Gain latent {pnl_pct:.1f}%"
+                        pause_blocage = "Non"
+                        note = "En zone de profit, TP possible"
+                        reason = f"Gain latent {pnl_pct:.1f}%"
                         decision = "Surveillance TP"
                     else:
+                        pause_blocage = "Non"
+                        note = ""
                         reason = f"Position normale ({action})"
                         decision = "Position maintenue"
 
-                    # Note et pause
-                    if pause_for_pos:
-                        note = f"Trading suspendu ({pause_reason})"
-                        pause_status = "Oui"
-                    else:
-                        note = (
-                            "Risque stop-loss"
-                            if pnl_pct < -5
-                            else "Zone de profit" if pnl_pct > 7 else ""
-                        )
-                        pause_status = "Non"
-
-                    # Construction de l'entrée
                     pending.append(
                         {
                             "symbol": symbol,
@@ -3449,14 +3457,15 @@ class TradingBotM4:
                             "entry_price": entry_price,
                             "current_price": current_price,
                             "amount": amount,
-                            "pnl_pct": pnl_pct,  # Pour le tri/fusion dashboard
+                            "pnl_pct": pnl_pct,
                             "% Gain/Perte": f"{pnl_pct:.2f}%",
-                            "temps_en_position_h": "N/A",
-                            "pause_blocage": pause_status,
+                            "pause_blocage": pause_blocage,
                             "note": note,
                             "confidence": confidence,
                         }
                     )
+
+            # Ajoute ici les autres positions (futures/simu) si besoin, selon ta logique
 
             # Sauvegarde dans shared_data.json
             self.safe_update_shared_data({"pending_sales": pending}, self.data_file)
