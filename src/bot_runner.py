@@ -1000,6 +1000,18 @@ class TradingBotM4:
         self.news_pause_manager = NewsPauseManager(
             default_pause_cycles=6
         )  # 6 cycles = 3 minutes si cycle=30s
+        try:
+            with open(self.data_file, "r") as f:
+                shared_data = json.load(f)
+            pause_status = shared_data.get("pause_status", {})
+            self.news_pause_manager.global_cycles_remaining = pause_status.get(
+                "global_remaining", 0
+            )
+            self.news_pause_manager.pair_pauses = pause_status.get(
+                "pair_pauses", {}
+            ).copy()
+        except Exception as e:
+            print(f"[INIT PAUSE] Impossible de restaurer l’état des pauses : {e}")
 
         self.exit_manager = ExitManager(
             tp_levels=[(0.03, 0.3), (0.07, 0.3)], trailing_pct=0.03
@@ -3391,7 +3403,7 @@ class TradingBotM4:
                     amount = pos.get("amount")
 
                     # Calcul PnL FIFO
-                    fifo_pnl_pct = self.get_last_fifo_pnl(symbol)
+                    fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
                     pnl_pct = fifo_pnl_pct if fifo_pnl_pct is not None else 0
 
                     # Signal actuel
@@ -6827,6 +6839,15 @@ async def run_clean_bot():
 
                         if "sentiment" not in shared_data:
                             shared_data["sentiment"] = {}
+
+                        try:
+                            with open(bot.data_file, "r") as f:
+                                shared_data = json.load(f)
+                        except Exception:
+                            shared_data = {}
+
+                        old_scores = shared_data.get("sentiment", {}).get("scores", [])
+                        news_list = merge_news_processed(old_scores, news_list)
 
                         bot.safe_update_shared_data(
                             {
