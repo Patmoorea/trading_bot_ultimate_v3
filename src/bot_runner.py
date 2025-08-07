@@ -6859,6 +6859,11 @@ async def run_clean_bot():
                             bot.data_file,
                         )
 
+                    # DECOMPTE PAUSES : APPELER on_cycle_end A CHAQUE CYCLE
+                    bot.news_pause_manager.on_cycle_end()
+                    active_pauses = bot.get_active_pauses()
+                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
+
                     # Vérification pause globale
                     trading_paused = bot.news_pause_manager.global_cycles_remaining > 0
                     if trading_paused:
@@ -7004,16 +7009,8 @@ async def run_clean_bot():
                                     "ta": indicators,
                                 }
 
-                    # Mise à jour des données pour le dashboard
-                    bot.news_pause_manager.on_cycle_end()
-                    active_pauses = bot.get_active_pauses()
-                    print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
-                    bot.sync_positions_with_binance()
-
-                    # Construction du dictionnaire des décisions avec valeurs non nulles
+                    # Sauvegarde et dashboard
                     td_dict = {}
-
-                    # 1. Initialisation avec les données de market_data
                     for pair in bot.pairs_valid:
                         pair_key = pair.replace("/", "").upper()
 
@@ -7035,7 +7032,6 @@ async def run_clean_bot():
                                         )
                                     )
 
-                            # AI et sentiment au niveau de la paire
                             ai_score = float(
                                 bot.market_data[pair_key].get("ai_prediction", 0.5)
                             )
@@ -7044,14 +7040,13 @@ async def run_clean_bot():
                             )
 
                         td_dict[pair] = {
-                            "confidence": 0.5,  # Valeur par défaut non nulle
+                            "confidence": 0.5,
                             "action": "neutral",
                             "tech": tech_score,
                             "ai": ai_score,
                             "sentiment": sentiment_score,
                         }
 
-                    # 2. Mise à jour avec les vraies décisions
                     for td in trade_decisions:
                         if td and isinstance(td, dict):
                             pair = td.get("pair")
@@ -7074,33 +7069,30 @@ async def run_clean_bot():
                                 }
                             )
 
-                    # 3. Mise à jour des métriques de cycle
                     cycle_metrics = {
                         "cycle": cycle,
                         "regime": regime,
                         "balance": bot.get_performance_metrics().get("balance", 0.0),
                     }
 
-                    # 4. Sauvegarde complète
+                    # Sauvegarde dans le fichier partagé
                     bot.safe_update_shared_data(
                         {
                             "trade_decisions": td_dict,
                             "market_data": bot.market_data,
-                            "cycle_metrics": cycle_metrics,  # Ajout des métriques de cycle
+                            "cycle_metrics": cycle_metrics,
                             "active_pauses": bot.get_active_pauses(),
                             "positions_binance": getattr(bot, "positions_binance", {}),
                         },
                         bot.data_file,
                     )
 
-                    # 5. Sauvegarde des décisions dans l'instance du bot
                     bot.trade_decisions = td_dict
 
                     print("[DEBUG DASHBOARD EXPORT]")
                     print("Trade Decisions:", json.dumps(td_dict, indent=2))
                     print("Cycle Metrics:", json.dumps(cycle_metrics, indent=2))
 
-                    # Sauvegarde des données
                     bot.safe_update_shared_data(
                         {
                             "active_pauses": active_pauses,
