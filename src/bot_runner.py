@@ -3122,7 +3122,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec validation complète"""
+        """Mise à jour sécurisée avec fusion profonde et validation"""
         try:
             # 1. Backup du fichier existant
             backup_file = data_file + ".bak"
@@ -3144,13 +3144,12 @@ class TradingBotM4:
             current_time = datetime.utcnow()
             current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
-            # 4. Validation des trade decisions
+            # 4. Validation des trade_decisions (optionnel)
             def validate_trade_decisions(decisions):
                 validated = {}
                 if isinstance(decisions, dict):
                     for pair, data in decisions.items():
                         if isinstance(data, dict):
-                            # Structure validée pour chaque paire
                             validated_data = {
                                 "action": "neutral",
                                 "confidence": 0.5,
@@ -3159,12 +3158,8 @@ class TradingBotM4:
                                 "sentiment": 0.0,
                                 "timestamp": current_time_str,
                             }
-
-                            # Mise à jour avec les données valides
                             if "action" in data:
                                 validated_data["action"] = data["action"]
-
-                            # Validation des valeurs numériques
                             for key in ["confidence", "tech", "ai", "sentiment"]:
                                 try:
                                     if key in data and data[key] is not None:
@@ -3178,21 +3173,17 @@ class TradingBotM4:
                                                 0.0, min(1.0, val)
                                             )
                                 except (TypeError, ValueError):
-                                    pass  # Garde la valeur par défaut
-
+                                    pass
                             validated[pair] = validated_data
-
                 return validated
 
             # 5. Validation des timestamps
             def update_timestamps(data):
                 if isinstance(data, dict):
                     for key, value in data.items():
-                        # PATCH: NE JAMAIS écraser une liste de timestamp OHLCV
                         if isinstance(value, dict):
                             update_timestamps(value)
                         elif key in ["timestamp", "last_update"]:
-                            # On écrase SEULEMENT si ce n'est PAS une liste d'entiers
                             if not (
                                 isinstance(value, list)
                                 and all(isinstance(x, (int, float)) for x in value)
@@ -3200,14 +3191,13 @@ class TradingBotM4:
                                 data[key] = current_time_str
                 return data
 
-            # 6. Fusion profonde avec préservation des types
+            # 6. Fusion profonde
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
                         d[k] = deep_update(d[k], v)
                     elif isinstance(v, list) and k in d and isinstance(d[k], list):
                         if k == "pending_sales":
-                            # Gestion spéciale des pending_sales
                             existing = {
                                 item.get("symbol"): item
                                 for item in d[k]
@@ -3220,7 +3210,6 @@ class TradingBotM4:
                         else:
                             d[k] = v
                     else:
-                        # PATCH : conversion sécurisée avant addition
                         if isinstance(d.get(k), (int, float)) and isinstance(v, str):
                             try:
                                 v = float(v)
@@ -3270,7 +3259,6 @@ class TradingBotM4:
                     json.dump(shared_data, f, indent=4)
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
-
             except Exception as e:
                 print(f"❌ Erreur sauvegarde JSON: {e}")
                 if os.path.exists(backup_file):
