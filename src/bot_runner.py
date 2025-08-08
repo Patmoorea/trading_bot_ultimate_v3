@@ -3218,6 +3218,12 @@ class TradingBotM4:
                         else:
                             d[k] = v
                     else:
+                        # PATCH : conversion sécurisée avant addition
+                        if isinstance(d.get(k), (int, float)) and isinstance(v, str):
+                            try:
+                                v = float(v)
+                            except Exception:
+                                v = 0
                         d[k] = v
                 return d
 
@@ -3258,9 +3264,8 @@ class TradingBotM4:
 
             # 11. Sauvegarde sécurisée
             try:
-                self.safe_update_shared_data(
-                    {"closed_positions": closed}, self.data_file
-                )
+                with open(data_file, "w") as f:
+                    json.dump(shared_data, f, indent=4)
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
 
