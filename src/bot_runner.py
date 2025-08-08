@@ -6848,6 +6848,11 @@ async def run_clean_bot():
             while True:
                 print(f"=== NOUVEAU CYCLE {cycle} ===")
                 print(f"[DEBUG CYCLE] Positions (avant TP/SL): {bot.positions}")
+                print(f"[DEBUG CYCLE] bot.positions: {bot.positions}")
+                print(
+                    f"[DEBUG CYCLE] Positions binance: {getattr(bot, 'positions_binance', {})}"
+                )
+                print(f"[DEBUG CYCLE] bot.portfolio: {getattr(bot, 'portfolio', {})}")
                 try:
                     cycle += 1
                     start = datetime.utcnow()
@@ -6903,7 +6908,9 @@ async def run_clean_bot():
                     bot.check_reload_dl_model()
 
                     # Gestion des stop-loss SPOT
-                    for symbol, pos in list(bot.positions.items()):
+                    for symbol, pos in list(
+                        getattr(bot, "positions_binance", {}).items()
+                    ):
                         if bot.is_long(symbol) and bot.check_stop_loss(symbol):
                             print(
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
@@ -6914,7 +6921,9 @@ async def run_clean_bot():
                             continue  # Passe à la position suivante
 
                     # Gestion des TP et trailing stop
-                    for symbol, pos in list(bot.positions.items()):
+                    for symbol, pos in list(
+                        getattr(bot, "positions_binance", {}).items()
+                    ):
                         print(f"\n[DEBUG CYCLE] Analyse {symbol} | pos={pos}")
 
                         # Filtre seulement les positions "long"
@@ -7008,7 +7017,9 @@ async def run_clean_bot():
                             )
 
                     # Gestion des shorts BingX
-                    for symbol, pos in list(bot.positions.items()):
+                    for symbol, pos in list(
+                        getattr(bot, "positions_binance", {}).items()
+                    ):
                         if bot.is_short(symbol):
                             try:
                                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
