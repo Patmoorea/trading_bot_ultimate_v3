@@ -85,6 +85,28 @@ class NewsPauseManager:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
+        # Fusion profonde obligatoire !
+        def deep_update(d, u):
+            for k, v in u.items():
+                if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+                    d[k] = deep_update(d[k], v)
+                elif isinstance(v, list) and k in d and isinstance(d[k], list):
+                    if k == "pending_sales":
+                        existing = {
+                            item.get("symbol"): item
+                            for item in d[k]
+                            if isinstance(item, dict) and "symbol" in item
+                        }
+                        for new_item in v:
+                            if isinstance(new_item, dict) and "symbol" in new_item:
+                                existing[new_item["symbol"]] = new_item
+                        d[k] = list(existing.values())
+                    else:
+                        d[k] = v
+                else:
+                    d[k] = v
+            return d
+
         try:
             with open(data_file, "r") as f:
                 shared_data = json.load(f)
@@ -94,11 +116,11 @@ class NewsPauseManager:
                 with open(backup_file, "r") as f:
                     shared_data = json.load(f)
             else:
-                shared_data = None
+                shared_data = {}
         if shared_data is None:
             print("[SAFE PATCH] shared_data.json corrompu, skip écriture !")
             return
-        shared_data.update(new_fields)
+        shared_data = deep_update(shared_data, new_fields)
         try:
             shutil.copyfile(data_file, data_file + ".bak")
         except Exception:
