@@ -5,22 +5,6 @@ import shutil
 from datetime import datetime
 
 
-def save_shared_data(update_dict, data_file):
-    try:
-        if os.path.exists(data_file):
-            with open(data_file, "r") as f:
-                shared_data = json.load(f)
-                if not isinstance(shared_data, dict):
-                    shared_data = {}
-        else:
-            shared_data = {}
-        shared_data.update(update_dict)
-        with open(data_file, "w") as f:
-            json.dump(shared_data, f, indent=4)
-    except Exception as e:
-        print(f"[PATCH] Erreur sauvegarde JSON : {e}")
-
-
 class NewsPauseManager:
     # Criticité : mot-clé associé à une durée de pause par défaut (en cycles)
     CRITICAL_KEYWORDS = {
@@ -62,12 +46,6 @@ class NewsPauseManager:
 
         self.volatility_thresholds = {"low": 0.02, "medium": 0.05, "high": 0.08}
         self.market_conditions = {}
-
-    def safe_update_shared_data(
-        self, new_fields: dict, data_file="src/shared_data.json"
-    ):
-        # PATCH: use universal save_shared_data
-        save_shared_data(new_fields, data_file)
 
     def smart_pause_update(self, bot):
         regime = getattr(bot, "regime", None)
@@ -275,17 +253,20 @@ class NewsPauseManager:
             self.buy_paused_pairs.discard(pair)
         try:
             current_pauses = self.get_active_pauses()
+            # PATCH: filtrer les valeurs non-int
+            pair_cycle_values = [
+                v for v in self.pair_pauses.values() if isinstance(v, (int, float))
+            ]
+            max_remaining = max(
+                [self.global_cycles_remaining] + pair_cycle_values, default=0
+            )
             self.safe_update_shared_data(
                 {
                     "active_pauses": current_pauses,
                     "pause_status": {
                         "global_remaining": self.global_cycles_remaining,
                         "pair_pauses": self.pair_pauses,
-                        "max_remaining": max(
-                            [self.global_cycles_remaining]
-                            + list(self.pair_pauses.values()),
-                            default=0,
-                        ),
+                        "max_remaining": max_remaining,
                     },
                 }
             )
@@ -310,11 +291,13 @@ class NewsPauseManager:
 
     def get_active_pauses(self):
         pauses = []
-        max_cycles = max(
-            [self.global_cycles_remaining] + list(self.pair_pauses.values()), default=0
-        )
+        # PATCH: filtrer les valeurs non-numériques
+        pair_cycle_values = [
+            v for v in self.pair_pauses.values() if isinstance(v, (int, float))
+        ]
+        max_cycles = max([self.global_cycles_remaining] + pair_cycle_values, default=0)
         for pair, cycles_left in self.pair_pauses.items():
-            if cycles_left > 0:
+            if isinstance(cycles_left, (int, float)) and cycles_left > 0:
                 pause_type = "BUY" if pair in self.buy_paused_pairs else "FULL"
                 reason = getattr(self, "last_event_news", {}).get("title", "")
                 pauses.append(
@@ -327,7 +310,10 @@ class NewsPauseManager:
                         "max_cycles": max_cycles,
                     }
                 )
-        if self.global_cycles_remaining > 0:
+        if (
+            isinstance(self.global_cycles_remaining, (int, float))
+            and self.global_cycles_remaining > 0
+        ):
             reason = getattr(self, "last_event_news", {}).get("title", "")
             pauses.append(
                 {

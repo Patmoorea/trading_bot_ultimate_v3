@@ -26,8 +26,6 @@ TRADING_PARAMS = {
 }
 
 # --- CONFIGURATION ---
-import streamlit as st
-
 st.set_page_config(
     page_title="Trading Bot Ultimate v4 - Dashboard",
     page_icon="📈",
@@ -122,8 +120,7 @@ def get_pending_sales(self):
                 return True, p.get("reason", "Indéterminée")
         return False, ""
 
-    # Positions principales
-    for symbol, pos in getattr(self, "positions", {}).items():
+    for symbol, pos in self.positions.items():
         entry_price = pos.get("entry_price")
         current_price = pos.get("current_price")
         amount = pos.get("amount")
@@ -141,9 +138,7 @@ def get_pending_sales(self):
                 temps_en_position = None
         else:
             temps_en_position = None
-        td = getattr(self, "trade_decisions", {}).get(
-            symbol.replace("/", "").upper(), {}
-        )
+        td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
         action = td.get("action", "neutral")
         reason = ""
         decision = ""
@@ -159,7 +154,7 @@ def get_pending_sales(self):
             reason = "Signal SELL détecté"
             decision = "Vente prévue au prochain cycle"
             note = ""
-        elif getattr(self, "exit_manager", None) and self.exit_manager.is_tp_near(pos):
+        elif self.exit_manager.is_tp_near(pos):
             pause_blocage = "Non"
             reason = "Take Profit proche"
             decision = "Vente partielle possible (TP)"
@@ -202,7 +197,6 @@ def get_pending_sales(self):
                 "note": note,
             }
         )
-    # Positions Binance
     if hasattr(self, "positions_binance"):
         for symbol, pos in self.positions_binance.items():
             entry_price = pos.get("entry_price")
@@ -216,9 +210,7 @@ def get_pending_sales(self):
             fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
             if fifo_pnl_pct is None:
                 fifo_pnl_pct = 0
-            td = getattr(self, "trade_decisions", {}).get(
-                symbol.replace("/", "").upper(), {}
-            )
+            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
             action = td.get("action", "neutral")
             pause_for_pos, pause_reason = is_paused(symbol)
             if pause_for_pos:
@@ -231,9 +223,7 @@ def get_pending_sales(self):
                 reason = "Signal SELL détecté"
                 decision = "Vente prévue au prochain cycle"
                 note = ""
-            elif getattr(self, "exit_manager", None) and self.exit_manager.is_tp_near(
-                pos
-            ):
+            elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
                 pause_blocage = "Non"
                 reason = "Take Profit proche"
                 decision = "Vente partielle possible (TP)"
