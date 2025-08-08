@@ -6911,13 +6911,13 @@ async def run_clean_bot():
                     for symbol, pos in list(
                         getattr(bot, "positions_binance", {}).items()
                     ):
-                        if bot.is_long(symbol) and bot.check_stop_loss(symbol):
+                        if pos.get("side") == "long" and bot.check_stop_loss(symbol):
                             print(
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
                             await bot.execute_trade(symbol, "SELL", pos["amount"])
                             print(f"[STOPLOSS] Position fermée pour {symbol}")
-                            bot.positions.pop(symbol, None)
+                            getattr(bot, "positions_binance", {}).pop(symbol, None)
                             continue  # Passe à la position suivante
 
                     # Gestion des TP et trailing stop
@@ -6955,6 +6955,9 @@ async def run_clean_bot():
                             closes = bot.market_data[symbol]["1h"].get("close", [])
                             if closes:
                                 last_price = closes[-1]
+                        # PATCH: Utilise le current_price du dashboard si last_price est toujours None
+                        if last_price is None and pos.get("current_price") is not None:
+                            last_price = pos["current_price"]
                         if last_price is None:
                             print(f"[DEBUG SKIP] {symbol}: last_price is None")
                             continue
@@ -6984,7 +6987,7 @@ async def run_clean_bot():
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
                                 )
-                                bot.positions.pop(symbol)
+                                getattr(bot, "positions_binance", {}).pop(symbol, None)
                                 continue
                         else:
                             print(
@@ -7010,7 +7013,7 @@ async def run_clean_bot():
                             print(
                                 f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
                             )
-                            bot.positions.pop(symbol)
+                            getattr(bot, "positions_binance", {}).pop(symbol, None)
                         else:
                             print(
                                 f"[DEBUG NO TRAILING] {symbol}: No trailing stop executed"
