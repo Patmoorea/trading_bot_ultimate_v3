@@ -5609,6 +5609,10 @@ class TradingBotM4:
             "sentiment",
             "equity_history",
             "news_data",
+            "pending_sales",
+            "active_pauses",
+            "positions_binance",
+            "market_data",
         ]
         preserved_data = {
             field: data.get(field, {}) for field in preserved_fields if field in data
@@ -5631,9 +5635,8 @@ class TradingBotM4:
         # Restaure les données préservées
         data.update(preserved_data)
 
-        # Sauvegarde
-        with open(self.data_file, "w") as f:
-            json.dump(data, f, indent=4)
+        # PATCH: Utilise safe_update_shared_data pour ne pas écraser le fichier
+        self.safe_update_shared_data(data, self.data_file)
 
     def save_shared_data(self):
         try:
@@ -5656,6 +5659,9 @@ class TradingBotM4:
                     },
                     "market_data": self.market_data,
                     "indicators": self.indicators,
+                    "positions_binance": getattr(self, "positions_binance", {}),
+                    "pending_sales": data.get("pending_sales", []),
+                    "active_pauses": data.get("active_pauses", []),
                 }
             )
 
@@ -5684,8 +5690,8 @@ class TradingBotM4:
                 )
             data["bot_status"]["performance"] = perf
 
-            with open(self.data_file, "w") as f:
-                json.dump(data, f, indent=4)
+            # PATCH: Utilise safe_update_shared_data pour préserver tout le JSON
+            self.safe_update_shared_data(data, self.data_file)
         except Exception as e:
             self.logger.error(f"Error saving shared data: {e}")
 
