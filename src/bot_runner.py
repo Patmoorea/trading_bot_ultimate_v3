@@ -986,6 +986,8 @@ class TradingBotM4:
             print("❌ Risk Manager mal initialisé")
         print("✅ Risk Manager initialisé")
 
+        self.data_file = SHARED_DATA_PATH
+
         self.last_correlation_check = 0
         self.correlation_cache = {}
         self.correlation_cache_ttl = 300  # 5 minutes
@@ -1042,7 +1044,7 @@ class TradingBotM4:
             maxlen=2000,
         )
         # Initialize basic attributes...
-        self.data_file = SHARED_DATA_PATH
+
         self.current_cycle = 0
         self.regime = MARKET_REGIMES["RANGING"]
         self.market_data = {}
