@@ -766,6 +766,22 @@ def merge_news_processed(old_scores, new_scores):
     return new_scores
 
 
+def deep_update(d, u):
+    for k, v in u.items():
+        if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+            d[k] = deep_update(d[k], v)
+        elif isinstance(v, list) and k in d and isinstance(d[k], list):
+            d[k] = v
+        else:
+            if isinstance(d.get(k), (int, float)) and isinstance(v, str):
+                try:
+                    v = float(v)
+                except Exception:
+                    v = 0
+            d[k] = v
+    return d
+
+
 class APIRequestOptimizer:
     """Gestionnaire optimisé des requêtes API"""
 
@@ -1144,26 +1160,23 @@ class TradingBotM4:
             if isinstance(v, dict) and k in d and isinstance(d[k], dict):
                 d[k] = deep_update(d[k], v)
             elif isinstance(v, list) and k in d and isinstance(d[k], list):
-                if k == "pending_sales":
-                    existing = {
-                        item.get("symbol"): item
-                        for item in d[k]
-                        if isinstance(item, dict) and "symbol" in item
-                    }
-                    for new_item in v:
-                        if isinstance(new_item, dict) and "symbol" in new_item:
-                            existing[new_item["symbol"]] = new_item
-                    d[k] = list(existing.values())
-                else:
-                    d[k] = v
+                d[k] = v
             else:
-                # PATCH : conversion sécurisée avant addition
+                # Conversion stricte avant addition
                 if isinstance(d.get(k), (int, float)) and isinstance(v, str):
                     try:
+                        # Si v n'est pas convertible en float, on met 0
                         v = float(v)
                     except Exception:
                         v = 0
-                d[k] = v
+                # Si d.get(k) est str et v est int/float, ne pas additionner non plus
+                if isinstance(d.get(k), str) and isinstance(v, (int, float)):
+                    try:
+                        d[k] = str(v)
+                    except Exception:
+                        d[k] = "0"
+                else:
+                    d[k] = v
         return d
 
     def fetch_trades_fifo(self, binance_client, symbol):
