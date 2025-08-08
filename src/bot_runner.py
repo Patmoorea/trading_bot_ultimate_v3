@@ -1137,6 +1137,33 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def deep_update(d, u):
+        for k, v in u.items():
+            if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+                d[k] = deep_update(d[k], v)
+            elif isinstance(v, list) and k in d and isinstance(d[k], list):
+                if k == "pending_sales":
+                    existing = {
+                        item.get("symbol"): item
+                        for item in d[k]
+                        if isinstance(item, dict) and "symbol" in item
+                    }
+                    for new_item in v:
+                        if isinstance(new_item, dict) and "symbol" in new_item:
+                            existing[new_item["symbol"]] = new_item
+                    d[k] = list(existing.values())
+                else:
+                    d[k] = v
+            else:
+                # PATCH : conversion sécurisée avant addition
+                if isinstance(d.get(k), (int, float)) and isinstance(v, str):
+                    try:
+                        v = float(v)
+                    except Exception:
+                        v = 0
+                d[k] = v
+        return d
+
     def fetch_trades_fifo(self, binance_client, symbol):
         """
         Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée (ex: "BTCUSDC"),
@@ -1256,18 +1283,6 @@ class TradingBotM4:
                 }
             )
         return results
-
-    def print_fifo_pnl(results):
-        """
-        Affiche le récapitulatif FIFO de chaque vente spot.
-        """
-        print("=== FIFO PnL par vente ===")
-        for r in results:
-            print(
-                f"Vente {r['sell_qty']} à {r['sell_price']:.2f} USDC, entrée {r['entry_price']:.2f} USDC, PnL {r['pnl_usd']:.2f} USDC ({r['pnl_pct']:.2f}%)"
-            )
-            print(f"    Détail achats utilisés: {r['buy_details']}")
-            print(f"    Time: {r['sell_time']} | TradeID: {r['sell_id']}")
 
     def calc_sizing(confidence, tech, ai, sentiment, win_rate=0.55, profit_factor=1.7):
         # Sizing base selon confiance
@@ -3243,8 +3258,9 @@ class TradingBotM4:
 
             # 11. Sauvegarde sécurisée
             try:
-                with open(data_file, "w") as f:
-                    json.dump(shared_data, f, indent=4)
+                self.safe_update_shared_data(
+                    {"closed_positions": closed}, self.data_file
+                )
                 print(f"✅ Données sauvegardées: {list(new_fields.keys())}")
                 return True
 
