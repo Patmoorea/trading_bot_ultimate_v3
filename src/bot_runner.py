@@ -1193,6 +1193,7 @@ class TradingBotM4:
     def fetch_trades_fifo_all(self):
         """
         Pour chaque paire spot, calcule le FIFO PnL et sauvegarde dans shared_data.json.
+        PATCH: Utilise safe_update_shared_data pour préserver toutes les autres données.
         """
         all_results = {}
         for pair in self.pairs_valid:
@@ -1203,16 +1204,9 @@ class TradingBotM4:
                 all_results[f"fifo_pnl_{symbol}"] = fifo_results
             except Exception as e:
                 all_results[f"fifo_pnl_{symbol}"] = []
-        # Sauvegarde dans shared_data.json
-        shared_data = {}
-        try:
-            with open(self.data_file, "r") as f:
-                shared_data = json.load(f)
-        except Exception:
-            shared_data = {}
-        shared_data.update(all_results)
-        with open(self.data_file, "w") as f:
-            json.dump(shared_data, f, indent=4)
+
+        # PATCH: NE JAMAIS utiliser json.dump direct ici !
+        self.safe_update_shared_data(all_results, self.data_file)
         return all_results
 
     def fifo_pnl(self, buys, sells):
