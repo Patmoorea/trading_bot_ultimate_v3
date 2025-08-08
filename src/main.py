@@ -26,6 +26,8 @@ TRADING_PARAMS = {
 }
 
 # --- CONFIGURATION ---
+import streamlit as st
+
 st.set_page_config(
     page_title="Trading Bot Ultimate v4 - Dashboard",
     page_icon="📈",
@@ -42,7 +44,23 @@ STATUS_FILE = "bot_status.json"
 SHARED_DATA_PATH = "src/shared_data.json"
 LOG_FILE = "src/bot_logs.txt"
 CONFIG_FILE = "config.json"
-CURRENT_USER = "Patmoorea"
+CURRENT_USER = "Patmoorea"  # UNIVERSAL PATCH: Safe JSON update
+
+
+def save_shared_data(update_dict, data_file):
+    try:
+        if os.path.exists(data_file):
+            with open(data_file, "r") as f:
+                shared_data = json.load(f)
+                if not isinstance(shared_data, dict):
+                    shared_data = {}
+        else:
+            shared_data = {}
+        shared_data.update(update_dict)
+        with open(data_file, "w") as f:
+            json.dump(shared_data, f, indent=2)
+    except Exception as e:
+        print(f"[PATCH] Erreur sauvegarde JSON : {e}")
 
 
 def calc_sizing(confidence, tech, ai, sentiment, win_rate=0.55, profit_factor=1.7):
@@ -87,23 +105,15 @@ def load_json_file(path):
 
 
 def get_pending_sales(self):
-    """
-    Retourne la liste détaillée des positions avec leur situation exacte, raison, prix, %PnL latente, plus-value FIFO, et DECISION EXPLICITE.
-    Affiche pour chaque position : symbol, raison détaillée, décision attendue, prix achat, prix actuel, montant, %PnL latente, %PnL FIFO, durée, blocage/pause, note complémentaire.
-    Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
-    """
     pending = []
-    GAIN_ALERT_PCT = 0.07  # 7% (latente)
-    LOSS_ALERT_PCT = -0.05  # -5% (latente)
+    GAIN_ALERT_PCT = 0.07
+    LOSS_ALERT_PCT = -0.05
     now = datetime.utcnow()
-
-    # Récupération des pauses actives
     pauses = []
     if hasattr(self, "news_pause_manager"):
         pauses = self.news_pause_manager.get_active_pauses()
 
     def is_paused(symbol):
-        # Ne jamais retourner True si pauses est vide !
         if not pauses:
             return False, ""
         for p in pauses:
@@ -112,12 +122,11 @@ def get_pending_sales(self):
                 return True, p.get("reason", "Indéterminée")
         return False, ""
 
-    # 1. Positions bot virtuelles
-    for symbol, pos in self.positions.items():
+    # Positions principales
+    for symbol, pos in getattr(self, "positions", {}).items():
         entry_price = pos.get("entry_price")
         current_price = pos.get("current_price")
         amount = pos.get("amount")
-        # Plus-value latente
         pnl_latent = (
             (current_price - entry_price) / entry_price * 100
             if entry_price and current_price
@@ -132,8 +141,9 @@ def get_pending_sales(self):
                 temps_en_position = None
         else:
             temps_en_position = None
-
-        td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
+        td = getattr(self, "trade_decisions", {}).get(
+            symbol.replace("/", "").upper(), {}
+        )
         action = td.get("action", "neutral")
         reason = ""
         decision = ""
@@ -149,7 +159,7 @@ def get_pending_sales(self):
             reason = "Signal SELL détecté"
             decision = "Vente prévue au prochain cycle"
             note = ""
-        elif self.exit_manager.is_tp_near(pos):
+        elif getattr(self, "exit_manager", None) and self.exit_manager.is_tp_near(pos):
             pause_blocage = "Non"
             reason = "Take Profit proche"
             decision = "Vente partielle possible (TP)"
@@ -192,14 +202,12 @@ def get_pending_sales(self):
                 "note": note,
             }
         )
-
-    # 2. Positions SPOT Binance
+    # Positions Binance
     if hasattr(self, "positions_binance"):
         for symbol, pos in self.positions_binance.items():
             entry_price = pos.get("entry_price")
             current_price = pos.get("current_price")
             amount = pos.get("amount")
-
             pnl_latent = (
                 (current_price - entry_price) / entry_price * 100
                 if entry_price and current_price
@@ -208,8 +216,9 @@ def get_pending_sales(self):
             fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
             if fifo_pnl_pct is None:
                 fifo_pnl_pct = 0
-
-            td = self.trade_decisions.get(symbol.replace("/", "").upper(), {})
+            td = getattr(self, "trade_decisions", {}).get(
+                symbol.replace("/", "").upper(), {}
+            )
             action = td.get("action", "neutral")
             pause_for_pos, pause_reason = is_paused(symbol)
             if pause_for_pos:
@@ -222,7 +231,9 @@ def get_pending_sales(self):
                 reason = "Signal SELL détecté"
                 decision = "Vente prévue au prochain cycle"
                 note = ""
-            elif hasattr(self, "exit_manager") and self.exit_manager.is_tp_near(pos):
+            elif getattr(self, "exit_manager", None) and self.exit_manager.is_tp_near(
+                pos
+            ):
                 pause_blocage = "Non"
                 reason = "Take Profit proche"
                 decision = "Vente partielle possible (TP)"
@@ -247,7 +258,6 @@ def get_pending_sales(self):
                 reason = f"Signal actuel: {action.upper()}"
                 decision = "Aucune action prévue, position maintenue"
                 note = ""
-
             pending.append(
                 {
                     "symbol": symbol,
@@ -263,17 +273,8 @@ def get_pending_sales(self):
                     "note": note,
                 }
             )
-
     print("DEBUG pending_sales tableau:", pending)
-    # Sauvegarde dans shared_data.json
-    try:
-        with open(self.data_file, "r") as f:
-            shared_data = json.load(f)
-    except Exception:
-        shared_data = {}
-    shared_data["pending_sales"] = pending
-    with open(self.data_file, "w") as f:
-        json.dump(shared_data, f, indent=4)
+    save_shared_data({"pending_sales": pending}, self.data_file)
     return pending
 
 
@@ -412,14 +413,15 @@ with st.sidebar:
 
     # Sauvegarde dans shared_data.json (pour que le bot les lise au prochain cycle)
     try:
-        shared_data = load_json_file(SHARED_DATA_PATH)
+        load_json_file(SHARED_DATA_PATH)
         shared_data["filtering_params"] = {
             "min_volatility": float(min_volatility),
             "min_signal": float(min_signal),
             "top_n": int(top_n),
         }
-        with open(SHARED_DATA_PATH, "w") as f:
-            json.dump(shared_data, f, indent=2)
+        save_shared_data(
+            {"filtering_params": shared_data["filtering_params"]}, SHARED_DATA_PATH
+        )
     except Exception as e:
         st.sidebar.warning(f"Erreur sauvegarde filtres dynamiques: {e}")
 

@@ -5,6 +5,22 @@ import shutil
 from datetime import datetime
 
 
+def save_shared_data(update_dict, data_file):
+    try:
+        if os.path.exists(data_file):
+            with open(data_file, "r") as f:
+                shared_data = json.load(f)
+                if not isinstance(shared_data, dict):
+                    shared_data = {}
+        else:
+            shared_data = {}
+        shared_data.update(update_dict)
+        with open(data_file, "w") as f:
+            json.dump(shared_data, f, indent=4)
+    except Exception as e:
+        print(f"[PATCH] Erreur sauvegarde JSON : {e}")
+
+
 class NewsPauseManager:
     # Criticité : mot-clé associé à une durée de pause par défaut (en cycles)
     CRITICAL_KEYWORDS = {
@@ -46,6 +62,12 @@ class NewsPauseManager:
 
         self.volatility_thresholds = {"low": 0.02, "medium": 0.05, "high": 0.08}
         self.market_conditions = {}
+
+    def safe_update_shared_data(
+        self, new_fields: dict, data_file="src/shared_data.json"
+    ):
+        # PATCH: use universal save_shared_data
+        save_shared_data(new_fields, data_file)
 
     def smart_pause_update(self, bot):
         regime = getattr(bot, "regime", None)

@@ -4,21 +4,34 @@ import json
 import logging
 import aiohttp
 import ssl
-import socket
 import asyncio
 from typing import List, Dict, Optional, Set, Any
 import numpy as np
 from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import random
 from datetime import datetime, timezone
-from typing import Any, List, Dict, Optional, Set
 from deep_translator import GoogleTranslator
 
 
+def save_shared_data(update_dict, data_file):
+    """PATCH: Sauvegarde universelle du JSON racine, fusionne avec l'existant."""
+    try:
+        if os.path.exists(data_file):
+            with open(data_file, "r") as f:
+                shared_data = json.load(f)
+                if not isinstance(shared_data, dict):
+                    shared_data = {}
+        else:
+            shared_data = {}
+        shared_data.update(update_dict)
+        with open(data_file, "w") as f:
+            json.dump(shared_data, f, indent=2)
+    except Exception as e:
+        print(f"[PATCH] Erreur sauvegarde JSON sentiment : {e}")
+
+
 class NewsSentimentAnalyzer:
-    # Définition du mapping comme attribut de classe
     SYMBOL_MAPPING = {
         "bitcoin": "BTC",
         "btc": "BTC",
@@ -55,12 +68,9 @@ class NewsSentimentAnalyzer:
     }
 
     def real_translate_title(self, text):
-        """Traduit un texte avec Google Translate et fallback sur dictionnaire"""
         try:
-            # 1. Essai Google Translate d'abord
             return self.translator.translate(text)
         except Exception:
-            # 2. Fallback sur dictionnaire si erreur
             original = text
             dico = {
                 "Bitcoin": "Bitcoin",
@@ -92,51 +102,36 @@ class NewsSentimentAnalyzer:
             }
             for en, fr in dico.items():
                 text = text.replace(en, fr)
-
-            # 3. Retour texte original si aucune traduction
             if text == original:
                 try:
                     return self.translator.translate(text)
                 except:
                     return text
-
             return text
 
     def __init__(self, config: dict):
-        # API Keys
         self.news_api_key = os.getenv("NEWS_API_KEY")
         self.crypto_panic_api_key = os.getenv("CRYPTO_PANIC_API_KEY")
         self.news_api_languages = os.getenv("NEWS_API_LANGUAGES", "en,fr")
         self.news_sources = os.getenv("NEWS_SOURCES", "bloomberg,reuters,coindesk")
-
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
-
-        # Configuration SSL
         self.ssl_context = ssl.create_default_context()
         self.ssl_context.check_hostname = False
         self.ssl_context.verify_mode = ssl.CERT_NONE
-
-        # Configuration des timeouts et retries
-        self.conn_timeout = 5  # Réduit à 5 secondes
-        self.max_retries = 2  # Réduit à 2 tentatives maximum
-
-        # Headers HTTP
+        self.conn_timeout = 5
+        self.max_retries = 2
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
             "Connection": "keep-alive",
         }
-
-        # Initialisation des patterns regex pour l'extraction des symboles
         self.regex_patterns = [
             (re.compile(rf"\b{re.escape(name)}\b", re.IGNORECASE), ticker)
             for name, ticker in self.SYMBOL_MAPPING.items()
         ]
         self.known_tickers = set(self.SYMBOL_MAPPING.values())
-
-        # Configuration existante
         self.low_watermark_ratio = config.get("news", {}).get(
             "low_watermark_ratio", 0.2
         )
@@ -147,15 +142,10 @@ class NewsSentimentAnalyzer:
         )
         self._model = None
         self._tokenizer = None
-
-        # Buffer et configuration
         self.news_buffer = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
-
-        # Sources de news
         self.sources = [
-            # Sources principales (priorité 1)
             {
                 "name": "CryptoCompare",
                 "url": "https://min-api.cryptocompare.com/data/v2/news/?lang=FR",
@@ -176,7 +166,6 @@ class NewsSentimentAnalyzer:
                 "weight": 0.7,
                 "priority": 1,
             },
-            # Sources secondaires (priorité 2)
             {
                 "name": "Cointelegraph",
                 "url": "https://cointelegraph.com/rss",
@@ -206,13 +195,11 @@ class NewsSentimentAnalyzer:
                 "priority": 2,
             },
         ]
-        # Configuration pour la traduction
         self.translate_news = config.get("news", {}).get("translate", True)
         self.target_language = config.get("news", {}).get("language", "fr")
         self.translator = GoogleTranslator(source="auto", target=self.target_language)
 
     def _translate_text(self, text: str) -> str:
-        """Traduit un texte en utilisant Google Translate"""
         try:
             if not text or not isinstance(text, str):
                 return ""
@@ -227,57 +214,48 @@ class NewsSentimentAnalyzer:
             for n in data["Data"]:
                 title = n.get("title", "")
                 text = n.get("body", "")
-                original_title = title  # Sauvegarde du titre original
-
-                # Traduction si activée
+                original_title = title
                 if self.translate_news:
                     title = self.real_translate_title(title)
                     text = self.real_translate_title(text)
-
                 url = n.get("url", "")
                 symbols = self.extract_symbols(f"{title} {text}")
                 timestamp = self.normalize_timestamp(n.get("published_on", None))
-
                 news_list.append(
                     {
                         "title": title,
                         "text": text,
-                        "original_title": original_title,  # Titre original
+                        "original_title": original_title,
                         "source": source["name"],
                         "timestamp": timestamp,
                         "url": url,
                         "symbols": symbols,
                         "source_weight": source["weight"],
-                        "processed": False,  # Pour le suivi des news traitées
+                        "processed": False,
                     }
                 )
-
         elif source["name"] == "NewsAPI" and "articles" in data:
             for n in data["articles"]:
                 title = n.get("title", "")
                 text = n.get("description", "") or n.get("content", "")
-                original_title = title  # Sauvegarde du titre original
-
-                # Traduction si activée
+                original_title = title
                 if self.translate_news:
                     title = self.real_translate_title(title)
                     text = self.real_translate_title(text)
-
                 url = n.get("url", "")
                 symbols = self.extract_symbols(f"{title} {text}")
                 timestamp = self.normalize_timestamp(n.get("publishedAt", None))
-
                 news_list.append(
                     {
                         "title": title,
                         "text": text,
-                        "original_title": original_title,  # Titre original
+                        "original_title": original_title,
                         "source": source["name"],
                         "timestamp": timestamp,
                         "url": url,
                         "symbols": symbols,
                         "source_weight": source["weight"],
-                        "processed": False,  # Pour le suivi des news traitées
+                        "processed": False,
                     }
                 )
         return news_list
@@ -285,93 +263,53 @@ class NewsSentimentAnalyzer:
     def _parse_rss_item(self, item, source: Dict) -> Dict:
         title = item.find("title").text if item.find("title") else ""
         description = item.find("description").text if item.find("description") else ""
-        original_title = title  # Sauvegarde du titre original
-
-        # Traduction si activée
+        original_title = title
         if self.translate_news:
             title = self.real_translate_title(title)
             description = self.real_translate_title(description)
-
         url = item.find("link").text if item.find("link") else ""
         symbols = self.extract_symbols(f"{title} {description}")
         pub_date = item.find("pubDate")
         timestamp = self.normalize_timestamp(pub_date.text if pub_date else None)
-
         return {
             "title": title,
             "text": description,
-            "original_title": original_title,  # Titre original
+            "original_title": original_title,
             "source": source["name"],
             "timestamp": timestamp,
             "url": url,
             "symbols": symbols,
             "source_weight": source["weight"],
-            "processed": False,  # Pour le suivi des news traitées
+            "processed": False,
         }
 
     async def _save_state(self, data):
-        # ... reste du code ...
+        path = self.config.get("news", {}).get(
+            "storage_path", "data/news_analysis.json"
+        )
         try:
-            data["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-
-            if "latest_pauses" in data:
-                pause_info = []
-                for pause in data["latest_pauses"]:
-                    pause_info.append(
-                        {
-                            "title": pause["title"],
-                            "original_title": pause.get(
-                                "original_title", pause["title"]
-                            ),  # Ajouter le titre original
-                            "timestamp": datetime.fromtimestamp(
-                                pause["timestamp"], tz=timezone.utc
-                            ).strftime("%Y-%m-%d %H:%M:%S"),
-                            "symbols": pause["symbols"],
-                            "impact": pause["impact"],
-                            "source": pause["source"],
-                            "url": pause["url"],
-                        }
-                    )
-                data["pause_info"] = pause_info
-
-            with open(path, "w") as f:
-                json.dump(data, f, indent=2)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            save_shared_data(data, path)
             self.logger.info(f"[NEWS] State saved to {path}")
         except Exception as e:
             self.logger.error(f"[NEWS] Failed to save state: {e}")
 
     def extract_symbols(self, text: str) -> List[str]:
-        """
-        Extrait les symboles de crypto-monnaies du texte.
-
-        Args:
-            text (str): Le texte à analyser
-
-        Returns:
-            List[str]: Liste des symboles trouvés
-        """
         found: Set[str] = set()
         if not text:
             return []
-
-        # Recherche par regex patterns
         for pattern, ticker in self.regex_patterns:
             if pattern.search(text):
                 found.add(ticker)
-
-        # Recherche des paires de trading
         for pair in re.findall(
             r"\b([A-Z]{3,5})[/-]?(USDT|USD|BTC|ETH)?\b", text.upper()
         ):
             ticker = pair[0]
             if ticker in self.known_tickers:
                 found.add(ticker)
-
-        # Recherche des symboles avec $
         for match in re.findall(r"\$([A-Z]{3,5})\b", text.upper()):
             if match in self.known_tickers:
                 found.add(match)
-
         return list(found)
 
     @property
@@ -435,13 +373,52 @@ class NewsSentimentAnalyzer:
             return int(datetime.now().timestamp())
 
     async def _save_state(self, data):
+        """
+        Sauvegarde sécurisée de l'état des news/sentiment dans le fichier partagé.
+        Fusionne avec l'existant si le fichier existe.
+        Ajoute le timestamp et patch les pauses.
+        """
         path = self.config.get("news", {}).get(
             "storage_path", "data/news_analysis.json"
         )
         try:
             os.makedirs(os.path.dirname(path), exist_ok=True)
+            data["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+            # PATCH: fusion avec l'existant
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    file_data = json.load(f)
+                    if not isinstance(file_data, dict):
+                        file_data = {}
+            else:
+                file_data = {}
+
+            # PATCH: ajoute/merge les pauses si présentes
+            if "latest_pauses" in data:
+                pause_info = []
+                for pause in data["latest_pauses"]:
+                    pause_info.append(
+                        {
+                            "title": pause["title"],
+                            "original_title": pause.get(
+                                "original_title", pause["title"]
+                            ),
+                            "timestamp": datetime.fromtimestamp(
+                                pause["timestamp"], tz=timezone.utc
+                            ).strftime("%Y-%m-%d %H:%M:%S"),
+                            "symbols": pause["symbols"],
+                            "impact": pause["impact"],
+                            "source": pause["source"],
+                            "url": pause["url"],
+                        }
+                    )
+                data["pause_info"] = pause_info
+
+            # PATCH: fusion propre
+            file_data.update(data)
             with open(path, "w") as f:
-                json.dump(data, f, indent=2)
+                json.dump(file_data, f, indent=2)
             self.logger.info(f"[NEWS] State saved to {path}")
         except Exception as e:
             self.logger.error(f"[NEWS] Failed to save state: {e}")
