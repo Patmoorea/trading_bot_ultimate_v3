@@ -40812,12 +40812,12 @@
             "max_price": null
         }
     },
-    "timestamp": "2025-08-08 01:05:22",
+    "timestamp": "2025-08-08 01:06:50",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
-        "cycle": 3,
-        "last_update": "2025-08-08 01:05:22",
+        "cycle": 0,
+        "last_update": "2025-08-08 01:06:50",
         "performance": {
             "balance": 60.85659068
         }
@@ -43911,7 +43911,7 @@
         "max_remaining": 0
     },
     "sentiment": {
-        "timestamp": "2025-08-08 01:05:17",
+        "timestamp": "2025-08-08 01:11:48",
         "scores": [
             {
                 "title": "Reprise d'Ethereum ? Les transactions quotidiennes explosent sur le r\u00e9seau",
@@ -43920,8 +43920,8 @@
                 "timestamp": 1754582427,
                 "url": "https://cryptoast.fr/reprise-ethereum-transactions-quotidiennes-explosent-sur-le-reseau/",
                 "symbols": [
-                    "ETH",
-                    "UNI"
+                    "UNI",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7642650008201599,
@@ -44093,8 +44093,8 @@
                 "timestamp": 1754557788,
                 "url": "https://journalducoin.com/actualites/crypto-professionnel-secteur-agresse-devant-palace-parisien/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8030890226364136,
@@ -44156,9 +44156,9 @@
                 "timestamp": 1754550900,
                 "url": "https://journalducoin.com/bitcoin/chute-btc-investisseurs-accumulent-sans-trembler-bitcoin-7-aout/",
                 "symbols": [
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8174171447753906,
@@ -44186,8 +44186,8 @@
                 "timestamp": 1754543216,
                 "url": "https://journalducoin.com/actualites/tokenisation-actions-marche-qui-pourrait-atteindre-1-300-milliards-dollars/",
                 "symbols": [
-                    "BNB",
-                    "SOL"
+                    "SOL",
+                    "BNB"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7799299955368042,
@@ -44295,9 +44295,9 @@
                 "timestamp": 1754488800,
                 "url": "https://journalducoin.com/trading/actifs-risques-comme-bitcoin-reculent-doit-inquieter-point-macro/",
                 "symbols": [
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7788245677947998,
@@ -44311,8 +44311,8 @@
                 "timestamp": 1754486362,
                 "url": "https://coinacademy.fr/actu/cz-cadres-binance-accusations-ftx/?utm_source=rss&utm_medium=rss&utm_campaign=cz-cadres-binance-accusations-ftx",
                 "symbols": [
-                    "BNB",
-                    "SOL"
+                    "SOL",
+                    "BNB"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.6893620491027832,
@@ -44378,10 +44378,10 @@
                 "timestamp": 1754478946,
                 "url": "https://cryptoast.fr/bitcoin-quelle-tendance-pour-mois-aout-analyse-vincent-ganne/",
                 "symbols": [
-                    "BNB",
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BNB",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8009287714958191,
@@ -44409,10 +44409,10 @@
                 "timestamp": 1754478000,
                 "url": "https://journalducoin.com/solana/crypto-treasury-apres-bitcoin-ethereum-solana-interesse-aussi-entreprises-pour-tresorerie/",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "SOL",
-                    "TRX"
+                    "ETH",
+                    "TRX",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.744158148765564,
@@ -44522,9 +44522,9 @@
                 "timestamp": 1754465364,
                 "url": "https://journalducoin.com/bitcoin/institutionnels-prennent-profits-btc-bitcoin-6-aout/",
                 "symbols": [
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.36140507459640503,
@@ -44538,9 +44538,9 @@
                 "timestamp": 1754463682,
                 "url": "https://journalducoin.com/defi/regulation-us-sec-exempte-geants-defi-lois-valeurs-mobilieres/",
                 "symbols": [
-                    "XRP",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "XRP"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.5578821897506714,
@@ -44836,9 +44836,9 @@
                 "timestamp": 1754573036,
                 "url": "https://cointelegraph.com/news/ethereum-beats-solana-in-capital-inflows-4k-target-in-sight?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8706145882606506,
@@ -45116,8 +45116,8 @@
                 "timestamp": 1754596671,
                 "url": "https://decrypt.co/334055/myriad-moves-bitcoin-price-sharplink-ethereum-vitalik",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.9186991453170776,
@@ -45131,8 +45131,8 @@
                 "timestamp": 1754594518,
                 "url": "https://decrypt.co/334076/trump-401k-order-could-send-billions-into-bitcoin-ethereum-analysts",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.7271333932876587,
@@ -45172,8 +45172,8 @@
                 "timestamp": 1754584311,
                 "url": "https://decrypt.co/333864/ripple-aiming-developers-ethereum-sidechain-cto",
                 "symbols": [
-                    "XRP",
-                    "ETH"
+                    "ETH",
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.7597920894622803,
@@ -45211,9 +45211,9 @@
                 "timestamp": 1754580350,
                 "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
                 "symbols": [
+                    "ETH",
                     "BNB",
-                    "BTC",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.24181267619132996,
@@ -45255,9 +45255,9 @@
                 "timestamp": 1754575714,
                 "url": "https://decrypt.co/333982/ethereum-solana-xrp-rebound-trump-crypto-401ks",
                 "symbols": [
-                    "XRP",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.13829180598258972,
@@ -45459,8 +45459,8 @@
                 "timestamp": 1754512460,
                 "url": "https://decrypt.co/333850/ethereum-transaction-volume-usdc-tether-uniswap",
                 "symbols": [
-                    "ETH",
-                    "UNI"
+                    "UNI",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.4749598503112793,
@@ -45474,9 +45474,9 @@
                 "timestamp": 1754494100,
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
+                    "ETH",
                     "BNB",
                     "BTC",
-                    "ETH",
                     "LTC"
                 ],
                 "source_weight": 0.8,
@@ -45491,9 +45491,9 @@
                 "timestamp": 1754418127,
                 "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
                 "symbols": [
-                    "ETH",
                     "SOL",
-                    "LINK"
+                    "LINK",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.367350697517395,
@@ -45521,9 +45521,9 @@
                 "timestamp": 1754407294,
                 "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
                 "symbols": [
-                    "ETH",
                     "SOL",
-                    "LINK"
+                    "LINK",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.16831526160240173,
@@ -45537,11 +45537,11 @@
                 "timestamp": 1754320232,
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH",
                     "DOGE",
-                    "BNB"
+                    "BNB",
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6729530692100525,
@@ -45555,9 +45555,9 @@
                 "timestamp": 1754063085,
                 "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
                 "symbols": [
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.16119959950447083,
@@ -45571,8 +45571,8 @@
                 "timestamp": 1753975373,
                 "url": "https://decrypt.co/videos/interviews/BM6jwZ1X/crypto-bounces-back-fed-holds-steady-rekt-nears-ath",
                 "symbols": [
-                    "ETH",
-                    "LINK"
+                    "LINK",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.35249921679496765,
@@ -45586,8 +45586,8 @@
                 "timestamp": 1753889612,
                 "url": "https://decrypt.co/videos/interviews/ioFCfFCR/btc-stable-sec-allows-in-kind-redemptions-fed-decision-today",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.5873238444328308,
@@ -45601,11 +45601,11 @@
                 "timestamp": 1753810596,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "DOGE",
                     "BNB",
+                    "BTC",
                     "SOL",
+                    "ETH",
                     "TRX"
                 ],
                 "source_weight": 0.8,
@@ -45620,11 +45620,11 @@
                 "timestamp": 1753802801,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "DOGE",
                     "BNB",
+                    "BTC",
                     "SOL",
+                    "ETH",
                     "TRX"
                 ],
                 "source_weight": 0.8,
@@ -45651,9 +45651,9 @@
                 "timestamp": 1753716618,
                 "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
                 "symbols": [
+                    "ETH",
                     "BNB",
-                    "BTC",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.3113707900047302,
@@ -45667,10 +45667,10 @@
                 "timestamp": 1753459243,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "BNB",
+                    "BTC",
                     "SOL",
+                    "ETH",
                     "TRX"
                 ],
                 "source_weight": 0.8,
@@ -45685,9 +45685,9 @@
                 "timestamp": 1753372933,
                 "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
                 "symbols": [
+                    "ETH",
                     "XRP",
-                    "BTC",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.30484798550605774,
@@ -45701,11 +45701,11 @@
                 "timestamp": 1753284869,
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH",
                     "BNB",
-                    "SOL"
+                    "BTC",
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.7974585294723511,
@@ -45719,9 +45719,9 @@
                 "timestamp": 1753205819,
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "SOL",
+                    "ETH",
+                    "BTC",
                     "DOGE"
                 ],
                 "source_weight": 0.8,
@@ -45736,9 +45736,9 @@
                 "timestamp": 1753197746,
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
-                    "BTC",
-                    "ETH",
                     "SOL",
+                    "ETH",
+                    "BTC",
                     "DOGE"
                 ],
                 "source_weight": 0.8,
@@ -45753,10 +45753,10 @@
                 "timestamp": 1753112067,
                 "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
                 "symbols": [
-                    "XRP",
-                    "BTC",
+                    "SOL",
                     "ETH",
-                    "SOL"
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.5108793377876282,
@@ -45770,13 +45770,28 @@
                 "timestamp": 1752851652,
                 "url": "https://decrypt.co/videos/interviews/DcqEJpDC/crypto-market-cap-tops-4t-xrp-hits-ath-eth-treasuries-heat-up",
                 "symbols": [
+                    "ETH",
                     "XRP",
                     "BTC",
-                    "ETH",
                     "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.030728399753570557,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Investors Turn To \u2018Smart DCA\u2019 As Market Trades Below On-Chain Fair Value Of $117,700",
+                "text": "Following a brief dip to $112,200, Bitcoin (BTC) has recovered slightly, trading around the $116,300 level at the time of writing. While concerns remain about BTC\u2019s inability to decisively break the $120,000 resistance level, on-chain data suggests the asset may be in an accumulation phase &#8211; potentially gearing up for its next breakout toward a new all-time high (ATH). Bitcoin Currently In Accumulation Phase, Analyst Says According to a CryptoQuant Quicktake post by contributor BorisVest, a strategy called Smart Dollar-Cost Averaging (DCA) may help Bitcoin investors accumulate the asset more strategically and improve long-term performance. Related Reading: Bitcoin Rejected At $120,000: Binance Whale Inflows Suggest Possible Drop To $110,000 In his analysis, BorisVest noted that investors often struggle to time their entries into BTC. Many tend to buy during local tops due to fear of missing out (FOMO) and avoid entering the market during bottoms out of fear of further declines. Smart DCA offers a way to bypass these emotion-driven decisions. The strategy recommends accumulating BTC when its market price falls below the 1-week to 1-month realized price &#8211; a period during which short-term holders are often in loss, resulting in heightened sell-off. BorisVest explained: At these levels, short-term holders are usually underwater, leading to increased sell pressure. Smart DCA activates hourly purchases during such periods, helping to bring the BTC and USD cost basis closer together. Currently, the 1-week to 1-month realized price stands at approximately $117,700. As long as BTC trades below this level, Smart DCA continues to flash an accumulation signal. Once BTC climbs above this threshold, the strategy advises gradually selling previously accumulated coins. With Bitcoin now trading near $116,000, the analyst suggests that the asset is still in an accumulation phase &#8211; though it&#8217;s approaching the realized threshold. According to data from CoinGecko, BTC remains about 5.2% below its ATH of $122,838, recorded on July 14. Is BTC Unlikely To Hit A New ATH? Despite holding steady around $115,000, some analysts warn that Bitcoin&#8217;s realized price is slowly beginning to show signs of fragility. A drop below the $105,000 mark could lead to increased downside momentum, potentially triggering a larger sell-off. Related Reading: Bitcoin Sees Rising New Investor Dominance, Old Holders Yet To Capitulate Notably, Binance\u2019s net taker volume has slipped back into negative territory, raising concerns about a near-term correction. Additionally, rising Bitcoin ETF outflows have shown signs of weakness, adding another layer of uncertainty. Still, not all indicators are bearish. Some on-chain metrics suggest BTC may simply be entering a cooling-off period after a brief overheated phase. At press time, BTC trades at $116,316, up 2.1% in the past 24 hours. Featured image from Unsplash, charts from CryptoQuant and TradingView.com",
+                "source": "NewsBTC",
+                "timestamp": 1754614809,
+                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-investors-dca-market-chain-fair-value-117700/",
+                "symbols": [
+                    "BNB",
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.1794240027666092,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -45801,8 +45816,8 @@
                 "timestamp": 1754607618,
                 "url": "https://www.newsbtc.com/news/vara-first-crypto-options-license/",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.6612960696220398,
@@ -45832,8 +45847,8 @@
                 "timestamp": 1754600415,
                 "url": "https://www.newsbtc.com/news/solana/institutional-solana-buying-grows/",
                 "symbols": [
-                    "XRP",
-                    "SOL"
+                    "SOL",
+                    "XRP"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.898057222366333,
@@ -45861,8 +45876,8 @@
                 "timestamp": 1754593239,
                 "url": "https://www.newsbtc.com/news/sei-network-gets-metamask-support-as-buy-signals-emerge-for-sei-token-0-5-on-the-horizon/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.19994360208511353,
@@ -45890,8 +45905,8 @@
                 "timestamp": 1754586809,
                 "url": "https://www.newsbtc.com/bitcoin-news/franciya-zapuskaet-majning-bitkoina-na-yadernoj-energii/",
                 "symbols": [
-                    "BTC",
                     "ETH",
+                    "BTC",
                     "DOGE"
                 ],
                 "source_weight": 0.7,
@@ -45906,27 +45921,12 @@
                 "timestamp": 1754586052,
                 "url": "https://www.newsbtc.com/news/omni-network-omni-maintains-momentum-a-week-after-upbit-listing-price-up-276/",
                 "symbols": [
-                    "BTC",
                     "ETH",
+                    "BTC",
                     "DOGE"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.9136323928833008,
-                "impact_score": 1.0,
-                "processed": true
-            },
-            {
-                "title": "Bitcoin STH Realized Price Signals Fragile Support: Correction Risk Intensifies",
-                "text": "Bitcoin is entering a critical phase after losing the crucial $115,000 support level, with selling pressure mounting across key timeframes. The bullish momentum that previously fueled upside moves has faded, and price action now signals growing market weakness. As investor sentiment shifts from cautious optimism to concern, fears of a deeper correction below $110,000 are gaining traction among analysts. Related Reading: Ethereum Bears Dominate Market Orders: -$418.8M Daily Net Taker Volume Signals Trouble According to CryptoQuant analyst Axel Adler, Bitcoin has established a short-term resistance level at $112,000\u2014a constructive sign that the market is attempting to stabilize. However, Adler warns that the $112K\u2013$105K zone remains structurally fragile, acting as a buffer that separates current price levels from more aggressive downside risk. If sellers push BTC below $105K, it could trigger a cascade of long liquidations and shake out short-term holders. With macroeconomic uncertainty and declining ETF flows weighing on sentiment, Bitcoin\u2019s path forward depends on how it reacts within this range. A recovery above $112K would signal resilience, while a breakdown could open the door to a broader market correction. Short-Term Holder Risk Grows As Bitcoin Fails To Reclaim Momentum According to Adler, the current structure of the Bitcoin market shows growing vulnerability, particularly among short-term holders (STHs). Adler points out that the 1-week to 1-month STH Realized Price sits at $117,000, meaning this entire cohort is now underwater. These investors, who tend to react emotionally to short-term volatility, may be the first to panic-sell if any negative catalysts emerge\u2014potentially triggering a cascade of sell-offs across the broader market. Adler further highlights the $105,000 level as a critical support zone, based on the aggregated STH Realized Price. If Bitcoin drops into this range, the pressure to hold will intensify, but it may also act as a strong technical and psychological level that could slow or even reverse the downtrend. \u201cThe market remains weak,\u201d Adler reaffirmed, maintaining his bearish stance from the day prior. He emphasized that retail investors are failing to push the price higher, and the lack of sustained demand adds to the growing structural weakness in the market. Compounding the stress is recent weak US jobs data, which has sparked fresh speculation about potential interest rate cuts from the Federal Reserve. While this could be bullish for risk assets in the long run, the current uncertainty is adding pressure to already fragile market sentiment. Related Reading: Bitcoin Net Taker Volume Stays Bearish \u2013 Fragile Market Structure Risks Liquidation Cascade Bitcoin Attempts Recovery Amid Resistance Cluster The 4-hour chart for Bitcoin (BTC) reveals a key battle playing out below the $116K resistance zone. After briefly dipping below $113K earlier this week, BTC has rebounded and is now trading around $115,478, approaching the 100 and 200 moving averages\u2014currently acting as overhead resistance at $116,596 and $115,799, respectively. The price is also attempting to break back above the horizontal support-turned-resistance at $115,724, a level that held during July\u2019s consolidation range. This cluster of resistance\u2014formed by the SMAs and horizontal level\u2014poses a significant short-term hurdle. A clean breakout above this zone with strong volume could signal renewed bullish momentum and open the path toward retesting the $122K range high. Related Reading: Is Bitcoin Overheated? Key Signal Flashes Warning Similar To 2021 And 2024 Market Tops However, volume remains relatively low compared to the July breakout, and the failed attempts to reclaim higher levels suggest buyers are cautious. Unless BTC can reclaim and consolidate above $116K, the rejection risk remains high, potentially pushing the price back into the lower $112K\u2013$113K support band. Featured image from Dall-E, chart from TradingView",
-                "source": "NewsBTC",
-                "timestamp": 1754582434,
-                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-sth-realized-price-signals-fragile-support-correction-risk-intensifies/",
-                "symbols": [
-                    "BTC",
-                    "ETH"
-                ],
-                "source_weight": 0.7,
-                "sentiment": -0.0006637945771217346,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -46188,8 +46188,8 @@
             "Trump Media Tests 'Truth Search' Using Perplexity AI",
             "Debunking XRP Myths With Ripple CTO David Schwartz"
         ],
-        "overall_sentiment": 0.31179835800672084,
-        "impact_score": 0.5435215857038956,
+        "overall_sentiment": 0.31070835673727276,
+        "impact_score": 0.5446115869733437,
         "major_events": "Bitcoin miner CleanSpark\u2019s BTC treasury surpasses $1 billion in Q3 2025 as revenue surges 91% year-over-year; Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions; Omni Network (OMNI) Maintains Momentum a Week After Upbit Listing, Price Up 276%",
         "top_symbols": [
             "ADA",
