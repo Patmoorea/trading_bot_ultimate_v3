@@ -146,6 +146,13 @@ class ExchangeConnector:
             pass
 
 
+def safe_float(val, default=0.0):
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
+
+
 def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
@@ -269,7 +276,7 @@ def _generate_analysis_report(
             if trade_decisions and timeframe in trade_decisions:
                 dec = trade_decisions[timeframe]
                 try:
-                    confidence = float(dec.get("confidence", 0))
+                    confidence = safe_float(dec.get("confidence", 0))
                     tech = float(dec.get("tech", 0))
                     ia = float(dec.get("ai", 0))
                     sentiment_trade = float(dec.get("sentiment", 0))
@@ -858,7 +865,7 @@ class RiskManager:
             orderflow = signals.get("orderflow", {})
 
             # Validation technique
-            tech_score = float(technical.get("score", 0))
+            tech_score = safe_float(technical.get("score", 0))
             if abs(tech_score) < self.validation_thresholds["technical"]:
                 print(f"[RISK] Score technique insuffisant: {tech_score:.2f}")
                 return False
@@ -911,7 +918,7 @@ class RiskManager:
         """Vérifie les limites d'exposition"""
         try:
             total_exposure = sum(
-                float(pos.get("size", 0)) for pos in current_positions.values()
+                safe_float(pos.get("size", 0)) for pos in current_positions.values()
             )
             new_total = total_exposure + float(new_position_size)
             is_valid = new_total <= self.position_limits["max_total_exposure"]
@@ -1154,30 +1161,6 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
-
-    def deep_update(d, u):
-        for k, v in u.items():
-            if isinstance(v, dict) and k in d and isinstance(d[k], dict):
-                d[k] = deep_update(d[k], v)
-            elif isinstance(v, list) and k in d and isinstance(d[k], list):
-                d[k] = v
-            else:
-                # Conversion stricte avant addition
-                if isinstance(d.get(k), (int, float)) and isinstance(v, str):
-                    try:
-                        # Si v n'est pas convertible en float, on met 0
-                        v = float(v)
-                    except Exception:
-                        v = 0
-                # Si d.get(k) est str et v est int/float, ne pas additionner non plus
-                if isinstance(d.get(k), str) and isinstance(v, (int, float)):
-                    try:
-                        d[k] = str(v)
-                    except Exception:
-                        d[k] = "0"
-                else:
-                    d[k] = v
-        return d
 
     def fetch_trades_fifo(self, binance_client, symbol):
         """
@@ -2334,7 +2317,9 @@ class TradingBotM4:
                 # === AJOUT IMPORTANT : Calcul du score technique ===
                 rsi_value = indicators.get("rsi_14")
                 if rsi_value is not None:
-                    tech_score = float(rsi_value) / 100.0  # Normalisation entre 0 et 1
+                    tech_score = (
+                        safe_float(rsi_value) / 100.0
+                    )  # Normalisation entre 0 et 1
                 else:
                     tech_score = 0.5  # Valeur par défaut
                 indicators["technical_score"] = tech_score
@@ -6380,7 +6365,7 @@ async def run_clean_bot():
 
                     # 1. Technical Score
                     try:
-                        tech_score = float(tech_data.get("score", 0.5))
+                        tech_score = safe_float(tech_data.get("score", 0.5))
                         tech_score = max(0.0, min(1.0, tech_score))  # Normalisation
                     except (TypeError, ValueError):
                         print(f"[WARNING] Invalid tech score for {pair_key}")
@@ -6390,7 +6375,7 @@ async def run_clean_bot():
                     try:
                         ai_score = market_signals.get("ai_prediction")
                         if ai_score is not None:
-                            ai_score = float(ai_score)
+                            ai_score = safe_float(ai_score)
                             ai_score = max(0.0, min(1.0, ai_score))
                         else:
                             print(f"[WARNING] No AI prediction for {pair_key}")
@@ -6403,14 +6388,14 @@ async def run_clean_bot():
                     try:
                         sentiment_score = market_signals.get("sentiment")
                         if sentiment_score is not None:
-                            sentiment_score = float(sentiment_score)
+                            sentiment_score = safe_float(sentiment_score)
                             sentiment_score = max(-1.0, min(1.0, sentiment_score))
                         else:
                             # Récupération du sentiment depuis l'analyse des news
                             with open(bot.data_file, "r") as f:
                                 shared_data = json.load(f)
                             news_sentiment = shared_data.get("sentiment", {})
-                            sentiment_score = float(
+                            sentiment_score = safe_float(
                                 news_sentiment.get("overall_sentiment", 0.0)
                             )
                     except (
@@ -6552,7 +6537,7 @@ async def run_clean_bot():
                         )
 
                         # Calcul amélioré de la confiance (utilise les RÉELS scores)
-                        tech_score = float(
+                        tech_score = safe_float(
                             dominant_signals.get("technical", {}).get("score", 0.5)
                         )
                         momentum_score = float(
@@ -6561,10 +6546,10 @@ async def run_clean_bot():
                         orderflow_score = float(
                             dominant_signals.get("orderflow", {}).get("score", 0.5)
                         )
-                        ai_score = float(
+                        ai_score = safe_float(
                             bot.market_data[pair_key].get("ai_prediction", 0.5)
                         )
-                        sentiment_score = float(
+                        sentiment_score = safe_float(
                             bot.market_data[pair_key].get("sentiment", 0.5)
                         )
 
@@ -6770,7 +6755,8 @@ async def run_clean_bot():
             # 11. === EXÉCUTION DES TRADES ===
             if signals_ok and trade_decisions:
                 current_exposure = sum(
-                    float(pos.get("amount", 0)) * float(pos.get("entry_price", 0))
+                    safe_float(pos.get("amount", 0))
+                    * safe_float(pos.get("entry_price", 0))
                     for pos in bot.positions.values()
                 ) / bot.get_performance_metrics().get("balance", 1)
 
@@ -7131,15 +7117,15 @@ async def run_clean_bot():
                                     "signals" in tf_data
                                     and "technical" in tf_data["signals"]
                                 ):
-                                    tech_score = float(
+                                    tech_score = safe_float(
                                         tf_data["signals"]["technical"].get(
                                             "score", 0.5
                                         )
                                     )
-                            ai_score = float(
+                            ai_score = safe_float(
                                 bot.market_data[pair_key].get("ai_prediction", 0.5)
                             )
-                            sentiment_score = float(
+                            sentiment_score = safe_float(
                                 bot.market_data[pair_key].get("sentiment", 0.5)
                             )
 
@@ -7163,7 +7149,7 @@ async def run_clean_bot():
                             )
                             td_dict[pair].update(
                                 {
-                                    "confidence": float(td.get("confidence", 0.5)),
+                                    "confidence": safe_float(td.get("confidence", 0.5)),
                                     "action": str(td.get("action", "neutral")),
                                     "tech": float(
                                         signals.get("technical", {}).get("score", 0.5)
@@ -7568,7 +7554,7 @@ def calculate_position_size(bot, decision):
     try:
         # --- Configuration de base ---
         balance = bot.get_performance_metrics().get("balance", 0)
-        confidence = float(decision.get("confidence", 0.5))
+        confidence = safe_float(decision.get("confidence", 0.5))
         MIN_NOTIONAL = 5  # Minimum USDC
 
         # --- Sizing selon confiance ---
