@@ -3278,7 +3278,7 @@ class TradingBotM4:
     ):
         if filled_tp_targets is None:
             filled_tp_targets = [False] * len(tp_levels)
-        to_exit = 0.0
+        to_exit = 0.0  # <-- INIT ici à 0.0
         new_filled = filled_tp_targets[:]
         entry_price = safe_float(entry_price, 0)
         current_price = safe_float(current_price, 0)
@@ -6973,29 +6973,34 @@ async def run_clean_bot():
 
                         pos["price_history"].append(last_price)
 
-                        amount = safe_float(pos["amount"], 0)
-                        to_exit = safe_float(to_exit, 0)
-                        entry_price = safe_float(pos["entry_price"], 0)
+                        # Conversion sécurisée des valeurs extraites du JSON/pos
+                        entry_price = safe_float(pos.get("entry_price"), 0)
+                        amount = safe_float(pos.get("amount"), 0)
                         last_price = safe_float(last_price, 0)
 
                         print(
                             f"[DEBUG TP] {symbol} entry={entry_price} last={last_price} amount={amount} filled_tp_targets={pos['filled_tp_targets']}"
                         )
+
+                        # Calcule le TP partiel (to_exit = proportion à vendre)
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
                             entry_price, last_price, pos["filled_tp_targets"]
                         )
+                        to_exit = safe_float(to_exit, 0)
+
                         print(
                             f"[DEBUG TP] to_exit={to_exit}, new_filled={new_filled}, pnl={(last_price - entry_price) / entry_price:.2%}"
                         )
+
                         # Take Profit partiel
                         if to_exit > 0 and amount > 0:
                             amount_to_sell = amount * to_exit
+                            pos["amount"] = amount - amount_to_sell
+                            pos["filled_tp_targets"] = new_filled
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            pos["amount"] = amount - amount_to_sell
-                            pos["filled_tp_targets"] = new_filled
                             if pos["amount"] <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
