@@ -7219,6 +7219,7 @@ async def run_clean_bot():
                             "active_pauses": active_pauses,
                             "positions_binance": getattr(bot, "positions_binance", {}),
                             "trade_decisions": td_dict,
+                            "cycle_metrics": cycle_metrics,
                             "market_data": bot.market_data,
                         },
                         bot.data_file,
