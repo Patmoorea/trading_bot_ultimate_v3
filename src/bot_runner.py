@@ -6980,7 +6980,7 @@ async def run_clean_bot():
 
                         pos["price_history"].append(last_price)
 
-                        # Conversion sécurisée des valeurs extraites du JSON/pos
+                        # --- PATCH TYPE SAFE ---
                         entry_price = safe_float(pos.get("entry_price"), 0)
                         amount = safe_float(pos.get("amount"), 0)
                         last_price = safe_float(last_price, 0)
@@ -6999,7 +6999,7 @@ async def run_clean_bot():
                             f"[DEBUG TP] to_exit={to_exit}, new_filled={new_filled}, pnl={(last_price - entry_price) / entry_price:.2%}"
                         )
 
-                        # Take Profit partiel
+                        # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
                             amount_to_sell = amount * to_exit
                             pos["amount"] = amount - amount_to_sell
@@ -7021,9 +7021,9 @@ async def run_clean_bot():
 
                         # Trailing stop
                         should_exit, new_max = bot.exit_manager.check_trailing(
-                            pos["entry_price"],
+                            entry_price,
                             pos["price_history"],
-                            pos.get("max_price", pos["entry_price"]),
+                            pos.get("max_price", entry_price),
                         )
                         pos["max_price"] = new_max
                         print(
