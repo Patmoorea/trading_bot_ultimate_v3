@@ -4542,6 +4542,10 @@ class TradingBotM4:
         - Gère le suivi de position SPOT et le stop-loss automatique
         """
 
+        # --- TYPE-SAFE PATCH: always cast amount and price ---
+        amount = safe_float(amount, 0)
+        price = safe_float(price, 0) if price is not None else None
+
         if not self.is_live_trading:
             log_dashboard(
                 f"[ORDER] SIMULATION: {side} {amount} {symbol} @ {price} (iceberg={iceberg})"
@@ -4558,8 +4562,8 @@ class TradingBotM4:
                     return {"status": "skipped", "reason": "already long"}
                 self.positions[symbol] = {
                     "side": "long",
-                    "entry_price": price or 0,
-                    "amount": amount,
+                    "entry_price": safe_float(price or 0),
+                    "amount": safe_float(amount),
                 }
             elif side.upper() == "SELL":
                 if not self.is_long(symbol):
@@ -4576,9 +4580,9 @@ class TradingBotM4:
                     return {"status": "skipped", "reason": "already short"}
                 self.positions[symbol] = {
                     "side": "short",
-                    "entry_price": price or 0,
-                    "amount": amount,
-                    "min_price": price or 0,
+                    "entry_price": safe_float(price or 0),
+                    "amount": safe_float(amount),
+                    "min_price": safe_float(price or 0),
                 }
             elif side.upper() == "BUY" and self.is_short(symbol):
                 if not self.is_short(symbol):
@@ -4633,8 +4637,8 @@ class TradingBotM4:
                 if result.get("status") == "completed":
                     self.positions[symbol] = {
                         "side": "long",
-                        "entry_price": result.get("avg_price", price),
-                        "amount": result.get("filled_amount", amount),
+                        "entry_price": safe_float(result.get("avg_price", price)),
+                        "amount": safe_float(result.get("filled_amount", amount)),
                     }
 
             # ----- VENTE SPOT -----
@@ -4644,7 +4648,7 @@ class TradingBotM4:
                 use_amount = None
                 if self.is_long(symbol):
                     allow_sell = True
-                    use_amount = self.positions[symbol]["amount"]
+                    use_amount = safe_float(self.positions[symbol]["amount"])
                 else:
                     # 2. Sinon, vente si solde réel Binance dispo
                     asset = symbol.replace("USDC", "")
@@ -4655,9 +4659,9 @@ class TradingBotM4:
                         log_dashboard(
                             f"[ORDER] Erreur récupération balance {asset}: {e}"
                         )
-                    if balance and float(balance.get("free", 0)) >= amount:
+                    if balance and safe_float(balance.get("free", 0)) >= amount:
                         allow_sell = True
-                        use_amount = amount
+                        use_amount = safe_float(amount)
                         log_dashboard(
                             f"[ORDER] Vente autorisée sur solde réel {asset}: {balance['free']}"
                         )
@@ -4704,8 +4708,8 @@ class TradingBotM4:
                     return {"status": "skipped", "reason": "already short"}
                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
                 ticker = await self.bingx_client.fetch_ticker(symbol_bingx)
-                price_bingx = float(ticker["last"])
-                qty = amount / price_bingx
+                price_bingx = safe_float(ticker["last"])
+                qty = safe_float(amount) / price_bingx if price_bingx > 0 else 0
                 result = await self.bingx_executor.short_order(
                     symbol_bingx, qty, leverage=3
                 )
@@ -4721,8 +4725,7 @@ class TradingBotM4:
             elif side.upper() == "BUY" and self.is_short(symbol):
                 symbol_bingx = symbol.replace("USDC", "USDT") + ":USDT"
                 pos = self.positions[symbol]
-                qty = pos["amount"]
-                # Il faut avoir une méthode close_short_order côté BingXOrderExecutor, sinon utiliser un BUY ordinaire sur futures
+                qty = safe_float(pos["amount"])
                 result = await self.bingx_executor.close_short_order(symbol_bingx, qty)
                 if result.get("status") == "completed":
                     self.positions.pop(symbol, None)
@@ -4747,7 +4750,7 @@ class TradingBotM4:
                 await self.telegram.send_message(
                     f"💰 <b>Ordre exécuté</b>\n"
                     f"📊 {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}\n"
-                    f"💵 Total: ${float(result.get('filled_amount', amount)) * float(result.get('avg_price', price) or 0):.2f}"
+                    f"💵 Total: ${safe_float(result.get('filled_amount', amount)) * safe_float(result.get('avg_price', price) or 0):.2f}"
                     f"{iceberg_info}"
                 )
             else:
