@@ -726,6 +726,12 @@ sys.stderr = WarningFilter(sys.stderr)
 def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
     import numpy as np
 
+    def safe_float(val, default=0.0):
+        try:
+            return float(val)
+        except (TypeError, ValueError):
+            return default
+
     # Filtre les news avec score
     valid = [
         item
@@ -740,18 +746,24 @@ def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
             "top_news": [],
         }
     # Calcul de la moyenne pondérée
-    sentiments = [item["sentiment"] for item in valid]
-    sentiment_global = float(np.mean(sentiments))
+    sentiments = [safe_float(item["sentiment"], 0.0) for item in valid]
+    sentiment_global = float(np.mean(sentiments)) if sentiments else 0.0
+
     # Top news (par score absolu)
-    top_news = sorted(valid, key=lambda x: abs(x["sentiment"]), reverse=True)[:top_n]
+    top_news = sorted(
+        valid, key=lambda x: abs(safe_float(x["sentiment"], 0.0)), reverse=True
+    )[:top_n]
     top_news_titles = [news["title"] for news in top_news if "title" in news]
+
     # Top symbols (fréquence + score fort)
     symbol_scores = {}
     for item in valid:
         for s in item.get("symbols", []):
-            symbol_scores.setdefault(s, []).append(item["sentiment"])
+            symbol_scores.setdefault(s, []).append(safe_float(item["sentiment"], 0.0))
     top_symbols = sorted(
-        symbol_scores.items(), key=lambda kv: abs(np.mean(kv[1])), reverse=True
+        symbol_scores.items(),
+        key=lambda kv: abs(np.mean(kv[1])) if kv[1] else 0.0,
+        reverse=True,
     )
     top_symbols = [s for s, scores in top_symbols[:top_n]]
     return {
@@ -1215,24 +1227,42 @@ class TradingBotM4:
         except Exception:
             return None
 
-    def fetch_trades_fifo_all(self):
+    def fetch_trades_fifo(self, binance_client, symbol):
         """
-        Pour chaque paire spot, calcule le FIFO PnL et sauvegarde dans shared_data.json.
-        PATCH: Utilise safe_update_shared_data pour préserver toutes les autres données.
+        Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée (ex: "BTCUSDC"),
+        formatée pour le calcul FIFO.
+        Retourne:
+            buys: [{"qty":..., "price":..., "time":..., "id":...}, ...]
+            sells: [{"qty":..., "price":..., "time":..., "id":...}, ...]
         """
-        all_results = {}
-        for pair in self.pairs_valid:
-            symbol = pair.replace("/", "")
-            try:
-                buys, sells = self.fetch_trades_fifo(symbol)
-                fifo_results = self.fifo_pnl(buys, sells)
-                all_results[f"fifo_pnl_{symbol}"] = fifo_results
-            except Exception as e:
-                all_results[f"fifo_pnl_{symbol}"] = []
-
-        # PATCH: NE JAMAIS utiliser json.dump direct ici !
-        self.safe_update_shared_data(all_results, self.data_file)
-        return all_results
+        buys, sells = [], []
+        try:
+            trades = binance_client.get_my_trades(symbol=symbol)
+            for trade in trades:
+                qty = safe_float(trade.get("qty", 0))
+                price = safe_float(trade.get("price", 0))
+                time_val = trade.get("time", 0)
+                try:
+                    time_val = int(time_val)
+                except Exception:
+                    time_val = 0
+                trade_id = trade.get("id", trade.get("orderId", None))
+                trade_dict = {
+                    "qty": qty,
+                    "price": price,
+                    "time": time_val,
+                    "id": trade_id,
+                }
+                if trade.get("isBuyer", False):
+                    buys.append(trade_dict)
+                else:
+                    sells.append(trade_dict)
+            buys = sorted(buys, key=lambda x: x["time"])
+            sells = sorted(sells, key=lambda x: x["time"])
+            return buys, sells
+        except Exception as e:
+            print(f"[DEBUG FIFO] Erreur fetch_trades_fifo pour {symbol}: {e}")
+            return [], []
 
     def fifo_pnl(self, buys, sells):
         """
@@ -1240,30 +1270,36 @@ class TradingBotM4:
         Associe chaque vente aux achats les plus anciens restants.
         Retourne une liste de dicts: vente, prix achat, prix vente, PnL.
         """
-        buy_queue = buys.copy()  # Liste FIFO
+        buy_queue = [dict(buy) for buy in buys]  # Copie des dicts
         results = []
         for sell in sells:
-            qty_to_sell = sell["qty"]
+            qty_to_sell = safe_float(sell.get("qty"), 0)
             total_cost = 0.0
             qty_used = 0.0
             buy_used = []
-            # On consomme les achats FIFO tant que la vente n'est pas satisfaite
             while qty_to_sell > 0 and buy_queue:
                 buy = buy_queue[0]
-                available_qty = buy["qty"]
+                available_qty = safe_float(buy.get("qty"), 0)
                 take_qty = min(qty_to_sell, available_qty)
-                total_cost += take_qty * buy["price"]
-                qty_used += take_qty
-                buy_used.append((take_qty, buy["price"]))
-                # Met à jour le reste à vendre et le reste d'achat
+                total_cost += safe_float(take_qty, 0) * safe_float(buy.get("price"), 0)
+                qty_used += safe_float(take_qty, 0)
+                buy_used.append((take_qty, safe_float(buy.get("price"), 0)))
                 qty_to_sell -= take_qty
-                buy["qty"] -= take_qty
-                if buy["qty"] <= 0.0000001:  # Tolérance flottante
+                buy["qty"] = safe_float(buy.get("qty"), 0) - take_qty
+                if buy["qty"] <= 0.0000001:
                     buy_queue.pop(0)
             if qty_used > 0:
-                entry_price = total_cost / qty_used
-                pnl_usd = (sell["price"] - entry_price) * qty_used
-                pnl_pct = (sell["price"] - entry_price) / entry_price * 100
+                entry_price = safe_float(total_cost, 0) / safe_float(qty_used, 1)
+                pnl_usd = (safe_float(sell.get("price"), 0) - entry_price) * qty_used
+                pnl_pct = (
+                    (
+                        (safe_float(sell.get("price"), 0) - entry_price)
+                        / entry_price
+                        * 100
+                    )
+                    if entry_price
+                    else 0
+                )
             else:
                 entry_price = None
                 pnl_usd = None
@@ -1271,13 +1307,13 @@ class TradingBotM4:
             results.append(
                 {
                     "sell_qty": qty_used,
-                    "sell_price": sell["price"],
+                    "sell_price": safe_float(sell.get("price"), 0),
                     "entry_price": safe_float(entry_price),
                     "pnl_usd": pnl_usd,
                     "pnl_pct": pnl_pct,
                     "buy_details": buy_used,
-                    "sell_time": sell["time"],
-                    "sell_id": sell["id"],
+                    "sell_time": sell.get("time", 0),
+                    "sell_id": sell.get("id"),
                 }
             )
         return results
@@ -1732,14 +1768,9 @@ class TradingBotM4:
             # Score Supertrend
             if supertrend and is_valid(supertrend.get("value", pd.Series()).iloc[-1]):
                 tech_factors += 1
-                st_direction = supertrend["direction"].iloc[-1]
-                st_strength = supertrend["strength"].iloc[-1]
-
-                if st_direction > 0:
-                    tech_score += st_strength
-                else:
-                    tech_score -= st_strength
-
+                st_direction = safe_float(supertrend["direction"].iloc[-1])
+                st_strength = safe_float(supertrend["strength"].iloc[-1])
+                tech_score += st_strength if st_direction > 0 else -st_strength
                 tech_details["supertrend"] = {
                     "direction": st_direction,
                     "strength": st_strength,
@@ -1748,118 +1779,100 @@ class TradingBotM4:
                     f"[TECH] Supertrend: direction={st_direction} strength={st_strength:.3f}"
                 )
 
-            # Score VWMA
             if is_valid(vwma.iloc[-1]):
                 tech_factors += 1
-                vwma_diff = (ohlcv_df["close"].iloc[-1] - vwma.iloc[-1]) / vwma.iloc[-1]
+                vwma_val = safe_float(vwma.iloc[-1])
+                close_val = safe_float(ohlcv_df["close"].iloc[-1])
+                vwma_diff = (close_val - vwma_val) / vwma_val if vwma_val else 0
                 vwma_score = np.clip(vwma_diff * 3, -1, 1)
                 tech_score += vwma_score
                 tech_details["vwma"] = vwma_score
                 print(f"[TECH] VWMA score: {vwma_score:.3f}")
 
-            # Score KAMA
             if is_valid(kama.iloc[-1]):
                 tech_factors += 1
-                kama_diff = (ohlcv_df["close"].iloc[-1] - kama.iloc[-1]) / kama.iloc[-1]
+                kama_val = safe_float(kama.iloc[-1])
+                close_val = safe_float(ohlcv_df["close"].iloc[-1])
+                kama_diff = (close_val - kama_val) / kama_val if kama_val else 0
                 kama_score = np.clip(kama_diff * 3, -1, 1)
                 tech_score += kama_score
                 tech_details["kama"] = kama_score
                 print(f"[TECH] KAMA score: {kama_score:.3f}")
 
-            # Score PSAR
             if psar and is_valid(psar.get("value", pd.Series()).iloc[-1]):
                 tech_factors += 1
-                psar_trend = psar["trend"].iloc[-1]
-                psar_strength = psar["strength"].iloc[-1]
-
-                if psar_trend > 0:
-                    tech_score += psar_strength
-                else:
-                    tech_score -= psar_strength
-
+                psar_trend = safe_float(psar["trend"].iloc[-1])
+                psar_strength = safe_float(psar["strength"].iloc[-1])
+                tech_score += psar_strength if psar_trend > 0 else -psar_strength
                 tech_details["psar"] = {"trend": psar_trend, "strength": psar_strength}
                 print(f"[TECH] PSAR: trend={psar_trend} strength={psar_strength:.3f}")
 
-            # Score TRIX
             if is_valid(trix.iloc[-1]):
                 tech_factors += 1
-                trix_score = np.clip(trix.iloc[-1] * 0.2, -1, 1)
+                trix_val = safe_float(trix.iloc[-1])
+                trix_score = np.clip(trix_val * 0.2, -1, 1)
                 tech_score += trix_score
                 tech_details["trix"] = trix_score
                 print(f"[TECH] TRIX score: {trix_score:.3f}")
 
-            # === SCORES MOMENTUM ===
-            momentum_score = 0
-            momentum_factors = 0
+            # MOMENTUM
             momentum_details = {}
-
-            # Awesome Oscillator
             if is_valid(ao.iloc[-1]):
                 momentum_factors += 1
-                ao_value = ao.iloc[-1]
+                ao_value = safe_float(ao.iloc[-1])
                 ao_score = np.sign(ao_value) * min(abs(ao_value * 0.1), 1)
                 momentum_score += ao_score
                 momentum_details["ao"] = ao_score
                 print(f"[MOMENTUM] AO score: {ao_score:.3f}")
 
-            # Williams %R
             if is_valid(williams_r.iloc[-1]):
                 momentum_factors += 1
-                wr_value = williams_r.iloc[-1]
-
-                if wr_value < -80:
-                    williams_score = 1  # Survendu
-                elif wr_value > -20:
-                    williams_score = -1  # Suracheté
-                else:
-                    williams_score = 0
-
+                wr_value = safe_float(williams_r.iloc[-1])
+                williams_score = 1 if wr_value < -80 else -1 if wr_value > -20 else 0
                 momentum_score += williams_score
                 momentum_details["williams_r"] = williams_score
                 print(f"[MOMENTUM] Williams %R score: {williams_score:.3f}")
 
-            # CCI
             if is_valid(cci.iloc[-1]):
                 momentum_factors += 1
-                cci_score = np.clip(cci.iloc[-1] / 100, -1, 1)
+                cci_val = safe_float(cci.iloc[-1])
+                cci_score = np.clip(cci_val / 100, -1, 1)
                 momentum_score += cci_score
                 momentum_details["cci"] = cci_score
                 print(f"[MOMENTUM] CCI score: {cci_score:.3f}")
 
-            # === SCORES ORDERFLOW ===
-            flow_score = 0
-            flow_factors = 0
+            # ORDERFLOW
             flow_details = {}
-
-            # Delta Volume
             if is_valid(delta_vol.iloc[-1]):
                 flow_factors += 1
+                delta_val = safe_float(delta_vol.iloc[-1])
+                delta_mean = safe_float(delta_vol.abs().mean())
                 delta_score = np.clip(
-                    delta_vol.iloc[-1] / delta_vol.abs().mean(), -1, 1
+                    delta_val / delta_mean if delta_mean else 0, -1, 1
                 )
                 flow_score += delta_score
                 flow_details["delta_volume"] = delta_score
                 print(f"[FLOW] Delta Volume score: {delta_score:.3f}")
 
-            # Imbalance
             if is_valid(imbalance.iloc[-1]):
                 flow_factors += 1
-                imb_score = np.clip(imbalance.iloc[-1] / imbalance.abs().mean(), -1, 1)
+                imb_val = safe_float(imbalance.iloc[-1])
+                imb_mean = safe_float(imbalance.abs().mean())
+                imb_score = np.clip(imb_val / imb_mean if imb_mean else 0, -1, 1)
                 flow_score += imb_score
                 flow_details["imbalance"] = imb_score
                 print(f"[FLOW] Imbalance score: {imb_score:.3f}")
 
-            # Smart Money Index
             if is_valid(smi.iloc[-1]):
                 flow_factors += 1
-                smi_score = np.clip(smi.iloc[-1] / smi.abs().mean(), -1, 1)
+                smi_val = safe_float(smi.iloc[-1])
+                smi_mean = safe_float(smi.abs().mean())
+                smi_score = np.clip(smi_val / smi_mean if smi_mean else 0, -1, 1)
                 flow_score += smi_score
                 flow_details["smi"] = smi_score
                 print(f"[FLOW] SMI score: {smi_score:.3f}")
 
-            # === FUSION DES SIGNAUX ===
-
-            # Normalisation des scores
+            # Normalisation
             if tech_factors > 0:
                 tech_score /= tech_factors
             if momentum_factors > 0:
@@ -1867,20 +1880,19 @@ class TradingBotM4:
             if flow_factors > 0:
                 flow_score /= flow_factors
 
-            # Scores de liquidité et pression du marché
             liquidity_score = 0
             if is_valid(liq_wave.iloc[-1]):
-                liquidity_score = -np.clip(
-                    liq_wave.iloc[-1] / liq_wave.abs().mean(), -1, 1
-                )
+                liq_val = safe_float(liq_wave.iloc[-1])
+                liq_mean = safe_float(liq_wave.abs().mean())
+                liquidity_score = -np.clip(liq_val / liq_mean if liq_mean else 0, -1, 1)
                 print(f"[FLOW] Liquidity score: {liquidity_score:.3f}")
 
             market_pressure = 0
             if is_valid(bid_ask):
-                market_pressure = (bid_ask - 0.5) * 2
+                bid_ask_val = safe_float(bid_ask)
+                market_pressure = (bid_ask_val - 0.5) * 2
                 print(f"[FLOW] Market pressure: {market_pressure:.3f}")
 
-            # Construction du dictionnaire des signaux complet
             signals = {
                 "technical": {
                     "score": tech_score,
@@ -1900,56 +1912,38 @@ class TradingBotM4:
                     "market_pressure": market_pressure,
                 },
             }
-
-            # Poids adaptatifs selon la qualité des signaux
             weights = {"technical": 0.4, "momentum": 0.3, "orderflow": 0.3}
-
-            # Calcul score total
             total_score = (
-                signals["technical"]["score"] * weights["technical"]
-                + signals["momentum"]["score"] * weights["momentum"]
-                + signals["orderflow"]["score"] * weights["orderflow"]
+                safe_float(signals["technical"]["score"]) * weights["technical"]
+                + safe_float(signals["momentum"]["score"]) * weights["momentum"]
+                + safe_float(signals["orderflow"]["score"]) * weights["orderflow"]
             )
             total_score = np.clip(total_score, -1, 1)
 
-            # Ajustement des poids selon conditions de marché
+            # Poids adaptatifs
             if abs(liquidity_score) > 0.7:
                 weights["orderflow"] *= 1.3
                 weights["technical"] *= 0.7
-
             if abs(market_pressure) > 0.7:
                 weights["momentum"] *= 1.2
                 weights["technical"] *= 0.8
 
-            # Intégration volatilité avancée
             volatility_adv = self.calculate_volatility_advanced(ohlcv_df)
-            if volatility_adv > 0.05:  # Volatilité élevée
-                weights["orderflow"] *= 1.2  # Plus de poids sur l'orderflow
-                weights["technical"] *= 0.8  # Moins sur technique
+            if volatility_adv > 0.05:
+                weights["orderflow"] *= 1.2
+                weights["technical"] *= 0.8
 
-            # Intégration exposition optimisée
             exposure_mult = self.optimize_portfolio_exposure()
-            total_score *= exposure_mult
-
-            # Intégration divergences
+            total_score *= safe_float(exposure_mult, 1.0)
             divergence_score = self.check_volume_divergence(ohlcv_df)
-            if abs(divergence_score) > 0.5:  # Divergence significative
-                if divergence_score > 0:  # Divergence positive
-                    total_score *= 1.2
-                else:  # Divergence négative
-                    total_score *= 0.8
+            if abs(divergence_score) > 0.5:
+                total_score *= 1.2 if divergence_score > 0 else 0.8
 
-            # === DÉCISION FINALE ===
-
-            # Seuils dynamiques
             volatility_factor = 1.0 + (
                 abs(liquidity_score) * 0.5 if is_valid(liquidity_score) else 0
             )
-
             buy_threshold = 0.2 * volatility_factor
             sell_threshold = -0.2 * volatility_factor
-
-            # Ajustement des seuils selon la pression du marché
             if market_pressure > 0:
                 buy_threshold *= 1 - market_pressure * 0.2
                 sell_threshold *= 1 + market_pressure * 0.2
@@ -1957,7 +1951,6 @@ class TradingBotM4:
                 buy_threshold *= 1 + abs(market_pressure) * 0.2
                 sell_threshold *= 1 - abs(market_pressure) * 0.2
 
-            # Construction de la décision finale
             decision = {
                 "action": "neutral",
                 "confidence": abs(total_score),
@@ -1974,7 +1967,6 @@ class TradingBotM4:
                 "timeframe": tf,
             }
 
-            # Détermination de l'action finale
             if total_score > buy_threshold:
                 decision["action"] = "buy"
                 log_reason = "Signal d'achat"
@@ -1984,7 +1976,6 @@ class TradingBotM4:
             else:
                 log_reason = "Signal neutre"
 
-            # Logging détaillé final (correction de l'indentation ici)
             log_msg = (
                 f"[ANALYZE] {symbol} {tf}\n"
                 f"Technical Score: {tech_score:.3f} ({tech_factors} facteurs)\n"
@@ -1995,10 +1986,8 @@ class TradingBotM4:
                 f"Action: {decision['action'].upper()} ({decision['confidence']:.3f})\n"
                 f"Raison: {log_reason}"
             )
-
             print(f"[DEBUG] {log_msg}")
 
-            # Ajout du nouveau log dashboard ici
             log_dashboard(
                 f"[TRADE-DECISION] {symbol} | Action: {decision['action'].upper()} | "
                 f"Confiance: {decision['confidence']:.2f} | Score: {total_score:.4f} | "
@@ -2006,7 +1995,6 @@ class TradingBotM4:
                 f"AI: {self.market_data.get(symbol, {}).get('ai_prediction', 0):.2f}"
             )
 
-            # Sauvegarde des métriques
             if hasattr(self, "save_analysis_metrics"):
                 self.save_analysis_metrics(
                     {
@@ -2407,6 +2395,8 @@ class TradingBotM4:
     def check_volume_divergence(self, df):
         """Détecte les divergences prix/volume"""
         try:
+            import pandas as pd
+
             if not isinstance(df, pd.DataFrame) or len(df) < 20:
                 return 0
 
@@ -2422,9 +2412,8 @@ class TradingBotM4:
                 return 0
 
             # Normalisation entre -1 et 1
-            divergence_score = -correlation  # Inverse de la corrélation
+            divergence_score = -float(correlation)  # Inverse de la corrélation
 
-            # Log pour debugging
             print(f"[DIVERGENCE] Score: {divergence_score:.2f}")
 
             return divergence_score
@@ -2434,12 +2423,8 @@ class TradingBotM4:
             return 0
 
     async def _prepare_features_for_ai(self, symbol):
-        """
-        Prépare les features pour les modèles d'IA (adapté pour PPO et DL).
-        ATTENTION: Retourne TOUJOURS un dict avec les clés
-        'close', 'high', 'low', 'volume', 'rsi', 'macd', 'volatility'.
-        Si besoin pour PPO, ajoute aussi 'vol_ratio'.
-        """
+        import numpy as np
+
         try:
             N_STEPS = self.N_STEPS
 
@@ -2447,12 +2432,11 @@ class TradingBotM4:
             if not ohlcv or not isinstance(ohlcv, dict) or "close" not in ohlcv:
                 return None
 
-            closes = np.array(ohlcv.get("close", []))
-            highs = np.array(ohlcv.get("high", []))
-            lows = np.array(ohlcv.get("low", []))
-            volumes = np.array(ohlcv.get("volume", []))
+            closes = np.array(ohlcv.get("close", []), dtype=float)
+            highs = np.array(ohlcv.get("high", []), dtype=float)
+            lows = np.array(ohlcv.get("low", []), dtype=float)
+            volumes = np.array(ohlcv.get("volume", []), dtype=float)
 
-            # --- Vérification stricte sur la taille
             if (
                 len(closes) < N_STEPS
                 or len(highs) < N_STEPS
@@ -2466,7 +2450,6 @@ class TradingBotM4:
             lows = lows[-N_STEPS:]
             volumes = volumes[-N_STEPS:]
 
-            # RSI (14)
             delta = np.diff(closes)
             gain = (delta > 0) * delta
             loss = (delta < 0) * -delta
@@ -2475,12 +2458,10 @@ class TradingBotM4:
             rs = avg_gain / avg_loss if avg_loss > 0 else 0
             rsi = 100 - (100 / (1 + rs))
 
-            # MACD: EMA12 - EMA26
             ema12 = np.mean(closes[-12:]) if len(closes) >= 12 else closes[-1]
             ema26 = np.mean(closes[-26:]) if len(closes) >= 26 else closes[-1]
             macd = ema12 - ema26
 
-            # Volatility: std des returns
             if len(closes) >= N_STEPS:
                 returns = np.diff(np.log(closes))
                 volatility = float(np.std(returns[-14:])) if len(returns) >= 14 else 0
@@ -2492,12 +2473,12 @@ class TradingBotM4:
             vol_ratio = min(1, vol_ratio / 3)
 
             features = {
-                "close": closes / closes[0],
-                "high": highs / highs[0] if highs[0] > 0 else highs,
-                "low": lows / lows[0] if lows[0] > 0 else lows,
-                "volume": volumes / volumes[0] if volumes[0] > 0 else volumes,
-                "rsi": float(rsi) / 100,
-                "macd": float(macd) / 100,
+                "close": closes / closes[0] if closes[0] != 0 else closes,
+                "high": highs / highs[0] if highs[0] != 0 else highs,
+                "low": lows / lows[0] if lows[0] != 0 else lows,
+                "volume": volumes / volumes[0] if volumes[0] != 0 else volumes,
+                "rsi": float(rsi) / 100 if rsi else 0,
+                "macd": float(macd) / 100 if macd else 0,
                 "volatility": float(volatility),
                 "vol_ratio": float(vol_ratio),
             }
@@ -2553,31 +2534,27 @@ class TradingBotM4:
 
     async def _merge_signals(self, symbol, dl_prediction, ppo_action):
         try:
-            # Vérification poids
             ai_weight = float(getattr(self, "ai_weight", 0.4))
             tech_weight = 1.0 - ai_weight
 
-            # Init structures
             if symbol not in self.market_data:
                 self.market_data[symbol] = {}
 
             defaults = {"trend": 0.0, "momentum": 0.0, "volatility": 0.0}
             signals = self.market_data[symbol].get("signals", defaults.copy())
 
-            # Conversion valeurs
-            dl_val = float(
-                dl_prediction if isinstance(dl_prediction, (int, float)) else 0
+            dl_val = (
+                float(dl_prediction) if isinstance(dl_prediction, (int, float)) else 0
             )
-            ppo_val = float(ppo_action if isinstance(ppo_action, (int, float)) else 0)
+            ppo_val = float(ppo_action) if isinstance(ppo_action, (int, float)) else 0
 
             ai_signal = dl_val * 0.7 + ppo_val * 0.3
 
-            # Fusion
             merged = {
-                k: (v * tech_weight + ai_signal * ai_weight) for k, v in signals.items()
+                k: (float(v) * tech_weight + ai_signal * ai_weight)
+                for k, v in signals.items()
             }
 
-            # Sauvegarde
             self.market_data[symbol]["signals"] = merged
             self.market_data[symbol]["ai_prediction"] = ai_signal
 
@@ -2588,7 +2565,6 @@ class TradingBotM4:
             return defaults.copy()
 
     def calculate_correlation_matrix(self):
-        """Calcule la matrice de corrélation entre les paires"""
         correlations = {}
         for pair1 in self.pairs_valid:
             for pair2 in self.pairs_valid:
@@ -2597,9 +2573,7 @@ class TradingBotM4:
         return correlations
 
     def optimize_portfolio_exposure(self):
-        """Optimise l'exposition du portefeuille selon les corrélations"""
         try:
-            # Si pas de positions ouvertes
             if not self.positions:
                 return 1.0
 
@@ -2607,47 +2581,42 @@ class TradingBotM4:
             high_corr_pairs = 0
             total_pairs = 0
 
-            # Compte les paires fortement corrélées
             for pair1 in self.positions:
                 for pair2 in self.positions:
                     if pair1 != pair2:
                         corr_key = f"{pair1}-{pair2}"
                         corr = correlations.get(corr_key, 0)
-                        if abs(corr) > 0.7:
+                        if abs(float(corr)) > 0.7:
                             high_corr_pairs += 1
                         total_pairs += 1
 
             if total_pairs == 0:
                 return 1.0
 
-            # Réduction progressive de l'exposition
             corr_ratio = high_corr_pairs / total_pairs
-            exposure_multiplier = 1.0 - (corr_ratio * 0.3)  # Max 30% reduction
+            exposure_multiplier = 1.0 - (corr_ratio * 0.3)
 
             print(
                 f"[EXPOSURE] Multiplicateur: {exposure_multiplier:.2f} (corrélations élevées: {high_corr_pairs})"
             )
-            return max(0.5, exposure_multiplier)  # Minimum 50% exposition
+            return max(0.5, exposure_multiplier)
 
         except Exception as e:
             print(f"Erreur optimisation exposition: {e}")
             return 1.0
 
     def adjust_position_sizing(self, base_size, correlation_factor):
-        """Ajuste le sizing selon les corrélations"""
-        return base_size * (1 - correlation_factor)
+        return float(base_size) * (1 - float(correlation_factor))
 
     def weighted_signal_fusion(self, signals):
-        """Fusion pondérée des signaux avec poids adaptatifs"""
         weights = {"technical": 0.4, "ai": 0.3, "sentiment": 0.2, "orderflow": 0.1}
         total_score = 0
         for signal_type, value in signals.items():
             if signal_type in weights:
-                total_score += value * weights[signal_type]
+                total_score += float(value) * weights[signal_type]
         return total_score
 
     def track_advanced_metrics(self):
-        """Suivi de métriques avancées"""
         metrics = {
             "sharpe_ratio": self.calculate_sharpe(),
             "sortino_ratio": self.calculate_sortino(),
@@ -2659,26 +2628,20 @@ class TradingBotM4:
         return metrics
 
     def safe_trade_execution(self, order):
-        """Exécution sécurisée des ordres"""
         try:
-            # Vérifications pré-trade
             self.check_margin_requirements()
             self.verify_risk_limits()
             self.check_market_conditions()
-
-            # Exécution avec retry
             for attempt in range(3):
                 try:
                     result = self.execute_order(order)
                     return result
                 except ConnectionError:
                     continue
-
         except Exception as e:
             self.logger.error(f"Erreur exécution: {e}")
             return None
 
-    # Backup automatique
     def backup_critical_data(self):
         try:
             backup_data = {
@@ -2689,8 +2652,6 @@ class TradingBotM4:
                 "system_metrics": self.system_metrics,
                 "performance": self.get_performance_metrics(),
             }
-
-            # Sauvegarde compressée
             import lz4.frame
             import json
 
@@ -2699,10 +2660,7 @@ class TradingBotM4:
             )
             with lz4.frame.open(backup_path, "wb") as f:
                 f.write(json.dumps(backup_data).encode())
-
-            # Nettoyage des vieux backups (garde 7 jours)
             self.cleanup_old_backups(days=7)
-
             return True
         except Exception as e:
             self.logger.error(f"Erreur backup: {e}")
@@ -2718,93 +2676,68 @@ class TradingBotM4:
                 "api_latency": self.measure_api_latency(),
                 "ws_status": self.check_ws_status(),
             }
-
-            # Stockage historique
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     self.system_metrics[key].append(
                         {"timestamp": get_current_time(), "value": value}
                     )
-
             return metrics
         except Exception as e:
             self.logger.error(f"Erreur monitoring système: {e}")
             return {}
 
     def analyze_order_pressure(self, symbol):
-        """Analyse de la pression des ordres limites"""
         orderbook = self.get_ws_orderbook(symbol)
         if not orderbook:
             return None
-
         bid_pressure = self.calculate_bid_pressure(orderbook["bids"])
         ask_pressure = self.calculate_ask_pressure(orderbook["asks"])
-
         return {
-            "bid_pressure": bid_pressure,
-            "ask_pressure": ask_pressure,
-            "imbalance": bid_pressure - ask_pressure,
+            "bid_pressure": float(bid_pressure),
+            "ask_pressure": float(ask_pressure),
+            "imbalance": float(bid_pressure) - float(ask_pressure),
         }
 
     def calculate_dynamic_stoploss(self, symbol, timeframe="1h"):
-        """Calcule un stop-loss dynamique basé sur l'ATR"""
         try:
             df = self.get_timeframe_data(symbol, timeframe)
             if df is None:
-                return self.stop_loss_pct  # Retourne le stop-loss par défaut
-
+                return self.stop_loss_pct
             atr = self.calculate_atr(df, period=14)
-            price = df["close"][-1]
-
-            # Stop-loss adaptatif : entre 1% et 3% selon l'ATR
-            atr_pct = atr / price
+            price = float(df["close"][-1])
+            atr_pct = float(atr) / price if price != 0 else 0.01
             dynamic_sl = min(max(atr_pct * 2, 0.01), 0.03)
-
             return dynamic_sl
         except Exception as e:
             self.logger.error(f"Erreur calcul stop-loss dynamique: {e}")
             return self.stop_loss_pct
 
     def analyze_correlations(self):
-        """Analyse les corrélations entre paires pour la diversification"""
         correlations = {}
         for pair1 in self.pairs_valid:
             correlations[pair1] = {}
             for pair2 in self.pairs_valid:
                 if pair1 != pair2:
                     corr = self.calculate_pair_correlation(pair1, pair2)
-                    correlations[pair1][pair2] = corr
+                    correlations[pair1][pair2] = float(corr)
         return correlations
 
     def calculate_trade_quality_score(self, trade_data):
-        """Score de qualité des trades basé sur multiples facteurs"""
         score = 0
-
-        # Timing d'entrée (proximité support/résistance)
         if self.is_near_key_level(trade_data["symbol"], trade_data["price"]):
             score += 2
-
-        # Volume au moment de l'entrée
-        if trade_data.get("volume_ratio", 1) > 1.5:
+        if float(trade_data.get("volume_ratio", 1)) > 1.5:
             score += 1
-
-        # Momentum aligné
         if self.check_momentum_alignment(trade_data):
             score += 1
-
-        # Convergence multi-timeframes
         if self.check_timeframe_alignment(trade_data):
             score += 2
-
         return score
 
     def calculate_squeeze_momentum(self, df):
-        """
-        Calcule l'indicateur TTM Squeeze avec momentum.
-        Un squeeze se produit quand la volatilité diminue et la pression augmente.
-        """
+        import pandas as pd
+
         try:
-            # Keltner Channel
             typical_price = (df["high"] + df["low"] + df["close"]) / 3
             mean_tp = typical_price.rolling(window=20).mean()
             atr = (
@@ -2819,63 +2752,47 @@ class TradingBotM4:
                 .rolling(window=20)
                 .mean()
             )
-
             keltner_up = mean_tp + (atr * 1.5)
             keltner_down = mean_tp - (atr * 1.5)
-
-            # Bollinger Bands
             std = df["close"].rolling(window=20).std()
             bb_up = mean_tp + (std * 2)
             bb_down = mean_tp - (std * 2)
-
-            # Squeeze Detection
             squeeze_on = (bb_up <= keltner_up) & (bb_down >= keltner_down)
-
-            # Momentum
             highest = df["high"].rolling(window=20).max()
             lowest = df["low"].rolling(window=20).min()
             momentum = df["close"] - ((highest + lowest) / 2)
-
             return {
-                "squeeze_on": squeeze_on.iloc[-1],
-                "momentum": momentum.iloc[-1],
-                "momentum_change": momentum.diff().iloc[-1],
+                "squeeze_on": bool(squeeze_on.iloc[-1]),
+                "momentum": float(momentum.iloc[-1]),
+                "momentum_change": float(momentum.diff().iloc[-1]),
             }
         except Exception as e:
             self.logger.error(f"Erreur calcul squeeze momentum: {e}")
             return {"squeeze_on": False, "momentum": 0, "momentum_change": 0}
 
     def analyze_volume_distribution(self, df):
-        """
-        Analyse la distribution des volumes pour identifier les zones d'accumulation/distribution.
-        """
+        import pandas as pd
+
         try:
-            # Volume Profile
             price_bins = pd.qcut(df["close"], q=10, duplicates="drop")
             vol_profile = df.groupby(price_bins)["volume"].sum()
-
-            # Volume POC (Point of Control)
-            poc_price = vol_profile.idxmax().left
-
-            # Volume Delta
+            poc_price = float(vol_profile.idxmax().left)
             buy_volume = df["volume"][df["close"] > df["open"]].sum()
             sell_volume = df["volume"][df["close"] < df["open"]].sum()
-            delta = buy_volume - sell_volume
-
-            # Accumulation/Distribution
+            delta = float(buy_volume) - float(sell_volume)
             is_accumulation = delta > 0 and df["close"].iloc[-1] > df["close"].mean()
             is_distribution = delta < 0 and df["close"].iloc[-1] < df["close"].mean()
-
+            buy_volume_ratio = (
+                float(buy_volume) / (float(buy_volume) + float(sell_volume))
+                if (float(buy_volume) + float(sell_volume)) > 0
+                else 0.5
+            )
             return {
                 "poc_price": poc_price,
                 "volume_delta": delta,
-                "is_accumulation": is_accumulation,
-                "is_distribution": is_distribution,
-                "buy_volume_ratio": (
-                    buy_volume / (buy_volume + sell_volume)
-                    if (buy_volume + sell_volume) > 0
-                    else 0.5
-                ),
+                "is_accumulation": bool(is_accumulation),
+                "is_distribution": bool(is_distribution),
+                "buy_volume_ratio": buy_volume_ratio,
             }
         except Exception as e:
             self.logger.error(f"Erreur analyse volume: {e}")
@@ -2888,25 +2805,21 @@ class TradingBotM4:
             }
 
     def identify_market_structure(self, df):
-        """
-        Identifie la structure du marché (tendance, range, etc.).
-        """
+        import pandas as pd
+
         try:
-            # Swing points
-            n = 5  # lookback period
+            n = 5
             highs = df["high"].rolling(window=2 * n + 1, center=True).max()
             lows = df["low"].rolling(window=2 * n + 1, center=True).min()
-
-            # Higher Highs & Lower Lows
-            higher_highs = highs.diff() > 0
-            lower_lows = lows.diff() < 0
-
-            # Trend Detection
+            higher_highs = bool((highs.diff() > 0).iloc[-1])
+            lower_lows = bool((lows.diff() < 0).iloc[-1])
             ema20 = df["close"].ewm(span=20).mean()
             ema50 = df["close"].ewm(span=50).mean()
-            trend_strength = (ema20.iloc[-1] - ema50.iloc[-1]) / ema50.iloc[-1]
-
-            # Range Analysis
+            trend_strength = (
+                (float(ema20.iloc[-1]) - float(ema50.iloc[-1])) / float(ema50.iloc[-1])
+                if ema50.iloc[-1] != 0
+                else 0
+            )
             atr = (
                 pd.DataFrame(
                     {
@@ -2919,14 +2832,12 @@ class TradingBotM4:
                 .rolling(window=14)
                 .mean()
             )
-
-            is_ranging = atr.iloc[-1] < atr.mean()
-
+            is_ranging = bool(atr.iloc[-1] < atr.mean())
             return {
                 "trend_strength": trend_strength,
                 "is_ranging": is_ranging,
-                "higher_highs": higher_highs.iloc[-1],
-                "lower_lows": lower_lows.iloc[-1],
+                "higher_highs": higher_highs,
+                "lower_lows": lower_lows,
                 "structure": "range" if is_ranging else "trend",
             }
         except Exception as e:
@@ -2955,11 +2866,12 @@ class TradingBotM4:
                 volume = self.analyze_volume_distribution(df)
                 momentum = self.calculate_squeeze_momentum(df)
 
+                alignment = self.check_alignment(df)
                 analysis[tf] = {
                     "structure": structure,
                     "volume": volume,
                     "momentum": momentum,
-                    "alignment": self.check_alignment(df),
+                    "alignment": alignment,
                 }
 
             return analysis
@@ -2976,37 +2888,38 @@ class TradingBotM4:
             weight_sum = 0
 
             # 1. Structure de marché (40%)
-            if indicators.get("market_structure"):
-                ms = indicators["market_structure"]
-                if ms["structure"] == "trend":
-                    score += 0.4 * abs(ms["trend_strength"])
+            ms = indicators.get("market_structure")
+            if ms and isinstance(ms, dict):
+                if ms.get("structure") == "trend":
+                    score += 0.4 * abs(float(ms.get("trend_strength", 0)))
                 weight_sum += 0.4
 
             # 2. Volume Analysis (30%)
-            if indicators.get("volume_profile"):
-                vp = indicators["volume_profile"]
-                if vp["is_accumulation"]:
+            vp = indicators.get("volume_profile")
+            if vp and isinstance(vp, dict):
+                if vp.get("is_accumulation"):
                     score += 0.3
-                elif vp["is_distribution"]:
+                elif vp.get("is_distribution"):
                     score -= 0.3
                 weight_sum += 0.3
 
             # 3. Momentum & Squeeze (20%)
-            if indicators.get("squeeze_momentum"):
-                sq = indicators["squeeze_momentum"]
-                if sq["squeeze_on"] and sq["momentum"] > 0:
+            sq = indicators.get("squeeze_momentum")
+            if sq and isinstance(sq, dict):
+                if sq.get("squeeze_on") and float(sq.get("momentum", 0)) > 0:
                     score += 0.2
-                elif sq["squeeze_on"] and sq["momentum"] < 0:
+                elif sq.get("squeeze_on") and float(sq.get("momentum", 0)) < 0:
                     score -= 0.2
                 weight_sum += 0.2
 
             # 4. Order Flow (10%)
-            if indicators.get("order_flow"):
-                of = indicators["order_flow"]
-                if of["pressure_ratio"] > 1:
-                    score += 0.1 * min(of["pressure_ratio"] - 1, 1)
-                elif of["pressure_ratio"] < 1:
-                    score -= 0.1 * min(1 - of["pressure_ratio"], 1)
+            of = indicators.get("order_flow")
+            if of and isinstance(of, dict):
+                pressure_ratio = float(of.get("pressure_ratio", 1))
+                if pressure_ratio > 1:
+                    score += 0.1 * min(pressure_ratio - 1, 1)
+                elif pressure_ratio < 1:
+                    score -= 0.1 * min(1 - pressure_ratio, 1)
                 weight_sum += 0.1
 
             # Normalisation
@@ -3024,11 +2937,12 @@ class TradingBotM4:
         Réduit le sizing quand la volatilité est élevée.
         """
         try:
+            import pandas as pd
+
             df = self.get_recent_data(symbol)
             if df is None or len(df) < 20:
                 return 1.0
 
-            # ATR relatif
             atr = (
                 pd.DataFrame(
                     {
@@ -3043,19 +2957,18 @@ class TradingBotM4:
                 .iloc[-1]
             )
 
-            price = df["close"].iloc[-1]
-            atr_pct = atr / price
+            price = float(df["close"].iloc[-1])
+            atr_pct = float(atr) / price if price != 0 else 0
 
-            # Ajustement du multiplicateur
-            if atr_pct < 0.01:  # Très faible volatilité
+            if atr_pct < 0.01:
                 return 1.2
-            elif atr_pct < 0.02:  # Volatilité normale
+            elif atr_pct < 0.02:
                 return 1.0
-            elif atr_pct < 0.03:  # Volatilité élevée
+            elif atr_pct < 0.03:
                 return 0.8
-            elif atr_pct < 0.04:  # Très haute volatilité
+            elif atr_pct < 0.04:
                 return 0.6
-            else:  # Volatilité extrême
+            else:
                 return 0.4
 
         except Exception as e:
@@ -3070,26 +2983,26 @@ class TradingBotM4:
             multiplier = 1.0
 
             # 1. Corrélation avec le marché
-            correlation = self.get_market_correlation(symbol)
+            correlation = float(self.get_market_correlation(symbol))
             if correlation > 0.8:
-                multiplier *= 0.8  # Réduit le risque si forte corrélation
+                multiplier *= 0.8
 
             # 2. Liquidité
-            liquidity_score = self.get_liquidity_score(symbol)
+            liquidity_score = float(self.get_liquidity_score(symbol))
             if liquidity_score < 0.5:
-                multiplier *= 0.7  # Réduit le risque si faible liquidité
+                multiplier *= 0.7
 
             # 3. Spread moyen
-            spread = self.get_average_spread(symbol)
-            if spread > 0.001:  # Plus de 0.1%
+            spread = float(self.get_average_spread(symbol))
+            if spread > 0.001:
                 multiplier *= 0.9
 
             # 4. Distance aux supports/résistances
             key_levels = self.get_key_levels(symbol)
             if self.is_near_key_level(symbol, key_levels):
-                multiplier *= 1.1  # Augmente légèrement si près d'un niveau clé
+                multiplier *= 1.1
 
-            return max(0.3, min(multiplier, 1.2))  # Borne entre 0.3 et 1.2
+            return max(0.3, min(multiplier, 1.2))
 
         except Exception as e:
             self.logger.error(f"Erreur calcul multiplicateur risque: {e}")
@@ -3885,9 +3798,7 @@ class TradingBotM4:
 
                 self.logger.info("Fetching latest news for sentiment analysis")
                 news_data = await self.news_analyzer.fetch_all_news()
-                news_data = self.enrich_news_symbols(
-                    news_data
-                )  # Ajout des symboles aux news
+                news_data = self.enrich_news_symbols(news_data)
 
                 sentiment_analysis = {}
                 try:
@@ -3896,33 +3807,27 @@ class TradingBotM4:
                     self.logger.error("Erreur update_analysis", exc_info=True)
                     # sentiment_analysis reste {}
 
-                # Extraction des items analysés
                 sentiment_scores = (
                     sentiment_analysis.get("items", [])
                     if isinstance(sentiment_analysis, dict)
                     else []
                 )
 
-                # MAJ des données de sentiment dans le bot
                 try:
                     await self._update_sentiment_data(sentiment_scores)
                 except Exception:
                     pass
 
-                # Sauvegarde dans shared_data.json
                 try:
                     await self._save_sentiment_data(sentiment_scores, news_data)
                 except Exception as e:
                     self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
 
-                # Envoi du résumé des news sur Telegram
                 try:
                     await self.telegram.send_news_summary(news_data[:5])
                 except Exception:
                     pass
 
-                # === INTÉGRATION PAUSE INTELLIGENTE ===
-                # Pour chaque news, analyse le besoin de pause
                 for news in news_data:
                     pause_decision = self.news_pause_manager.should_pause(
                         news, self.market_data
@@ -3932,7 +3837,6 @@ class TradingBotM4:
                         log_dashboard(
                             f"🚨 Pause déclenchée automatique: {pause_decision}"
                         )
-                        # Optionnel: notification Telegram
                         try:
                             await self.telegram.send_message(
                                 f"🚨 Pause automatique déclenchée\n"
@@ -3944,13 +3848,14 @@ class TradingBotM4:
                         except Exception:
                             pass
 
-                # === LOG SENTIMENT GLOBAL ===
                 try:
                     with open(self.data_file, "r") as f:
                         shared_data = json.load(f)
                     sentiment_data = shared_data.get("sentiment", {})
-                    avg_sentiment = sentiment_data.get("overall_sentiment", 0)
-                    impact_score = sentiment_data.get("impact_score", 0)
+                    avg_sentiment = float(
+                        sentiment_data.get("overall_sentiment", 0) or 0
+                    )
+                    impact_score = float(sentiment_data.get("impact_score", 0) or 0)
                     major_events = sentiment_data.get("major_events", "")
 
                     log_dashboard(
@@ -3978,13 +3883,12 @@ class TradingBotM4:
 
     async def detect_arbitrage_opportunities(self, pair=None):
         """
-        Détecte les opportunités d'arbitrage cross-quote USDC/USDT :
+        Détecte les opportunités d'arbitrage cross-quote USDC/USDT.
         Compare par exemple BTC/USDC sur Binance à BTC/USDT sur les autres brokers,
         avec adaptation du format des symboles selon chaque broker.
         """
 
         def get_broker_symbol(coin, quote, broker):
-            # Adapter au format attendu par chaque broker
             if broker == "binance":
                 return f"{coin}{quote}"
             elif broker in ["okx", "bingx"]:
@@ -3992,9 +3896,9 @@ class TradingBotM4:
             elif broker == "gateio":
                 return f"{coin}_{quote}"
             elif broker == "blofin":
-                return f"{coin}{quote}"  # Si différent, adapter ici !
+                return f"{coin}{quote}"
             else:
-                return f"{coin}/{quote}"  # Fallback
+                return f"{coin}/{quote}"
 
         if not self.is_live_trading:
             log_dashboard("[ARBITRAGE] Pas en mode live trading, détection annulée.")
@@ -4010,17 +3914,13 @@ class TradingBotM4:
             for current_pair in pairs_to_check:
                 try:
                     coin = current_pair.split("/")[0]
-                    # Symboles pour chaque broker
                     binance_symbol = get_broker_symbol(coin, "USDC", "binance")
-
-                    # Prix Binance (USDC)
                     binance_ticker = self.binance_client.get_ticker(
                         symbol=binance_symbol
                     )
                     binance_price = float(binance_ticker.get("lastPrice") or 0)
                     binance_volume = float(binance_ticker.get("volume", 0))
 
-                    # Liste des brokers à comparer (USDT)
                     exchanges_to_check = [
                         {"name": "okx", "client": self.brokers.get("okx")},
                         {"name": "gateio", "client": self.brokers.get("gateio")},
@@ -4037,13 +3937,11 @@ class TradingBotM4:
 
                         try:
                             other_symbol = get_broker_symbol(coin, "USDT", broker)
-                            # Récupération du prix sur l'autre broker (USDT)
                             ticker = await exchange["client"].fetch_ticker(other_symbol)
                             exchange_price = float(ticker["last"])
                             if not exchange_price or not binance_price:
                                 continue
 
-                            # Calcul du spread
                             price_diff = exchange_price - binance_price
                             profit_pct = (
                                 (price_diff / binance_price) * 100
@@ -4051,7 +3949,6 @@ class TradingBotM4:
                                 else 0
                             )
 
-                            # Opportunité cross-quote
                             if profit_pct > MIN_PROFIT_THRESHOLD:
                                 opportunity = {
                                     "pair": coin,
@@ -4061,11 +3958,11 @@ class TradingBotM4:
                                     "price2": exchange_price,
                                     "diff_percent": profit_pct,
                                     "volume_24h": binance_volume * binance_price,
-                                    "estimated_profit": profit_pct - 0.2,  # Après frais
+                                    "estimated_profit": profit_pct - 0.2,
                                     "route": f"Buy {coin}/USDC (Binance) -> Transfer {coin} -> Sell {coin}/USDT ({broker})",
                                 }
                                 log_dashboard(
-                                    f"[ARBITRAGE] OPPORTUNITÉ: {coin}: {binance_price} (Binance USDC) <> {exchange_price} ({broker} USDT) | Diff: {profit_pct:.2f}%"
+                                    f"[ARBITRAGE] OPPORTUNITE: {coin}: {binance_price} (Binance USDC) <> {exchange_price} ({broker} USDT) | Diff: {profit_pct:.2f}%"
                                 )
                                 opportunities.append(opportunity)
                                 self.logger.info(
@@ -4103,44 +4000,37 @@ class TradingBotM4:
     async def execute_arbitrage(self, opportunity):
         """Exécute une opportunité d'arbitrage"""
         try:
-            # Utiliser l'ArbitrageExecutor existant
             result = await self.arbitrage_executor.execute(
                 opportunity=opportunity,
-                max_slippage=0.1,  # 0.1% de slippage maximum
-                timeout=5,  # 5 secondes maximum
+                max_slippage=0.1,
+                timeout=5,
             )
 
-            if result["success"]:
-                profit = result["realized_profit"]
+            if result.get("success"):
+                profit = float(result.get("realized_profit", 0))
                 message = (
                     f"✅ Arbitrage réussi!\n"
                     f"💰 Profit: {profit:.2f} USDT\n"
                     f"📊 Paire: {opportunity['pair']}\n"
-                    f"🔄 Route: {opportunity['route']}"
+                    f"🔄 Route: {opportunity.get('route', '')}"
                 )
                 await self.telegram.send_message(message)
-
-                # Mettre à jour les statistiques
                 self._update_performance_metrics(
                     {"type": "arbitrage", "profit": profit, "pair": opportunity["pair"]}
                 )
             else:
-                self.logger.warning(f"Échec arbitrage: {result['error']}")
+                self.logger.warning(f"Échec arbitrage: {result.get('error')}")
 
         except Exception as e:
             self.logger.error(f"Erreur exécution arbitrage: {e}")
 
-        def secure_withdraw(self, address, amount, asset):
-            # Cette fonction serait appelée avant tout transfert sortant
-            # Demande la signature de l'opération
-            message = f"{address}|{amount}|{asset}|{get_current_time()}"
-            signature = self.key_manager.sign_message(message)
-            # Ici, tu pourrais envoyer la requête à l'exchange avec la signature pour logs/sécurité
-            print(
-                f"Retrait sécurisé demandé : {amount} {asset} vers {address}, signature: {signature}"
-            )
-            # (A compléter: appel API exchange avec signature, ou log d'audit)
-            return signature
+    def secure_withdraw(self, address, amount, asset):
+        message = f"{address}|{amount}|{asset}|{get_current_time()}"
+        signature = self.key_manager.sign_message(message)
+        print(
+            f"Retrait sécurisé demandé : {amount} {asset} vers {address}, signature: {signature}"
+        )
+        return signature
 
     def _initialize_ai(self):
         """Initialise les composants d'IA et du trading live Binance"""
@@ -4529,16 +4419,6 @@ class TradingBotM4:
     async def execute_trade(
         self, symbol, side, amount, price=None, iceberg=False, iceberg_visible_size=0.1
     ):
-        """
-        Exécute un ordre de trading avec logs détaillés.
-        - BUY sur Binance spot (quoteOrderQty)
-        - SELL sur Binance spot (revente, si déjà long OU si solde réel suffisant)
-        - SHORT sur BingX (futures)
-        - BUY sur BingX pour rachat short
-        - Gère le suivi de position SPOT et le stop-loss automatique
-        """
-
-        # --- TYPE-SAFE PATCH: always cast amount and price ---
         amount = safe_float(amount, 0)
         price = safe_float(price, 0) if price is not None else None
 
@@ -4639,14 +4519,12 @@ class TradingBotM4:
 
             # ----- VENTE SPOT -----
             elif side.upper() == "SELL" and symbol.endswith("USDC"):
-                # 1. Vente si position virtuelle "long"
                 allow_sell = False
                 use_amount = None
                 if self.is_long(symbol):
                     allow_sell = True
                     use_amount = safe_float(self.positions[symbol]["amount"])
                 else:
-                    # 2. Sinon, vente si solde réel Binance dispo
                     asset = symbol.replace("USDC", "")
                     balance = None
                     try:
@@ -4729,8 +4607,7 @@ class TradingBotM4:
             else:
                 return {"status": "rejected", "reason": "unsupported side"}
 
-            # ----- LOGS & NOTIF -----
-            if result["status"] == "completed":
+            if result.get("status") == "completed":
                 log_dashboard(
                     f"[ORDER] Exécuté avec succès: {side} {result.get('filled_amount', amount)} {symbol} @ {result.get('avg_price', price)}"
                 )
@@ -4780,37 +4657,31 @@ class TradingBotM4:
                 "total_profit",
                 "total_loss",
             ]:
-                if isinstance(perf.get(key), str):
-                    perf[key] = safe_float(perf[key], 0)
+                perf[key] = safe_float(perf.get(key), 0)
 
-            perf["total_trades"] = safe_float(perf.get("total_trades", 0))
             perf["total_trades"] += 1
 
             # Calcul P&L
             if trade_result["status"] == "completed":
-                amount = safe_float(trade_result["filled_amount"])
-                price = safe_float(trade_result["avg_price"])
-                side = trade_result["side"]
+                amount = safe_float(trade_result.get("filled_amount", 0))
+                price = safe_float(trade_result.get("avg_price", 0))
+                side = trade_result.get("side", "")
 
                 if side.upper() == "SELL":
                     entry = safe_float(trade_result.get("entry_price", 0))
                     if entry > 0:
                         pnl = (price - entry) * amount
 
-                        perf["balance"] = safe_float(perf.get("balance", 0))
-                        perf["balance"] += pnl
-
-                        perf["wins"] = safe_float(perf.get("wins", 0))
-                        perf["losses"] = safe_float(perf.get("losses", 0))
-                        perf["total_profit"] = safe_float(perf.get("total_profit", 0))
-                        perf["total_loss"] = safe_float(perf.get("total_loss", 0))
-
                         if pnl > 0:
                             perf["wins"] += 1
                         else:
                             perf["losses"] += 1
 
-                        perf["win_rate"] = perf["wins"] / perf["total_trades"]
+                        perf["win_rate"] = (
+                            perf["wins"] / perf["total_trades"]
+                            if perf["total_trades"] > 0
+                            else 0
+                        )
 
                         perf["total_profit"] += max(0, pnl)
                         perf["total_loss"] += max(0, -pnl)
@@ -4820,7 +4691,8 @@ class TradingBotM4:
                                 perf["total_profit"] / perf["total_loss"]
                             )
 
-            # Sauvegarde métriques
+                        perf["balance"] += pnl
+
             self.safe_update_shared_data(
                 {"bot_status": {"performance": perf}}, self.data_file
             )
@@ -4836,13 +4708,12 @@ class TradingBotM4:
                 if pair_key not in self.market_data:
                     self.market_data[pair_key] = {}
 
-                # Récupère le sentiment existant ou initialise à 0.0
-                current_sentiment = self.market_data[pair_key].get("sentiment", 0.0)
-
-                # Calcul du nouveau sentiment
+                current_sentiment = safe_float(
+                    self.market_data[pair_key].get("sentiment", 0.0)
+                )
                 new_sentiment = 0.0
                 matching_scores = [
-                    score.get("sentiment", 0.0)
+                    safe_float(score.get("sentiment", 0.0))
                     for score in sentiment_scores
                     if isinstance(score, dict)
                     and "sentiment" in score
@@ -4852,11 +4723,8 @@ class TradingBotM4:
                         or pair_key in [s.upper() for s in score.get("symbols", [])]
                     )
                 ]
-
                 if matching_scores:
                     new_sentiment = sum(matching_scores) / len(matching_scores)
-
-                # Mise à jour avec le nouveau sentiment
                 self.market_data[pair_key]["sentiment"] = new_sentiment
                 self.market_data[pair_key][
                     "sentiment_timestamp"
@@ -4878,13 +4746,10 @@ class TradingBotM4:
         if isinstance(news_data, list):
             for item in news_data[:10]:
                 if isinstance(item, dict) and "title" in item:
-                    headlines.append(
-                        str(item["title"])
-                    )  # Toujours str pour éviter erreur
+                    headlines.append(str(item["title"]))
 
-        # Correction : on prend les scores assignés dans market_data
         valid_scores = [
-            data.get("sentiment")
+            safe_float(data.get("sentiment"))
             for key, data in self.market_data.items()
             if data.get("sentiment") is not None
         ]
@@ -4892,10 +4757,9 @@ class TradingBotM4:
             f"[DEBUG _save_sentiment_data] valid_scores from market_data={valid_scores}"
         )
 
-        # Fallback sur sentiment_scores si jamais
         if not valid_scores:
             valid_scores = [
-                item.get("sentiment")
+                safe_float(item.get("sentiment"))
                 for item in sentiment_scores
                 if isinstance(item, dict) and item.get("sentiment") is not None
             ]
@@ -4903,13 +4767,12 @@ class TradingBotM4:
                 f"[DEBUG _save_sentiment_data] fallback valid_scores from sentiment_scores={valid_scores}"
             )
 
-        # === PATCH : Utilise le nouveau résumé pour remplir le sentiment_data ===
         summary = get_sentiment_summary_from_batch(sentiment_scores)
-        sentiment_global = summary["sentiment_global"]
+        sentiment_global = safe_float(summary["sentiment_global"], 0.0)
         impact_score = float(
             np.mean(
                 [
-                    abs(item.get("sentiment", 0))
+                    abs(safe_float(item.get("sentiment", 0)))
                     for item in sentiment_scores
                     if isinstance(item, dict)
                 ]
@@ -4935,7 +4798,6 @@ class TradingBotM4:
             "n_news": summary["n_news"],
         }
 
-        # === PATCH : Merge des news pour préserver "processed" ===
         try:
             with open(self.data_file, "r") as f:
                 shared_data_prev = json.load(f)
@@ -5000,7 +4862,9 @@ class TradingBotM4:
                     pair_key in self.market_data
                     and "ai_prediction" in self.market_data[pair_key]
                 ):
-                    ai_score = self.market_data[pair_key]["ai_prediction"]
+                    ai_score = safe_float(
+                        self.market_data[pair_key]["ai_prediction"], 0
+                    )
                     ai_signal = (
                         "ACHAT"
                         if ai_score > 0.6
@@ -5011,7 +4875,7 @@ class TradingBotM4:
         └─ Prédiction: {ai_signal} ({ai_score:.2f})
         """
 
-        # --- AJOUT : Section news/sentiment globale détaillée ---
+        # Section news/sentiment globale détaillée
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
@@ -5021,11 +4885,11 @@ class TradingBotM4:
 
         if news_sentiment and isinstance(news_sentiment, dict):
             try:
-                sentiment = float(news_sentiment.get("overall_sentiment", 0) or 0)
+                sentiment = safe_float(news_sentiment.get("overall_sentiment", 0), 0)
             except Exception:
                 sentiment = 0.0
             try:
-                impact = float(news_sentiment.get("impact_score", 0) or 0)
+                impact = safe_float(news_sentiment.get("impact_score", 0), 0)
             except Exception:
                 impact = 0.0
             major_events = news_sentiment.get("major_events", "Aucun")
@@ -5035,7 +4899,6 @@ class TradingBotM4:
                 f"Impact estimé: {impact:.2%}\n"
                 f"Événements majeurs: {major_events}\n"
             )
-            # Ajout des dernières news si dispo
             major_news = news_sentiment.get("latest_news", [])
             if major_news:
                 report += "Dernières news :\n"
@@ -5044,7 +4907,6 @@ class TradingBotM4:
         else:
             report += "\n📰 Analyse des News: Aucune donnée disponible.\n"
 
-        # Ajout des informations de sentiment par paire si disponibles
         if self.news_enabled:
             report += "\n    📰 Analyse de Sentiment :\n"
             for pair in self.pairs_valid:
@@ -5053,7 +4915,9 @@ class TradingBotM4:
                     pair_key in self.market_data
                     and "sentiment" in self.market_data[pair_key]
                 ):
-                    sentiment_score = self.market_data[pair_key]["sentiment"]
+                    sentiment_score = safe_float(
+                        self.market_data[pair_key]["sentiment"], 0
+                    )
                     sentiment_type = (
                         "Positif"
                         if sentiment_score > 0.2
@@ -5728,7 +5592,9 @@ class TradingBotM4:
             if getattr(self, "is_live_trading", False) and self.binance_client:
                 try:
                     balance_info = self.binance_client.get_asset_balance(asset="USDC")
-                    real_balance = float(balance_info["free"]) if balance_info else None
+                    real_balance = (
+                        safe_float(balance_info["free"]) if balance_info else None
+                    )
                 except Exception as e:
                     self.logger.error(f"Erreur récupération balance Binance: {e}")
                     real_balance = None
@@ -5743,6 +5609,13 @@ class TradingBotM4:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
                 saved_perf = data.get("bot_status", {}).get("performance", {})
+                # Patch: type-safe cast
+                for k, v in saved_perf.items():
+                    if isinstance(v, str):
+                        try:
+                            saved_perf[k] = safe_float(v, 0)
+                        except Exception:
+                            saved_perf[k] = 0
                 return saved_perf if saved_perf else {}
             except Exception as e:
                 self.logger.error(f"Erreur lecture performance: {e}")
@@ -7035,6 +6908,12 @@ async def run_clean_bot():
 
                         # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
+                            amount = safe_float(amount, 0)
+                            to_exit = safe_float(to_exit, 0)
+                            amount_to_sell = safe_float(amount * to_exit, 0)
+                            pos["amount"] = safe_float(amount, 0) - safe_float(
+                                amount_to_sell, 0
+                            )
                             amount_to_sell = amount * to_exit
                             pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
