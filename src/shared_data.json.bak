@@ -5,7 +5,7 @@
         "top_n": 5
     },
     "sentiment": {
-        "timestamp": "2025-08-09 01:16:33",
+        "timestamp": "2025-08-09 03:59:23",
         "scores": [
             {
                 "title": "Coinbase int\u00e8gre le DEX dans son app et ouvre l'acc\u00e8s \u00e0 des millions de tokens sur Base",
@@ -358,8 +358,8 @@
                 "timestamp": 1754582427,
                 "url": "https://cryptoast.fr/reprise-ethereum-transactions-quotidiennes-explosent-sur-le-reseau/",
                 "symbols": [
-                    "ETH",
-                    "UNI"
+                    "UNI",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7642650008201599,
@@ -685,6 +685,19 @@
                 "processed": true
             },
             {
+                "title": " $105M Ether shorts got &#039;smoked,&#039; Eric Trump throws shade at bears ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhjMjYtNTI2Zi03NjY1LThmZWUtMTEzNmFiNWNkODg0.jpg\" alt=\"$105M Ether shorts got &#039;smoked,&#039; Eric Trump throws shade at bears\"></p><p>Eric Trump warned his 5.8 million followers to \u201cstop betting\u201d against Bitcoin and Ether as the price of Ether surpassed $4,000 for the first time in eight months.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754706185,
+                "url": "https://cointelegraph.com/news/ether-short-wipeout-eric-trump-bullish-eth?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.6493346691131592,
+                "impact_score": 1.0
+            },
+            {
                 "title": " DeFi soars with tokenized stocks, but user activity shifts to NFTs: Report ",
                 "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhiN2QtYzQ1Yy03NjZiLWJkZTQtMDBjZDFiN2Y5MjAw.jpg\" alt=\"DeFi soars with tokenized stocks, but user activity shifts to NFTs: Report\"></p><p>NFT DApps drew slightly more active users than DeFi in July, even as DeFi liquidity hit a record $270B.</p>\n                                ",
                 "source": "Cointelegraph",
@@ -774,7 +787,7 @@
             },
             {
                 "title": " Funding effort for Roman Storm grows as defense preps for possible retrial ",
-                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhhOTctMWUyMy03ZGZjLTk4ZjAtODgzMWQyZTEzYWMy.jpg\" alt=\"Funding effort for Roman Storm grows as defense preps for possible retrial\"></p><p>Donations to the embattled software developer increased after Wednesday\u2019s partial verdict and the possibility of a retrial.</p>\n                                ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhjYTEtMWNmMy03YWFmLWI5YWMtNGNlMjcwYzY5OTA2.jpg\" alt=\"Funding effort for Roman Storm grows as defense preps for possible retrial\"></p><p>Donations to the embattled software developer increased after Wednesday\u2019s partial verdict and the possibility of a retrial.</p>\n                                ",
                 "source": "Cointelegraph",
                 "timestamp": 1754676300,
                 "url": "https://cointelegraph.com/news/roman-storm-legal-fund-influx-defense-retrial?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
@@ -815,14 +828,14 @@
                 "timestamp": 1754669486,
                 "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "ETH",
-                    "ADA",
-                    "BNB",
-                    "BTC",
-                    "DOGE",
-                    "SOL",
                     "XLM",
-                    "XRP"
+                    "DOGE",
+                    "BNB",
+                    "ETH",
+                    "SOL",
+                    "XRP",
+                    "ADA",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1296260952949524,
@@ -1070,18 +1083,6 @@
                 "processed": true
             },
             {
-                "title": " Animoca and Standard Chartered form stablecoin venture in Hong Kong ",
-                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5N2EwNjYtODg3Ni03YjkzLTlmYTktMzcyOWM3YWJkZjUz.jpg\" alt=\"Animoca and Standard Chartered form stablecoin venture in Hong Kong\"></p><p>Standard Chartered\u2019s Hong Kong arm and Animoca Brands have launched a joint venture, Anchorpoint Financial, to develop a licensed Hong Kong dollar stablecoin.</p>\n                                ",
-                "source": "Cointelegraph",
-                "timestamp": 1754644076,
-                "url": "https://cointelegraph.com/news/standard-chartered-animoca-brands-hong-kong-stablecoin-license?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-                "symbols": [],
-                "source_weight": 0.8,
-                "sentiment": 0.4562056064605713,
-                "impact_score": 1.0,
-                "processed": true
-            },
-            {
                 "title": " Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Years ",
                 "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy9iNmQxM2ViMWYyZjdlYmUwMWQzYjZhZGRkMmNiM2M2MS5qcGc=.jpg\" alt=\"Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Years\"></p><p>Popular chart analysis service TradingView contains a bug in the Fibonacci retracement technical analysis tool.</p>\n                                ",
                 "source": "Cointelegraph",
@@ -1198,12 +1199,12 @@
                 "timestamp": 1754666466,
                 "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
                 "symbols": [
-                    "ETH",
                     "BNB",
-                    "BTC",
-                    "SOL",
+                    "ETH",
                     "LINK",
-                    "XRP"
+                    "SOL",
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8488626480102539,
@@ -1293,10 +1294,10 @@
                 "timestamp": 1754648993,
                 "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
                 "symbols": [
-                    "XLM",
-                    "ADA",
                     "LINK",
-                    "XRP"
+                    "XLM",
+                    "XRP",
+                    "ADA"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8473196625709534,
@@ -1596,8 +1597,8 @@
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
                     "BTC",
-                    "LTC",
                     "ETH",
+                    "LTC",
                     "BNB"
                 ],
                 "source_weight": 0.8,
@@ -1658,11 +1659,11 @@
                 "timestamp": 1754320232,
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
-                    "ETH",
-                    "BNB",
-                    "BTC",
                     "DOGE",
-                    "XRP"
+                    "BNB",
+                    "ETH",
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6729533076286316,
@@ -1722,12 +1723,12 @@
                 "timestamp": 1753810596,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
+                    "DOGE",
+                    "BNB",
                     "ETH",
                     "TRX",
-                    "BNB",
-                    "BTC",
-                    "DOGE",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.19718927145004272,
@@ -1741,12 +1742,12 @@
                 "timestamp": 1753802801,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
+                    "DOGE",
+                    "BNB",
                     "ETH",
                     "TRX",
-                    "BNB",
-                    "BTC",
-                    "DOGE",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.43923965096473694,
@@ -1788,11 +1789,11 @@
                 "timestamp": 1753459243,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
+                    "BNB",
                     "ETH",
                     "TRX",
-                    "BNB",
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.6711649894714355,
@@ -1822,11 +1823,11 @@
                 "timestamp": 1753284869,
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
-                    "ETH",
                     "BNB",
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "XRP"
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.797458291053772,
@@ -1841,9 +1842,9 @@
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
                     "BTC",
-                    "DOGE",
                     "ETH",
-                    "SOL"
+                    "SOL",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.47174540162086487,
@@ -1858,9 +1859,9 @@
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
                     "BTC",
-                    "DOGE",
                     "ETH",
-                    "SOL"
+                    "SOL",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6145052313804626,
@@ -1968,8 +1969,8 @@
                 "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-season-altcoin-season/",
                 "symbols": [
                     "BTC",
-                    "SHIB",
                     "ETH",
+                    "SHIB",
                     "XRP"
                 ],
                 "source_weight": 0.7,
@@ -2311,8 +2312,8 @@
             "Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
             "Ethereum Cracks $4,000 for First Time in 8 Months"
         ],
-        "overall_sentiment": 0.2908451060341163,
-        "impact_score": 0.5641965958092249,
+        "overall_sentiment": 0.29201558520170773,
+        "impact_score": 0.5653670749768164,
         "major_events": "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading; Morning Minute: Crypto in Your 401(k)s Is Finally Happening; Cardano Short-Term Surge Meets Mid-Term Resistance \u2013 What\u2019s Next?",
         "top_symbols": [
             "SHIB",
@@ -3161,98 +3162,98 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 6,
+            "cycles_left": 5,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "XRP",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 21,
+            "cycles_left": 20,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "BNB",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "LTC",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 29,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 29,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 14,
+            "cycles_left": 13,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 28,
+            "total_remaining": 28
         }
     ],
     "pause_status": {
-        "global_remaining": 14,
+        "global_remaining": 13,
         "pair_pauses": {
-            "BTC": 6,
-            "XRP": 3,
-            "ETH": 21,
-            "BNB": 3,
-            "LTC": 3,
-            "LINK": 29,
-            "SOL": 29
+            "BTC": 5,
+            "XRP": 2,
+            "ETH": 20,
+            "BNB": 2,
+            "LTC": 2,
+            "LINK": 28,
+            "SOL": 28
         },
-        "max_remaining": 29
+        "max_remaining": 28
     },
-    "timestamp": "2025-08-09 01:12:29",
+    "timestamp": "2025-08-09 03:56:03",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0,
-        "last_update": "2025-08-09 01:12:29",
+        "last_update": "2025-08-09 03:56:03",
         "performance": {
             "balance": 60.85659068
         },
-        "timestamp": "2025-08-09 01:12:29"
+        "timestamp": "2025-08-09 03:56:03"
     }
 }

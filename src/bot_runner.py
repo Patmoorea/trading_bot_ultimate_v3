@@ -6191,8 +6191,16 @@ async def run_clean_bot():
             try:
                 with open(bot.data_file, "r") as f:
                     shared_data = json.load(f)
-                news_sentiment = shared_data.get("sentiment", {})
-                news_list = news_sentiment.get("scores", [])
+                news_sentiment = (
+                    shared_data.get("sentiment", {})
+                    if isinstance(shared_data, dict)
+                    else {}
+                )
+                news_list = (
+                    news_sentiment.get("scores", [])
+                    if isinstance(news_sentiment, dict)
+                    else []
+                )
 
                 unprocessed_news = [n for n in news_list if not n.get("processed")]
                 if unprocessed_news:
@@ -6880,8 +6888,16 @@ async def run_clean_bot():
                     try:
                         with open(bot.data_file, "r") as f:
                             shared_data = json.load(f)
-                        news_sentiment = shared_data.get("sentiment", {})
-                        news_list = news_sentiment.get("scores", [])
+                        news_sentiment = (
+                            shared_data.get("sentiment", {})
+                            if isinstance(shared_data, dict)
+                            else {}
+                        )
+                        news_list = (
+                            news_sentiment.get("scores", [])
+                            if isinstance(news_sentiment, dict)
+                            else []
+                        )
                     except Exception:
                         news_list = []
 
@@ -7426,8 +7442,12 @@ async def execute_trade_decisions(bot, trade_decisions):
     try:
         with open(bot.data_file, "r") as f:
             shared_data = json.load(f)
-        news_sentiment = shared_data.get("sentiment", {})
-        news_list = news_sentiment.get("scores", [])
+        news_sentiment = (
+            shared_data.get("sentiment", {}) if isinstance(shared_data, dict) else {}
+        )
+        news_list = (
+            news_sentiment.get("scores", []) if isinstance(news_sentiment, dict) else []
+        )
     except Exception as e:
         print(f"[WARNING] Erreur chargement news: {e}")
         news_list = []
