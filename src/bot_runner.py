@@ -4775,17 +4775,28 @@ class TradingBotM4:
 
             perf = self.get_performance_metrics()
 
-            # MAJ statistiques
+            # PATCH GLOBAL : force le cast !
+            for key in [
+                "balance",
+                "total_trades",
+                "wins",
+                "losses",
+                "total_profit",
+                "total_loss",
+            ]:
+                if isinstance(perf.get(key), str):
+                    perf[key] = safe_float(perf[key], 0)
+
             perf["total_trades"] += 1
 
             # Calcul P&L
             if trade_result["status"] == "completed":
-                amount = float(trade_result["filled_amount"])
-                price = float(trade_result["avg_price"])
+                amount = safe_float(trade_result["filled_amount"])
+                price = safe_float(trade_result["avg_price"])
                 side = trade_result["side"]
 
                 if side.upper() == "SELL":
-                    entry = trade_result.get("entry_price", 0)
+                    entry = safe_float(trade_result.get("entry_price", 0))
                     if entry > 0:
                         pnl = (price - entry) * amount
                         perf["balance"] += pnl
