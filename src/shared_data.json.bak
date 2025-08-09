@@ -1541,29 +1541,29 @@
         {
             "asset": "ETH",
             "action": "FULL",
-            "cycles_left": 7,
+            "cycles_left": 6,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 15,
-            "total_remaining": 15
+            "max_cycles": 14,
+            "total_remaining": 14
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 15,
+            "cycles_left": 14,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 15,
-            "total_remaining": 15
+            "max_cycles": 14,
+            "total_remaining": 14
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 15,
+            "cycles_left": 14,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 15,
-            "total_remaining": 15
+            "max_cycles": 14,
+            "total_remaining": 14
         }
     ],
     "pause_status": {
@@ -1571,14 +1571,14 @@
         "pair_pauses": {
             "BTC": 1,
             "XRP": 1,
-            "ETH": 7,
+            "ETH": 6,
             "BNB": 1,
             "LTC": 1,
-            "LINK": 15,
-            "SOL": 15,
+            "LINK": 14,
+            "SOL": 14,
             "ADA": 1
         },
-        "max_remaining": 15
+        "max_remaining": 14
     },
     "timestamp": "2025-08-09 16:56:59",
     "user": "Patmoorea",

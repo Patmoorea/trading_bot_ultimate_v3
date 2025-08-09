@@ -3341,32 +3341,28 @@ class TradingBotM4:
             return None, None
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
-        # Récupère la plus-value FIFO de la dernière vente
         fifo_pnl_pct, fifo_pnl_usd = self.get_last_fifo_pnl(symbol)
+        entry_price = safe_float(pos.get("entry_price"), 0)
+        amount = safe_float(pos.get("amount"), 0)
+        exit_price = safe_float(exit_price, 0)
 
         closed_position = {
             "symbol": symbol,
             "side": pos.get("side", ""),
-            "amount": pos.get("amount", 0),
-            "entry_price": pos.get("entry_price"),
+            "amount": amount,
+            "entry_price": entry_price,
             "exit_price": exit_price,
             "pnl_pct": (
                 fifo_pnl_pct
                 if fifo_pnl_pct is not None
                 else (
-                    (exit_price - pos.get("entry_price")) / pos.get("entry_price") * 100
-                    if pos.get("entry_price")
-                    else 0
+                    (exit_price - entry_price) / entry_price * 100 if entry_price else 0
                 )
             ),
             "pnl_usd": (
                 fifo_pnl_usd
                 if fifo_pnl_usd is not None
-                else (
-                    (exit_price - pos.get("entry_price")) * pos.get("amount")
-                    if pos.get("entry_price")
-                    else 0
-                )
+                else ((exit_price - entry_price) * amount if entry_price else 0)
             ),
             "date": datetime.utcnow().isoformat(),
             "reason": reason,
@@ -3411,8 +3407,8 @@ class TradingBotM4:
             # Pour chaque position SPOT Binance
             if hasattr(self, "positions_binance"):
                 for symbol, pos in self.positions_binance.items():
-                    entry_price = pos.get("entry_price")
-                    current_price = pos.get("current_price")
+                    entry_price = safe_float(pos.get("entry_price"), 0)
+                    current_price = safe_float(pos.get("current_price"), 0)
                     amount = safe_float(pos.get("amount"), 0)
 
                     # Calcul PnL (FIFO ou classique)
@@ -3565,31 +3561,31 @@ class TradingBotM4:
             positions = {}
             for bal in account["balances"]:
                 asset = bal["asset"]
-                free = float(bal["free"])
+                free = safe_float(bal.get("free", 0))
                 if free > 0 and asset not in ("USDC", "USDT"):
                     symbol = f"{asset}/USDC"
                     try:
                         ticker = self.binance_client.get_symbol_ticker(
                             symbol=symbol.replace("/", "")
                         )
-                        current_price = float(ticker["price"])
+                        current_price = safe_float(ticker.get("price"))
                     except Exception:
                         current_price = None
 
-                    # Utilise uniquement USDC pour entry_price
-                    entry_price = get_avg_entry_price_binance_spot(
-                        self.binance_client, asset, quote="USDC"
+                    entry_price = safe_float(
+                        get_avg_entry_price_binance_spot(
+                            self.binance_client, asset, quote="USDC"
+                        )
                     )
 
-                    # Calcul FIFO de la plus-value sur la dernière vente
                     fifo_pnl_pct = self.get_last_fifo_pnl(symbol)
 
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
-                        "amount": safe_float(free),
-                        "entry_price": safe_float(entry_price),
-                        "current_price": safe_float(current_price),
-                        "pnl_pct": fifo_pnl_pct,  # ICI : calcul FIFO !
+                        "amount": free,
+                        "entry_price": entry_price,
+                        "current_price": current_price,
+                        "pnl_pct": fifo_pnl_pct,
                         "pnl_usd": (
                             (current_price - entry_price) * free
                             if entry_price and current_price
@@ -4787,6 +4783,7 @@ class TradingBotM4:
                 if isinstance(perf.get(key), str):
                     perf[key] = safe_float(perf[key], 0)
 
+            perf["total_trades"] = safe_float(perf.get("total_trades", 0))
             perf["total_trades"] += 1
 
             # Calcul P&L
@@ -4799,7 +4796,14 @@ class TradingBotM4:
                     entry = safe_float(trade_result.get("entry_price", 0))
                     if entry > 0:
                         pnl = (price - entry) * amount
+
+                        perf["balance"] = safe_float(perf.get("balance", 0))
                         perf["balance"] += pnl
+
+                        perf["wins"] = safe_float(perf.get("wins", 0))
+                        perf["losses"] = safe_float(perf.get("losses", 0))
+                        perf["total_profit"] = safe_float(perf.get("total_profit", 0))
+                        perf["total_loss"] = safe_float(perf.get("total_loss", 0))
 
                         if pnl > 0:
                             perf["wins"] += 1
