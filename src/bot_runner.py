@@ -4654,7 +4654,7 @@ class TradingBotM4:
 
             perf = self.get_performance_metrics()
 
-            # PATCH GLOBAL : force le cast !
+            # PATCH GLOBAL : force le cast sur tous les champs utilisés
             for key in [
                 "balance",
                 "total_trades",
@@ -4662,10 +4662,12 @@ class TradingBotM4:
                 "losses",
                 "total_profit",
                 "total_loss",
+                "win_rate",
+                "profit_factor",
             ]:
                 perf[key] = safe_float(perf.get(key), 0)
 
-            perf["total_trades"] += 1
+            perf["total_trades"] = safe_float(perf.get("total_trades"), 0) + 1
 
             # Calcul P&L
             if trade_result["status"] == "completed":
@@ -4679,25 +4681,30 @@ class TradingBotM4:
                         pnl = (price - entry) * amount
 
                         if pnl > 0:
-                            perf["wins"] += 1
+                            perf["wins"] = safe_float(perf.get("wins"), 0) + 1
                         else:
-                            perf["losses"] += 1
+                            perf["losses"] = safe_float(perf.get("losses"), 0) + 1
 
+                        # PATCH: type-safe division
+                        total_trades = safe_float(perf.get("total_trades"), 0)
+                        wins = safe_float(perf.get("wins"), 0)
                         perf["win_rate"] = (
-                            perf["wins"] / perf["total_trades"]
-                            if perf["total_trades"] > 0
-                            else 0
+                            wins / total_trades if total_trades > 0 else 0
                         )
 
-                        perf["total_profit"] += max(0, pnl)
-                        perf["total_loss"] += max(0, -pnl)
+                        perf["total_profit"] = safe_float(
+                            perf.get("total_profit"), 0
+                        ) + max(0, pnl)
+                        perf["total_loss"] = safe_float(
+                            perf.get("total_loss"), 0
+                        ) + max(0, -pnl)
 
-                        if perf["total_loss"] > 0:
-                            perf["profit_factor"] = (
-                                perf["total_profit"] / perf["total_loss"]
-                            )
+                        total_loss = safe_float(perf.get("total_loss"), 0)
+                        total_profit = safe_float(perf.get("total_profit"), 0)
+                        if total_loss > 0:
+                            perf["profit_factor"] = total_profit / total_loss
 
-                        perf["balance"] += pnl
+                        perf["balance"] = safe_float(perf.get("balance"), 0) + pnl
 
             self.safe_update_shared_data(
                 {"bot_status": {"performance": perf}}, self.data_file
