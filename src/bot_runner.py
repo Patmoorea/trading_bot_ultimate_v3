@@ -6844,7 +6844,9 @@ async def run_clean_bot():
                             print(
                                 f"[STOPLOSS] Déclenchement automatique du stop-loss pour {symbol}"
                             )
-                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            await bot.execute_trade(
+                                symbol, "SELL", safe_float(pos.get("amount"), 0)
+                            )
                             print(f"[STOPLOSS] Position fermée pour {symbol}")
                             getattr(bot, "positions_binance", {}).pop(symbol, None)
                             continue  # Passe à la position suivante
@@ -6866,9 +6868,9 @@ async def run_clean_bot():
                         if "filled_tp_targets" not in pos:
                             pos["filled_tp_targets"] = [False, False]
                         if "price_history" not in pos:
-                            pos["price_history"] = [pos["entry_price"]]
+                            pos["price_history"] = [pos.get("entry_price", 0)]
                         if "max_price" not in pos:
-                            pos["max_price"] = pos["entry_price"]
+                            pos["max_price"] = pos.get("entry_price", 0)
 
                         # Récupération du dernier prix
                         last_price = (
@@ -6914,13 +6916,7 @@ async def run_clean_bot():
 
                         # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
-                            amount = safe_float(amount, 0)
-                            to_exit = safe_float(to_exit, 0)
                             amount_to_sell = safe_float(amount * to_exit, 0)
-                            pos["amount"] = safe_float(amount, 0) - safe_float(
-                                amount_to_sell, 0
-                            )
-                            amount_to_sell = amount * to_exit
                             pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
                             print(
@@ -6953,7 +6949,9 @@ async def run_clean_bot():
                             print(
                                 f"[DEBUG EXEC TRAILING] SELL {pos['amount']} for {symbol} (Trailing stop)"
                             )
-                            await bot.execute_trade(symbol, "SELL", pos["amount"])
+                            await bot.execute_trade(
+                                symbol, "SELL", safe_float(pos["amount"], 0)
+                            )
                             print(
                                 f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
                             )
@@ -6973,7 +6971,7 @@ async def run_clean_bot():
                                 ticker = await bot.bingx_client.fetch_ticker(
                                     symbol_bingx
                                 )
-                                price = float(ticker["last"])
+                                price = safe_float(ticker["last"], 0)
 
                                 if bot.check_short_stop(
                                     symbol, price=price, trailing_pct=0.03
@@ -6988,7 +6986,7 @@ async def run_clean_bot():
                                         f"Position couverte automatiquement (stop/trailing stop)"
                                     )
                                     await bot.execute_trade(
-                                        symbol, "BUY", pos["amount"]
+                                        symbol, "BUY", safe_float(pos.get("amount"), 0)
                                     )
                             except Exception:
                                 continue
