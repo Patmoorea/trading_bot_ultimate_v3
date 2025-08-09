@@ -299,7 +299,10 @@ class NewsPauseManager:
         for pair, cycles_left in self.pair_pauses.items():
             if isinstance(cycles_left, (int, float)) and cycles_left > 0:
                 pause_type = "BUY" if pair in self.buy_paused_pairs else "FULL"
-                reason = getattr(self, "last_event_news", {}).get("title", "")
+                last_news = getattr(self, "last_event_news", None)
+                reason = (
+                    last_news.get("title", "") if isinstance(last_news, dict) else ""
+                )
                 pauses.append(
                     {
                         "asset": pair,
@@ -314,7 +317,8 @@ class NewsPauseManager:
             isinstance(self.global_cycles_remaining, (int, float))
             and self.global_cycles_remaining > 0
         ):
-            reason = getattr(self, "last_event_news", {}).get("title", "")
+            last_news = getattr(self, "last_event_news", None)
+            reason = last_news.get("title", "") if isinstance(last_news, dict) else ""
             pauses.append(
                 {
                     "asset": "GLOBAL",
