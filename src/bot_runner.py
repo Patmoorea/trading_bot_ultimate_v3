@@ -3413,7 +3413,7 @@ class TradingBotM4:
                 for symbol, pos in self.positions_binance.items():
                     entry_price = pos.get("entry_price")
                     current_price = pos.get("current_price")
-                    amount = pos.get("amount")
+                    amount = safe_float(pos.get("amount"), 0)
 
                     # Calcul PnL (FIFO ou classique)
                     fifo_pnl_pct, _ = self.get_last_fifo_pnl(symbol)
@@ -3586,9 +3586,9 @@ class TradingBotM4:
 
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
-                        "amount": free,
-                        "entry_price": entry_price,
-                        "current_price": current_price,
+                        "amount": safe_float(free),
+                        "entry_price": safe_float(entry_price),
+                        "current_price": safe_float(current_price),
                         "pnl_pct": fifo_pnl_pct,  # ICI : calcul FIFO !
                         "pnl_usd": (
                             (current_price - entry_price) * free

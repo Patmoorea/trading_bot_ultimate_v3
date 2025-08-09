@@ -5,7 +5,7 @@
         "top_n": 5
     },
     "sentiment": {
-        "timestamp": "2025-08-09 14:38:56",
+        "timestamp": "2025-08-09 14:51:30",
         "scores": [
             {
                 "title": "Aave : Le stablecoin GHO d\u00e9barque sur son premier exchange centralis\u00e9",
@@ -41,8 +41,8 @@
                 "url": "https://journalducoin.com/defi/defi-hyperliquid-explose-records-487-milliards-dollars-volume-juillet/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7974889278411865,
@@ -258,8 +258,8 @@
                 "url": "https://journalducoin.com/ethereum/signal-haussier-majeur-vue-pour-paire-eth-btc-ethereum-8-aout/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7528485655784607,
@@ -370,8 +370,8 @@
                 "url": "https://journalducoin.com/bitcoin/rebond-btc-direction-ath-123-000-dollars-bitcoin-8-aout/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7975867986679077,
@@ -439,8 +439,8 @@
                 "timestamp": 1754582427,
                 "url": "https://cryptoast.fr/reprise-ethereum-transactions-quotidiennes-explosent-sur-le-reseau/",
                 "symbols": [
-                    "UNI",
-                    "ETH"
+                    "ETH",
+                    "UNI"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7642650008201599,
@@ -676,8 +676,8 @@
                 "url": "https://journalducoin.com/bitcoin/chute-btc-investisseurs-accumulent-sans-trembler-bitcoin-7-aout/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8174172639846802,
@@ -897,14 +897,14 @@
                 "timestamp": 1754669486,
                 "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
+                    "ADA",
+                    "ETH",
+                    "BTC",
                     "XLM",
-                    "BNB",
                     "XRP",
                     "SOL",
-                    "ADA",
-                    "DOGE",
-                    "BTC",
-                    "ETH"
+                    "BNB",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1296260952949524,
@@ -1144,9 +1144,9 @@
                 "timestamp": 1754682705,
                 "url": "https://decrypt.co/334343/dogecoin-xrp-lead-altcoins-bitcoin-dominance-falls",
                 "symbols": [
+                    "DOGE",
                     "BTC",
-                    "XRP",
-                    "DOGE"
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.05322325974702835,
@@ -1160,9 +1160,9 @@
                 "timestamp": 1754680101,
                 "url": "https://decrypt.co/334325/trump-pump-ethereum-xrp-dogecoin-what-happens-next",
                 "symbols": [
-                    "XRP",
+                    "DOGE",
                     "ETH",
-                    "DOGE"
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.08361917734146118,
@@ -1216,12 +1216,12 @@
                 "timestamp": 1754666466,
                 "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
                 "symbols": [
-                    "BNB",
-                    "XRP",
-                    "SOL",
-                    "BTC",
                     "LINK",
-                    "ETH"
+                    "ETH",
+                    "BTC",
+                    "XRP",
+                    "BNB",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8488626480102539,
@@ -1311,10 +1311,10 @@
                 "timestamp": 1754648993,
                 "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
                 "symbols": [
-                    "XLM",
+                    "LINK",
                     "XRP",
-                    "ADA",
-                    "LINK"
+                    "XLM",
+                    "ADA"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8473196625709534,
@@ -1558,8 +1558,8 @@
                 "timestamp": 1754584311,
                 "url": "https://decrypt.co/333864/ripple-aiming-developers-ethereum-sidechain-cto",
                 "symbols": [
-                    "XRP",
-                    "ETH"
+                    "ETH",
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.7597920894622803,
@@ -1585,8 +1585,8 @@
                 "timestamp": 1754580350,
                 "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
                 "symbols": [
-                    "BTC",
                     "BNB",
+                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1601,10 +1601,10 @@
                 "timestamp": 1754494100,
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
-                    "BTC",
                     "BNB",
-                    "ETH",
-                    "LTC"
+                    "BTC",
+                    "LTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.019634094089269638,
@@ -1619,8 +1619,8 @@
                 "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
                 "symbols": [
                     "ETH",
-                    "SOL",
-                    "LINK"
+                    "LINK",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.36735114455223083,
@@ -1649,8 +1649,8 @@
                 "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
                 "symbols": [
                     "ETH",
-                    "SOL",
-                    "LINK"
+                    "LINK",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1683153510093689,
@@ -1664,11 +1664,11 @@
                 "timestamp": 1754320232,
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
-                    "BNB",
-                    "XRP",
-                    "DOGE",
+                    "ETH",
                     "BTC",
-                    "ETH"
+                    "XRP",
+                    "BNB",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6729533076286316,
@@ -1683,8 +1683,8 @@
                 "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.16119861602783203,
@@ -1728,12 +1728,12 @@
                 "timestamp": 1753810596,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
+                    "ETH",
                     "TRX",
-                    "BNB",
-                    "SOL",
-                    "DOGE",
                     "BTC",
-                    "ETH"
+                    "SOL",
+                    "BNB",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.19718927145004272,
@@ -1747,12 +1747,12 @@
                 "timestamp": 1753802801,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
+                    "ETH",
                     "TRX",
-                    "BNB",
-                    "SOL",
-                    "DOGE",
                     "BTC",
-                    "ETH"
+                    "SOL",
+                    "BNB",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.43923965096473694,
@@ -1778,8 +1778,8 @@
                 "timestamp": 1753716618,
                 "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
                 "symbols": [
-                    "BTC",
                     "BNB",
+                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1794,11 +1794,11 @@
                 "timestamp": 1753459243,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
+                    "ETH",
                     "TRX",
-                    "BNB",
-                    "SOL",
                     "BTC",
-                    "ETH"
+                    "BNB",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.6711649894714355,
@@ -1828,11 +1828,11 @@
                 "timestamp": 1753284869,
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
-                    "BNB",
-                    "XRP",
-                    "SOL",
+                    "ETH",
                     "BTC",
-                    "ETH"
+                    "XRP",
+                    "BNB",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.797458291053772,
@@ -1846,10 +1846,10 @@
                 "timestamp": 1753205819,
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
+                    "DOGE",
                     "BTC",
-                    "ETH",
                     "SOL",
-                    "DOGE"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.47174540162086487,
@@ -1863,10 +1863,10 @@
                 "timestamp": 1753197746,
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
+                    "DOGE",
                     "BTC",
-                    "ETH",
                     "SOL",
-                    "DOGE"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6145052313804626,
@@ -1880,10 +1880,10 @@
                 "timestamp": 1753112067,
                 "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH",
-                    "SOL"
+                    "BTC",
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.5108786225318909,
@@ -1988,9 +1988,9 @@
                 "timestamp": 1754690454,
                 "url": "https://www.newsbtc.com/xrp-news/xrp-foreshadows-price-jumps-analytics-firm/",
                 "symbols": [
+                    "DOGE",
                     "BTC",
-                    "XRP",
-                    "DOGE"
+                    "XRP"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7752095460891724,
@@ -2005,8 +2005,8 @@
                 "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-bull-binance-whale-exchange-flow-price/",
                 "symbols": [
                     "BTC",
-                    "TRX",
-                    "BNB"
+                    "BNB",
+                    "TRX"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.0011723469942808151,
@@ -2335,7 +2335,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 108157.62198198192,
-            "current_price": 116897.21,
+            "current_price": 116863.98,
             "amount": 9e-05,
             "pnl_pct": 22.935844089167883,
             "% Gain/Perte": "22.94%",
@@ -2348,10 +2348,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 70.07813412060145,
-            "current_price": 122.24,
+            "current_price": 122.11,
             "amount": 0.102,
-            "pnl_pct": 74.43386804453186,
-            "% Gain/Perte": "74.43%",
+            "pnl_pct": 74.24836082229865,
+            "% Gain/Perte": "74.25%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2361,10 +2361,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 3654.1087878787876,
-            "current_price": 4191.29,
+            "current_price": 4192.0,
             "amount": 0.0033,
-            "pnl_pct": 14.700744923170348,
-            "% Gain/Perte": "14.70%",
+            "pnl_pct": 14.720175105499763,
+            "% Gain/Perte": "14.72%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2374,7 +2374,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 719.1871428571428,
-            "current_price": 809.04,
+            "current_price": 808.86,
             "amount": 0.02491194,
             "pnl_pct": -8.392411273838906,
             "% Gain/Perte": "-8.39%",
@@ -2400,10 +2400,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 3.29422,
-            "current_price": 3.2875,
+            "current_price": 3.287,
             "amount": 3.4,
-            "pnl_pct": -0.20399366162551558,
-            "% Gain/Perte": "-0.20%",
+            "pnl_pct": -0.21917176144884754,
+            "% Gain/Perte": "-0.22%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2413,10 +2413,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.83298,
-            "current_price": 0.8072,
+            "current_price": 0.808,
             "amount": 14.2,
-            "pnl_pct": -3.094912242790946,
-            "% Gain/Perte": "-3.09%",
+            "pnl_pct": -2.998871521525127,
+            "% Gain/Perte": "-3.00%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2426,7 +2426,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.711,
+            "current_price": 0.712,
             "amount": 0.03230637,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2439,10 +2439,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.252465,
-            "current_price": 0.23908,
+            "current_price": 0.23874,
             "amount": 23.0,
-            "pnl_pct": -5.3017249915829945,
-            "% Gain/Perte": "-5.30%",
+            "pnl_pct": -5.436397124353866,
+            "% Gain/Perte": "-5.44%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2504,7 +2504,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 10.83,
+            "current_price": 10.853,
             "amount": 3.85614,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2517,7 +2517,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0177,
+            "current_price": 0.01769,
             "amount": 1484.74630755,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2530,7 +2530,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.02067,
+            "current_price": 0.02066,
             "amount": 397.59699569,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2543,7 +2543,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 1.177,
+            "current_price": 1.181,
             "amount": 28.28169,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2595,10 +2595,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 3.9549924242424246,
-            "current_price": 3.9004,
+            "current_price": 3.9094,
             "amount": 5.2,
-            "pnl_pct": -1.3803420686167776,
-            "% Gain/Perte": "-1.38%",
+            "pnl_pct": -1.1527815821583418,
+            "% Gain/Perte": "-1.15%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2608,7 +2608,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 3.378,
+            "current_price": 3.373,
             "amount": 0.087214,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2634,7 +2634,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 1.205,
+            "current_price": 1.209,
             "amount": 0.35478462,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2647,7 +2647,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.7311,
+            "current_price": 0.7291,
             "amount": 2.85374308,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2660,7 +2660,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.2773,
+            "current_price": 0.2772,
             "amount": 0.05435377,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2673,7 +2673,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 4.83,
+            "current_price": 4.81,
             "amount": 0.05679375,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2686,7 +2686,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.01469,
+            "current_price": 0.01463,
             "amount": 4.05396039,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2699,10 +2699,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.01052,
-            "current_price": 0.0023,
+            "current_price": 0.002302,
             "amount": 1116.15,
-            "pnl_pct": -78.13688212927757,
-            "% Gain/Perte": "-78.14%",
+            "pnl_pct": -78.11787072243345,
+            "% Gain/Perte": "-78.12%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu ()",
             "confidence": 0.5
@@ -2712,7 +2712,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.3029,
+            "current_price": 0.303,
             "amount": 39.51211224,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2725,7 +2725,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.642,
+            "current_price": 0.643,
             "amount": 0.43377579,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2751,7 +2751,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 26.26,
+            "current_price": 26.31,
             "amount": 0.01833206,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2764,7 +2764,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0951,
+            "current_price": 0.0948,
             "amount": 0.07004223,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2790,7 +2790,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.081,
+            "current_price": 0.0809,
             "amount": 3.76301349,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2829,7 +2829,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0982,
+            "current_price": 0.0985,
             "amount": 0.79286793,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2855,7 +2855,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.01803,
+            "current_price": 0.01802,
             "amount": 2.50258947,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2868,7 +2868,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.6433,
+            "current_price": 0.6431,
             "amount": 0.03474063,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2894,7 +2894,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.4556,
+            "current_price": 0.4547,
             "amount": 0.13870156,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2907,7 +2907,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.3367,
+            "current_price": 0.3366,
             "amount": 0.18545852,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2920,7 +2920,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.04175,
+            "current_price": 0.04177,
             "amount": 0.88600535,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2933,7 +2933,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.4008,
+            "current_price": 0.3998,
             "amount": 0.1179094,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2946,7 +2946,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.07357,
+            "current_price": 0.07286,
             "amount": 1.17754728,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2959,7 +2959,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0969,
+            "current_price": 0.0966,
             "amount": 0.08862893,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2972,7 +2972,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0923,
+            "current_price": 0.0917,
             "amount": 0.56851639,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2985,7 +2985,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.9562,
+            "current_price": 0.9568,
             "amount": 0.17386141,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -2998,7 +2998,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.1547,
+            "current_price": 0.1555,
             "amount": 0.17714676,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3011,7 +3011,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.0368,
+            "current_price": 0.03676,
             "amount": 2.49958419,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3024,7 +3024,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.1896,
+            "current_price": 0.1908,
             "amount": 0.11578375,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3037,7 +3037,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.03972,
+            "current_price": 0.03981,
             "amount": 1.16253643,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3050,7 +3050,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.115827,
+            "current_price": 0.115192,
             "amount": 1.36076364,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3063,7 +3063,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.3547,
+            "current_price": 0.3544,
             "amount": 0.10083373,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3076,7 +3076,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.089,
+            "current_price": 0.08922,
             "amount": 1.00786376,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3089,7 +3089,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.3391,
+            "current_price": 0.3406,
             "amount": 0.16214933,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3102,7 +3102,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 1.0114,
+            "current_price": 1.011,
             "amount": 0.34099158,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3115,7 +3115,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.2661,
+            "current_price": 0.2665,
             "amount": 0.26255203,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3128,7 +3128,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.4052,
+            "current_price": 0.4074,
             "amount": 0.10868663,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3141,7 +3141,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 0.03274,
+            "current_price": 0.03289,
             "amount": 2.65771927,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3154,7 +3154,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": null,
-            "current_price": 1.0757,
+            "current_price": 1.0792,
             "amount": 0.12573876,
             "pnl_pct": 0,
             "% Gain/Perte": "0.00%",
@@ -3260,15 +3260,15 @@
         },
         "max_remaining": 29
     },
-    "timestamp": "2025-08-09 14:34:26",
+    "timestamp": "2025-08-09 14:48:11",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0,
-        "last_update": "2025-08-09 14:34:26",
+        "last_update": "2025-08-09 14:48:11",
         "performance": {
             "balance": 60.85659068
         },
-        "timestamp": "2025-08-09 14:34:26"
+        "timestamp": "2025-08-09 14:48:11"
     }
 }
