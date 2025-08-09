@@ -3196,15 +3196,20 @@ class TradingBotM4:
         filled_tp_targets=None,
         tp_levels=[(0.03, 0.3), (0.07, 0.3)],
     ):
+        """
+        Calcule la proportion à sortir selon les TP partiels atteints.
+        Type-safe: conversion float systématique.
+        """
         if filled_tp_targets is None:
             filled_tp_targets = [False] * len(tp_levels)
-        to_exit = 0.0  # <-- INIT ici à 0.0
+        to_exit = 0.0
         new_filled = filled_tp_targets[:]
         entry_price = safe_float(entry_price, 0)
         current_price = safe_float(current_price, 0)
         for i, (tp_pct, frac) in enumerate(tp_levels):
             tp_pct = safe_float(tp_pct, 0)
             frac = safe_float(frac, 0)
+            # Type-safe: tout float, jamais str
             if (
                 not new_filled[i]
                 and entry_price > 0
@@ -3212,6 +3217,7 @@ class TradingBotM4:
             ):
                 to_exit += frac
                 new_filled[i] = True
+        to_exit = safe_float(to_exit, 0)
         return to_exit, new_filled
 
     def check_trailing(self, entry_price, price_history, max_price, trailing_pct=0.03):
@@ -7626,7 +7632,7 @@ def build_telegram_summary(
 ):
     summary = f"🟢 <b>Résumé du cycle Trading</b>\n"
     summary += f"Cycle: <b>{cycle}</b> | Régime: <b>{regime}</b>\n"
-    summary += f"Balance: <b>${perf.get('balance', 0):,.0f}</b> | Win Rate: <b>{perf.get('win_rate', 0)*100:.1f}%</b>\n"
+    summary += f"Balance: <b>${safe_float(perf.get('balance', 0)):,.0f}</b> | Win Rate: <b>{safe_float(perf.get('win_rate', 0))*100:.1f}%</b>\n"
 
     # Drawdown critique
     if drawdown is not None and drawdown < -0.15:
