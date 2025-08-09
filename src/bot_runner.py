@@ -3033,7 +3033,7 @@ class TradingBotM4:
     def safe_update_shared_data(
         self, new_fields: dict, data_file="src/shared_data.json"
     ):
-        """Mise à jour sécurisée avec fusion profonde et validation"""
+        """Mise à jour sécurisée avec fusion profonde et validation + cast systématique des numériques"""
         try:
             # 1. Backup du fichier existant
             backup_file = data_file + ".bak"
@@ -3102,7 +3102,29 @@ class TradingBotM4:
                                 data[key] = current_time_str
                 return data
 
-            # 6. Fusion profonde
+            # 6. PATCH GLOBAL : Cast systématique des numériques
+            def deep_cast_dict(d):
+                for k, v in d.items():
+                    if isinstance(v, dict):
+                        deep_cast_dict(v)
+                    elif isinstance(v, list):
+                        for idx, item in enumerate(v):
+                            if isinstance(item, dict):
+                                deep_cast_dict(item)
+                            elif isinstance(item, str):
+                                try:
+                                    v[idx] = safe_float(item, item)
+                                except Exception:
+                                    pass
+                    elif isinstance(v, str):
+                        try:
+                            d[k] = safe_float(v, v)
+                        except Exception:
+                            pass
+
+            deep_cast_dict(new_fields)
+
+            # 7. Fusion profonde
             def deep_update(d, u):
                 for k, v in u.items():
                     if isinstance(v, dict) and k in d and isinstance(d[k], dict):
@@ -3129,7 +3151,7 @@ class TradingBotM4:
                         d[k] = v
                 return d
 
-            # 7. Préservation des données importantes
+            # 8. Préservation des données importantes
             preserved_fields = [
                 "trade_history",
                 "closed_positions",
@@ -3145,21 +3167,21 @@ class TradingBotM4:
                 if field in shared_data
             }
 
-            # 8. Application des validations
+            # 9. Application des validations
             if "trade_decisions" in new_fields:
                 print("\n[DEBUG] Validation des décisions de trading...")
                 new_fields["trade_decisions"] = validate_trade_decisions(
                     new_fields["trade_decisions"]
                 )
 
-            # 9. Mise à jour des timestamps critiques
+            # 10. Mise à jour des timestamps critiques
             if "cycle_metrics" in new_fields:
                 new_fields["cycle_metrics"]["timestamp"] = current_time_str
             if "bot_status" in new_fields:
                 new_fields["bot_status"]["last_update"] = current_time_str
                 new_fields["bot_status"]["timestamp"] = current_time_str
 
-            # 10. Fusion et mise à jour finale
+            # 11. Fusion et mise à jour finale
             new_fields = update_timestamps(new_fields)
             shared_data = deep_update(shared_data, new_fields)
             for key, value in preserved_data.items():
@@ -3171,7 +3193,7 @@ class TradingBotM4:
                 json.dumps(shared_data, indent=2),
             )
 
-            # 11. Sauvegarde sécurisée
+            # 12. Sauvegarde sécurisée
             try:
                 with open(data_file, "w") as f:
                     json.dump(shared_data, f, indent=4)
@@ -5601,34 +5623,25 @@ class TradingBotM4:
 
     def get_performance_metrics(self):
         try:
-            # En mode live, récupère la balance réelle Binance
-            if getattr(self, "is_live_trading", False) and self.binance_client:
-                try:
-                    balance_info = self.binance_client.get_asset_balance(asset="USDC")
-                    real_balance = (
-                        safe_float(balance_info["free"]) if balance_info else None
-                    )
-                except Exception as e:
-                    self.logger.error(f"Erreur récupération balance Binance: {e}")
-                    real_balance = None
-                # Si la balance existe, retourne-la
-                if real_balance is not None:
-                    return {
-                        "balance": real_balance,
-                        # ... autres métriques calculées en live (total_trades, win_rate, etc.)
-                    }
+            # ... (mode live trading, balance réelle)
             # Sinon, tente de prendre la dernière valeur du fichier partagé
             try:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
                 saved_perf = data.get("bot_status", {}).get("performance", {})
-                # Patch: type-safe cast
-                for k, v in saved_perf.items():
-                    if isinstance(v, str):
-                        try:
-                            saved_perf[k] = safe_float(v, 0)
-                        except Exception:
-                            saved_perf[k] = 0
+                # PATCH ABSOLU : cast toutes les clés numériques
+                for k in [
+                    "balance",
+                    "total_trades",
+                    "wins",
+                    "losses",
+                    "total_profit",
+                    "total_loss",
+                    "win_rate",
+                    "profit_factor",
+                ]:
+                    if k in saved_perf:
+                        saved_perf[k] = safe_float(saved_perf[k], 0)
                 return saved_perf if saved_perf else {}
             except Exception as e:
                 self.logger.error(f"Erreur lecture performance: {e}")
