@@ -5,7 +5,7 @@
         "top_n": 5
     },
     "sentiment": {
-        "timestamp": "2025-08-09 00:58:11",
+        "timestamp": "2025-08-09 01:16:33",
         "scores": [
             {
                 "title": "Coinbase int\u00e8gre le DEX dans son app et ouvre l'acc\u00e8s \u00e0 des millions de tokens sur Base",
@@ -40,8 +40,8 @@
                 "timestamp": 1754671751,
                 "url": "https://coinacademy.fr/actu/ethereum-4000-sommet-eth/?utm_source=rss&utm_medium=rss&utm_campaign=ethereum-4000-sommet-eth",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7066123485565186,
@@ -97,8 +97,8 @@
                 "timestamp": 1754661600,
                 "url": "https://journalducoin.com/bitcoin/crypto-freres-winklevoss-american-bitcoin-societe-minage-fils-trump/",
                 "symbols": [
-                    "SOL",
-                    "BTC"
+                    "BTC",
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7717936635017395,
@@ -176,9 +176,9 @@
                 "timestamp": 1754650800,
                 "url": "https://journalducoin.com/ethereum/signal-haussier-majeur-vue-pour-paire-eth-btc-ethereum-8-aout/",
                 "symbols": [
-                    "SOL",
+                    "BTC",
                     "ETH",
-                    "BTC"
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7528485655784607,
@@ -192,8 +192,8 @@
                 "timestamp": 1754648921,
                 "url": "https://journalducoin.com/actualites/crypto-chine-veut-freiner-engouement-pour-stablecoins/",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8454409837722778,
@@ -233,8 +233,8 @@
                 "timestamp": 1754640720,
                 "url": "https://coinacademy.fr/actu/trump-401-k-crypto-plans-retraite-americains/?utm_source=rss&utm_medium=rss&utm_campaign=trump-401-k-crypto-plans-retraite-americains",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8119657635688782,
@@ -288,9 +288,9 @@
                 "timestamp": 1754638066,
                 "url": "https://journalducoin.com/bitcoin/rebond-btc-direction-ath-123-000-dollars-bitcoin-8-aout/",
                 "symbols": [
-                    "SOL",
+                    "BTC",
                     "ETH",
-                    "BTC"
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7975867986679077,
@@ -531,8 +531,8 @@
                 "timestamp": 1754557788,
                 "url": "https://journalducoin.com/actualites/crypto-professionnel-secteur-agresse-devant-palace-parisien/",
                 "symbols": [
-                    "SOL",
-                    "BTC"
+                    "BTC",
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8030890822410583,
@@ -594,9 +594,9 @@
                 "timestamp": 1754550900,
                 "url": "https://journalducoin.com/bitcoin/chute-btc-investisseurs-accumulent-sans-trembler-bitcoin-7-aout/",
                 "symbols": [
-                    "SOL",
+                    "BTC",
                     "ETH",
-                    "BTC"
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8174172639846802,
@@ -683,26 +683,1645 @@
                 "sentiment": 0.7914093732833862,
                 "impact_score": 1.0,
                 "processed": true
+            },
+            {
+                "title": " DeFi soars with tokenized stocks, but user activity shifts to NFTs: Report ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhiN2QtYzQ1Yy03NjZiLWJkZTQtMDBjZDFiN2Y5MjAw.jpg\" alt=\"DeFi soars with tokenized stocks, but user activity shifts to NFTs: Report\"></p><p>NFT DApps drew slightly more active users than DeFi in July, even as DeFi liquidity hit a record $270B.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754693400,
+                "url": "https://cointelegraph.com/news/defi-soars-tokenized-stocks-user-activity-nfts-report?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.5493682026863098,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Harvard endowment invests $116M into BlackRock Bitcoin ETF ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDUvMDE5NzI0YmEtMDM0Ny03MTAzLWFjY2EtYjY2M2M1NWQ3ZjM3.jpg\" alt=\"Harvard endowment invests $116M into BlackRock Bitcoin ETF\"></p><p>Though possibly not its first foray into crypto, Harvard\u2019s reported stake in BlackRock's Bitcoin exchange-traded fund represented a significant investment.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754692187,
+                "url": "https://cointelegraph.com/news/harvard-endowment-blackrock-bitcoin-etf?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.7598012089729309,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Here\u2019s what happened in crypto today ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5Nzk0MjMtZWY4ZS03YzYwLWI5MzctYjlkZGY3NWZlOGFk.jpg\" alt=\"Here\u2019s what happened in crypto today\"></p><p>Need to know what happened in crypto today? Here is the latest news on daily trends and events impacting Bitcoin price, blockchain, DeFi, NFTs, Web3 and crypto regulation.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754691062,
+                "url": "https://cointelegraph.com/news/what-happened-in-crypto-today?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.8994847536087036,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " ChatGPT-5 upgrade faces user backlash as AI rivals gain ground ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhiOGItNDM5YS03OTkzLTk2ZGEtNGU5YzZkZjFjYTNk.jpg\" alt=\"ChatGPT-5 upgrade faces user backlash as AI rivals gain ground\"></p><p>ChatGPT-5 users on social media platforms were critical of the update, and OpenAI CEO Sam Altman responded to the complaints, pledging improvements.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754690137,
+                "url": "https://cointelegraph.com/news/chatgpt-users-critical-gpt-5-ai-competition-grows?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.051123157143592834,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " The jury\u2019s journey to the Roman Storm verdict ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODM4ZGQtMGNmNi03ZDZkLTljODgtMzg1OTEzODg3YmRi.jpg\" alt=\"The jury\u2019s journey to the Roman Storm verdict\"></p><p>Court documents showed there was at least one 90-year-old, and some people had \u201cset in stone\u201d their opinions about the Tornado Cash co-founder\u2019s criminal charges.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754688255,
+                "url": "https://cointelegraph.com/news/roman-storm-verdict-look-behind-jury-decision?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.1432633101940155,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Crypto Biz: Has SEC\u2019s Project Crypto been priced in? ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjQtMTEvMDE5Mzc5NTQtM2EyOS03NzBkLWJmMDUtNWIyMmVmNWJiN2Ex.jpg\" alt=\"Crypto Biz: Has SEC\u2019s Project Crypto been priced in?\"></p><p>A bullish regulatory tailwind is forming as the SEC clarifies its stance on crypto, liquid staking and tokenization \u2014 with institutional investors and IPOs responding in kind.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754683200,
+                "url": "https://cointelegraph.com/news/crypto-biz-has-sec-s-project-crypto-been-priced-in?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": -0.12595134973526,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " EthereumMax investors secure partial win in class-action lawsuit ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhhMGUtNGI3Yy03NWZhLTkyNWMtMmUwZTgzZTc3ZGE1.jpg\" alt=\"EthereumMax investors secure partial win in class-action lawsuit\"></p><p>Four state-level lawsuits against three celebrities and individuals tied to the EMAX token may proceed after a California judge\u2019s ruling.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754678100,
+                "url": "https://cointelegraph.com/news/ethereummax-class-action-lawsuit-celebrities?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.13515861332416534,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Funding effort for Roman Storm grows as defense preps for possible retrial ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhhOTctMWUyMy03ZGZjLTk4ZjAtODgzMWQyZTEzYWMy.jpg\" alt=\"Funding effort for Roman Storm grows as defense preps for possible retrial\"></p><p>Donations to the embattled software developer increased after Wednesday\u2019s partial verdict and the possibility of a retrial.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754676300,
+                "url": "https://cointelegraph.com/news/roman-storm-legal-fund-influx-defense-retrial?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": -0.9034568667411804,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Ukraine to weigh bill regulating crypto market in late August ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5NzVkYmYtYTg0Ni03MmRmLWFkNzktOGUyMWEyOWQxOTQ0.jpg\" alt=\"Ukraine to weigh bill regulating crypto market in late August\"></p><p>Ukraine has had some regulatory starts and stops when it comes to crypto, though momentum for a regulatory bill has picked up since 2024.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754674698,
+                "url": "https://cointelegraph.com/news/ukraine-weigh-bill-regulating-crypto-market-august?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.22246044874191284,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Can Google Gemini really help plan crypto trades? ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODY2ZmMtYzFkYS03N2Y2LTlkMjUtMDlmYjU1YzA5OGE5.jpg\" alt=\"Can Google Gemini really help plan crypto trades?\"></p><p>Gemini looks smart, but can it actually trade? We put it to the test with sample trades and break down where it helps and where it doesn\u2019t.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754670317,
+                "url": "https://cointelegraph.com/news/can-google-gemini-really-help-plan-crypto-trades?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.7524901032447815,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Price predictions 8/8: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, HYPE, XLM, SUI ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODhhNjktNzVlYy03YTBmLTk3MjItNzAxYjJiZDU4NWJh.jpg\" alt=\"Price predictions 8/8: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, HYPE, XLM, SUI\"></p><p>Bitcoin could challenge the $120,000 to $123,218 resistance zone but crossing it may be a tough ask for the bulls.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754669486,
+                "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "ETH",
+                    "ADA",
+                    "BNB",
+                    "BTC",
+                    "DOGE",
+                    "SOL",
+                    "XLM",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.1296260952949524,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Ether price hits $4K for first time since December 2024 ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODU2MjMtZTZjZC03YjFjLTgxOGUtY2E2ZDQ2Yjg5MDY1.jpg\" alt=\"Ether price hits $4K for first time since December 2024\"></p><p>Ether taps $4,000 for the first time in eight months in a further win for ETH bulls and the broader altseason, while Bitcoin dominance fades.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754666052,
+                "url": "https://cointelegraph.com/news/ether-price-hits-4k-for-first-time-since-december-2024?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC",
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.8600726127624512,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Blockchain AI cannibalizes decentralized AI ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDIvMDE5NTIxMzUtMGMyMy03ZGRhLTkxODEtNjY1NjZkY2EwNTQ5.jpg\" alt=\"Blockchain AI cannibalizes decentralized AI\"></p><p>Web3 AI projects often force blockchain integration to access capital, harming innovation by prioritizing ecosystem compatibility over practical AI solutions.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754665200,
+                "url": "https://cointelegraph.com/news/blockchain-ai-de-ai?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.04681745916604996,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " VC Roundup: Bitcoin DeFi surges, but tokenization and stablecoins gain steam ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjQtMTIvMDE5NDA4MDUtM2I2ZS03MjNkLThmMDQtZjdhMDRhOGE2MmVh.jpg\" alt=\"VC Roundup: Bitcoin DeFi surges, but tokenization and stablecoins gain steam\"></p><p>Bitcoin\u2019s resurgence as an institutional asset is reshaping crypto venture capital, but July also spotlighted tokenization, stablecoin infrastructure and settlement startups.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754663400,
+                "url": "https://cointelegraph.com/news/july-vc-roundup-bitcoin-tokenization-stablecoins?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.44218093156814575,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Roman Storm conviction for Tornado Cash sets \u2018dangerous precedent\u2019 ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODA3MGMtMzJkMC03NTYzLTkzZjYtYjllNGY1ZTI1NWUx.jpg\" alt=\"Roman Storm conviction for Tornado Cash sets \u2018dangerous precedent\u2019\"></p><p>Tornado Cash developer Roman Storm\u2019s conviction misapplies money transmitter laws, crypto industry group says.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754662951,
+                "url": "https://cointelegraph.com/news/roman-storm-conviction-tornado-cash-sets-dangerous-precedent?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.33512866497039795,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " How a retired Aussie cop lost $1.2M in a crypto scam in Thailand ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy9hYWJkZDJkNDRjY2I2NmVjMjY1ZGMyZmVjY2UyY2FlNi5qcGc=.jpg\" alt=\"How a retired Aussie cop lost $1.2M in a crypto scam in Thailand\"></p><p>As the adoption of digital assets grows rapidly, there has been a significant increase in the amount of funds lost to scams and hacks.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754661000,
+                "url": "https://cointelegraph.com/explained/how-a-retired-aussie-cop-lost-12m-in-a-crypto-scam-in-thailand?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": -0.8285747766494751,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " China cracks down on stablecoin promotions, research and seminars ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg5YTYtODk0ZS03M2ZjLWFlMTMtNDhiZDY5ZGQ0Yjdj.jpg\" alt=\"China cracks down on stablecoin promotions, research and seminars\"></p><p>Chinese regulators ordered local firms to halt seminars and research on stablecoins, citing concerns over potential fraud and herd-driven speculation.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754660692,
+                "url": "https://cointelegraph.com/news/chinese-regulators-urge-local-businesses-to-stop-stablecoin-promotion?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.03998453915119171,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " XRP price jumps on 200% futures volume surge as Ripple lawsuit ends ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5NzU0ZDItOGRlMC03YzJhLThlYjQtMGU5YzVlMTAwNWMy.jpg\" alt=\"XRP price jumps on 200% futures volume surge as Ripple lawsuit ends\"></p><p>XRP price may continue to climb toward $4.50 over the next few months as it breaks out of a classic bullish continuation pattern.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754660564,
+                "url": "https://cointelegraph.com/news/xrp-price-jumps-on-200-percent-futures-volume-ripple-lawsuit-ends?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.8529316782951355,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Behind the scenes of public companies that are rushing to create crypto treasuries ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjQtMTIvMDE5M2RlYzctOTJjZC03NDYwLWIwMTMtNTNlYmE0NDBiY2Zh.jpg\" alt=\"Behind the scenes of public companies that are rushing to create crypto treasuries\"></p><p>Publicly traded companies are building strategic reserves in digital assets like BNB and Solana. Industry leaders explain why this could be the next institutional on-ramp for crypto.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754659800,
+                "url": "https://cointelegraph.com/news/behind-the-scenes-of-public-companies-that-are-rushing-to-create-crypto-treasuries?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "SOL",
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.3471005856990814,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " CrediX Finance team disappears after $4.5M hack ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg5OWItMTJiZi03N2YyLTkzZWUtZTVlOTU3NjkwZmE5.jpg\" alt=\"CrediX Finance team disappears after $4.5M hack\"></p><p>Stability DAO said it had identified two CrediX Finance team members and was working with other projects and authorities to recover the stolen funds.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754658183,
+                "url": "https://cointelegraph.com/news/credix-finance-team-disappears-after-4-5m-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.1490565985441208,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Traders bet on $200K year-end Bitcoin, but real odds tell a different story ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg1ZjMtYTAxNi03ZTMxLTlkZWUtM2MxNGU5MzdmOWNh.jpg\" alt=\"Traders bet on $200K year-end Bitcoin, but real odds tell a different story\"></p><p>Despite aggressive bullish bets, market odds imply under 3% chance of $200,000 BTC price by December of this year.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754655933,
+                "url": "https://cointelegraph.com/news/traders-bet-on-200k-year-end-bitcoin-but-real-odds-tell-different-story?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.2118724286556244,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Quantum computers could bring lost Bitcoin back to life: Here\u2019s how ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy84MjUyZjJjOWU5OWJhMjIzMmFmMTlmODI5M2E4ZTAzMi5qcGc=.jpg\" alt=\"Quantum computers could bring lost Bitcoin back to life: Here\u2019s how\"></p><p>                        Quantum computing could enable the reverse engineering of private keys from publicly exposed ones, putting the security of Bitcoin holders at risk.                    </p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754655900,
+                "url": "https://cointelegraph.com/explained/quantum-computers-could-bring-lost-bitcoin-back-to-life-heres-how?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.6785697937011719,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Bitcoin likely to lead gains from Trump\u2019s 401(k) crypto order ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg4ZTctNzEyYS03M2UzLTkyZWItODhhOTI1MmQ1NThk.jpg\" alt=\"Bitcoin likely to lead gains from Trump\u2019s 401(k) crypto order\"></p><p>Trump\u2019s executive order opening 401(k)s to crypto has drawn a mix of praise, caution and criticism from industry leaders and skeptics alike.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754654036,
+                "url": "https://cointelegraph.com/news/trump-executive-order-crypto-401k-industry-reactions?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.26016852259635925,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " How Trump\u2019s $9T executive order could let you add Bitcoin to your retirement plan ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg5ODAtYjkyNS03MjA4LWFmMmUtOTE2MGE4NWRhZGVh.jpg\" alt=\"How Trump\u2019s $9T executive order could let you add Bitcoin to your retirement plan\"></p><p>Trump\u2019s move may change US retirement plans. Bitcoin could soon be part of your 401(k), and Wall Street is getting ready.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754653926,
+                "url": "https://cointelegraph.com/news/how-trump-s-9t-executive-order-could-let-you-add-bitcoin-to-your-retirement-plan?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.8214309811592102,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Can you split a private key in half? Understanding crypto ownership in divorce and beyond ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODg5NzAtMGE4NS03MGE4LWI1OGMtMzQwOTY3MmVjN2Ex.jpg\" alt=\"Can you split a private key in half? Understanding crypto ownership in divorce and beyond\"></p><p>While you can\u2019t literally split a private key, there are secure legal and technical methods to share or divide control of crypto assets during divorce.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754653014,
+                "url": "https://cointelegraph.com/news/understanding-crypto-ownership-in-divorce-and-beyond?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.87078458070755,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Binance taps Spain\u2019s BBVA to offer safer crypto custody post-FTX: FT ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDIvMDE5NGVmY2QtNDU3ZS03NjQwLThhZTItY2M3ZmFiNmVlZjkw.jpg\" alt=\"Binance taps Spain\u2019s BBVA to offer safer crypto custody post-FTX: FT\"></p><p>As trust in crypto exchanges remains low, Binance\u2019s new custody deal with BBVA marks a shift toward traditional finance safeguards.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754647854,
+                "url": "https://cointelegraph.com/news/binance-bbva-crypto-custody-partnership?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.5739439129829407,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " How to earn crypto passively without trading ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5NzMwMTUtZDQwZC03NTUzLWI4MDktMDIzMTdlZWQ0ODA3.jpg\" alt=\"How to earn crypto passively without trading\"></p><p>Crypto index funds and ETFs can help you earn passive income by diversifying your holdings and minimizing active trading.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754647523,
+                "url": "https://cointelegraph.com/news/how-to-use-index-funds-and-etfs-for-passive-crypto-income?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.6708227396011353,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Owning a full Bitcoin in 2025 \u2014 just how rare is it? ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy8yZmE2Y2FjYjRkOWU5NWYxNTA3N2I3NWEzYTU1NDhkMC5qcGc=.jpg\" alt=\"Owning a full Bitcoin in 2025 \u2014 just how rare is it?\"></p><p>                        Fewer than 1 million people on Earth hold a full Bitcoin. That\u2019s less than 0.02% of the global population and even fewer in crypto.                    </p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754647200,
+                "url": "https://cointelegraph.com/explained/owning-a-full-bitcoin-in-2025-just-how-rare-is-it?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.8711371421813965,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Bitcoin Energy Value metric says \u2018fair\u2019 BTC price is as much as $167K ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDQvMDE5NjQ4MWEtMWRhMS03MWU5LTk5NjktODBjNjQ2ZjY0Njkz.jpg\" alt=\"Bitcoin Energy Value metric says \u2018fair\u2019 BTC price is as much as $167K\"></p><p>Bitcoin\u2019s energy-based \u201cfair value\u201d sits at $167K, 45% above its current price, as record hash rate data shows BTC trading at a deep 31% discount.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754644999,
+                "url": "https://cointelegraph.com/news/bitcoin-energy-value-metric-fair-btc-price-167k?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.21022841334342957,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Animoca and Standard Chartered form stablecoin venture in Hong Kong ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDYvMDE5N2EwNjYtODg3Ni03YjkzLTlmYTktMzcyOWM3YWJkZjUz.jpg\" alt=\"Animoca and Standard Chartered form stablecoin venture in Hong Kong\"></p><p>Standard Chartered\u2019s Hong Kong arm and Animoca Brands have launched a joint venture, Anchorpoint Financial, to develop a licensed Hong Kong dollar stablecoin.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754644076,
+                "url": "https://cointelegraph.com/news/standard-chartered-animoca-brands-hong-kong-stablecoin-license?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.4562056064605713,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Years ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS9zdG9yYWdlL3VwbG9hZHMvdmlldy9iNmQxM2ViMWYyZjdlYmUwMWQzYjZhZGRkMmNiM2M2MS5qcGc=.jpg\" alt=\"Twitter User Claims TradingView Has Ignored a Fibonacci Retracement Bug for 5 Years\"></p><p>Popular chart analysis service TradingView contains a bug in the Fibonacci retracement technical analysis tool.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1560859440,
+                "url": "https://cointelegraph.com/news/twitter-user-claims-tradingview-has-ignored-a-fibonacci-retracement-bug-for-5-years?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.4045460522174835,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Harvard Reveals $116 Million Investment in BlackRock Bitcoin ETF",
+                "text": "Harvard is the latest major institution to buy Bitcoin via regulated investment vehicles. ",
+                "source": "Decrypt",
+                "timestamp": 1754690003,
+                "url": "https://decrypt.co/334366/harvard-116-million-blackrock-bitcoin-etf",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.7283586859703064,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bumps in the Machine: OpenAI's GPT-5 Rollout Stumbles Into the Spotlight",
+                "text": "Users say GPT-5 is slower, less engaging, and prone to errors despite OpenAI\u2019s lofty promises.",
+                "source": "Decrypt",
+                "timestamp": 1754689251,
+                "url": "https://decrypt.co/334358/openai-gpt-5-rollout-stumbles-spotlight",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.009058678522706032,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Dogecoin, XRP Lead Altcoins as Bitcoin Dominance Falls",
+                "text": "The tailwinds remain \u201cincredibly strong\u201d for Bitcoin, according to Hashdex Head of Global Markets Insights Gerry O\u2019Shea.",
+                "source": "Decrypt",
+                "timestamp": 1754682705,
+                "url": "https://decrypt.co/334343/dogecoin-xrp-lead-altcoins-bitcoin-dominance-falls",
+                "symbols": [
+                    "BTC",
+                    "DOGE",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.05322325974702835,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Another Trump Pump Sends Ethereum, XRP and Dogecoin Flying: What Happens Next?",
+                "text": "Markets are pumping on another pro-crypto Trump executive order. Will it last? The charts suggest growing optimism.",
+                "source": "Decrypt",
+                "timestamp": 1754680101,
+                "url": "https://decrypt.co/334325/trump-pump-ethereum-xrp-dogecoin-what-happens-next",
+                "symbols": [
+                    "ETH",
+                    "DOGE",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.08361917734146118,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Coinbase Rolls Out DEX Trading on Its App Starting With Base\u2014And Solana 'Coming Soon'",
+                "text": "The company is moving to become an \"everything exchange,\" its CEO said. ",
+                "source": "Decrypt",
+                "timestamp": 1754676110,
+                "url": "https://decrypt.co/334308/coinbase-rolls-out-dex-trading-on-its-app-starting-with-base-and-solana-coming-soon",
+                "symbols": [
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.6934667825698853,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "CrediX Team Vanishes as Stability DAO Preps \u2018Legal Report\u2019",
+                "text": "The project is no longer present online.",
+                "source": "Decrypt",
+                "timestamp": 1754673394,
+                "url": "https://decrypt.co/334313/credix-team-vanishes-stability-dao-preps-legal-report",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.3133668601512909,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "XRP Army Celebrates Being on 'Right Side of History\u2019 as SEC\u2019s Ripple Lawsuit Ends",
+                "text": "The SEC suing Ripple in 2020 prompted the XRP Army to mobilize, and now it's stronger than ever and celebrating its victory.",
+                "source": "Decrypt",
+                "timestamp": 1754669975,
+                "url": "https://decrypt.co/334295/xrp-army-celebrates-right-side-of-history-sec-ripple-lawsuit-ends",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.6048099398612976,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SEC DROPS XRP CASE, ETH NEARS $4K AGAIN, GOLD HITS ATH",
+                "text": "Trump signs EO letting crypto into 401ks. XRP up 10% as SEC officially ends legal battle. ETH continues outperform BTC, nears $4k resistance. Crypto-friendly Miran set for Fed board. Fundamental Global to raise $5b to buy ETH. 87% odds ETH hits $4k this month. XRP to buy payment platform Rail for $200m. BTC mining stocks resilient as tariff fears fade. ETH Foundation pledges $500k for Storm\u2019s defence. Animoca, Provenance launch tokenised RWA market. Animoca JV to apply for stablecoin license. Binance, BBVA to allow custody of assets off exchange. Winklevoss twins invest in Trump\u2019s American Bitcoin. Chainlink announces LINK reserve. Tokenisation drive stuck at $25b: JP Morgan. Pre-IPO stocks become tradeable on SOL.",
+                "source": "Decrypt",
+                "timestamp": 1754666466,
+                "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
+                "symbols": [
+                    "ETH",
+                    "BNB",
+                    "BTC",
+                    "SOL",
+                    "LINK",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.8488626480102539,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Cracks $4,000 for First Time in 8 Months",
+                "text": "ETH, which last broke this threshold in December, rose 4%.",
+                "source": "Decrypt",
+                "timestamp": 1754666044,
+                "url": "https://decrypt.co/334279/ethereum-cracks-4000-first-time-8-months",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.9181884527206421,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "WNBA Dildo Throwing Controversy Began as Crypto Marketing Stunt",
+                "text": "Green Dildo Coin backers say dildo-throwing stunts at WNBA games are part of a \u201cfunny\u201d coordinated marketing campaign to pump their coin.",
+                "source": "Decrypt",
+                "timestamp": 1754664571,
+                "url": "https://decrypt.co/334280/wnba-dildo-throwing-crypto-marketing-stunt",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.7617101073265076,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Morning Minute: Crypto in Your 401(k)s Is Finally Happening",
+                "text": "Crypto majors rallied (unsurprisingly) on the news\u2014though with a surprising frontrunner.",
+                "source": "Decrypt",
+                "timestamp": 1754655692,
+                "url": "https://decrypt.co/334259/morning-minute-crypto-in-your-401ks-is-finally-happening",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": -0.9230934381484985,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Large Chainlink Bag Holders Swell as Oracle Company Creates LINK Reserve",
+                "text": "Crypto oracle Chainlink\u2019s newly established LINK Reserve attracts $1 million as whales accumulate 0.67% of the token\u2019s supply.",
+                "source": "Decrypt",
+                "timestamp": 1754654406,
+                "url": "https://decrypt.co/334255/large-chainlink-bag-holders-swell-link-reserve",
+                "symbols": [
+                    "LINK"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.7774850726127625,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Standard Chartered, Animoca Brands Form Venture to Seek Hong Kong Stablecoin License",
+                "text": "The \"Anchorpoint\" joint venture aims to capitalize on Hong Kong's newly launched stablecoin licensing regime.",
+                "source": "Decrypt",
+                "timestamp": 1754652713,
+                "url": "https://decrypt.co/334247/standard-chartered-and-animoca-brands-form-venture-to-seek-hong-kong-stablecoin-license",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": -0.6565796732902527,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Dogwifhat Knitted Hat Sells for $800,000 to Founder of Meme Coin Launchpad",
+                "text": "Bags Wif Hat? The founder of a rising token launchpad bought a meme coin-linked knitted hat for nearly $800,000\u2014here\u2019s why.",
+                "source": "Decrypt",
+                "timestamp": 1754650803,
+                "url": "https://decrypt.co/334226/dogwifhat-knitted-hat-sells-for-800000-to-founder-of-meme-coin-launchpad",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.8669411540031433,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "XRP Leads Double Digit Altcoin Rally as Cardano, Chainlink and SUI Surge",
+                "text": "XRP spikes 10%, XLM and LINK follow with double-digit rallies as Ripple\u2019s multi-year battle with the SEC ends.",
+                "source": "Decrypt",
+                "timestamp": 1754648993,
+                "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
+                "symbols": [
+                    "XLM",
+                    "ADA",
+                    "LINK",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.8473196625709534,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Binance Taps Spain's Second-Largest Bank BBVA to Hold Trader Margin in Treasuries",
+                "text": "The world\u2019s largest crypto exchange has turned to BBVA in a bid to rebuild trust and limit counterparty risk.",
+                "source": "Decrypt",
+                "timestamp": 1754646838,
+                "url": "https://decrypt.co/334225/binance-taps-spains-second-largest-bank-bbva-to-hold-trader-margin-in-treasuries",
+                "symbols": [
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.8055385947227478,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Foundation Pledges to Match $500K for Roman Storm\u2019s Legal Defense",
+                "text": "Tornado Cash co-founder Roman Storm faces decades in prison if prosecutors retry deadlocked charges in a high-profile case.",
+                "source": "Decrypt",
+                "timestamp": 1754634429,
+                "url": "https://decrypt.co/334190/ethereum-foundation-pledges-match-500k-roman-storms-legal-defense",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.2960376441478729,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Jack Dorsey's Block Adds 108 Bitcoin in Q2, Posts Higher Revenue and Profit",
+                "text": "Dorsey's fintech company now holds 8,692 BTC worth over $1.15 billion, according to the company\u2019s latest 10-Q filing.",
+                "source": "Decrypt",
+                "timestamp": 1754628900,
+                "url": "https://decrypt.co/334182/jack-dorsey-block-108-bitcoin-q2-higher-revenue-profit",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.7544705867767334,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Core Scientific's Top Investor to Vote Against CoreWeave's 'Inadequate' $9B Takeover",
+                "text": "Two Seas Capital is challenging Core Scientific\u2019s $9 billion sale to CoreWeave, arguing the terms significantly undervalue the miner.",
+                "source": "Decrypt",
+                "timestamp": 1754627960,
+                "url": "https://decrypt.co/334175/core-scientific-top-investor-vote-against-coreweave-takeover",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.021752459928393364,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Trump\u2019s Pro-Crypto Orders See Bitcoin Futures Open Interest Jump, Then Unwind",
+                "text": "Futures market data shows traders quickly closed positions after a burst of speculative activity tied to White House policy moves.",
+                "source": "Decrypt",
+                "timestamp": 1754626426,
+                "url": "https://decrypt.co/334173/trumps-pro-crypto-orders-bitcoin-futures-open-interest",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.08299826830625534,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Advances After Trump Taps Bitcoin-Friendly Economist for Fed Role",
+                "text": "Trump\u2019s nomination of a pro-Bitcoin economist is seen as a tilt toward looser policy, though some warn it could erode the bank\u2019s independence.",
+                "source": "Decrypt",
+                "timestamp": 1754613083,
+                "url": "https://decrypt.co/334143/trumps-fed-appointee-bitcoin-fan-market",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.7663876414299011,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SEC and Ripple End Appeals, Closing Landmark Crypto Case as XRP Soars",
+                "text": "The SEC and Ripple have formally ended their appeals, finalizing a 2023 court ruling that split XRP sales into securities and non-securities.",
+                "source": "Decrypt",
+                "timestamp": 1754611133,
+                "url": "https://decrypt.co/334144/sec-ripple-end-appeals-closing-landmark-crypto-case",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.06512964516878128,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Trump Signs Executive Order Prohibiting Debanking of Crypto Industry",
+                "text": "The White House said that it \"already ended\" Operation Chokepoint 2.0, which it maintained had treated the digital assets industry unfairly. ",
+                "source": "Decrypt",
+                "timestamp": 1754609256,
+                "url": "https://decrypt.co/334124/trump-signs-order-prohibit-debanking-crypto-industry",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.02645387127995491,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "XRP Whale Flows Point to Potential Correction: CryptoQuant",
+                "text": "Whales can play a significant role in shaping market sentiment.",
+                "source": "Decrypt",
+                "timestamp": 1754607597,
+                "url": "https://decrypt.co/334119/xrp-whale-flows-point-correction-cryptoquant",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.7023965120315552,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Billionaire Winklevoss Bros Back Trump Sons\u2019 Crypto Miner",
+                "text": "Hut 8 CEO Asher Genoot told investors today the Winklevoss brothers bought into American Bitcoin with BTC rather than cash.",
+                "source": "Decrypt",
+                "timestamp": 1754604660,
+                "url": "https://decrypt.co/334132/bitcoin-winklevoss-trump-crypto-btc-miner",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.8323333263397217,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "The Top Coin Creator on Base's Zora Is Porn Company Fake Taxi",
+                "text": "The Fake Taxi token is taking holders for a ride. \u201cDon't ask where we're going, just get in,\u201d they say.",
+                "source": "Decrypt",
+                "timestamp": 1754602147,
+                "url": "https://decrypt.co/334122/creator-coin-base-zora-porn-company-fake-taxi",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.905400276184082,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Whale Moves $349 Million in BTC After 10-Year Slumber",
+                "text": "The investor moved 3,000 BTC. Bitcoin's price has fallen in recent weeks from an all-time high. ",
+                "source": "Decrypt",
+                "timestamp": 1754600411,
+                "url": "https://decrypt.co/334115/bitcoin-whale-moves-349m-btc-10-year-slumber",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.008724380284547806,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "The GPT-5 Cheat Sheet: 13 Things to Know About OpenAI's Latest AI Leap",
+                "text": "GPT-5 is here. OpenAI launched its most advanced language model Thursday. Here\u2019s everything you need to know.",
+                "source": "Decrypt",
+                "timestamp": 1754598432,
+                "url": "https://decrypt.co/334102/gpt-5-cheat-sheet-13-things-openai-latest-ai-leap",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.8765465021133423,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
+                "text": "Top markets on Myriad this week include predictions on the price of Bitcoin and markets with connection to the Ethereum founders. ",
+                "source": "Decrypt",
+                "timestamp": 1754596671,
+                "url": "https://decrypt.co/334055/myriad-moves-bitcoin-price-sharplink-ethereum-vitalik",
+                "symbols": [
+                    "BTC",
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.9186991453170776,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Trump 401K Order Could Send \u2018Billions\u2019 Into Bitcoin, Ethereum: Analysts",
+                "text": "A new executive order would allow Americans to add crypto to their 401(k) accounts. ",
+                "source": "Decrypt",
+                "timestamp": 1754594518,
+                "url": "https://decrypt.co/334076/trump-401k-order-could-send-billions-into-bitcoin-ethereum-analysts",
+                "symbols": [
+                    "BTC",
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.7271333932876587,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "After Months of Speculation, OpenAI Finally Launches GPT-5",
+                "text": "OpenAI launched GPT\u20115 today, its most powerful model to date, making it available for free to all users.",
+                "source": "Decrypt",
+                "timestamp": 1754586339,
+                "url": "https://decrypt.co/334047/openai-finally-launches-gpt-5",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.22945556044578552,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Treasury Sharplink to Raise $200 Million for More ETH Purchases",
+                "text": "The ETH treasury firm is selling shares of its common stock for $19.50 per share to raise funds that will go toward adding to its nearly $2 billion Ethereum stockpile.",
+                "source": "Decrypt",
+                "timestamp": 1754585144,
+                "url": "https://decrypt.co/334051/ethereum-treasury-sharplink-200-million-more-eth",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.03515014052391052,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ripple Aiming for More Developers With Ethereum Sidechain: CTO",
+                "text": "An Ethereum sidechain joined XRP Ledger\u2019s ecosystem in June.",
+                "source": "Decrypt",
+                "timestamp": 1754584311,
+                "url": "https://decrypt.co/333864/ripple-aiming-developers-ethereum-sidechain-cto",
+                "symbols": [
+                    "ETH",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.7597920894622803,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "What Are Coin Mixers and How Do They Work?",
+                "text": "Coin mixers like Tornado Cash have faced sanctions for aiding money laundering, but advocates argue they have legitimate use cases.",
+                "source": "Decrypt",
+                "timestamp": 1754582446,
+                "url": "https://decrypt.co/resources/what-are-coin-mixers-tornado-cash-how-do-they-work",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.454039990901947,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Sam Altman's OpenAI Confirms GPT-5 Is About to Drop",
+                "text": "A 7-second clip showing GPT-4o morphing into GPT-5 has the AI community losing its collective mind. Here\u2019s what to expect.",
+                "source": "Decrypt",
+                "timestamp": 1754582260,
+                "url": "https://decrypt.co/334050/sam-altman-openai-gpt-5-drop",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.054094620048999786,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "ETH NEARS $4K, TRUMP TARIFFS BEGIN, REKT HITS ANOTHER ATH",
+                "text": "ETH leads majors, Tom Lee calls for $16k price target. US set to allow crypto in 401k plans. ETH daily transactions near record. Sell Gold, Buy BTC: Lummis. Indonesia evaluates BTC reserve. Tornado dev found guilty of 1 out of 3 charges. US adds 21.6% tariff on BTC mining machines. Parataxis launches $640m BTC treasury strategy. Bakkt to setup Japanese BTC treasury company. Cosmos Health launches $300m ETH treasury. StanChart favours ETH treasury stocks over ETFs. Union Jack Oil to deploy BTC mining facilities. Sheetz offering discounts on crypto payments. AAVE hit by phishing attack. Nomura to launch crypto options in Dubai. Court orders WazirX to disclose Binance agreement",
+                "source": "Decrypt",
+                "timestamp": 1754580350,
+                "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.24181267619132996,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "$PUMP REBOUNDS, CRYPTO EDGES LOWER, CHINA TESTING STABLECOINS",
+                "text": "Crypto volatile amid weaker macro picture. BTC ETF outflows continue, ETH turns positive. Short term BTC holders dump $18b as whales buy. Liquid staking Activities are not securities: SEC. China testing out Yuan stablecoins. Brazil considers BTC reserve. Japan\u2019s SBI files for various crypto ETFs. Michigan pension fund triples BTC ETF exposure. Sharplink bought $304m ETH last week. Metamask plans to launch stablecoin. Base briefly goes down due to sequencer failure. CZ seeks dismissal of $1.8b FTX lawsuit. Hyperliquid earned 35% of July blockchain revenue. BitBridge to go public as BTC treasury firm. BNB discloses new infrastructure roadmap. LTC leads alts, MEI Pharma launches $100m treasury. Pendle to allow speculation on crypto funding rates.",
+                "source": "Decrypt",
+                "timestamp": 1754494100,
+                "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
+                "symbols": [
+                    "BTC",
+                    "LTC",
+                    "ETH",
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.019634094089269638,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "RATE CUT ODDS SOAR, PROJECT CRYPTO, TRUMP TARIFFS",
+                "text": "Crypto rises as Fed pivot bets build, SOL leads. ETH sees ATH ETF outflow. BMNR bought 200k ETH in past week. Vitalik proposes multidimensional ETH fees. US set to fine banks for crypto discrimination. SEC issues guidance on stablecoin accounting. Chainlink launches US equity data streams. Anti-Crypto Warren is a LOSER: Trump. CFTC opens door to crypto futures exchanges. Coinbase, Paypal to offer stablecoin yield. Thiel backed Bullish files for IPO. Arkham uncovers $3.5bn crypto heist",
+                "source": "Decrypt",
+                "timestamp": 1754418127,
+                "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
+                "symbols": [
+                    "ETH",
+                    "SOL",
+                    "LINK"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.36735114455223083,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Debunking XRP Myths With Ripple CTO David Schwartz",
+                "text": "Decrypt's Andr\u00e9 Beganski interviews Ripple Chief Technology Officer David Schwartz on all things XRP, Ripple, XRP Ledger, and the history of the network.",
+                "source": "Decrypt",
+                "timestamp": 1754413863,
+                "url": "https://decrypt.co/videos/interviews/1T1b4LlF/debunking-xrp-myths-with-ripple-cto-david-schwartz",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.9129765033721924,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SOL LEADS MAJORS, HUGE ETF OUTFLOWS, PUMPFUN PROMISES CHANGES",
+                "text": "Crypto rises as Fed pivot bets build, SOL leads. ETH sees ATH ETF outflow. BMNR bought 200k ETH in past week. Vitalik proposes multidimensional ETH fees. US set to fine banks for crypto discrimination. SEC issues guidance on stablecoin accounting. Chainlink launches US equity data streams. Anti-Crypto Warren is a LOSER: Trump. CFTC opens door to crypto futures exchanges. Coinbase, Paypal to offer stablecoin yield. Thiel backed Bullish files for IPO. Arkham uncovers $3.5bn crypto heist",
+                "source": "Decrypt",
+                "timestamp": 1754407294,
+                "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
+                "symbols": [
+                    "ETH",
+                    "SOL",
+                    "LINK"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.1683153510093689,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "VOLATILE WEEKEND, XRP LEADS REBOUND, TRUMP FIRES BLS CHIEF",
+                "text": "XRP, DOGE lead crypto rebound after drop. BTC ETFs suffer 2nd largest single day outflow. Crypto ETFs bought ATH $12.8b in July. China cracks down on mainland crypto again. SEC to hold crypto roundtables across US. Buy the dips in BTC, ETH: Eric Trump. Metaplanet plans $3.7b equity raise to buy BTC. Galaxy Digital OTC whale buys $300m ETH. ETH \u2018mega whales\u2019 continue buying through dip. CFTC launches \u2018crypto sprint\u2019 alongside SEC. Binance opens BTC options writing to all users. Expect BTC to test $100k, ETH to $3k: Hayes. Coinbase stock down 19% last week. UK FCA to allow retail access to crypto ETNs. ENA leads altcoin gains as TVL tops $9bn",
+                "source": "Decrypt",
+                "timestamp": 1754320232,
+                "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
+                "symbols": [
+                    "ETH",
+                    "BNB",
+                    "BTC",
+                    "DOGE",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.6729533076286316,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "BTC ATH MONTHLY, TRUMP SPOOKS MARKETS, ALTCOINS LEAD FALLS",
+                "text": "Bitcoin records ATH monthly close then falls. Altcoins lead crypto sell-off after mixed earnings. SEC launches \u2018Project Crypto\u2019 to tokenise assets. Most crypto assets are not securities: Atkins. Strategy reports $10b profit despite funding costs. Coinbase earnings mixed, stock falls 10%. Coinbase to expand to tokenized RWAs, stocks. Tether announces Q2 profits of $4.9bn. ETH treasuries hit $10b+. ETH Foundation maps 10yr plan for 10k TPS. Stablecoins now 18th largest holder of US treasuries. Jamie Dimon endorses stablecoins but not BTC. Issuers submit amended S-1 for SOL ETF. Visa integrates EURC, PYUSD, USDG. USDC, CCTP V2 coming to Hyperliquid: Circle. Mill City Ventures buys $278m SUI. HK kicks off stablecoin licensing regime",
+                "source": "Decrypt",
+                "timestamp": 1754063085,
+                "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.16119861602783203,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "CRYPTO BOUNCES BACK, FED HOLDS STEADY, REKT NEARS ATH",
+                "text": "Crypto majors reverse overnight losses. WH releases crypto report, slight anti-climax. US must lead crypto revolution: Atkins. SEC outlines listing standards for crypto ETPs. ETH 10 year anniversary, key leaders at NASDAQ. Robinhood beats estimates as crypto revenue ~2x. Coinbase, JPM to link bank accounts to crypto wallets. Ether machine buys $57m ETH. Fundamental Global to buy $200m ETH. Hyperliquid announces refunds for downtime. CoinDCX employee arrested in relation to $44m hack",
+                "source": "Decrypt",
+                "timestamp": 1753975373,
+                "url": "https://decrypt.co/videos/interviews/BM6jwZ1X/crypto-bounces-back-fed-holds-steady-rekt-nears-ath",
+                "symbols": [
+                    "ETH",
+                    "LINK"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.35249969363212585,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "BTC STABLE, SEC ALLOWS IN-KIND REDEMPTIONS, FED DECISION TODAY",
+                "text": "BTC broadly stable ahead of Fed decision today. SEC allows ETPs to use in-kind mechanisms. eToro launches tokenised US stocks on ETH. Lummis intros crypto collateral for mortgages bill. Strategy buys $2.4b BTC post equity raise. Twenty One Capital receives 5.8k BTC from Tether. BTCS to raise $2b to buy ETH. 180 Life Sciences to buy $425m ETH. ETH perp dominance overtakes BTC. Stablecoins are ETH\u2019s ChatGPT moment: Tom Lee. Kraken seeks $15b valuation for IPO. Hyperliquid suffered server issues, denies exploit. Linea to burn ETH with 20% of fees. Rakbank first in UAE to offer crypto trading for retail",
+                "source": "Decrypt",
+                "timestamp": 1753889612,
+                "url": "https://decrypt.co/videos/interviews/ioFCfFCR/btc-stable-sec-allows-in-kind-redemptions-fed-decision-today",
+                "symbols": [
+                    "BTC",
+                    "ETH"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.5873231291770935,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "CRYPTOPUNKS SEE $8.2M IN TRADING VOLUME, CRYPTO MAJORS IN THE RED, PAYPAL ANNOUNCE \"PAY WITH CRYPTO\"",
+                "text": "Allocate up to 15% of portfolio to BTC & Gold: Dalio. Paypal launches multi-crypto payments. Metamask launches stablecoin yield, SOL staking. Interactive Brokers weighs stablecoin. Strategy upsizes capital raise to $2.8b. Marathon Digital raises $950m debt to buy BTC. BitMine plans $1bn stock buyback. ETH \u2018$6k by Christmas\u2019 odds surge. Tron files $1bn mixed shelf offering. Upexi raises $500m to buy SOL. Mill City launches $450m SUI treasury. Nano Labs raises $500m debt to buy BNB. CEA Industries to launch $500m BNB treasury. Bit Origin to raise $500m for first DOGE treasury. SEC delays Grayscale SOL, Truth Social BTC ETF. CoinDCX denies sale talks with Coinbase. FIS, Circle collab to bring USDC payments to banks. EU needs stablecoins to counter US: ECB advisor",
+                "source": "Decrypt",
+                "timestamp": 1753810596,
+                "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
+                "symbols": [
+                    "ETH",
+                    "TRX",
+                    "BNB",
+                    "BTC",
+                    "DOGE",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.19718927145004272,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "PAYPAL EMBRACES CRYPTO, ALTCOIN TREASURIES BEGIN, STOCKS HIT ATH AGAIN",
+                "text": "Allocate up to 15% of portfolio to BTC & Gold: Dalio. Paypal launches multi-crypto payments. Metamask launches stablecoin yield, SOL staking. Interactive Brokers weighs stablecoin. Strategy upsizes capital raise to $2.8b. Marathon Digital raises $950m debt to buy BTC. BitMine plans $1bn stock buyback. ETH \u2018$6k by Christmas\u2019 odds surge. Tron files $1bn mixed shelf offering. Upexi raises $500m to buy SOL. Mill City launches $450m SUI treasury. Nano Labs raises $500m debt to buy BNB. CEA Industries to launch $500m BNB treasury. Bit Origin to raise $500m for first DOGE treasury. SEC delays Grayscale SOL, Truth Social BTC ETF. CoinDCX denies sale talks with Coinbase. FIS, Circle collab to bring USDC payments to banks. EU needs stablecoins to counter US: ECB advisor",
+                "source": "Decrypt",
+                "timestamp": 1753802801,
+                "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
+                "symbols": [
+                    "ETH",
+                    "TRX",
+                    "BNB",
+                    "BTC",
+                    "DOGE",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.43923965096473694,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Why Tokenized Stocks are Important: A Breakdown",
+                "text": "Why Tokenized Stocks are important: A Breakdown #Crypto #Tokenization #kraken \n\nDecrypt spoke to Kraken's global head of consumer, Mark Greenberg, to break down the world of tokenized stocks\u2014and explore Kraken's entry into the space with its XStocks offering.",
+                "source": "Decrypt",
+                "timestamp": 1753798712,
+                "url": "https://decrypt.co/videos/interviews/DlQzVrtc/why-tokenized-stocks-are-important-a-breakdown",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.7140623927116394,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "ALTCOINS LEAD RALLY, US-EU TRADE DEAL, NFTS & MEMECOINS SOAR",
+                "text": "Crypto rallies on US, EU trade deal. BNB hits another ATH, leads major L1s. Galaxy sells $9b BTC for Satoshi-era investor. ETH ETF inflows continue to outperform BTC inflows. Crypto funds hit ATH 4-week inflow. Bit Digital ups share offering to $1b to buy ETH. Sharplink buys $295m ETH, adds BlackRock exec. Trump Media invests $300m in BTC options strategy. Metaplanet buys $92.5m BTC. BTCS bought 14.2k ETH. Four year crypto cycle is dead: Bitwise CEO.  DoJ weighs charging Dragonfly in Tornado cash case. MUFG to tokenize $681m building",
+                "source": "Decrypt",
+                "timestamp": 1753716618,
+                "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "BNB"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.31136998534202576,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "ETH LEADS, MONEY SUPPLY HITS ATH, PUNKS CONTINUE TO SURGE",
+                "text": "BTC dips as jobs data diminishes Fed rate cut hopes. US crypto inflows surge hit $60b YTD. Strategy increases pref stock offering to $2b. Tokyo\u2019s Quantum Solutions plans to buy 3k BTC. ETH could outperform BTC for 6 months: Novogratz. Galaxy begins to sell large clips of BTC. BitMine plans $2.5b stock sale to buy ETH. SOL founder roadmaps low-latency on-chain trading. WindTree Therapeutics raises $520m to buy BNB. Expect stablecoin supply to surge $75b: BofA. Celestia Foundation buys $62.5m TIA. TON Foundation, Kingsway to launch treasury firm. Tron Inc. enters Nasdaq. Christie\u2019s launches $1b real estate division for crypto. Zircuit launches AI trading engine. Woo X hacked for $12m",
+                "source": "Decrypt",
+                "timestamp": 1753459243,
+                "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
+                "symbols": [
+                    "ETH",
+                    "TRX",
+                    "BNB",
+                    "BTC",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.6711649894714355,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "ALTS HEAD LOWER, GOLDMAN SACHS TO TOKENISE FUNDS, TRUMP VISITS FED",
+                "text": "BTC dominance rises, XRP leads major altcoins lower. ETH ETFs see daily inflows for 2 weeks in a row. GS, BNY Mellon to launch tokenised funds. US crypto report coming on July 30. Whales pulled $1.7b ETH from Aave over last week. MARA raises $850m to buy BTC. Nature\u2019s Miracle launches XRP treasury. Tether looking to enter US domestic market. SEC pauses Bitwise\u2019s broad-market ETF approval. FTX to do next creditor distributions from Sep 30. Socieite Generale to provide liquidity for ETPs. KeyBank to offer crypto custody and trading",
+                "source": "Decrypt",
+                "timestamp": 1753372933,
+                "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.30484887957572937,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "PENGU & REKT ALL TIME HIGHS, HUGE ETH ETF INFLOWS, BNB OUTPERFORMS MARKET",
+                "text": "Crypto majors slightly red with BNB outperforming and hitting new ATH. ETH ETFs see 3rd biggest day of inflows while BTC sees net outflows. Coinbase partners with PNC for Crypto-as-a-Service model. Goldman and BNY to offer tokenized money market accounts. PENGU and REKT hit new ATHs as meme leaders continue rally. Crypto majors were slightly red with BNB leading; BTC -0.5% at $118,500, ETH -1% at $3,670, XRP -2% at $3.44, SOL -1% at $197. BNB hit a new ATH over $800 and $112B market cap, flipping SOL. FLR (+22%), PENGU (+18%) and CAKE (+10%) led top movers. The ETH ETFs posted their 3rd highest all time inflow day with $534M, while the BTC ETFs saw their 2nd straight day of outflows. ETH is facing nearly $2B in unstake pressure creating a 9-day delay, its largest since January 2024. PNC Bank partnered with Coinbase to offer crypto trading and custody for PNC clients and Banking services for Coinbase clients. Goldman and BNY are set to offer tokenized money market funds. Meanwhile Citadel wrote a letter to the SEC complaining that tokenized stocks would siphon liquidity from traditional markets. The Telegram Crypto Wallet officially launched for US users, offering crypto buying, selling and sending within the app. Jack Dorsey\u2019s Square started allowing merchants to accept Bitcoin payments",
+                "source": "Decrypt",
+                "timestamp": 1753284869,
+                "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
+                "symbols": [
+                    "ETH",
+                    "BNB",
+                    "BTC",
+                    "SOL",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.797458291053772,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "TRUMP MEDIA DISCLOSES $2B OF BTC, KAITO INTRODUCES CAPITAL LAUNCHPAD, JPMORGAN LENDING AGAINST BTC & ETH?",
+                "text": "SOL outperforms on MEV elimination upgrade. Altcoins\u2019 searches hit 4 year high. ETH ETF inflows continue outperforming BTC. JP Morgan exploring loans backed by BTC, ETH. Ether not a security: SEC\u2019s Atkins. WH crypto report may now be released end of July. Strategy buys $740m BTC, to sell $500m perps. Trump Media now holds ~$2b BTC. Mexico\u2019s Groupo Murano to buy $1b BTC. Sequans, Volcon, Profusa all set to buy BTC. GameSquare buys $30m ETH, raises limit to $250m. Mercurity Fintech plans to buy $200m SOL. Bit Origin buys $10m DOGE. Stablecoin X formed to buy $260m ENA. BitGO set for US IPO. Western Union explores stablecoin rollout",
+                "source": "Decrypt",
+                "timestamp": 1753205819,
+                "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
+                "symbols": [
+                    "BTC",
+                    "DOGE",
+                    "ETH",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.47174540162086487,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SOL NEARS $200, JP MORGAN LOOKS AT CRYPTO LOANS, FARTCOIN LEADS MEMES",
+                "text": "SOL outperforms on MEV elimination upgrade. Altcoins\u2019 searches hit 4 year high. ETH ETF inflows continue outperforming BTC. JP Morgan exploring loans backed by BTC, ETH. Ether not a security: SEC\u2019s Atkins. WH crypto report may now be released end of July. Strategy buys $740m BTC, to sell $500m perps. Trump Media now holds ~$2b BTC. Mexico\u2019s Groupo Murano to buy $1b BTC. Sequans, Volcon, Profusa all set to buy BTC. GameSquare buys $30m ETH, raises limit to $250m. Mercurity Fintech plans to buy $200m SOL. Bit Origin buys $10m DOGE. Stablecoin X formed to buy $260m ENA. BitGO set for US IPO. Western Union explores stablecoin rollout",
+                "source": "Decrypt",
+                "timestamp": 1753197746,
+                "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
+                "symbols": [
+                    "BTC",
+                    "DOGE",
+                    "ETH",
+                    "SOL"
+                ],
+                "source_weight": 0.8,
+                "sentiment": 0.6145052313804626,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SOL LEADS MAJORS, NFTS HEAT-UP, BIG WEEK FOR EARNINGS",
+                "text": "BTC dominance slides by largest margin in 3 years. SOL hits $100bn, leads majors in catch-up trade. ETH ETF inflows again surpass BTC. 40% of ETH ETF total inflows in the last 8 days. WH to release first crypto report this week. Trump signs GENIUS Act, Crypto stocks rally. UK considers sale of GBP 5bn seized BTC. Sequans buys $150m BTC. ABA urge delay in Circle, Ripple license approval. Ether Machine launched to buy $1.5b ETH. ETH Fusaka upgrade scheduled for early Nov. Total DeFi TVL hits $138.5b, highest in 3 years. Thiel backed \u2018Bullish\u2019 files for IPO. CoinDCX suffers $44m hack. Block Inc to join S&P 500. Conflux plans offshore Yuan stablecoin",
+                "source": "Decrypt",
+                "timestamp": 1753112067,
+                "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "SOL",
+                    "XRP"
+                ],
+                "source_weight": 0.8,
+                "sentiment": -0.5108786225318909,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "This XRP Signal Consistently Foreshadows Price Jumps: Analytics Firm",
+                "text": "On-chain analytics firm Santiment has pointed out how utility spikes on the XRP network tend to precede bullish price action in the asset&#8217;s price. XRP Network Activity Lit Up Before The Latest Price Surge In a new post on X, Santiment has discussed about some network activity-related indicators for XRP. The metrics in question are the Transaction Volume and Circulation. The first of these, the Transaction Volume, measures the total amount of the cryptocurrency that&#8217;s becoming involved in transfers on the blockchain every day. While this metric does provide a sense of overall activity occurring on the network, it may give a skewed picture of investor behavior. Related Reading: Dogecoin Is Right Where Past Bull Runs Have Taken Off: Analyst This is because of the fact that not all transfers being made on the chain represent true economic activity. Many of them involve the same part of the supply, constantly in motion due to repeat trades or internal shuffling. The second indicator, the Circulation, helps filter for these moves like these. This metric keeps track of the daily unique number of tokens being shifted on the XRP network. By &#8216;unique,&#8217; what&#8217;s meant here is that no matter how many times a particular coin becomes involved in transfer activity on the blockchain, it still contributes just one unit toward the indicator&#8217;s value. Now, here is the chart shared by Santiment that shows the trends in both of these XRP metrics over the last few months: As displayed in the above graph, the XRP Transaction Volume saw a huge spike to $2.1 billion on August 1st. This 6-month high surge in the metric came as the asset&#8217;s price was going through a drawdown toward a low near $2.70. Alongside the rise in volume, the Circulation also registered a spike to 1.12 billion tokens, indicating that the transfer activity occurring on the network was organic. Since this burst of activity on the blockchain, the cryptocurrency has witnessed some recovery. From the chart, it&#8217;s visible that there have also been spikes in these indicators in the past that led into a price surge for the coin. &#8220;Utility spikes on the network consistently foreshadow price jumps,&#8221; notes the analytics firm. Related Reading: Bitcoin Short-Term Holders Are Capitulating\u2014Will June Pattern Repeat? In some other news, XRP broke out of a triangular channel on Thursday, as analyst Ali Martinez explained in an X post. Generally, breakouts above a triangle&#8217;s upper level are considered to be bullish signals in technical analysis (TA). And indeed, as the pattern may have foreshadowed, the asset has ended up enjoying a surge since then. XRP Price At the time of writing, XRP is floating around $3.29, up more than 7% over the last 24 hours. Featured image from Dall-E, Santiment.net, charts from TradingView.com",
+                "source": "NewsBTC",
+                "timestamp": 1754690454,
+                "url": "https://www.newsbtc.com/xrp-news/xrp-foreshadows-price-jumps-analytics-firm/",
+                "symbols": [
+                    "BTC",
+                    "DOGE",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.7752095460891724,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Bull Run At Risk? Binance Whale-To-Exchange Flow Signals Price Correction",
+                "text": "After failing to decisively break above the $120,000 level in mid-July, Bitcoin (BTC) could face further price corrections as whales continue to increase BTC inflows to the Binance crypto exchange. Is Bitcoin Losing Its Bullish Momentum? According to a recent CryptoQuant Quicktake post by contributor Arab Chain, fresh data from the Binance Whale-to-Exchange Flow indicator suggests that BTC may soon experience additional downside pressure. Related Reading: Bitcoin ETF Market Flashes Warning: IBIT Outflows Paired With Drop In Tron USDT Transfers The analyst noted that despite growing retail participation in the BTC market, persistently high whale inflows into Binance &#8211; combined with a declining Bitcoin price &#8211; signal that the market could be entering a technical correction phase. Arab Chain shared the following chart, where the purple zone shows that whale inflows to Binance remained consistently high throughout July and early August. At the same time, the drop in BTC price reflects a distribution pattern, where whales begin unloading BTC on exchanges following a sharp rally. Although there were no extreme spikes, whale inflows into Binance stayed elevated in the $4 billion to $5 billion range, indicating that these large holders are actively moving BTC onto the exchange &#8211; often a precursor to major sell-offs. The fact that these inflows remain high on Binance despite the drop in BTC price suggests that either whales are still selling their holdings on the exchange, or they are waiting for a price rebound to exit the market. Similarly, the light blue area in the chart shows a notable increase in retail inflows to Binance during late July and early August. Historically, such late-stage retail participation often marks the final phase of a bullish cycle, providing exit liquidity for whales. The analyst concluded: Despite the rise in retail participation, the market shows signs of internal weakness, with sustained whale inflows to Binance and loss of upward momentum. If this behavior continues, the market may be entering a medium-term correction phase. Investors Still Optimistic About BTC While signals suggest the current BTC rally may be overextended, some investors remain confident, employing strategies like Smart Dollar-Cost Averaging (DCA) to accumulate BTC in anticipation of further price gains. Related Reading: Bitcoin Holds Steady At $115,000, But Realized Price Data Warns Of Fragility Fellow CryptoQuant analyst Oinonen noted that while the recent pullback in BTC price may have raised concerns about further declines, the asset\u2019s historical Q4 performance could propel it to a new all-time high of $200,000 by the end of 2025. After hitting a recent low around $111,800, BTC has recovered part of its losses and is now trading near $116,500. Still, some analysts caution investors against \u201cexcessive optimism.\u201d At press time, BTC was trading at $116,501, up 0.2% over the past 24 hours. Featured image from Unsplash, charts from CryptoQuant and TradingView.com",
+                "source": "NewsBTC",
+                "timestamp": 1754686806,
+                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-bull-binance-whale-exchange-flow-price/",
+                "symbols": [
+                    "BTC",
+                    "TRX",
+                    "BNB"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.0011723469942808151,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Analyst Outlines How Production Cost Determines XRP Price, But Is It Better Than Bitcoin?",
+                "text": "A fresh debate in the crypto space has emerged over whether the cost of production significantly impacts the XRP price and the value of Bitcoin (BTC). Market expert CrediBULL Crypto has outlined how these costs influence XRP\u2019s value compared to Bitcoin, concluding that both cryptocurrencies follow the same pricing formula.\u00a0 XRP Price Formula Mirrors That Of Bitcoin A recent discourse on X social media has reignited discussions on whether production costs play a decisive role in determining the prices of cryptocurrencies. CrediBULL Crypto weighed in, explaining that both Bitcoin and XRP follow the same fundamental pricing model, where the cost to produce, combined with speculative and utility value, determines the market price.\u00a0 Related Reading: XRP Price Crash Could Deepen As Bearish Formations Gather For Bitcoin, the analyst notes that the cost to mine, taking into account energy consumption and time, represents a significant portion of BTC\u2019s market price. This production cost forms the \u201cX\u201d variable in the analyst\u2019s pricing equation, with the remainder driven by speculative demand and utility.\u00a0 In contrast, CrediBULL Crypto highlights that XRP\u2019s production cost is negligible, arguably near zero, meaning its market price is primarily driven by demand, adoption, and other speculative factors. Whether mined or premined, the analyst asserts that the market ultimately assigns a value above the production cost based on perceived utility and shifts in investor sentiment.\u00a0 CrediBULL Crypto\u2019s statement comes in response to a recent clash between market expert BD and Robert Breedlove, a Bitcoin maximalist. In his post, Breedlove suggested that XRP\u2019s \u201c100% premined\u201d status set it apart from Bitcoin, which he asserts is a 0% premined coin. The Bitcoin maximalist also warned investors of the potential consequences of this difference, subtly implying that XRP could be a scam token.\u00a0 BD countered, asserting that market demand, not production method, dictates price. He further emphasized that neither mining costs nor premined supply inherently determines a cryptocurrency\u2019s long-term value.\u00a0 Demand Dictates Long-Term Survival\u00a0 Following CrediBULL Crypto\u2019s statement, a community member argued that premined assets, like XRP, could carry higher risks, such as large-scale sell-offs or \u201crug pulls,\u201d potentially driving their value to zero. They further suggested that BTC\u2019s mined supply structure offers more protection against such scenarios.\u00a0 CrediBULL Crypto, however, pushed back, stating that production costs do not guarantee long-term survival or resilience. He noted that demand can disappear for any asset, regardless of whether it costs $5 or $100 to produce. He added that the same principle also applies to Bitcoin and XRP, which are respectively priced at $116,601 and $3.34, at the time of writing.\u00a0 Related Reading: Analyst Predicts Historical 90% XRP Crash Against Bitcoin, But This Will Happen First The analyst further pointed out that just because a commodity costs money to produce does not make it inherently valuable. Without sustained interest, even a high-cost-to-produce asset could collapse in value. To illustrate this point, the analyst compared it to investing substantial resources into digging a massive hole\u2014a process requiring real effort but might hold no value if no one finds the hole useful. Featured image from Getty Images, chart from Tradingview.com",
+                "source": "NewsBTC",
+                "timestamp": 1754683221,
+                "url": "https://www.newsbtc.com/analysis/xrp/production-cost-xrp-price-2/",
+                "symbols": [
+                    "BTC",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.09184633195400238,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SharpLink Bets Big On Ethereum: $200M Raised To Deepen ETH Exposure",
+                "text": "SharpLink Gaming has announced a $200 million capital raise aimed at expanding its Ethereum treasury. As ETH solidifies its role as programmable money and a yield-bearing asset through staking, SharpLink is betting big on its long-term potential. The raise positions the company among a rising class of corporates reshaping capital strategy around blockchain-native assets. Why SharpLink Is Going All-In On Ethereum In an X post, SharpLink Gaming shared an update stating that the company has secured $200 million capital raise through a direct offering priced at $19.50 per share, and has been backed by four global institutional investors. Related Reading: SharpLink Buys the Dip and Adds $100M-Worth of $ETH to its Treasury as $BEST Stands to Gain According to the company, the capital will be strategically deployed to expand its ETH treasury holdings. Upon full deployment, SharpLink expects its ETH reserves to exceed $2 billion, placing it among the most ETH-heavy corporate treasuries globally. The company focuses on accumulating ETH, staking ETH to earn sustainable on-chain yield, and consistently growing ETH-per-share for long-term shareholders. Ethereum is becoming the foundational layer of global finance infrastructure for tokenized assets, and SharpLink is built to capture that upside. According to the DuRtY_Crypto post, Vitalik Buterin recently pointed out that ETH treasuries are increasingly valuable, not just as a store of ETH, but as a different vehicle for people to have access to ETH. Instead of simply buying ETH and holding it, investors are turning to companies that hold and manage ETH treasuries. DuRtY_Crypto has outlined the irony that was unseen between the Bankless crew, who quickly celebrated the mainstream validation. The PulseChain Sacrifice Wallet has skyrocketed to become the 5th-largest ETH holder in crypto with 171,054 ETH. Before the funds rotated into ETH, the wallet was already commanding attention as the largest DAI holder across all chains. Thus, the expert has commended Richard Heart, the controversial figure behind PulseChain, for executing a strategic pivot that few saw coming.\u00a0 Ethereum Activity Heats Up As Transaction Volume Nears ATH While prominent figures are raising capital and increasing the ETH treasury&#8217;s value, CoinW has also revealed that Ethereum on-chain momentum is surging again. According to data from Etherscan, the network processed 1.87 million transactions on Aug 6th, nearing its all-time high of 1.96 million, which was set back in January 2024. Related Reading: Ethereum Bears Dominate Market Orders: -$418.8M Daily Net Taker Volume Signals Trouble Meanwhile, the validator queue data shows the ETH pOs exit queue has dropped significantly to 443,164 ETH, worth roughly $1.612 billion. Following the decline, the average exit wait time now sits at 7 days and 17 hours. With UK regulators officially lifting the ban on crypto exchange-traded notes (cETNs) for retail investors, as reported by CoinW, Ethereum\u2019s performance may experience notable growth. This move signals a major policy shift toward embracing digital asset markets. Furthermore, it will allow individuals to engage in these risk-bearing financial products at their discretion, a move seen as aligning the UK more closely with the global crypto market. Featured image from Getty Images, chart from Tradingview.com",
+                "source": "NewsBTC",
+                "timestamp": 1754679656,
+                "url": "https://www.newsbtc.com/news/ethereum/sharplink-bets-big-on-ethereum/",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.7603290677070618,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Dogecoin Targets $1.60 As Historic Fractal Repeats: Analyst",
+                "text": "A fresh chart shared on X by the pseudonymous technician Charting Guy is stoking renewed bullish chatter around Dogecoin, suggesting that the meme-coin best known for its social-media cult could be setting up for a run toward the upper boundary of a multiyear rising wedge near $1.60. Will Dogecoin Skyrocket Above $1? The analyst\u2019s daily chart (BINANCE: DOGEUSDT) frames nearly two years of price action inside a broad, magenta-coloured ascending wedge whose support has risen from roughly $0.06 in late-2023 to $0.17 today, and whose resistance projects to $1.10\u20131.60 over the coming months. At press time DOGE is changing hands at $0.2219, up 8.7 percent on the day, having just pierced the wedge\u2019s internal trend line that capped every rally until mid-July 2025. A cluster of Fibonacci retracement and extension levels anchored to the chart\u2019s swing low at $0.0491 and swing high at $0.7605 defines the roadmap that traders are watching. The token has already reclaimed the 0.382 retracement at $0.1399 and the psychological $0.20 handle, and is now hovering above the 0.50 zone at $0.1933 \u2013 ahead of the more technically significant golden ratio at 0.618 ($0.2671). Above that, fib-derived hurdles stack at 0.702 ($0.3362), 0.786 ($0.4232), and 0.888 ($0.5596), with the full retrace level at $0.7605 and the 1.272 extension demarcated at $1.6017 \u2013 precisely where the wedge\u2019s ceiling converges in the analyst\u2019s projection. Related Reading: Dogecoin Is Right Where Past Bull Runs Have Taken Off: Analyst What lends the setup its narrative force is a cyan overlay on the same chart \u2013 a fractal copy of DOGE\u2019s eruptive late 2024 leg \u2013 that has been transplanted onto the current structure. In that earlier episode the coin rocketed 439 percent once price tagged rising-wedge support, sliced through the internal down-sloping resistance, retested it as support and accelerated straight to the upper boundary. The overlay implies that a similar sequence has begun to unfold: DOGE revisited wedge support in late June, broke the internal trend line in mid-July, and retested it successfully this week\u2013 if the fractal continues to rhyme \u2013 could embark on a vertiginous sprint that terminates where the 1.272 extension meets the wedge roof just north of $1.60. The monthly view reinforces the bullish undertone. Charting Guy points out that the Relative Strength Index (RSI) is on the verge of a bullish cross of its own moving average in the 50\u201355 band. The last time that crossover occurred, in early 2024, price embarked on the aforementioned 439 percent advance. While momentum has cooled since that high, the oscillator never broke down into oversold territory, suggesting, in classical technical parlance, that DOGE has been basing rather than topping. Sceptics will note that the same wedge has twice rejected advances below $0.50, and that the memecoin still lives below every major high-time-frame supply shelf until $0.76. Yet the chart\u2019s geometry leaves room for a rapid repricing should buyers clear the $0.27\u20130.34 resistance cluster: the \u201cempty air\u201d between the 0.702 and 0.888 fibs coincides with the steepest part of the wedge. Related Reading: Dogecoin Doomed To Chop? Analyst Sees $0.90\u2013$1.50 Top\u2014But Not Anytime Soon For now, traders have a textbook trigger to watch \u2013 the internal magenta down-trend that DOGE has just tested from above. A decisive weekly close above that line, coupled with rising volume, would formally confirm the breakout scenario. Failure to hold $0.20 would invalidate the fractal and shift focus back to wedge support, currently near $0.17. Whether history will repeat with the precision that the fractal projects remains to be seen, but the structural logic on the chart is clear: so long as Dogecoin respects its four-year rising base, the path of least resistance continues to tilt higher \u2013 and the upper edge of that structure terminates at $1.60. The coming weeks should reveal whether the meme-asset can turn that technical aspiration into market reality. At press time, DOGE traded at $0.22. Featured image created with DALL.E, chart from TradingView.com",
+                "source": "NewsBTC",
+                "timestamp": 1754676011,
+                "url": "https://www.newsbtc.com/news/dogecoin/dogecoin-targets-1-60-historic-fractal-repeats/",
+                "symbols": [
+                    "DOGE",
+                    "BNB"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.6086891889572144,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Season Or Altcoin Season? Shiba Inu Exec Outlines What\u2019s Happening",
+                "text": "The debate over whether the crypto market is in Bitcoin Season or on the verge of Altcoin Season has dragged on for many months, especially due to Ethereum&#8217;s price action in the past few days. LUCIE, Shiba Inu&#8217;s marketing lead, recently touched on the matter, sharing insights on what&#8217;s currently happening, what to expect for an altcoin season, and when to anticipate a breakout in the Altcoin Season Index. Altcoin Season Index Points To Bitcoin Dominance Many traders and analysts have been closely watching the Altcoin Season Index, with posts on the social media platform X and news reports increasing in anticipation of a market-wide move that could favor altcoins against Bitcoin. Although the current market still tilts toward Bitcoin, signs of change are starting to emerge, especially with Ethereum now approaching the $4,000 price level. Related Reading: No Altcoin Season If Bitcoin Dominance Reclaims This Level According to the Altcoin Season Index from BlockchainCenter.net, which was also shared by Shiba Inu&#8217;s marketing lead, the index is currently standing at 39, well below the 75 threshold required to confirm altseason. Notably, the data from BlockchainCenter.net shows that the index has been hovering in this range after bouncing from lower levels earlier in the year. As shown in the chart below, despite recent momentum from Ethereum and XRP, Bitcoin is still holding a dominant position in the total market cap. At the time of writing, Bitcoin dominance is currently around 61%, above the 60% level that typically signals room for altcoins to take over. Interestingly, this is a notable reduction from Bitcoin&#8217;s 64.3% dominance from three weeks ago.\u00a0 Lucie attributed this decline in Bitcoin dominance to alt momentum slowly gaining traction across various sectors, including major altcoins and meme-based projects. This gradual build-up, she suggested, could represent an accumulation phase. This is a familiar August pattern that&#8217;s mostly always seen before stronger altcoin rallies. Eyes On September For Possible Breakout Although the current readings confirm that it is still Bitcoin Season, Lucie believes everything may already be setting the stage for an altcoin breakout next month. The combination of a drop in BTC dominance and a surge in the Altcoin Season Index above 75 would officially mark the shift. For now, eyes are on this breakout. Particularly, Lucie noted a September window for a decisive move that could ignite a true altseason. Related Reading: Hold On For Dear Life: This Bullish Bitcoin Metric Just Touched A 15-Year High At the time of writing, Bitcoin&#8217;s market dominance is at 60.0%, according to data from Coinmarketcap. Ethereum, on the other hand, has a market dominance of 12.2%. The last time the market saw altcoin dominance was in December 2024, when the Altcoin Season Index spiked to a reading of 88.\u00a0 Since then, Bitcoin has maintained control, with the most recent attempt to push the index higher stalling at a 59 reading on July 21. Featured image from Getty Images, chart from Tradingview.com",
+                "source": "NewsBTC",
+                "timestamp": 1754672420,
+                "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-season-altcoin-season/",
+                "symbols": [
+                    "BTC",
+                    "SHIB",
+                    "ETH",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.8514693379402161,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Cardano Short-Term Surge Meets Mid-Term Resistance \u2013 What\u2019s Next?",
+                "text": "Cardano (ADA) is showing renewed strength on lower timeframes, with a short-term surge lifting the price above key moving averages. However, this momentum now faces a critical test as mid-term resistance levels come into play. Will the bulls maintain control, or is a reversal on the horizon? ADA Pushes Above Key EMAs: Bulls Seize Short-Term Momentum Analyst Cexscan on X pointed out that Cardano (ADA) is exhibiting a bullish trend on the 30-minute chart. The asset\u2019s price has surged above the 20, 50, and 100-period Exponential Moving Averages (EMAs), indicating rising buying interest and momentum among short-term traders. Related Reading: Cardano (ADA) Targets $0.80 As Price Retests Key Level \u2013 Is An 85% Jump Ahead? Adding further strength to the outlook is the Relative Strength Index (RSI), which currently sits in overbought territory. While this typically signals a possible pause or minor retracement, Cexscan believes that the strong bullish pressure evident in price action could override such a correction in the short run, as long as volume remains healthy. Overall, the combination of bullish EMAs, elevated RSI, and sustained momentum paints an optimistic picture for ADA. Cexscan emphasized that if the current trajectory holds, Cardano could continue its upward path, with intraday opportunities unfolding along the way.\u00a0 Cardano Caught In A Tight Range: Will The Breakout Come Soon? Thomas Anderson, analyzing Cardano\u2019s 4-hour chart in a recent update, pointed out that the price was moving sideways around the $0.3374 zone. This consolidation is occurring between a defined resistance at $0.7612 and support at $0.6874, both marked with yellow horizontal lines. The market appears to be taking a breather, potentially gearing up for a more decisive move. Related Reading: A Breakout To Remember: Cardano Price Mirrors Market Conditions That Led To $3.10 ATH Adding to the picture is the 200-period Moving Average, highlighted in red, which sits just above the current price and acts as a dynamic resistance level. This moving average has repeatedly blocked bullish attempts, making it a crucial hurdle to watch. A clean break above it could be a major trigger for renewed buying interest. On the broader daily timeframe, Anderson observed that Cardano remains trapped within a larger consolidation pattern. The RSI indicator is hovering around 51, reflecting a neutral stance, while the MACD indicator is also showing little directional bias. This reinforces the view that the market is waiting for a breakout catalyst before choosing its next path. Anderson concluded by focusing on the ascending trendline resistance as a key technical level. A strong push above that line could pave the way for intraday gains, especially for scalpers. However, if ADA gets rejected at that level, it may head back toward the lower end of the range, offering potential shorting opportunities for traders watching closely. Featured image from Pixabay, chart from Tradingview.com",
+                "source": "NewsBTC",
+                "timestamp": 1754668841,
+                "url": "https://www.newsbtc.com/news/cardano/cardano-short-term-surge/",
+                "symbols": [
+                    "ADA"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.9217632412910461,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Futures Bias Turns Neutral As OI Net Position Hits Zero \u2013 Details",
+                "text": "Bitcoin has reclaimed the crucial $115,000 level after briefly dipping to $112,000 earlier this week, signaling renewed strength from the bulls. The sharp recovery highlights buyers\u2019 resilience following recent volatility, with price action now showing signs of bullish dominance. This rebound comes as traders and investors brace for the potential next leg up, eyeing higher resistance levels. Related Reading: Bitcoin STH Realized Price Signals Fragile Support: Correction Risk Intensifies Key market data adds weight to the bullish case. The Bitcoin Futures Open Interest Net Position \u2014 a closely watched indicator that tracks the balance between long and short positions \u2014 has shifted in favor of the bulls, showing a clear edge over shorts. This change in positioning suggests that sentiment is turning more optimistic, with market participants increasingly betting on further upside. However, while momentum is building, the coming days will be decisive. Bitcoin must maintain its hold above the $115K level to confirm this shift and open the door to a push toward the next major resistance. Failure to do so could invite fresh selling pressure, putting the recent gains at risk. For now, market structure and derivatives data suggest that bulls are in control, and the stage is set for Bitcoin\u2019s next significant move. Bitcoin Market Sentiment Shifts as Technical and Fundamental Tailwinds Align According to top analyst Axel Adler, Bitcoin\u2019s market structure is undergoing a notable shift. After a prolonged bearish regime since late July \u2014 marked by sustained short pressure and represented in the red zone \u2014 the SMA-120 line for the Bitcoin Futures Open Interest Net Position has reversed upward, reaching the neutral zero mark. This indicator, which reflects the balance between long and short positioning, signals that the market has moved from aggressive short dominance to a neutral-bullish stance. Adler notes that a similar reversal attempt occurred just a week ago but failed to hold, leading to renewed selling pressure. This time, if the SMA-120 remains above zero for another two consecutive days, it would confirm a regime change, potentially paving the way for a more sustained bullish phase. On the fundamental side, momentum is being supported by a major policy development: US President Donald Trump has signed an executive order permitting alternative assets, including cryptocurrencies, to be included in 401(k) retirement plans. This landmark decision could open the door for millions of Americans to gain exposure to Bitcoin and other digital assets through their retirement savings, significantly expanding potential demand. Related Reading: XRP Whale Activity Signals Warning: Distribution Pattern Resurfaces BTC Tests Key Liquidity Levels Bitcoin\u2019s daily chart shows a strong recovery after recently dipping to the $112K region, with bulls reclaiming the critical $115,724 support level. The rebound has pushed BTC toward the $116,700 area, signaling renewed buying interest after a period of panic selling. The 50-day SMA (blue) is currently providing dynamic support near $113K, helping reinforce the bullish case in the short term. Above, the next major resistance is at $122,077, which marks the upper boundary of the recent consolidation range. A decisive breakout above this level could open the door for a retest of all-time highs. Related Reading: Ethereum Bears Dominate Market Orders: -$418.8M Daily Net Taker Volume Signals Trouble The market\u2019s bias leans bullish as long as BTC remains above the 50-day SMA, but traders should watch for momentum signals. If price gains slow while approaching $122K, the risk of a pullback grows. Overall, BTC\u2019s current structure reflects a market attempting to shift back into a bullish posture, with $115,724 acting as the key line in the sand for trend continuation. Featured image from Dall-E, chart from TradingView",
+                "source": "NewsBTC",
+                "timestamp": 1754665216,
+                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-futures-bias-turns-neutral-as-oi-net-position-hits-zero-details/",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.8052314519882202,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin Short-Term Holders Move Into Profit: Is Another Sell-Off Looming?",
+                "text": "Onchain analytics platform Glassnode has revealed that most Bitcoin short-term holders are in profit. This development has raised the possibility of the flagship crypto facing another sell-off from this category of holders, who may be unable to hold during this period of sideways action. 70% of Bitcoin Short-Term Holders Are in Profit A Glassnode report revealed that 70% of the Bitcoin short-term holders&#8217; supply is in profit despite the recent Bitcoin price pull-back. The platform noted that the deeper the correction, the more their supply is likely to fall into loss, a development which could affect these holders\u2019 confidence.\u00a0 Related Reading: Pundit Reveals When To Take Profit From Bitcoin Ahead Of Parabolic Rally The report further stated that, considering that the Bitcoin price is currently trading within a relatively thin air-gap, the sell pressure is likely to come from late-stage profit-taking, should this happen. For now, the sell pressure from these Bitcoin short-term holders looks to be relatively low.\u00a0 Glassnode pointed out the percentage of spent volume originating from Bitcoin short-term holders who were in profit to assess how much this corrective phase has influenced these investors. This metric measures the number of recently acquired coins that are taking profit. The platform noted that the proportion of short-term holders spent coins taking profit has cooled off, currently at 45%, which is a neutral position.\u00a0 Glassnode stated that this suggests that the market is in a relatively balanced position, calming fears about a potential sell-off from Bitcoin short-term holders. Meanwhile, the platform also alluded to the Bitcoin ETFs, which also create sell-side pressure for the flagship crypto. These ETFs recorded a net outflow of 1,500 BTC on August 5, the largest wave of sell-side pressure since April 2025.\u00a0 The report noted that outflows from the Bitcoin ETFs have been relatively brief events, with only a few instances of an extended streak of daily outflows, which create sustained sell-side pressure. Glassnode believes that keeping an eye on the ETF flows will help to identify whether this latest outflow is just a repeat of the short-lived trend or a shift in investors\u2019 sentiment.\u00a0 $116,900 Is The Resistance Level BTC Needs To Break Above Glassnode indicated that the Bitcoin price needs to break above the $116,900 level decisively to build any momentum for the next leg up. This level serves as the cost basis of local top buyers who bought BTC over the last month. The platform claimed that a sustained price move above this level would signal that the demand side is regaining control.\u00a0 Related Reading: Bitcoin Price Crash To $100,000 Or Rally To $122,000? Analyst Shows Game Plan For BTC Furthermore, it also offers early confirmation that the Bitcoin price has found reliable support and could continue its move to the upside. On the other hand, if BTC remains below this level for a longer period, Glassnode remarked that it increases the risk of a deeper correction. Bitcoin could drop toward the lower bound of the air gap near $110,000.\u00a0 At the time of writing, the Bitcoin price is trading at around $116,800, up over 2% in the last 24 hours, according to data from CoinMarketCap. Featured image from Pixabay, chart from Tradingview.com",
+                "source": "NewsBTC",
+                "timestamp": 1754661654,
+                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-short-term-holders/",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.1432187259197235,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "SPX6900 Pumps 23% in a Month as TOKEN6900 Presale Rides the Hype",
+                "text": "SPX6900 has ripped 23% higher in the past month, outpacing not just the S&#38;P 500, but also a long list of blue-chip altcoins. For a meme index born from internet culture and irreverent finance, that kind of run reinforces one thing: the 6900 effect is alive and kicking. While traditional markets obsess over earnings calls and GDP prints, meme-led plays are delivering gains that put \u201cserious\u201d assets to shame. Riding this wave is TOKEN6900 ($T6900) \u2013 the self-described \u2018anti-S&#38;P,\u2019 built on zero utility, zero roadmap, and zero corporate spin. It promises nothing and delivers exactly that. In the upside-down logic of meme finance, that might be the most honest proposition left. And with SPX6900\u2019s surge in full swing, $T6900 could be next in line for the spotlight. SPX6900 Rally &#38; Why It Matters SPX6900 ($SPX) has been on a tear for well over a year. $SPX is up 8.87% in the past week, 23.71% over the last month, and a staggering 10834.57%\u00a0over the last year. These aren\u2019t the kind of numbers you see in blue-chip equities or even most altcoin rallies. The driver? A flood of retail capital into high-volatility, community-driven plays where memes and market psychology matter more than fundamentals. SPX6900\u2019s performance has proved that meme-led indexes can sustain multi-month momentum when the narrative is strong enough. In the process, \u20186900\u2019 has become a brand in its own right, shorthand for absurdist finance done right. That brand power is exactly what TOKEN6900 is tapping into as it builds its own cult following ahead of launch. TOKEN6900 ($T6900) Overview \u2013 The \u2018Non-Corrupt Token\u2019 Branding itself as the world\u2019s first Non-Corrupt Token (NCT), TOKEN6900 ($T6900) flips the crypto script, turning everything the industry usually pretends to be on its head. There\u2019s no roadmap, no fake promises, no \u2018AI-powered\u2019 whitepaper filler. Just pure satire aimed at the S&#38;P500, SPX6900, and the whole idea of fundamentals. It even improves on SPX6900 with one extra token in supply, making it objectively superior. At $0.006875, the sale has already pulled in over $1.71M, including a $16.3K buy on July 18, 2025. Holders can stake for 36% rewards (ironic for a \u2018zero utility\u2019 coin) while the clipart dolphin mascot serves as a tongue-in-cheek rejection of corporate branding. Joining in is simple: head to the official Token6900 presale site, connect your crypto wallet, and buy with $ETH, $USDT, $BNB, or even a card to secure your slice of honest absurdity. Final Verdict: Riding the 6900 Wave with TOKEN6900 Meme coin cycles have a habit of coming back louder, and SPX6900\u2019s latest pump suggests absurdist finance is back in peak demand. TOKEN6900 is perfectly timed for this moment, channelling the same irreverent energy with its unapologetic \u2018nothing to offer\u2019 pitch. For traders who get the joke (and want in on the punchline), the presale offers a low entry point before the next price tier kicks in. Still, this is not financial advice. So please do your own research (DYOR): read the presale details, understand the risks, and only put in what you\u2019re prepared to lose.",
+                "source": "NewsBTC",
+                "timestamp": 1754660105,
+                "url": "https://www.newsbtc.com/news/token6900-presale-rides-spx6900-wave/",
+                "symbols": [
+                    "ETH",
+                    "BNB"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.009872406721115112,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Harvard had more money in BlackRock\u2019s Bitcoin ETF than Google shares at end of last quarter",
+                "text": "\n            <p>The university's holding in BlackRock's highly-successful Bitcoin fund ranked as its fifth largest investment.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754686833,
+                "url": "https://www.theblock.co/post/366224/harvard-had-more-money-in-blackrocks-bitcoin-etf-than-google-shares-at-end-of-last-quarter?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.5538550019264221,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "How Ripple\u2019s years-long SEC lawsuit coming to an end affects, or doesn\u2019t, the XRP ETF race",
+                "text": "\n            <p>The close of Ripple's years-long lawsuit signaled the potential for big firms such as BlackRock to try their hand at proposing a spot XRP ETF.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754677491,
+                "url": "https://www.theblock.co/post/366212/how-ripples-years-long-sec-lawsuit-coming-to-an-end-affects-or-doesnt-the-xrp-etf-race?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.007366687059402466,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "The Daily: Ripple and SEC end legal battle as XRP price jumps, Jack Dorsey\u2019s Block hits $1 billion in bitcoin holdings, and more",
+                "text": "\n            <p>The following article is adapted from The Block\u2019s newsletter, The Daily, which comes out on weekday afternoons.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754673482,
+                "url": "https://www.theblock.co/post/366203/the-daily-ripple-and-sec-end-legal-battle-as-xrp-price-jumps-jack-dorseys-block-hits-1-billion-in-bitcoin-holdings-and-more?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.907137930393219,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Coinbase launches DEX trading for US users amid volume decline",
+                "text": "\n            <p>Users will be able to trade on DEXes such as Aerodrome and Uniswap without having to leave the Coinbase app.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754671221,
+                "url": "https://www.theblock.co/post/366198/coinbase-launches-dex-trading-for-us-users-amid-volume-decline?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "UNI"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.1631176471710205,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Bitcoin miner Terawulf\u2019s net losses continue to rise as it invests deeper in high-performance computing",
+                "text": "\n            <p>Terawulf saw its net losses expand to over $79 million in the first six months of the year, according to its latest financial report.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754671049,
+                "url": "https://www.theblock.co/post/366199/bitcoin-miner-terawulfs-net-losses-continue-to-rise-as-it-invests-deeper-in-high-performance-computing?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.09458056092262268,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "First 2x leveraged ETF tracking Galaxy Digital launched by REX Shares and Tuttle Capital",
+                "text": "\n            <p>The fund is one of 25 \"T-REX\" leveraged single-stock ETFs tracking popular companies like Apple, Nvidia, and Strategy.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754668293,
+                "url": "https://www.theblock.co/post/366194/first-2x-leveraged-etf-tracking-galaxy-digital-launched-by-rex-shares-and-tuttle-capital?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": 0.7360212206840515,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "ETH price taps $4,000 for the first time in 8 months amid rapid Ethereum treasury accumulation and rising ETF inflows",
+                "text": "\n            <p>The move comes amid rapid accumulation by Ethereum treasury companies and increasing ETF inflows in recent weeks.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754664637,
+                "url": "https://www.theblock.co/post/366186/eth-4-k-ethereum-treasury-companies-etf-inflows?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.796890914440155,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Foundation co-director warns \u2018Fusaka\u2019 upgrade risks slipping, urges teams to dial back \u2018Glamsterdam\u2019 talk",
+                "text": "\n            <p>EF's Stanczak warns that Ethereum's Fusaka\u2019s Q4 timeline is at risk, urging developers to pause Glamsterdam planning and prioritize the latest upgrade.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754661290,
+                "url": "https://www.theblock.co/post/366179/ethereum-foundation-co-director-warns-fusaka-upgrade-risks-slipping-urges-teams-to-dial-back-glamsterdam-talk?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.023567870259284973,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Dogwifhat original pink beanie sells to memecoin launchpad founder for $800K \u2014 far less than $4.3M iconic photo NFT sale",
+                "text": "\n            <p>The physical hat associated with the iconic photo of Achi, the dog behind the Dogwifhat memecoin, sold via auction on Ord City for 6.8 BTC.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754658345,
+                "url": "https://www.theblock.co/post/366171/dogwifhat-memecoin-pink-beanie-sells-800k-less-than-4-3m-iconic-photo-nft-sale?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.7518612742424011,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+                "text": "\n            <p>CrediX team appears to have executed an exit scam following a $4.5 million exploit, with the project\u2019s X account inactive and website offline.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754653686,
+                "url": "https://www.theblock.co/post/366159/credix-team-vanishes-after-4-5-million-exploit-deletes-socials-and-takes-website-offline?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": 0.02597099170088768,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Core Scientific\u2019s largest active shareholder opposes $9 billion sale to CoreWeave, citing material undervaluation of bitcoin miner",
+                "text": "\n            <p>Two Seas Capital described the valuation as \"inadequate\" and urged other Core Scientific shareholders to also oppose the deal.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754652511,
+                "url": "https://www.theblock.co/post/366149/bitcoin-miner-core-scientific-coreweave?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.03937816619873047,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Crypto markets edge higher as ETF inflows return; policy updates and Ripple case closure add tailwinds",
+                "text": "\n            <p>Crypto bulls are eyeing $120,000 for BTC and $4,000 for ETH after this week delivered bullish cues across ETF flows and macro, an analyst says.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754650589,
+                "url": "https://www.theblock.co/post/366147/crypto-markets-edge-higher-as-etf-inflows-return-policy-updates-and-ripple-case-closure-add-tailwinds?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BTC",
+                    "ETH",
+                    "XRP"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.8492668271064758,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Beijing moves to curb stablecoin hype even as Hong Kong advances issuer regime",
+                "text": "\n            <p>China orders brokers and research groups to halt promoting stablecoins, including canceling seminars and reports, as Beijing's skepticism persists.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754648461,
+                "url": "https://www.theblock.co/post/366142/beijing-moves-to-curb-stablecoin-hype-even-as-hong-kong-advances-issuer-regime?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": 0.04447968304157257,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Binance is working with banking giant BBVA to enable its customers to hold assets off-exchange: report",
+                "text": "\n            <p>The move comes amid growing demand for enhanced security and efficient trading, with other crypto exchanges exploring similar solutions.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754646124,
+                "url": "https://www.theblock.co/post/366135/binance-bbva-client-assets-off-exchange?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "BNB"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.7861170172691345,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Foundation pledges to match up to $500,000 in donations backing Roman Storm\u2019s legal fight",
+                "text": "\n            <p>Earlier this week, a New York jury found Storm guilty of operating an unlicensed money transmission business, a verdict he is preparing to appeal.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754639993,
+                "url": "https://www.theblock.co/post/366130/ethereum-foundation-500k-roman-storm?utm_source=rss&utm_medium=rss",
+                "symbols": [
+                    "ETH"
+                ],
+                "source_weight": 0.7,
+                "sentiment": 0.47752436995506287,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Pump.fun unveils \u2018Glass Full Foundation\u2019 to support liquidity for ecosystem memecoins",
+                "text": "\n            <p>Pump.fun announced the launch of Glass Full Foundation that will support projects on the platform by injecting liquidity.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754633819,
+                "url": "https://www.theblock.co/post/366124/pump-fun-new-foundation?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": -0.07421520352363586,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Animoca Brands, Standard Chartered\u2019s joint venture initiates stablecoin licensing process in Hong Kong",
+                "text": "\n            <p>Animoca Brands, Standard Chartered, and HKT have officially announced their joint venture, Anchorpoint Financial.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754629139,
+                "url": "https://www.theblock.co/post/366116/animoca-brands-jv-standard-chartered-hkt?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": -0.22005504369735718,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading",
+                "text": "\n            <p>The company said it is raising its gross profit forecast for 2025 to $10.17 billion, up from its earlier forecast of $9.96 billion.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754623991,
+                "url": "https://www.theblock.co/post/366108/jack-dorseys-block-inc-reports-income-growth-q2?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": -0.928297758102417,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "S&P Global gives Sky Protocol \u2018B-\u2018 credit rating, citing centralization and liquidity risks",
+                "text": "\n            <p>S&P Global gave Sky Protocol a 'B-' credit rating, based on risks involved with high depositor concentration and centralized governance.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754623891,
+                "url": "https://www.theblock.co/post/366106/sp-global-sky-protocol?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": -0.5384045243263245,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Trump picks crypto-friendly economist Stephen Miran for Federal Reserve board seat",
+                "text": "\n            <p>President Donald Trump has picked crypto-friendly Stephen Miran to serve on the Federal Reserve Board of Governors.</p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754603241,
+                "url": "https://www.theblock.co/post/366097/trump-picks-crypto-friendly-economist-stephen-miran-for-federal-reserve-board-seat?utm_source=rss&utm_medium=rss",
+                "symbols": [],
+                "source_weight": 0.7,
+                "sentiment": 0.7500653266906738,
+                "impact_score": 1.0,
+                "processed": true
             }
         ],
         "latest_news": [
-            "Meta supprime 6,8 millions de comptes WhatsApp li\u00e9s \u00e0 des arnaques aux cryptomonnaies",
-            "Crypto : La Chine veut freiner l\u2019engouement pour les stablecoins",
-            "Le Salvador ouvre des banques Bitcoin : comment \u00e7a marche et pourquoi c\u2019est important ?",
-            "Comment activer la double authentification (2FA) avec Google Authenticator ?",
-            "Bitcoin 401(k) : Donald Trump signe un d\u00e9cret historique \u00e0 12 500 milliards de $"
+            "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading",
+            "Morning Minute: Crypto in Your 401(k)s Is Finally Happening",
+            "Cardano Short-Term Surge Meets Mid-Term Resistance \u2013 What\u2019s Next?",
+            "Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
+            "Ethereum Cracks $4,000 for First Time in 8 Months"
         ],
-        "overall_sentiment": 0.7565315008163452,
-        "impact_score": 0.7565315008163452,
-        "major_events": "Meta supprime 6,8 millions de comptes WhatsApp li\u00e9s \u00e0 des arnaques aux cryptomonnaies; Crypto : La Chine veut freiner l\u2019engouement pour les stablecoins; Le Salvador ouvre des banques Bitcoin : comment \u00e7a marche et pourquoi c\u2019est important ?",
+        "overall_sentiment": 0.2908451060341163,
+        "impact_score": 0.5641965958092249,
+        "major_events": "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading; Morning Minute: Crypto in Your 401(k)s Is Finally Happening; Cardano Short-Term Surge Meets Mid-Term Resistance \u2013 What\u2019s Next?",
         "top_symbols": [
-            "BNB",
-            "SOL",
-            "XRP",
-            "BTC",
-            "UNI"
+            "SHIB",
+            "ADA",
+            "DOGE",
+            "XLM",
+            "BTC"
         ],
-        "n_news": 50
+        "n_news": 165
     },
     "pending_sales": [
         {
@@ -1538,18 +3157,102 @@
             "confidence": 0.5
         }
     ],
-    "active_pauses": [],
-    "pause_status": {
-        "global_remaining": 0,
-        "pair_pauses": {
-            "BTC": 1,
-            "XRP": 1,
-            "ETH": 1,
-            "BNB": 1,
-            "LTC": 1,
-            "LINK": 1,
-            "SOL": 1
+    "active_pauses": [
+        {
+            "asset": "BTC",
+            "action": "BUY",
+            "cycles_left": 6,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
         },
-        "max_remaining": 0
+        {
+            "asset": "XRP",
+            "action": "BUY",
+            "cycles_left": 3,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "ETH",
+            "action": "BUY",
+            "cycles_left": 21,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "BNB",
+            "action": "BUY",
+            "cycles_left": 3,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "LTC",
+            "action": "BUY",
+            "cycles_left": 3,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "LINK",
+            "action": "FULL",
+            "cycles_left": 29,
+            "type": "FULL",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "SOL",
+            "action": "FULL",
+            "cycles_left": 29,
+            "type": "FULL",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        },
+        {
+            "asset": "GLOBAL",
+            "action": "ALL",
+            "cycles_left": 14,
+            "type": "GLOBAL",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29,
+            "total_remaining": 29
+        }
+    ],
+    "pause_status": {
+        "global_remaining": 14,
+        "pair_pauses": {
+            "BTC": 6,
+            "XRP": 3,
+            "ETH": 21,
+            "BNB": 3,
+            "LTC": 3,
+            "LINK": 29,
+            "SOL": 29
+        },
+        "max_remaining": 29
+    },
+    "timestamp": "2025-08-09 01:12:29",
+    "user": "Patmoorea",
+    "bot_status": {
+        "regime": "Range/Scalping",
+        "cycle": 0,
+        "last_update": "2025-08-09 01:12:29",
+        "performance": {
+            "balance": 60.85659068
+        },
+        "timestamp": "2025-08-09 01:12:29"
     }
 }

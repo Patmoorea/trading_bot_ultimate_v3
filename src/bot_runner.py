@@ -3249,7 +3249,14 @@ class TradingBotM4:
             # 10. Fusion et mise à jour finale
             new_fields = update_timestamps(new_fields)
             shared_data = deep_update(shared_data, new_fields)
-            shared_data.update(preserved_data)
+            for key, value in preserved_data.items():
+                if key not in new_fields:
+                    shared_data[key] = value
+
+            print(
+                "[DEBUG] shared_data avant sauvegarde:",
+                json.dumps(shared_data, indent=2),
+            )
 
             # 11. Sauvegarde sécurisée
             try:
