@@ -1062,7 +1062,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             pause_status = shared_data.get("pause_status", {})
             self.news_pause_manager.global_cycles_remaining = pause_status.get(
                 "global_remaining", 0
@@ -3067,7 +3067,7 @@ class TradingBotM4:
             try:
                 with open(data_file, "r") as f:
                     shared_data = json.load(f)
-                    deep_cast_floats(shared_data)
+                    deep_cast_floats(data)
                     deep_cast_floats(new_fields)
                     if not isinstance(shared_data, dict):
                         print("[ERROR] Format JSON invalide")
@@ -3338,7 +3338,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
                 closed = shared_data.get("closed_positions", [])
         except Exception:
             closed = []
@@ -3905,7 +3905,7 @@ class TradingBotM4:
                 try:
                     with open(self.data_file, "r") as f:
                         shared_data = json.load(f)
-                    deep_cast_floats(shared_data)
+                    deep_cast_floats(data)
                     sentiment_data = shared_data.get("sentiment", {})
                     avg_sentiment = float(
                         sentiment_data.get("overall_sentiment", 0) or 0
@@ -4227,7 +4227,7 @@ class TradingBotM4:
                 # Récupère l'historique des rendements depuis equity_history
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
                 equity_history = data.get("equity_history", [])
                 if not equity_history or len(equity_history) < 2:
                     return 0.0
@@ -4265,7 +4265,7 @@ class TradingBotM4:
                 # Récupère l'historique des rendements
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
                 equity_history = data.get("equity_history", [])
                 if not equity_history or len(equity_history) < 2:
                     return 0.0
@@ -4307,7 +4307,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             equity_history = data.get("equity_history", [])
 
             if not equity_history or len(equity_history) < 2:
@@ -4341,7 +4341,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             trade_history = data.get("trade_history", [])
 
             if not trade_history:
@@ -4359,7 +4359,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             trade_history = data.get("trade_history", [])
 
             if not trade_history:
@@ -4377,7 +4377,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             equity_history = data.get("equity_history", [])
 
             if not equity_history or len(equity_history) < 2:
@@ -4869,7 +4869,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data_prev = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             old_scores = shared_data_prev.get("sentiment", {}).get("scores", [])
         except Exception:
             old_scores = []
@@ -4948,7 +4948,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-            deep_cast_floats(shared_data)
+            deep_cast_floats(data)
             news_sentiment = shared_data.get("sentiment", None)
         except Exception:
             news_sentiment = None
@@ -5557,7 +5557,7 @@ class TradingBotM4:
             try:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
             except Exception as e:
                 print(f"Erreur lecture shared_data: {e}")
                 data = {}
@@ -5605,7 +5605,7 @@ class TradingBotM4:
             if os.path.exists(self.data_file):
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
             else:
                 data = {}
 
@@ -5665,7 +5665,7 @@ class TradingBotM4:
             try:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(shared_data)
+                deep_cast_floats(data)
                 saved_perf = data.get("bot_status", {}).get("performance", {})
                 # PATCH ABSOLU : cast toutes les clés numériques
                 for k in [
