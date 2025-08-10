@@ -1205,6 +1205,27 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def validate_tp_levels(self, levels):
+        """Valide et convertit les niveaux TP depuis la config"""
+        if levels is None:
+            return [(0.03, 0.3), (0.07, 0.3)]
+
+        validated = []
+        for level in levels:
+            try:
+                if isinstance(level, str):
+                    # Gère les strings "0.03:0.3" ou "0.03,0.3"
+                    parts = level.replace(":", ",").split(",")
+                    pct = float(parts[0].strip())
+                    frac = float(parts[1].strip()) if len(parts) > 1 else 0.3
+                else:
+                    pct = float(level[0])
+                    frac = float(level[1]) if len(level) > 1 else 0.3
+                validated.append((pct, frac))
+            except Exception as e:
+                print(f"⚠️ Niveau TP ignoré: {level} - {str(e)}")
+        return validated or [(0.03, 0.3), (0.07, 0.3)]  # Valeur par défaut si vide
+
     def safe_float_conversion(self, value, default=0.0):
         """Conversion robuste vers float"""
         if isinstance(value, (int, float)):
@@ -3195,51 +3216,32 @@ class TradingBotM4:
                 os.remove(temp_file)
 
     def check_tp_partial(
-        self,
-        entry_price,
-        current_price,
-        filled_tp_targets=None,
-        tp_levels=[(0.03, 0.3), (0.07, 0.3)],  # Modification ici
+        self, entry_price, current_price, filled_tp_targets=None, tp_levels=None
     ):
-        """Version corrigée avec validation de type stricte"""
-        # 1. Conversion forcée des prix en float
+        """Version sécurisée avec gestion de type stricte"""
+        # Conversion et validation
         try:
             entry = float(entry_price)
             current = float(current_price)
-        except (TypeError, ValueError) as e:
-            print(f"❌ Erreur conversion prix: {e}")
-            return 0.0, filled_tp_targets or [False] * len(tp_levels)
+            tp_levels = tp_levels or [(0.03, 0.3), (0.07, 0.3)]
 
-        # 2. Validation des niveaux de TP
-        validated_levels = []
-        for level in tp_levels:
-            try:
-                # Conversion explicite de chaque élément du tuple TP
-                validated_levels.append((float(level[0]), float(level[1])))
-            except (IndexError, TypeError, ValueError) as e:
-                print(f"❌ Niveau TP invalide {level}: {e}")
-                continue
+            to_exit = 0.0
+            filled = (
+                filled_tp_targets.copy()
+                if filled_tp_targets
+                else [False] * len(tp_levels)
+            )
 
-        # 3. Initialisation des cibles remplies
-        if filled_tp_targets is None:
-            filled = [False] * len(validated_levels)
-        else:
-            filled = [bool(x) for x in filled_tp_targets]
+            for i, (tp_pct, frac) in enumerate(tp_levels):
+                if not filled[i] and entry > 0:
+                    if (current - entry) / entry >= float(tp_pct):
+                        to_exit += float(frac)
+                        filled[i] = True
 
-        # 4. Calcul des TP
-        to_exit = 0.0
-        new_filled = filled.copy()
-
-        for i, (tp_pct, frac) in enumerate(validated_levels):
-            if entry <= 0:
-                continue
-
-            pct_change = (current - entry) / entry
-            if not new_filled[i] and pct_change > tp_pct:
-                to_exit += frac
-                new_filled[i] = True
-
-        return to_exit, new_filled
+            return to_exit, filled
+        except Exception as e:
+            print(f"❌ Erreur calcul TP: {str(e)}")
+            return 0.0, filled_tp_targets or [False] * len(tp_levels or [])
 
     def check_trailing(self, entry_price, price_history, max_price, trailing_pct=0.03):
         """
@@ -5828,6 +5830,27 @@ class TradingBotM4:
                 else:
                     print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
 
+    def validate_tp_levels(self, levels):
+        """Valide et convertit les niveaux TP depuis la config"""
+        if not levels:
+            return [(0.03, 0.3), (0.07, 0.3)]  # Valeurs par défaut
+
+        validated = []
+        for level in levels:
+            try:
+                if isinstance(level, str):
+                    # Gère les formats "0.03:0.3" ou "0.03,0.3"
+                    parts = level.replace(":", ",").split(",")
+                    pct = float(parts[0].strip())
+                    frac = float(parts[1].strip()) if len(parts) > 1 else 0.3
+                else:
+                    pct = float(level[0])
+                    frac = float(level[1]) if len(level) > 1 else 0.3
+                validated.append((pct, frac))
+            except Exception as e:
+                print(f"⚠️ Niveau TP ignoré: {level} - {str(e)}")
+        return validated or [(0.03, 0.3), (0.07, 0.3)]
+
 
 def filter_pairs(
     bot,
@@ -7389,6 +7412,7 @@ async def execute_trade_decisions(bot, trade_decisions):
     Exécute toutes les décisions de trade du cycle.
     Intègre la gestion avancée de pause news par asset/action
     et la validation par le RiskManager.
+    Corrigé pour éviter tout bug de type (int + str) sur les montants.
     """
     # Vérification des news du cycle
     news_list = []
@@ -7421,7 +7445,7 @@ async def execute_trade_decisions(bot, trade_decisions):
         try:
             pair = decision.get("pair")
             action = decision.get("action")
-            confidence = decision.get("confidence", 0)
+            confidence = safe_float(decision.get("confidence", 0))
 
             # Vérification pause news
             active_pauses = bot.news_pause_manager.get_active_pauses()
@@ -7430,29 +7454,35 @@ async def execute_trade_decisions(bot, trade_decisions):
                 for p in active_pauses
             ):
                 log_dashboard(
-                    f"[NEWS PAUSE] Trade {action.upper()} sur {pair} bloqué (pause news)"
+                    f"[NEWS PAUSE] Trade {str(action).upper()} sur {pair} bloqué (pause news)"
                 )
                 await bot.telegram.send_message(
-                    f"🚨 Trading {action.upper()} sur {pair} bloqué (pause news)"
+                    f"🚨 Trading {str(action).upper()} sur {pair} bloqué (pause news)"
                 )
                 continue
 
             # Validation par le RiskManager
             if not bot.risk_manager.validate_trade(decision.get("signals", {})):
                 log_dashboard(
-                    f"[RISK] Trade {action.upper()} sur {pair} rejeté "
+                    f"[RISK] Trade {str(action).upper()} sur {pair} rejeté "
                     "(critères de risque non respectés)"
                 )
                 continue
 
             # Calcul de la taille de position
-            balance = bot.get_performance_metrics().get("balance", 0)
-            volatility = bot.calculate_volatility_advanced(
-                bot.market_data.get(pair.replace("/", "").upper(), {}).get("1h", {})
+            balance = safe_float(bot.get_performance_metrics().get("balance", 0), 0)
+            volatility = safe_float(
+                bot.calculate_volatility_advanced(
+                    bot.market_data.get(pair.replace("/", "").upper(), {}).get("1h", {})
+                ),
+                0.02,
             )
 
-            amount = bot.risk_manager.calculate_position_size(
-                equity=balance, confidence=confidence, volatility=volatility
+            amount = safe_float(
+                bot.risk_manager.calculate_position_size(
+                    equity=balance, confidence=confidence, volatility=volatility
+                ),
+                0,
             )
 
             if amount <= 0:
@@ -7468,8 +7498,8 @@ async def execute_trade_decisions(bot, trade_decisions):
 
             # Log pré-exécution
             log_dashboard(
-                f"[EXECUTE] {pair} | {action.upper()} | "
-                f"Amount: {amount:.2f} | Conf: {confidence:.2f}"
+                f"[EXECUTE] {pair} | {str(action).upper()} | "
+                f"Amount: {amount:.6f} | Conf: {confidence:.2f}"
             )
 
             # Exécution du trade

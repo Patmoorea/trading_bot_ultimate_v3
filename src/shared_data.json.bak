@@ -3195,88 +3195,61 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 27,
+            "cycles_left": 24,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
-        },
-        {
-            "asset": "XRP",
-            "action": "BUY",
-            "cycles_left": 1,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
+            "max_cycles": 24,
+            "total_remaining": 24
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 27,
+            "cycles_left": 24,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
-        },
-        {
-            "asset": "BNB",
-            "action": "BUY",
-            "cycles_left": 1,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
-        },
-        {
-            "asset": "LTC",
-            "action": "BUY",
-            "cycles_left": 1,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
+            "max_cycles": 24,
+            "total_remaining": 24
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 27,
+            "cycles_left": 24,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
+            "max_cycles": 24,
+            "total_remaining": 24
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 27,
+            "cycles_left": 24,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
+            "max_cycles": 24,
+            "total_remaining": 24
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 12,
+            "cycles_left": 9,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27,
-            "total_remaining": 27
+            "max_cycles": 24,
+            "total_remaining": 24
         }
     ],
     "pause_status": {
-        "global_remaining": 12,
+        "global_remaining": 9,
         "pair_pauses": {
-            "BTC": 27,
+            "BTC": 24,
             "XRP": 1,
-            "ETH": 27,
+            "ETH": 24,
             "BNB": 1,
             "LTC": 1,
-            "LINK": 27,
-            "SOL": 27
+            "LINK": 24,
+            "SOL": 24
         },
-        "max_remaining": 27
+        "max_remaining": 24
     },
     "market_data": {
         "BTCUSDC": {
