@@ -861,87 +861,60 @@
         {
             "asset": "BTC",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "XRP",
-            "action": "FULL",
-            "cycles_left": 1.0,
-            "type": "FULL",
-            "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "ETH",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "BNB",
-            "action": "FULL",
-            "cycles_left": 1.0,
-            "type": "FULL",
-            "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "LTC",
-            "action": "FULL",
-            "cycles_left": 1.0,
-            "type": "FULL",
-            "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 12.0,
+            "cycles_left": 11.0,
             "type": "GLOBAL",
             "reason": "",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         }
     ],
     "pause_status": {
-        "global_remaining": 12.0,
+        "global_remaining": 11.0,
         "pair_pauses": {
-            "BTC": 27.0,
+            "BTC": 26.0,
             "XRP": 1.0,
-            "ETH": 27.0,
+            "ETH": 26.0,
             "BNB": 1.0,
             "LTC": 1.0,
-            "LINK": 27.0,
-            "SOL": 27.0
+            "LINK": 26.0,
+            "SOL": 26.0
         },
-        "max_remaining": 27.0
+        "max_remaining": 26.0
     }
 }

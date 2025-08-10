@@ -6962,13 +6962,19 @@ async def run_clean_bot():
                         amount = safe_float(pos.get("amount"), 0)
                         last_price = safe_float(last_price, 0)
 
+                        # Cast filled_tp_targets individuellement si besoin
+                        filled_tp_targets = [
+                            bool(x)
+                            for x in pos.get("filled_tp_targets", [False, False])
+                        ]
+
                         print(
-                            f"[DEBUG TP] {symbol} entry={entry_price} last={last_price} amount={amount} filled_tp_targets={pos['filled_tp_targets']}"
+                            f"[DEBUG TP] {symbol} entry={entry_price} last={last_price} amount={amount} filled_tp_targets={filled_tp_targets}"
                         )
 
                         # Calcule le TP partiel (to_exit = proportion à vendre)
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
-                            entry_price, last_price, pos["filled_tp_targets"]
+                            entry_price, last_price, filled_tp_targets
                         )
                         to_exit = safe_float(to_exit, 0)
 
@@ -6980,14 +6986,16 @@ async def run_clean_bot():
                         if to_exit > 0 and amount > 0:
                             amount = safe_float(amount, 0)
                             amount_to_sell = safe_float(amount * to_exit, 0)
+                            # PATCH: toujours cast le résultat ET la valeur lue
                             pos["amount"] = safe_float(amount, 0) - safe_float(
                                 amount_to_sell, 0
                             )
-                            pos["filled_tp_targets"] = new_filled
+                            pos["filled_tp_targets"] = [bool(x) for x in new_filled]
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
+                            # Cast pour la comparaison ET le pop
                             if safe_float(pos["amount"], 0) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
