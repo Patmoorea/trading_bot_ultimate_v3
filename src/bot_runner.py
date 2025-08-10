@@ -1062,7 +1062,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-            deep_cast_floats(data)
+            deep_cast_floats(shared_data)
             pause_status = shared_data.get("pause_status", {})
             self.news_pause_manager.global_cycles_remaining = pause_status.get(
                 "global_remaining", 0
@@ -3067,7 +3067,7 @@ class TradingBotM4:
             try:
                 with open(data_file, "r") as f:
                     shared_data = json.load(f)
-                    deep_cast_floats(data)
+                    deep_cast_floats(shared_data)
                     deep_cast_floats(new_fields)
                     if not isinstance(shared_data, dict):
                         print("[ERROR] Format JSON invalide")
@@ -3338,7 +3338,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-                deep_cast_floats(data)
+                deep_cast_floats(shared_data)
                 closed = shared_data.get("closed_positions", [])
         except Exception:
             closed = []
@@ -3905,7 +3905,7 @@ class TradingBotM4:
                 try:
                     with open(self.data_file, "r") as f:
                         shared_data = json.load(f)
-                    deep_cast_floats(data)
+                    deep_cast_floats(shared_data)
                     sentiment_data = shared_data.get("sentiment", {})
                     avg_sentiment = float(
                         sentiment_data.get("overall_sentiment", 0) or 0
@@ -4948,7 +4948,7 @@ class TradingBotM4:
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
-            deep_cast_floats(data)
+            deep_cast_floats(shared_data)
             news_sentiment = shared_data.get("sentiment", None)
         except Exception:
             news_sentiment = None
@@ -6151,6 +6151,7 @@ async def run_clean_bot():
                     if isinstance(shared_data, dict)
                     else {}
                 )
+
                 news_list = (
                     news_sentiment.get("scores", [])
                     if isinstance(news_sentiment, dict)
