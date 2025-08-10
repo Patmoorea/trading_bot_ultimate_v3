@@ -153,6 +153,28 @@ def safe_float(val, default=0.0):
         return default
 
 
+def deep_cast_floats(d):
+    """Cast toutes les valeurs numériques (str/int/float) en float dans un dict ou une liste, récursivement."""
+    if isinstance(d, dict):
+        for k, v in d.items():
+            if isinstance(v, dict) or isinstance(v, list):
+                deep_cast_floats(v)
+            elif isinstance(v, (str, int, float)):
+                try:
+                    d[k] = safe_float(v, v)
+                except Exception:
+                    pass
+    elif isinstance(d, list):
+        for idx, v in enumerate(d):
+            if isinstance(v, dict) or isinstance(v, list):
+                deep_cast_floats(v)
+            elif isinstance(v, (str, int, float)):
+                try:
+                    d[idx] = safe_float(v, v)
+                except Exception:
+                    pass
+
+
 def add_dl_features(df):
     """
     Ajoute les features 'rsi', 'macd', 'volatility' nécessaires à l'entraînement IA.
@@ -1174,27 +1196,6 @@ class TradingBotM4:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
-
-    def deep_cast_floats(d):
-        """Cast toutes les valeurs numériques (str/int/float) en float dans un dict ou une liste, récursivement."""
-        if isinstance(d, dict):
-            for k, v in d.items():
-                if isinstance(v, dict) or isinstance(v, list):
-                    deep_cast_floats(v)
-                elif isinstance(v, (str, int, float)):
-                    try:
-                        d[k] = safe_float(v, v)
-                    except Exception:
-                        pass
-        elif isinstance(d, list):
-            for idx, v in enumerate(d):
-                if isinstance(v, dict) or isinstance(v, list):
-                    deep_cast_floats(v)
-                elif isinstance(v, (str, int, float)):
-                    try:
-                        d[idx] = safe_float(v, v)
-                    except Exception:
-                        pass
 
     def fetch_trades_fifo(self, binance_client, symbol):
         """
