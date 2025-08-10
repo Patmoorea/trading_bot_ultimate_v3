@@ -1,10 +1,10 @@
 {
-    "timestamp": "2025-08-10 19:22:42",
+    "timestamp": "2025-08-10 19:28:06",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0,
-        "last_update": "2025-08-10 19:22:42",
+        "last_update": "2025-08-10 19:28:06",
         "performance": {
             "balance": 60.85659068
         },
@@ -16,7 +16,7 @@
         "top_n": 5.0
     },
     "sentiment": {
-        "timestamp": "2025-08-10T09:26:08.121710",
+        "timestamp": "2025-08-10T09:31:32.022206",
         "scores": [
             {
                 "title": "Actualit\u00e9s crypto de la semaine du 4 aout 2025 : Coin Hebdo #200",
@@ -147,9 +147,9 @@
                 "timestamp": 1754733600,
                 "url": "https://journalducoin.com/defi/defi-hyperliquid-explose-records-487-milliards-dollars-volume-juillet/",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7974889278411865,
@@ -175,8 +175,8 @@
                 "timestamp": 1754721064,
                 "url": "https://journalducoin.com/bitcoin/nouveau-rallye-venir-fusee-btc-bitcoin-9-aout/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7410619258880615,
@@ -228,8 +228,8 @@
                 "timestamp": 1754671751,
                 "url": "https://coinacademy.fr/actu/ethereum-4000-sommet-eth/?utm_source=rss&utm_medium=rss&utm_campaign=ethereum-4000-sommet-eth",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7066123485565186,
@@ -285,8 +285,8 @@
                 "timestamp": 1754661600,
                 "url": "https://journalducoin.com/bitcoin/crypto-freres-winklevoss-american-bitcoin-societe-minage-fils-trump/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7717936635017395,
@@ -364,9 +364,9 @@
                 "timestamp": 1754650800,
                 "url": "https://journalducoin.com/ethereum/signal-haussier-majeur-vue-pour-paire-eth-btc-ethereum-8-aout/",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7528485655784607,
@@ -380,8 +380,8 @@
                 "timestamp": 1754648921,
                 "url": "https://journalducoin.com/actualites/crypto-chine-veut-freiner-engouement-pour-stablecoins/",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8454409837722778,
@@ -421,8 +421,8 @@
                 "timestamp": 1754640720,
                 "url": "https://coinacademy.fr/actu/trump-401-k-crypto-plans-retraite-americains/?utm_source=rss&utm_medium=rss&utm_campaign=trump-401-k-crypto-plans-retraite-americains",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8119657635688782,
@@ -476,9 +476,9 @@
                 "timestamp": 1754638066,
                 "url": "https://journalducoin.com/bitcoin/rebond-btc-direction-ath-123-000-dollars-bitcoin-8-aout/",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7975867986679077,
@@ -546,8 +546,8 @@
                 "timestamp": 1754582427,
                 "url": "https://cryptoast.fr/reprise-ethereum-transactions-quotidiennes-explosent-sur-le-reseau/",
                 "symbols": [
-                    "ETH",
-                    "UNI"
+                    "UNI",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7642650008201599,
@@ -783,8 +783,8 @@
                 "timestamp": 1754806701,
                 "url": "https://cointelegraph.com/news/strategy-michael-saylor-bitcoin-focused-concerns-eth-altcoin-interest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.8678897023200989,
@@ -860,8 +860,8 @@
                 "timestamp": 1754750861,
                 "url": "https://cointelegraph.com/news/ether-price-target-now-20k-eth-preps-all-time-high-in-1-2-weeks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.613024890422821,
@@ -1067,14 +1067,14 @@
                 "timestamp": 1754669486,
                 "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "XRP",
-                    "ADA",
+                    "SOL",
                     "BNB",
-                    "DOGE",
-                    "ETH",
+                    "ADA",
                     "BTC",
+                    "XRP",
                     "XLM",
-                    "SOL"
+                    "DOGE",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1296260952949524,
@@ -1088,8 +1088,8 @@
                 "timestamp": 1754666052,
                 "url": "https://cointelegraph.com/news/ether-price-hits-4k-for-first-time-since-december-2024?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8600726127624512,
@@ -1287,12 +1287,12 @@
                 "timestamp": 1754666466,
                 "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
                 "symbols": [
-                    "XRP",
-                    "BNB",
-                    "ETH",
-                    "BTC",
                     "SOL",
-                    "LINK"
+                    "BNB",
+                    "LINK",
+                    "BTC",
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8488626480102539,
@@ -1382,10 +1382,10 @@
                 "timestamp": 1754648993,
                 "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
                 "symbols": [
-                    "XLM",
                     "LINK",
+                    "XRP",
                     "ADA",
-                    "XRP"
+                    "XLM"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8473196625709534,
@@ -1573,8 +1573,8 @@
                 "timestamp": 1754596671,
                 "url": "https://decrypt.co/334055/myriad-moves-bitcoin-price-sharplink-ethereum-vitalik",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.9186991453170776,
@@ -1588,8 +1588,8 @@
                 "timestamp": 1754594518,
                 "url": "https://decrypt.co/334076/trump-401k-order-could-send-billions-into-bitcoin-ethereum-analysts",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.7271333932876587,
@@ -1603,8 +1603,8 @@
                 "timestamp": 1754580350,
                 "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "BNB"
                 ],
                 "source_weight": 0.8,
@@ -1619,10 +1619,10 @@
                 "timestamp": 1754494100,
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
-                    "ETH",
                     "BTC",
-                    "LTC",
-                    "BNB"
+                    "ETH",
+                    "BNB",
+                    "LTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.019634094089269638,
@@ -1636,9 +1636,9 @@
                 "timestamp": 1754418127,
                 "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
                 "symbols": [
-                    "ETH",
                     "LINK",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.36735114455223083,
@@ -1666,9 +1666,9 @@
                 "timestamp": 1754407294,
                 "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
                 "symbols": [
-                    "ETH",
                     "LINK",
-                    "SOL"
+                    "SOL",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1683153510093689,
@@ -1682,11 +1682,11 @@
                 "timestamp": 1754320232,
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
-                    "XRP",
                     "BNB",
+                    "BTC",
+                    "XRP",
                     "DOGE",
-                    "ETH",
-                    "BTC"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6729533076286316,
@@ -1700,9 +1700,9 @@
                 "timestamp": 1754063085,
                 "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.16119861602783203,
@@ -1716,8 +1716,8 @@
                 "timestamp": 1753975373,
                 "url": "https://decrypt.co/videos/interviews/BM6jwZ1X/crypto-bounces-back-fed-holds-steady-rekt-nears-ath",
                 "symbols": [
-                    "ETH",
-                    "LINK"
+                    "LINK",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.35249969363212585,
@@ -1731,8 +1731,8 @@
                 "timestamp": 1753889612,
                 "url": "https://decrypt.co/videos/interviews/ioFCfFCR/btc-stable-sec-allows-in-kind-redemptions-fed-decision-today",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.5873231291770935,
@@ -1746,12 +1746,12 @@
                 "timestamp": 1753810596,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
+                    "SOL",
                     "BNB",
-                    "DOGE",
-                    "ETH",
-                    "BTC",
                     "TRX",
-                    "SOL"
+                    "BTC",
+                    "DOGE",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.19718927145004272,
@@ -1765,12 +1765,12 @@
                 "timestamp": 1753802801,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
+                    "SOL",
                     "BNB",
-                    "DOGE",
-                    "ETH",
-                    "BTC",
                     "TRX",
-                    "SOL"
+                    "BTC",
+                    "DOGE",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.43923965096473694,
@@ -1796,8 +1796,8 @@
                 "timestamp": 1753716618,
                 "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "BNB"
                 ],
                 "source_weight": 0.8,
@@ -1812,11 +1812,11 @@
                 "timestamp": 1753459243,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
+                    "SOL",
                     "BNB",
-                    "ETH",
-                    "BTC",
                     "TRX",
-                    "SOL"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.6711649894714355,
@@ -1830,8 +1830,8 @@
                 "timestamp": 1753372933,
                 "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.8,
@@ -1846,11 +1846,11 @@
                 "timestamp": 1753284869,
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
-                    "XRP",
+                    "SOL",
                     "BNB",
-                    "ETH",
                     "BTC",
-                    "SOL"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.797458291053772,
@@ -1865,9 +1865,9 @@
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
                     "DOGE",
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.47174540162086487,
@@ -1882,9 +1882,9 @@
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
                     "DOGE",
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6145052313804626,
@@ -1898,10 +1898,10 @@
                 "timestamp": 1753112067,
                 "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "XRP",
-                    "SOL"
+                    "ETH",
+                    "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.5108786225318909,
@@ -1916,8 +1916,8 @@
                 "url": "https://www.newsbtc.com/news/ethereum/ethereum-nears-4400-resistance-as-binance-inflows-spark-short-term-caution/",
                 "symbols": [
                     "ETH",
-                    "ADA",
-                    "BNB"
+                    "BNB",
+                    "ADA"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.6204817891120911,
@@ -1931,9 +1931,9 @@
                 "timestamp": 1754845234,
                 "url": "https://www.newsbtc.com/news/ethereum/ethereum-price-eyeing-a-breakout-target-at-4800/",
                 "symbols": [
-                    "ETH",
+                    "SHIB",
                     "BTC",
-                    "SHIB"
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.9079601764678955,
@@ -1948,8 +1948,8 @@
                 "url": "https://www.newsbtc.com/news/binance-coin/bnb-tracks-bitcoins-playbook-eyes-breakout-toward-1200/",
                 "symbols": [
                     "BTC",
-                    "ADA",
-                    "BNB"
+                    "BNB",
+                    "ADA"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.4793173670768738,
@@ -1978,8 +1978,8 @@
                 "timestamp": 1754829006,
                 "url": "https://www.newsbtc.com/news/bitcoin/vocal-gold-promoter-says-hed-choose-bitcoin-when-threatened-with-a-gun-to-the-head/",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.11224810034036636,
@@ -1993,8 +1993,8 @@
                 "timestamp": 1754823611,
                 "url": "https://www.newsbtc.com/altcoin/xrp-dominance-explodes-decoupling-from-bitcoin-and-ethereum-has-begun/",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.7,
@@ -2009,8 +2009,8 @@
                 "timestamp": 1754818204,
                 "url": "https://www.newsbtc.com/altcoin/ethereum-hits-4300k-restoring-vitalik-buterins-crypto-billionaire-status/",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.7,
@@ -2025,8 +2025,8 @@
                 "timestamp": 1754812810,
                 "url": "https://www.newsbtc.com/altcoin/ethereum-fractal-mirrors-bitcoins-2018-2021-run-ready-for-1110-surge/",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.7,
@@ -2041,8 +2041,8 @@
                 "timestamp": 1754807454,
                 "url": "https://www.newsbtc.com/altcoin/altseason-still-on-hold-metrics-reveal-btc-outpaces-large-mid-small-caps/",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8569619655609131,
@@ -2056,8 +2056,8 @@
                 "timestamp": 1754796610,
                 "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-holds-strong-near-all-time-high-market-not-overheated-yet-data-shows/",
                 "symbols": [
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8736489415168762,
@@ -2109,9 +2109,9 @@
                 "timestamp": 1754758774,
                 "url": "https://www.theblock.co/post/366231/trump-affiliated-world-liberty-financial-seeking-1-5-billion-for-wlfi-treasury-company-reports?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "ETH",
+                    "SOL",
                     "BTC",
-                    "SOL"
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.6247407793998718,
@@ -2276,8 +2276,8 @@
                 "timestamp": 1754650589,
                 "url": "https://www.theblock.co/post/366147/crypto-markets-edge-higher-as-etf-inflows-return-policy-updates-and-ripple-case-closure-add-tailwinds?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "ETH",
                     "BTC",
+                    "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.7,
@@ -3195,88 +3195,88 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 29,
+            "cycles_left": 27,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "XRP",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 1,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 29,
+            "cycles_left": 27,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "BNB",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 1,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "LTC",
             "action": "BUY",
-            "cycles_left": 3,
+            "cycles_left": 1,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 29,
+            "cycles_left": 27,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 29,
+            "cycles_left": 27,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 14,
+            "cycles_left": 12,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29,
-            "total_remaining": 29
+            "max_cycles": 27,
+            "total_remaining": 27
         }
     ],
     "pause_status": {
-        "global_remaining": 14,
+        "global_remaining": 12,
         "pair_pauses": {
-            "BTC": 29,
-            "XRP": 3,
-            "ETH": 29,
-            "BNB": 3,
-            "LTC": 3,
-            "LINK": 29,
-            "SOL": 29
+            "BTC": 27,
+            "XRP": 1,
+            "ETH": 27,
+            "BNB": 1,
+            "LTC": 1,
+            "LINK": 27,
+            "SOL": 27
         },
-        "max_remaining": 29
+        "max_remaining": 27
     },
     "market_data": {
         "BTCUSDC": {
@@ -42727,7 +42727,7 @@
             "tech": 0.014209695305543175,
             "ai": 0.5338048458099365,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "ETH/USDC": {
             "action": "neutral",
@@ -42735,7 +42735,7 @@
             "tech": 0.029438730899941336,
             "ai": 0.5258861899375915,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "LTC/USDC": {
             "action": "neutral",
@@ -42743,7 +42743,7 @@
             "tech": 0.07878872699742068,
             "ai": 0.5140556454658508,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "XRP/USDC": {
             "action": "neutral",
@@ -42751,7 +42751,7 @@
             "tech": 0.005367735456935793,
             "ai": 0.5098920822143554,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "DOGE/USDC": {
             "action": "neutral",
@@ -42759,7 +42759,7 @@
             "tech": 0.01785448698394006,
             "ai": 0.5172793924808502,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "BNB/USDC": {
             "action": "neutral",
@@ -42767,7 +42767,7 @@
             "tech": 0.009533240263946802,
             "ai": 0.5137024164199829,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "ADA/USDC": {
             "action": "neutral",
@@ -42775,7 +42775,7 @@
             "tech": 0.01501420859495016,
             "ai": 0.5169826149940491,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "SOL/USDC": {
             "action": "neutral",
@@ -42783,7 +42783,7 @@
             "tech": 0.01902247782287393,
             "ai": 0.528859680891037,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "TRX/USDC": {
             "action": "neutral",
@@ -42791,7 +42791,7 @@
             "tech": 0.017135203770114397,
             "ai": 0.5160793483257293,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         },
         "SUI/USDC": {
             "action": "neutral",
@@ -42799,7 +42799,7 @@
             "tech": 0.02071133642314508,
             "ai": 0.5173646748065949,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:22:42"
+            "timestamp": "2025-08-10 19:28:06"
         }
     },
     "cycle_metrics": {
