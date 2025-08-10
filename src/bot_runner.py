@@ -1205,6 +1205,15 @@ class TradingBotM4:
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
         self.sync_positions_with_binance()
 
+    def safe_float_conversion(self, value, default=0.0):
+        """Conversion robuste vers float"""
+        if isinstance(value, (int, float)):
+            return float(value)
+        try:
+            return float(str(value).strip())
+        except (TypeError, ValueError):
+            return default
+
     def fetch_trades_fifo(self, binance_client, symbol):
         """
         Récupère la liste des achats (buys) et ventes (sells) spot pour la paire donnée (ex: "BTCUSDC"),
@@ -3186,40 +3195,49 @@ class TradingBotM4:
                 os.remove(temp_file)
 
     def check_tp_partial(
-        self, entry_price, current_price, filled_tp_targets=None, tp_levels=None
+        self,
+        entry_price,
+        current_price,
+        filled_tp_targets=None,
+        tp_levels=[(0.03, 0.3), (0.07, 0.3)],  # Modification ici
     ):
-        """Version thread-safe avec validation renforcée"""
-        if tp_levels is None:
-            tp_levels = [(0.03, 0.3), (0.07, 0.3)]  # Valeurs par défaut
+        """Version corrigée avec validation de type stricte"""
+        # 1. Conversion forcée des prix en float
+        try:
+            entry = float(entry_price)
+            current = float(current_price)
+        except (TypeError, ValueError) as e:
+            print(f"❌ Erreur conversion prix: {e}")
+            return 0.0, filled_tp_targets or [False] * len(tp_levels)
 
-        # Validation des entrées
-        entry = safe_float(entry_price)
-        current = safe_float(current_price)
+        # 2. Validation des niveaux de TP
+        validated_levels = []
+        for level in tp_levels:
+            try:
+                # Conversion explicite de chaque élément du tuple TP
+                validated_levels.append((float(level[0]), float(level[1])))
+            except (IndexError, TypeError, ValueError) as e:
+                print(f"❌ Niveau TP invalide {level}: {e}")
+                continue
 
+        # 3. Initialisation des cibles remplies
         if filled_tp_targets is None:
-            filled = [False] * len(tp_levels)
+            filled = [False] * len(validated_levels)
         else:
-            filled = [bool(x) for x in filled_tp_targets]  # Force en booléen
+            filled = [bool(x) for x in filled_tp_targets]
 
-        # Calcul des TP
+        # 4. Calcul des TP
         to_exit = 0.0
         new_filled = filled.copy()
 
-        for i, (tp_pct, frac) in enumerate(tp_levels):
-            try:
-                tp_val = safe_float(tp_pct)
-                frac_val = safe_float(frac)
-
-                if entry <= 0:
-                    continue
-
-                pct_change = (current - entry) / entry
-                if not new_filled[i] and pct_change > tp_val:
-                    to_exit += frac_val
-                    new_filled[i] = True
-            except Exception as e:
-                print(f"⚠️ Erreur TP niveau {i}: {e}")
+        for i, (tp_pct, frac) in enumerate(validated_levels):
+            if entry <= 0:
                 continue
+
+            pct_change = (current - entry) / entry
+            if not new_filled[i] and pct_change > tp_pct:
+                to_exit += frac
+                new_filled[i] = True
 
         return to_exit, new_filled
 
