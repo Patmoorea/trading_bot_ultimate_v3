@@ -4443,8 +4443,8 @@ class TradingBotM4:
             pos = self.positions.get(symbol)
             if not pos or pos.get("side") != "long":
                 return False
-            entry = pos.get("entry_price")
-            if entry is None:
+            entry = safe_float(pos.get("entry_price"), 0)
+            if entry == 0:
                 return False
 
             symbol_ws = symbol.replace("/", "").upper()
@@ -4458,13 +4458,16 @@ class TradingBotM4:
                     closes = self.market_data[symbol_ws]["1h"].get("close", [])
                     if closes:
                         price = closes[-1]
-            if price is None:
+            price = safe_float(price, 0)
+            if price == 0:
                 return False
 
             # Utilisation de self.calculate_atr au lieu de calculate_atr
             df_ohlcv = pd.DataFrame(self.market_data[symbol_ws]["1h"])
-            atr = self.calculate_atr(df_ohlcv, period=14)  # <- Modification ici
-            dynamic_stop_pct = max(0.01, min(atr / entry, 0.10))  # Entre 1% et 10% max
+            atr = safe_float(self.calculate_atr(df_ohlcv, period=14), 0)
+            dynamic_stop_pct = max(
+                0.01, min(safe_float(atr, 0) / entry, 0.10)
+            )  # Entre 1% et 10% max
 
             loss = (price - entry) / entry
             if loss < -dynamic_stop_pct:
