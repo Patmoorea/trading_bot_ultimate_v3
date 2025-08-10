@@ -1,8 +1,8 @@
 import warnings
 
 # Supprimer TOUS les warnings Python
-warnings.filterwarnings("ignore")
-warnings.simplefilter("ignore")
+# warnings.filterwarnings("ignore")
+# warnings.simplefilter("ignore")
 
 import os
 
@@ -6978,14 +6978,17 @@ async def run_clean_bot():
 
                         # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
+                            amount = safe_float(amount, 0)
                             amount_to_sell = safe_float(amount * to_exit, 0)
-                            pos["amount"] = amount - amount_to_sell
+                            pos["amount"] = safe_float(amount, 0) - safe_float(
+                                amount_to_sell, 0
+                            )
                             pos["filled_tp_targets"] = new_filled
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            if pos["amount"] <= 0:
+                            if safe_float(pos["amount"], 0) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
                                 )
@@ -6993,7 +6996,7 @@ async def run_clean_bot():
                                 continue
                         else:
                             print(
-                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={pos['amount']})"
+                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos['amount'], 0)})"
                             )
 
                         # Trailing stop
