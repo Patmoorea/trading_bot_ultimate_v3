@@ -1,10 +1,10 @@
 {
-    "timestamp": "2025-08-10 19:28:06",
+    "timestamp": "2025-08-10 19:59:59",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0,
-        "last_update": "2025-08-10 19:28:06",
+        "last_update": "2025-08-10 19:59:59",
         "performance": {
             "balance": 60.85659068
         },
@@ -16,7 +16,7 @@
         "top_n": 5.0
     },
     "sentiment": {
-        "timestamp": "2025-08-10T09:31:32.022206",
+        "timestamp": "2025-08-10T10:03:32.479174",
         "scores": [
             {
                 "title": "Actualit\u00e9s crypto de la semaine du 4 aout 2025 : Coin Hebdo #200",
@@ -147,8 +147,8 @@
                 "timestamp": 1754733600,
                 "url": "https://journalducoin.com/defi/defi-hyperliquid-explose-records-487-milliards-dollars-volume-juillet/",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH"
                 ],
                 "source_weight": 0.7,
@@ -175,8 +175,8 @@
                 "timestamp": 1754721064,
                 "url": "https://journalducoin.com/bitcoin/nouveau-rallye-venir-fusee-btc-bitcoin-9-aout/",
                 "symbols": [
-                    "SOL",
-                    "BTC"
+                    "BTC",
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7410619258880615,
@@ -285,8 +285,8 @@
                 "timestamp": 1754661600,
                 "url": "https://journalducoin.com/bitcoin/crypto-freres-winklevoss-american-bitcoin-societe-minage-fils-trump/",
                 "symbols": [
-                    "SOL",
-                    "BTC"
+                    "BTC",
+                    "SOL"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7717936635017395,
@@ -364,8 +364,8 @@
                 "timestamp": 1754650800,
                 "url": "https://journalducoin.com/ethereum/signal-haussier-majeur-vue-pour-paire-eth-btc-ethereum-8-aout/",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH"
                 ],
                 "source_weight": 0.7,
@@ -476,8 +476,8 @@
                 "timestamp": 1754638066,
                 "url": "https://journalducoin.com/bitcoin/rebond-btc-direction-ath-123-000-dollars-bitcoin-8-aout/",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH"
                 ],
                 "source_weight": 0.7,
@@ -695,6 +695,18 @@
                 "symbols": [],
                 "source_weight": 0.7,
                 "sentiment": 0.8195080161094666,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": " World Mobile launches drone-based, decentralized telecom project ",
+                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDgvMDE5ODk1MTAtYTc3OS03ZGUwLWJkMjMtYzlmYjgwNzY3Yzgx.jpg\" alt=\"World Mobile launches drone-based, decentralized telecom project\"></p><p>The decentralized telecommunication project uses unmanned aerial drones in the stratosphere to provide wireless services to users.</p>\n                                ",
+                "source": "Cointelegraph",
+                "timestamp": 1754855149,
+                "url": "https://cointelegraph.com/news/world-mobile-launch-world-mobile-stratospheric?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.8288952112197876,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -1068,31 +1080,16 @@
                 "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
                     "SOL",
-                    "BNB",
-                    "ADA",
-                    "BTC",
                     "XRP",
-                    "XLM",
+                    "ETH",
+                    "BNB",
                     "DOGE",
-                    "ETH"
+                    "XLM",
+                    "BTC",
+                    "ADA"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1296260952949524,
-                "impact_score": 1.0,
-                "processed": true
-            },
-            {
-                "title": " Ether price hits $4K for first time since December 2024 ",
-                "text": "\n                \n                    <p style=\"float:right; margin:0 0 10px 15px; width:240px;\"><img src=\"https://images.cointelegraph.com/images/528_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDcvMDE5ODU2MjMtZTZjZC03YjFjLTgxOGUtY2E2ZDQ2Yjg5MDY1.jpg\" alt=\"Ether price hits $4K for first time since December 2024\"></p><p>Ether taps $4,000 for the first time in eight months in a further win for ETH bulls and the broader altseason, while Bitcoin dominance fades.</p>\n                                ",
-                "source": "Cointelegraph",
-                "timestamp": 1754666052,
-                "url": "https://cointelegraph.com/news/ether-price-hits-4k-for-first-time-since-december-2024?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-                "symbols": [
-                    "BTC",
-                    "ETH"
-                ],
-                "source_weight": 0.8,
-                "sentiment": -0.8600726127624512,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -1215,8 +1212,8 @@
                 "timestamp": 1754682705,
                 "url": "https://decrypt.co/334343/dogecoin-xrp-lead-altcoins-bitcoin-dominance-falls",
                 "symbols": [
-                    "DOGE",
                     "BTC",
+                    "DOGE",
                     "XRP"
                 ],
                 "source_weight": 0.8,
@@ -1232,8 +1229,8 @@
                 "url": "https://decrypt.co/334325/trump-pump-ethereum-xrp-dogecoin-what-happens-next",
                 "symbols": [
                     "DOGE",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.08361917734146118,
@@ -1288,10 +1285,10 @@
                 "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
                 "symbols": [
                     "SOL",
-                    "BNB",
-                    "LINK",
-                    "BTC",
                     "XRP",
+                    "BNB",
+                    "BTC",
+                    "LINK",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1382,10 +1379,10 @@
                 "timestamp": 1754648993,
                 "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
                 "symbols": [
-                    "LINK",
+                    "XLM",
                     "XRP",
-                    "ADA",
-                    "XLM"
+                    "LINK",
+                    "ADA"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8473196625709534,
@@ -1604,8 +1601,8 @@
                 "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "BNB"
+                    "BNB",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.24181267619132996,
@@ -1620,9 +1617,9 @@
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
                     "BTC",
-                    "ETH",
                     "BNB",
-                    "LTC"
+                    "LTC",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.019634094089269638,
@@ -1636,8 +1633,8 @@
                 "timestamp": 1754418127,
                 "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
                 "symbols": [
-                    "LINK",
                     "SOL",
+                    "LINK",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1666,8 +1663,8 @@
                 "timestamp": 1754407294,
                 "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
                 "symbols": [
-                    "LINK",
                     "SOL",
+                    "LINK",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1682,10 +1679,10 @@
                 "timestamp": 1754320232,
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
-                    "BNB",
-                    "BTC",
                     "XRP",
+                    "BNB",
                     "DOGE",
+                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1700,8 +1697,8 @@
                 "timestamp": 1754063085,
                 "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1746,11 +1743,11 @@
                 "timestamp": 1753810596,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
+                    "TRX",
                     "SOL",
                     "BNB",
-                    "TRX",
-                    "BTC",
                     "DOGE",
+                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1765,11 +1762,11 @@
                 "timestamp": 1753802801,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
+                    "TRX",
                     "SOL",
                     "BNB",
-                    "TRX",
-                    "BTC",
                     "DOGE",
+                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1797,8 +1794,8 @@
                 "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "BNB"
+                    "BNB",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.31136998534202576,
@@ -1812,9 +1809,9 @@
                 "timestamp": 1753459243,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
+                    "TRX",
                     "SOL",
                     "BNB",
-                    "TRX",
                     "BTC",
                     "ETH"
                 ],
@@ -1831,8 +1828,8 @@
                 "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.30484887957572937,
@@ -1847,9 +1844,9 @@
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
                     "SOL",
+                    "XRP",
                     "BNB",
                     "BTC",
-                    "XRP",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1864,9 +1861,9 @@
                 "timestamp": 1753205819,
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
+                    "BTC",
                     "DOGE",
                     "SOL",
-                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1881,9 +1878,9 @@
                 "timestamp": 1753197746,
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
+                    "BTC",
                     "DOGE",
                     "SOL",
-                    "BTC",
                     "ETH"
                 ],
                 "source_weight": 0.8,
@@ -1898,13 +1895,30 @@
                 "timestamp": 1753112067,
                 "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH",
                     "XRP"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.5108786225318909,
+                "impact_score": 1.0,
+                "processed": true
+            },
+            {
+                "title": "Ethereum Price To $12,000? ETH Could Repeat This Bitcoin 2020 Fractal",
+                "text": "With the bullish momentum growing in the cryptocurrency market, the large-cap altcoins have been some of the major beneficiaries of the current positive trend. Ethereum price, specifically, has continued to impress, with the second-largest cryptocurrency reasserting its position in the market over the past weeks. The Ethereum price displayed significant bullish impetus going into the weekend, reclaiming the $4,000 mark for the first time since December 2024. Interestingly, the \u201cking of altcoins\u201d appears to only be at the beginning of an extended upward trajectory. ETH Price To Soar By 182% In The Coming Months: Analyst In an August 9 post on the social media platform X, pseudonymous crypto analyst Titan of Crypto shared an exciting layout for Ethereum that could see its price climb as high as $12,000. This positive projection is based on the price fractals of the world\u2019s largest cryptocurrency by market capitalization, Bitcoin, in 2020. Related Reading: Dogecoin To $1 Is Within Reach\u2014Here\u2019s What Must Happen First, Says Analyst In technical analysis, fractals refer to the recurring patterns on a price chart. These price patterns often offer insight into historical price movements and can be used to analyze the future trajectory of a cryptocurrency. Titan of Crypto revealed that the Ethereum price is currently at the same spot that the price of BTC was in August 2020. At the time, the premier cryptocurrency was trading within a converging wedge pattern before breaking out to its then all-time-high price at around $69,000. As shown in the chart above, the Ethereum price is currently trading within a similar converging wedge pattern on the monthly chart. Both BTC and ETH prices recently bounced off the lower boundary of the chart pattern earlier in 2020 and 2025, respectively. Almost identically, the two largest cryptocurrencies almost broke above the trendline with their respective July 2020 and 2025 candlestick. While the price of BTC hovered around the upper trendline in the subsequent two months, the Ethereum price has broken clearly above the wedge pattern with its August candlestick. If history is anything to go by, and a sustained monthly close above $4,000 occurs, the price of Ethereum could be on its way to an unprecedented high around the $12,000 region. This move represents a potential 182% surge for ETH from its current price point. Ethereum Price At A Glance As of this writing, the Ethereum token is valued at around $4,270, reflecting an almost 6% increase in the past 24 hours. According to data from CoinGecko, the altcoin is up by more than 25% in the past seven days. Related Reading: Here\u2019s What Is Going On In The Shiba Inu Community Amid Major Electoral Process Featured image from iStock, chart from TradingView",
+                "source": "NewsBTC",
+                "timestamp": 1754856054,
+                "url": "https://www.newsbtc.com/news/ethereum/ethereum-price-to-12000-eth-repeat-this-bitcoin-fractal/",
+                "symbols": [
+                    "BTC",
+                    "DOGE",
+                    "ETH",
+                    "SHIB"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.9166032075881958,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -1915,9 +1929,9 @@
                 "timestamp": 1754850634,
                 "url": "https://www.newsbtc.com/news/ethereum/ethereum-nears-4400-resistance-as-binance-inflows-spark-short-term-caution/",
                 "symbols": [
-                    "ETH",
                     "BNB",
-                    "ADA"
+                    "ADA",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.6204817891120911,
@@ -1931,9 +1945,9 @@
                 "timestamp": 1754845234,
                 "url": "https://www.newsbtc.com/news/ethereum/ethereum-price-eyeing-a-breakout-target-at-4800/",
                 "symbols": [
-                    "SHIB",
                     "BTC",
-                    "ETH"
+                    "ETH",
+                    "SHIB"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.9079601764678955,
@@ -1994,8 +2008,8 @@
                 "url": "https://www.newsbtc.com/altcoin/xrp-dominance-explodes-decoupling-from-bitcoin-and-ethereum-has-begun/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.9130749702453613,
@@ -2010,8 +2024,8 @@
                 "url": "https://www.newsbtc.com/altcoin/ethereum-hits-4300k-restoring-vitalik-buterins-crypto-billionaire-status/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.4835476875305176,
@@ -2026,8 +2040,8 @@
                 "url": "https://www.newsbtc.com/altcoin/ethereum-fractal-mirrors-bitcoins-2018-2021-run-ready-for-1110-surge/",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.891259491443634,
@@ -2046,21 +2060,6 @@
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8569619655609131,
-                "impact_score": 1.0,
-                "processed": true
-            },
-            {
-                "title": "Bitcoin Holds Strong Near All-Time High \u2013 Market Not Overheated Yet, Data Shows",
-                "text": "Bitcoin is holding firm above the $115,000 level after several days of trading below it, signaling renewed strength in the market. The bullish tone is building as Ethereum posts massive gains and altcoins begin to show strong moves over the past few days. For some analysts, this could be the start of the long-awaited altseason; for others, it\u2019s simply the rest of the market catching up to Bitcoin\u2019s earlier rally. Related Reading: Bitcoin\u2013S&#38;P 500 Correlation Hits 80%, Tying Crypto To Stocks Top analyst Axel Adler noted that Bitcoin\u2019s price is now trading close to its all-time high, with the BTC Z-Score (Price, 30/365) sitting around +1.5\u03c3 above its one-year norm. This reading is well below the +2.5\u03c3 level typically associated with overheating, suggesting that while momentum is strong, it is not yet at extreme levels. The current environment offers a favorable backdrop for potential upside, with room for the market to expand further before reaching overheated conditions. With altcoins gaining traction and Ethereum\u2019s rally adding fuel to the market\u2019s optimism, the coming days could determine whether this is a sustainable breakout or just another phase of consolidation before the next major move. On-Chain Activity Still Lags Behind Price According to Adler, Bitcoin\u2019s current market setup is showing a positive backdrop but with some important caveats. Adler points out that the Adjusted Price Divergence (APD) remains negative near \u22121.5 after rebounding from local lows around \u22122. This metric suggests that Bitcoin\u2019s price is still outpacing on-chain activity, although the gap between the two is narrowing. In other words, while price momentum is firm, the network\u2019s transactional activity and usage haven\u2019t yet fully caught up. This discrepancy creates an interesting dynamic for the market. Adler explains that the bias still favors price, meaning momentum is being driven more by investor positioning and sentiment than by on-chain fundamentals. For the rally to gain more structural support, a healthier setup would see APD move toward zero. This could happen in one of two ways: either network activity increases significantly while price moves sideways or posts modest gains, or Bitcoin\u2019s price cools off to better align with current usage levels. Importantly, Adler warns against interpreting APD moving toward zero as a direct buy or sell signal. Instead, it represents a sign of normalization \u2014 a point where market price and underlying network fundamentals are better aligned. For now, Bitcoin\u2019s technical and macro backdrop remains bullish, but sustained long-term growth will likely require the network to catch up with price action. Related Reading: Ethereum Exchange Balances Decline To 18.8M ETH: Smart Money Drains Supply Bitcoin Price Holds Key Support Near $115K Bitcoin is consolidating above the $115,724 support level after a brief dip below it earlier this month. The daily chart shows price stabilizing just above the 50-day simple moving average (SMA), currently near $113,324, which has acted as a strong dynamic support throughout the recent uptrend. The short-term structure remains bullish, with BTC trading inside a range between $115,724 support and the $122,077 resistance level. Volume has tapered off slightly since the early August rebound, suggesting the market is in a wait-and-see mode before a potential breakout. A decisive close above $118,000 could invite another test of the $122,077 resistance, a key level that has capped upside attempts multiple times. If broken, this could open the door toward new all-time highs. Related Reading: Bitcoin Miners Avoid Forced Selling: BTC Sits 7.4% Above Last Difficulty Bottom On the downside, losing $115,724 would shift focus to the 100-day SMA at $108,983 as the next major support. Until then, the higher-lows pattern suggests buyers are defending the mid-$115K zone aggressively. Featured image from Dall-E, chart from TradingView",
-                "source": "NewsBTC",
-                "timestamp": 1754796610,
-                "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-holds-strong-near-all-time-high-market-not-overheated-yet-data-shows/",
-                "symbols": [
-                    "BTC",
-                    "ETH"
-                ],
-                "source_weight": 0.7,
-                "sentiment": -0.8736489415168762,
                 "impact_score": 1.0,
                 "processed": true
             },
@@ -2109,8 +2108,8 @@
                 "timestamp": 1754758774,
                 "url": "https://www.theblock.co/post/366231/trump-affiliated-world-liberty-financial-seeking-1-5-billion-for-wlfi-treasury-company-reports?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "SOL",
                     "BTC",
+                    "SOL",
                     "ETH"
                 ],
                 "source_weight": 0.7,
@@ -2277,8 +2276,8 @@
                 "url": "https://www.theblock.co/post/366147/crypto-markets-edge-higher-as-etf-inflows-return-policy-updates-and-ripple-case-closure-add-tailwinds?utm_source=rss&utm_medium=rss",
                 "symbols": [
                     "BTC",
-                    "ETH",
-                    "XRP"
+                    "XRP",
+                    "ETH"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8492668271064758,
@@ -2342,11 +2341,11 @@
             "Morning Minute: Crypto in Your 401(k)s Is Finally Happening",
             "Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
             "Ethereum Cracks $4,000 for First Time in 8 Months",
-            "XRP Dominance Explodes: Decoupling From Bitcoin And Ethereum Has Begun",
-            "Debunking XRP Myths With Ripple CTO David Schwartz"
+            "Ethereum Price To $12,000? ETH Could Repeat This Bitcoin 2020 Fractal",
+            "XRP Dominance Explodes: Decoupling From Bitcoin And Ethereum Has Begun"
         ],
-        "overall_sentiment": 0.2874224712084754,
-        "impact_score": 0.5925999704905482,
+        "overall_sentiment": 0.29733821553324,
+        "impact_score": 0.5926709154575883,
         "major_events": "Morning Minute: Crypto in Your 401(k)s Is Finally Happening; Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions; Ethereum Cracks $4,000 for First Time in 8 Months",
         "top_symbols": [
             "SHIB",
@@ -3195,61 +3194,88 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 24,
+            "cycles_left": 28,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 24,
-            "total_remaining": 24
+            "max_cycles": 28,
+            "total_remaining": 28
+        },
+        {
+            "asset": "XRP",
+            "action": "BUY",
+            "cycles_left": 2,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 24,
+            "cycles_left": 28,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 24,
-            "total_remaining": 24
+            "max_cycles": 28,
+            "total_remaining": 28
+        },
+        {
+            "asset": "BNB",
+            "action": "BUY",
+            "cycles_left": 2,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 28,
+            "total_remaining": 28
+        },
+        {
+            "asset": "LTC",
+            "action": "BUY",
+            "cycles_left": 2,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 24,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 24,
-            "total_remaining": 24
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 24,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 24,
-            "total_remaining": 24
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 9,
+            "cycles_left": 13,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 24,
-            "total_remaining": 24
+            "max_cycles": 28,
+            "total_remaining": 28
         }
     ],
     "pause_status": {
-        "global_remaining": 9,
+        "global_remaining": 13,
         "pair_pauses": {
-            "BTC": 24,
-            "XRP": 1,
-            "ETH": 24,
-            "BNB": 1,
-            "LTC": 1,
-            "LINK": 24,
-            "SOL": 24
+            "BTC": 28,
+            "XRP": 2,
+            "ETH": 28,
+            "BNB": 2,
+            "LTC": 2,
+            "LINK": 28,
+            "SOL": 28
         },
-        "max_remaining": 24
+        "max_remaining": 28
     },
     "market_data": {
         "BTCUSDC": {
@@ -42700,7 +42726,7 @@
             "tech": 0.014209695305543175,
             "ai": 0.5338048458099365,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "ETH/USDC": {
             "action": "neutral",
@@ -42708,7 +42734,7 @@
             "tech": 0.029438730899941336,
             "ai": 0.5258861899375915,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "LTC/USDC": {
             "action": "neutral",
@@ -42716,7 +42742,7 @@
             "tech": 0.07878872699742068,
             "ai": 0.5140556454658508,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "XRP/USDC": {
             "action": "neutral",
@@ -42724,7 +42750,7 @@
             "tech": 0.005367735456935793,
             "ai": 0.5098920822143554,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "DOGE/USDC": {
             "action": "neutral",
@@ -42732,7 +42758,7 @@
             "tech": 0.01785448698394006,
             "ai": 0.5172793924808502,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "BNB/USDC": {
             "action": "neutral",
@@ -42740,7 +42766,7 @@
             "tech": 0.009533240263946802,
             "ai": 0.5137024164199829,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "ADA/USDC": {
             "action": "neutral",
@@ -42748,7 +42774,7 @@
             "tech": 0.01501420859495016,
             "ai": 0.5169826149940491,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "SOL/USDC": {
             "action": "neutral",
@@ -42756,7 +42782,7 @@
             "tech": 0.01902247782287393,
             "ai": 0.528859680891037,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "TRX/USDC": {
             "action": "neutral",
@@ -42764,7 +42790,7 @@
             "tech": 0.017135203770114397,
             "ai": 0.5160793483257293,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         },
         "SUI/USDC": {
             "action": "neutral",
@@ -42772,7 +42798,7 @@
             "tech": 0.02071133642314508,
             "ai": 0.5173646748065949,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 19:28:06"
+            "timestamp": "2025-08-10 19:59:59"
         }
     },
     "cycle_metrics": {
