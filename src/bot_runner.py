@@ -6977,15 +6977,15 @@ async def run_clean_bot():
                         )
 
                         # Take Profit partiel (type safe !)
-                        if to_exit > 0 and float(amount) > 0:
-                            amount_to_sell = float(amount) * float(to_exit)
-                            pos["amount"] = float(amount) - amount_to_sell
+                        if to_exit > 0 and amount > 0:
+                            amount_to_sell = safe_float(amount * to_exit, 0)
+                            pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            if float(pos["amount"]) <= 0:
+                            if pos["amount"] <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
                                 )
@@ -6993,7 +6993,7 @@ async def run_clean_bot():
                                 continue
                         else:
                             print(
-                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={float(pos['amount'])})"
+                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={pos['amount']})"
                             )
 
                         # Trailing stop
@@ -7006,12 +7006,12 @@ async def run_clean_bot():
                         print(
                             f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={pos['max_price']}"
                         )
-                        if should_exit and pos["amount"] > 0:
+                        if should_exit and float(pos["amount"]) > 0:
                             print(
                                 f"[DEBUG EXEC TRAILING] SELL {pos['amount']} for {symbol} (Trailing stop)"
                             )
                             await bot.execute_trade(
-                                symbol, "SELL", safe_float(pos["amount"], 0)
+                                symbol, "SELL", float(pos["amount"])
                             )
                             print(
                                 f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
