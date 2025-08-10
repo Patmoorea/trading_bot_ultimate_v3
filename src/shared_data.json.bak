@@ -1,14 +1,14 @@
 {
-    "timestamp": "2025-08-10 17:19:20",
+    "timestamp": "2025-08-10 18:05:16",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0.0,
-        "last_update": "2025-08-10 17:19:20",
+        "last_update": "2025-08-10 18:05:16",
         "performance": {
             "balance": 60.85659068
         },
-        "timestamp": "2025-08-10 17:19:20"
+        "timestamp": "2025-08-10 18:05:16"
     },
     "filtering_params": {
         "min_volatility": 0.01,
@@ -16,7 +16,7 @@
         "top_n": 5.0
     },
     "sentiment": {
-        "timestamp": "2025-08-10 17:19:20",
+        "timestamp": "2025-08-10 18:10:02",
         "scores": [
             {
                 "title": "Actualit\u00e9s crypto de la semaine du 4 aout 2025 : Coin Hebdo #200",
@@ -25,8 +25,8 @@
                 "timestamp": 1754820660.0,
                 "url": "https://coinacademy.fr/actu/coin-hebdo-200/?utm_source=rss&utm_medium=rss&utm_campaign=coin-hebdo-200",
                 "symbols": [
-                    "BTC",
-                    "BNB"
+                    "BNB",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8700458407402039,
@@ -106,8 +106,8 @@
                 "timestamp": 1754755200.0,
                 "url": "https://journalducoin.com/exchanges/crypto-binance-associe-a-banque-espagnole-bbva-pour-offrir-service-garde-novateur/",
                 "symbols": [
-                    "BTC",
-                    "BNB"
+                    "BNB",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8634328842163086,
@@ -147,9 +147,9 @@
                 "timestamp": 1754733600.0,
                 "url": "https://journalducoin.com/defi/defi-hyperliquid-explose-records-487-milliards-dollars-volume-juillet/",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7974889278411865,
@@ -175,8 +175,8 @@
                 "timestamp": 1754721064.0,
                 "url": "https://journalducoin.com/bitcoin/nouveau-rallye-venir-fusee-btc-bitcoin-9-aout/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7410619258880615,
@@ -228,8 +228,8 @@
                 "timestamp": 1754671751.0,
                 "url": "https://coinacademy.fr/actu/ethereum-4000-sommet-eth/?utm_source=rss&utm_medium=rss&utm_campaign=ethereum-4000-sommet-eth",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7066123485565186,
@@ -285,8 +285,8 @@
                 "timestamp": 1754661600.0,
                 "url": "https://journalducoin.com/bitcoin/crypto-freres-winklevoss-american-bitcoin-societe-minage-fils-trump/",
                 "symbols": [
-                    "BTC",
-                    "SOL"
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7717936635017395,
@@ -364,9 +364,9 @@
                 "timestamp": 1754650800.0,
                 "url": "https://journalducoin.com/ethereum/signal-haussier-majeur-vue-pour-paire-eth-btc-ethereum-8-aout/",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7528485655784607,
@@ -380,8 +380,8 @@
                 "timestamp": 1754648921.0,
                 "url": "https://journalducoin.com/actualites/crypto-chine-veut-freiner-engouement-pour-stablecoins/",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8454409837722778,
@@ -421,8 +421,8 @@
                 "timestamp": 1754640720.0,
                 "url": "https://coinacademy.fr/actu/trump-401-k-crypto-plans-retraite-americains/?utm_source=rss&utm_medium=rss&utm_campaign=trump-401-k-crypto-plans-retraite-americains",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.8119657635688782,
@@ -476,9 +476,9 @@
                 "timestamp": 1754638066.0,
                 "url": "https://journalducoin.com/bitcoin/rebond-btc-direction-ath-123-000-dollars-bitcoin-8-aout/",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7975867986679077,
@@ -546,8 +546,8 @@
                 "timestamp": 1754582427.0,
                 "url": "https://cryptoast.fr/reprise-ethereum-transactions-quotidiennes-explosent-sur-le-reseau/",
                 "symbols": [
-                    "UNI",
-                    "ETH"
+                    "ETH",
+                    "UNI"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.7642650008201599,
@@ -783,8 +783,8 @@
                 "timestamp": 1754806701.0,
                 "url": "https://cointelegraph.com/news/strategy-michael-saylor-bitcoin-focused-concerns-eth-altcoin-interest?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.8678897023200989,
@@ -860,8 +860,8 @@
                 "timestamp": 1754750861.0,
                 "url": "https://cointelegraph.com/news/ether-price-target-now-20k-eth-preps-all-time-high-in-1-2-weeks?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.613024890422821,
@@ -1067,14 +1067,14 @@
                 "timestamp": 1754669486.0,
                 "url": "https://cointelegraph.com/news/price-predictions-8-8-btc-eth-xrp-bnb-sol-doge-ada-hype-xlm-sui?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
+                    "ADA",
+                    "XLM",
                     "XRP",
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "ETH",
-                    "XLM",
-                    "DOGE",
                     "BTC",
-                    "ADA"
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1296260952949524,
@@ -1088,8 +1088,8 @@
                 "timestamp": 1754666052.0,
                 "url": "https://cointelegraph.com/news/ether-price-hits-4k-for-first-time-since-december-2024?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8600726127624512,
@@ -1105,6 +1105,18 @@
                 "symbols": [],
                 "source_weight": 0.8,
                 "sentiment": 0.4045460522174835,
+                "impact_score": 1.0,
+                "processed": 1.0
+            },
+            {
+                "title": "What Is Grok AI? Elon Musk\u2019s Controversial ChatGPT Rival",
+                "text": "Built into social media platform X, Grok is Musk\u2019s edgy AI chatbot\u2014real-time, irreverent, and mired in controversy.",
+                "source": "Decrypt",
+                "timestamp": 1754845262.0,
+                "url": "https://decrypt.co/resources/grok-ai-elon-musk-controversial-chatgpt-rival",
+                "symbols": [],
+                "source_weight": 0.8,
+                "sentiment": 0.8238253593444824,
                 "impact_score": 1.0,
                 "processed": 1.0
             },
@@ -1203,9 +1215,9 @@
                 "timestamp": 1754682705.0,
                 "url": "https://decrypt.co/334343/dogecoin-xrp-lead-altcoins-bitcoin-dominance-falls",
                 "symbols": [
-                    "BTC",
+                    "XRP",
                     "DOGE",
-                    "XRP"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.05322325974702835,
@@ -1220,8 +1232,8 @@
                 "url": "https://decrypt.co/334325/trump-pump-ethereum-xrp-dogecoin-what-happens-next",
                 "symbols": [
                     "XRP",
-                    "DOGE",
-                    "ETH"
+                    "ETH",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.08361917734146118,
@@ -1276,11 +1288,11 @@
                 "url": "https://decrypt.co/videos/interviews/1JUcP9dr/sec-drops-xrp-case-eth-nears-4k-again-gold-hits-ath",
                 "symbols": [
                     "XRP",
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "LINK",
-                    "ETH",
-                    "BTC"
+                    "BTC",
+                    "LINK"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8488626480102539,
@@ -1370,10 +1382,10 @@
                 "timestamp": 1754648993.0,
                 "url": "https://decrypt.co/334238/xrp-cardano-chainlink-sui-altcoin-rally",
                 "symbols": [
-                    "XRP",
-                    "XLM",
                     "LINK",
-                    "ADA"
+                    "XRP",
+                    "ADA",
+                    "XLM"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.8473196625709534,
@@ -1561,8 +1573,8 @@
                 "timestamp": 1754596671.0,
                 "url": "https://decrypt.co/334055/myriad-moves-bitcoin-price-sharplink-ethereum-vitalik",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.9186991453170776,
@@ -1576,8 +1588,8 @@
                 "timestamp": 1754594518.0,
                 "url": "https://decrypt.co/334076/trump-401k-order-could-send-billions-into-bitcoin-ethereum-analysts",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.7271333932876587,
@@ -1591,9 +1603,9 @@
                 "timestamp": 1754580350.0,
                 "url": "https://decrypt.co/videos/interviews/meyK3vhj/eth-nears-4k-trump-tariffs-begin-rekt-hits-another-ath",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "BNB",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.24181267619132996,
@@ -1607,10 +1619,10 @@
                 "timestamp": 1754494100.0,
                 "url": "https://decrypt.co/videos/interviews/0AMccQun/pump-rebounds-crypto-edges-lower-china-testing-stablecoins",
                 "symbols": [
-                    "BTC",
                     "LTC",
+                    "ETH",
                     "BNB",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.019634094089269638,
@@ -1624,9 +1636,9 @@
                 "timestamp": 1754418127.0,
                 "url": "https://decrypt.co/videos/interviews/Q6HuVGk9/rate-cut-odds-soar-project-crypto-trump-tariffs",
                 "symbols": [
-                    "SOL",
                     "LINK",
-                    "ETH"
+                    "ETH",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.36735114455223083,
@@ -1654,9 +1666,9 @@
                 "timestamp": 1754407294.0,
                 "url": "https://decrypt.co/videos/interviews/hoTY417a/sol-leads-majors-huge-etf-outflows-pumpfun-promises-changes",
                 "symbols": [
-                    "SOL",
                     "LINK",
-                    "ETH"
+                    "ETH",
+                    "SOL"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.1683153510093689,
@@ -1671,10 +1683,10 @@
                 "url": "https://decrypt.co/videos/interviews/DnxzisxU/volatile-weekend-xrp-leads-rebound-trump-fires-bls-chief",
                 "symbols": [
                     "XRP",
-                    "BNB",
                     "ETH",
-                    "DOGE",
-                    "BTC"
+                    "BNB",
+                    "BTC",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6729533076286316,
@@ -1688,9 +1700,9 @@
                 "timestamp": 1754063085.0,
                 "url": "https://decrypt.co/videos/interviews/QG5lc45Y/btc-ath-monthly-trump-spooks-markets-altcoins-lead-falls",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.16119861602783203,
@@ -1719,8 +1731,8 @@
                 "timestamp": 1753889612.0,
                 "url": "https://decrypt.co/videos/interviews/ioFCfFCR/btc-stable-sec-allows-in-kind-redemptions-fed-decision-today",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.5873231291770935,
@@ -1734,12 +1746,12 @@
                 "timestamp": 1753810596.0,
                 "url": "https://decrypt.co/videos/interviews/VHGkYqN8/cryptopunks-see-82m-in-trading-volume-crypto-majors-in-the-red-paypal-announce-pay-with-crypto",
                 "symbols": [
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "ETH",
-                    "DOGE",
                     "BTC",
-                    "TRX"
+                    "TRX",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.19718927145004272,
@@ -1753,12 +1765,12 @@
                 "timestamp": 1753802801.0,
                 "url": "https://decrypt.co/videos/interviews/qfP9YlwR/paypal-embraces-crypto-altcoin-treasuries-begin-stocks-hit-ath-again",
                 "symbols": [
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "ETH",
-                    "DOGE",
                     "BTC",
-                    "TRX"
+                    "TRX",
+                    "DOGE"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.43923965096473694,
@@ -1784,9 +1796,9 @@
                 "timestamp": 1753716618.0,
                 "url": "https://decrypt.co/videos/interviews/ywqboXnP/altcoins-lead-rally-us-eu-trade-deal-nfts-memecoins-soar",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "BNB",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.31136998534202576,
@@ -1800,9 +1812,9 @@
                 "timestamp": 1753459243.0,
                 "url": "https://decrypt.co/videos/interviews/t3trb4gJ/eth-leads-money-supply-hits-ath-punks-continue-to-surge",
                 "symbols": [
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "ETH",
                     "BTC",
                     "TRX"
                 ],
@@ -1818,9 +1830,9 @@
                 "timestamp": 1753372933.0,
                 "url": "https://decrypt.co/videos/interviews/syElFpaD/alts-head-lower-goldman-sachs-to-tokenise-funds-trump-visits-fed",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.30484887957572937,
@@ -1835,9 +1847,9 @@
                 "url": "https://decrypt.co/videos/interviews/XAHTPO8c/pengu-rekt-all-time-highs-huge-eth-etf-inflows-bnb-outperforms-market",
                 "symbols": [
                     "XRP",
+                    "ETH",
                     "SOL",
                     "BNB",
-                    "ETH",
                     "BTC"
                 ],
                 "source_weight": 0.8,
@@ -1852,10 +1864,10 @@
                 "timestamp": 1753205819.0,
                 "url": "https://decrypt.co/videos/interviews/EeHsKEew/trump-media-discloses-2b-of-btc-kaito-introduces-capital-launchpad-jpmorgan-lending-against-btc-eth",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
                     "DOGE",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.47174540162086487,
@@ -1869,10 +1881,10 @@
                 "timestamp": 1753197746.0,
                 "url": "https://decrypt.co/videos/interviews/f9gvhBqr/sol-nears-200-jp-morgan-looks-at-crypto-loans-fartcoin-leads-memes",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
                     "DOGE",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": 0.6145052313804626,
@@ -1886,13 +1898,29 @@
                 "timestamp": 1753112067.0,
                 "url": "https://decrypt.co/videos/interviews/ZFdRyGc6/sol-leads-majors-nfts-heat-up-big-week-for-earnings",
                 "symbols": [
-                    "BTC",
-                    "SOL",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "SOL",
+                    "BTC"
                 ],
                 "source_weight": 0.8,
                 "sentiment": -0.5108786225318909,
+                "impact_score": 1.0,
+                "processed": 1.0
+            },
+            {
+                "title": "Ethereum Price Eyeing A Breakout? On-Chain Analysis Places Short-Term Target At $4,800",
+                "text": "The Ethereum price has roared on with a strong performance over this weekend, reclaiming the $4,200 level for the first time since 2021. According to data from CoinGecko, the \u201cking of altcoins\u201d has now increased in value by more than 25% on the weekly timeframe. Considering its strong momentum, the general expectation is that the Ethereum price will continue to climb over the next few days. However, the latest price analysis shows that the altcoin might currently be trapped within a resistance range. Why ETH Price Could Be Heading Next For $4,800 In a Quicktake post on the CryptoQuant platform, CryptoOnchain revealed that the Ethereum price might be eyeing a breakout above a key psychological and technical resistance. According to the pundit\u2019s technical analyst, the altcoin would need a sustained breach above this region if it is to retest its all-time-high price. Related Reading: Bitcoin Season Or Altcoin Season? Shiba Inu Exec Outlines What\u2019s Happening Expanding on this technical hypothesis, CryptoOnchain shared that the Ethereum price is within the green zone between $4,000 and $4,400 (from the chart above), which represents a multi-year resistance range with significant historical selling pressure. Nevertheless, the analyst noted that the Moving average convergence/divergence (MACD) indicator has flipped positive, signaling the continuation of bullish momentum. From an on-chain perspective, CryptoOnchain highlighted that the Ethereum price could be at risk of selling pressure, as the MVRV (Market Value to Realized Value) indicator is nearing its upper historical ranges. The other on-chain metrics, however, suggest the investors are not in profit-taking or euphoria mode\u2014despite the widespread profitability in the market. Notably, the Net Unrealized Profit/Loss (NUPL) metric\u2014which tracks the overall profit and loss status of crypto investors\u2014is in a high, positive region. While the metric signals that the ETH investors are broadly in profit, it also clarifies that the Ethereum price is not yet overheated. CryptoOnchain concluded that a strong break above the $4,400 level could open the door for a run to $4,800 for the Ethereum price in the short term. The on-chain analyst added that the Ethereum market has yet to reach an overheated state, which suggests room for further upside movements in the medium term. Ethereum Price At A Glance As of this writing, the price of ETH sits at around $4,270, reflecting an almost 6% increase in the past 24 hours. Related Reading: Bitcoin Moves Into $12 Trillion Sector: Why BTC In 401Ks Is A Big Deal Featured image from iStock, chart from TradingView",
+                "source": "NewsBTC",
+                "timestamp": 1754845234.0,
+                "url": "https://www.newsbtc.com/news/ethereum/ethereum-price-eyeing-a-breakout-target-at-4800/",
+                "symbols": [
+                    "SHIB",
+                    "ETH",
+                    "BTC"
+                ],
+                "source_weight": 0.7,
+                "sentiment": -0.9079601764678955,
                 "impact_score": 1.0,
                 "processed": 1.0
             },
@@ -1903,9 +1931,9 @@
                 "timestamp": 1754839852.0,
                 "url": "https://www.newsbtc.com/news/binance-coin/bnb-tracks-bitcoins-playbook-eyes-breakout-toward-1200/",
                 "symbols": [
-                    "BTC",
+                    "ADA",
                     "BNB",
-                    "ADA"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.4793173670768738,
@@ -1919,8 +1947,8 @@
                 "timestamp": 1754834412.0,
                 "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-nears-120000-again-as-el-salvador-opens-bitcoin-banks/",
                 "symbols": [
-                    "BTC",
-                    "XRP"
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.6111307144165039,
@@ -1934,8 +1962,8 @@
                 "timestamp": 1754829006.0,
                 "url": "https://www.newsbtc.com/news/bitcoin/vocal-gold-promoter-says-hed-choose-bitcoin-when-threatened-with-a-gun-to-the-head/",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.11224810034036636,
@@ -1949,9 +1977,9 @@
                 "timestamp": 1754823611.0,
                 "url": "https://www.newsbtc.com/altcoin/xrp-dominance-explodes-decoupling-from-bitcoin-and-ethereum-has-begun/",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.9130749702453613,
@@ -1965,9 +1993,9 @@
                 "timestamp": 1754818204.0,
                 "url": "https://www.newsbtc.com/altcoin/ethereum-hits-4300k-restoring-vitalik-buterins-crypto-billionaire-status/",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.4835476875305176,
@@ -1981,9 +2009,9 @@
                 "timestamp": 1754812810.0,
                 "url": "https://www.newsbtc.com/altcoin/ethereum-fractal-mirrors-bitcoins-2018-2021-run-ready-for-1110-surge/",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.891259491443634,
@@ -1997,8 +2025,8 @@
                 "timestamp": 1754807454.0,
                 "url": "https://www.newsbtc.com/altcoin/altseason-still-on-hold-metrics-reveal-btc-outpaces-large-mid-small-caps/",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8569619655609131,
@@ -2012,8 +2040,8 @@
                 "timestamp": 1754796610.0,
                 "url": "https://www.newsbtc.com/bitcoin-news/bitcoin-holds-strong-near-all-time-high-market-not-overheated-yet-data-shows/",
                 "symbols": [
-                    "BTC",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8736489415168762,
@@ -2027,8 +2055,8 @@
                 "timestamp": 1754791203.0,
                 "url": "https://www.newsbtc.com/analysis/xrp/xrp-holds-the-line-at-3-30/",
                 "symbols": [
-                    "BTC",
-                    "XRP"
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.51638263463974,
@@ -2036,17 +2064,16 @@
                 "processed": 1.0
             },
             {
-                "title": "Bitcoin Moves Into $12 Trillion Sector: Why BTC In 401Ks Is A Big Deal",
-                "text": "The potential integration of Bitcoin (BTC), the world\u2019s largest cryptocurrency, into the United States 401(k) retirement plans could open the door to a $12 trillion investment pool, marking a significant shift in mainstream adoption. With millions of Americans contributing to this plan every two weeks, even a small allocation to Bitcoin could create a steady, long-term inflow of capital far exceeding the impact of spot Exchange Traded Fund (ETF).\u00a0 Related Reading: Crypto Is Here To Stay\u2014Even The SEC Can\u2019t Do Anything About It, Analyst Says Bitcoin To Break Into 401(k) Retirement Market Bitcoin\u2019s possible entry into the US $12 trillion 401(k) investment options could represent one of the largest structural inflows in the asset\u2019s history. Tom Dunleavy, the Head of Venture at Varys Capital and a former senior analyst at Messari, declared in an X social media post on August 7 that cryptocurrencies in the 401(k) retirement plan are much bigger and more bullish news than the ETFs.\u00a0 Dunleavy explained that the US currently has around 100 million Americans participating in the 401(k) plan, where a fixed portion of each paycheck is automatically invested into preselected portfolios of stock and bonds. These allocations are typically reviewed annually at most, creating a steady and predictable stream of capital into financial markets. Additionally, over the past two decades, this 401(k) plan has been a critical driver behind the resilience and long-term upward trajectory of US equities. According to Dunleavy, the total value of assets in the 401(k) plans stands at approximately $12 trillion, with around $50 billion in fresh contributions added every two weeks. The analyst suggested that even a small portfolio allocation to Bitcoin would represent significant and recurring inflows. He estimated that a 1% allocation translates to roughly $120 billion in continuous buying, 3% would equate to $360 billion, and 5% would reach a whopping $600 billion.\u00a0 Unlike one-time purchases, Dunleavy notes that these allocations could continue indefinitely once set, creating a persistent demand floor for Bitcoin and other cryptocurrencies. He also compared the 401(k) plan to ETFs, claiming that cryptocurrencies within the investment pool could have a greater long-term impact than the launch of Spot Bitcoin ETFs.\u00a0 Regulatory Backdrop And BTC\u2019s Path To Adoption Dunleavy has indicated that the possible integration of Bitcoin into the 401(k) investment menus is closely tied to the Employee Retirement Income Security Act of 1974 (ERISA). He noted that ERISA establishes fiduciary standards designed to protect participants&#8217; interests and ensure they receive promised benefits. Under this framework, most fiduciary risk is borne by consultants, who advise plan sponsors on asset allocation and investment options. Related Reading: Ripple-SEC Legal Drama Ends; XRP Skyrockets 13% For over a decade, these consultants have been researching the cryptocurrency market, building the knowledge base and compliance structures necessary to justify a modest crypto allocation\u2014typically ranging between 1% and 5% for pensions and potentially 401(k) participants. Until recently, structural and regulatory constraints meant crypto could not be directly offered as an investment choice. With those barriers potentially shifting, consultants now have both the regulatory cover and the research credibility to recommend adding Bitcoin to retirement plans.\u00a0 Featured image from Unsplash, chart from TradingView",
-                "source": "NewsBTC",
-                "timestamp": 1754785842.0,
-                "url": "https://www.newsbtc.com/news/bitcoin/bitcoin-moves-into-12-trillion-sector-why-btc-in-401ks-is-a-big-deal/",
+                "title": "El Salvador passes law letting investment banks hold bitcoin, serve qualified clients",
+                "text": "\n            <p>The law allows financial institutions with $50 million in capital to register as investment banks and obtain digital asset licenses. </p>\n        ",
+                "source": "TheBlock",
+                "timestamp": 1754846343.0,
+                "url": "https://www.theblock.co/post/366241/el-salvadors-new-bitcoin-law-signals-shift-from-retail-adoption-to-institutional-investment?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "BTC",
-                    "XRP"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
-                "sentiment": -0.6213441491127014,
+                "sentiment": -0.04465612769126892,
                 "impact_score": 1.0,
                 "processed": 1.0
             },
@@ -2069,9 +2096,9 @@
                 "timestamp": 1754758774.0,
                 "url": "https://www.theblock.co/post/366231/trump-affiliated-world-liberty-financial-seeking-1-5-billion-for-wlfi-treasury-company-reports?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "BTC",
+                    "ETH",
                     "SOL",
-                    "ETH"
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.6247407793998718,
@@ -2113,8 +2140,8 @@
                 "timestamp": 1754673482.0,
                 "url": "https://www.theblock.co/post/366203/the-daily-ripple-and-sec-end-legal-battle-as-xrp-price-jumps-jack-dorseys-block-hits-1-billion-in-bitcoin-holdings-and-more?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "BTC",
-                    "XRP"
+                    "XRP",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": 0.907137930393219,
@@ -2236,9 +2263,9 @@
                 "timestamp": 1754650589.0,
                 "url": "https://www.theblock.co/post/366147/crypto-markets-edge-higher-as-etf-inflows-return-policy-updates-and-ripple-case-closure-add-tailwinds?utm_source=rss&utm_medium=rss",
                 "symbols": [
-                    "BTC",
                     "XRP",
-                    "ETH"
+                    "ETH",
+                    "BTC"
                 ],
                 "source_weight": 0.7,
                 "sentiment": -0.8492668271064758,
@@ -2308,38 +2335,26 @@
                 "sentiment": -0.22005504369735718,
                 "impact_score": 1.0,
                 "processed": 1.0
-            },
-            {
-                "title": "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading",
-                "text": "\n            <p>The company said it is raising its gross profit forecast for 2025 to $10.17 billion, up from its earlier forecast of $9.96 billion.</p>\n        ",
-                "source": "TheBlock",
-                "timestamp": 1754623991.0,
-                "url": "https://www.theblock.co/post/366108/jack-dorseys-block-inc-reports-income-growth-q2?utm_source=rss&utm_medium=rss",
-                "symbols": [],
-                "source_weight": 0.7,
-                "sentiment": -0.928297758102417,
-                "impact_score": 1.0,
-                "processed": 1.0
             }
         ],
         "latest_news": [
-            "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading",
             "Morning Minute: Crypto in Your 401(k)s Is Finally Happening",
             "Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
             "Ethereum Cracks $4,000 for First Time in 8 Months",
-            "XRP Dominance Explodes: Decoupling From Bitcoin And Ethereum Has Begun"
+            "XRP Dominance Explodes: Decoupling From Bitcoin And Ethereum Has Begun",
+            "Debunking XRP Myths With Ripple CTO David Schwartz"
         ],
-        "overall_sentiment": 0.2797689694346804,
-        "impact_score": 0.5954382292248986,
-        "major_events": "Jack Dorsey\u2019s Block Inc. reports 14% YoY income growth in Q2, stock jumps in extended trading; Morning Minute: Crypto in Your 401(k)s Is Finally Happening; Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions",
+        "overall_sentiment": 0.2866429573441126,
+        "impact_score": 0.5932175155325108,
+        "major_events": "Morning Minute: Crypto in Your 401(k)s Is Finally Happening; Myriad Moves: Bitcoin Price Targets, Sharplink Ethereum Holdings and Vitalik\u2019s Mentions; Ethereum Cracks $4,000 for First Time in 8 Months",
         "top_symbols": [
+            "SHIB",
             "ADA",
             "XLM",
             "SOL",
-            "UNI",
-            "DOGE"
+            "UNI"
         ],
-        "n_news": 165.0
+        "n_news": 166.0
     },
     "pending_sales": [
         {
@@ -2347,7 +2362,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 108157.62198198192,
-            "current_price": 118720.4,
+            "current_price": 118551.99,
             "amount": 9e-05,
             "pnl_pct": 22.935844089167883,
             "% Gain/Perte": "22.94%",
@@ -2360,10 +2375,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 70.07813412060145,
-            "current_price": 124.78,
+            "current_price": 123.66,
             "amount": 0.102,
-            "pnl_pct": 78.05839377124254,
-            "% Gain/Perte": "78.06%",
+            "pnl_pct": 76.46017770277169,
+            "% Gain/Perte": "76.46%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2373,10 +2388,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 3654.1087878787876,
-            "current_price": 4239.96,
+            "current_price": 4227.1,
             "amount": 0.0033,
-            "pnl_pct": 16.03267023862471,
-            "% Gain/Perte": "16.03%",
+            "pnl_pct": 15.680737640376453,
+            "% Gain/Perte": "15.68%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2386,7 +2401,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 719.1871428571428,
-            "current_price": 801.82,
+            "current_price": 802.63,
             "amount": 0.02491241,
             "pnl_pct": -8.392411273838906,
             "% Gain/Perte": "-8.39%",
@@ -2399,10 +2414,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.309744424778761,
-            "current_price": 0.3411,
+            "current_price": 0.34,
             "amount": 37.2,
-            "pnl_pct": 10.123047491051736,
-            "% Gain/Perte": "10.12%",
+            "pnl_pct": 9.767915998116655,
+            "% Gain/Perte": "9.77%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2425,10 +2440,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.83298,
-            "current_price": 0.8041,
+            "current_price": 0.8048,
             "amount": 14.2,
-            "pnl_pct": -3.467070037695985,
-            "% Gain/Perte": "-3.47%",
+            "pnl_pct": -3.3830344065884046,
+            "% Gain/Perte": "-3.38%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2438,7 +2453,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.71,
+            "current_price": 0.716,
             "amount": 0.03230637,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2451,10 +2466,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.252465,
-            "current_price": 0.23406,
+            "current_price": 0.23431,
             "amount": 23.0,
-            "pnl_pct": -7.290119422494209,
-            "% Gain/Perte": "-7.29%",
+            "pnl_pct": -7.191095795456798,
+            "% Gain/Perte": "-7.19%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2477,10 +2492,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 194.96943548387094,
-            "current_price": 182.17,
+            "current_price": 182.13,
             "amount": 0.058,
-            "pnl_pct": -6.564842049270743,
-            "% Gain/Perte": "-6.56%",
+            "pnl_pct": -6.585358085489815,
+            "% Gain/Perte": "-6.59%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2516,7 +2531,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 11.162,
+            "current_price": 10.977,
             "amount": 3.85614,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2529,7 +2544,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.0177,
+            "current_price": 0.01781,
             "amount": 1484.74630755,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2542,7 +2557,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.02031,
+            "current_price": 0.02057,
             "amount": 397.59699569,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2555,7 +2570,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 1.394,
+            "current_price": 1.405,
             "amount": 28.28169,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2607,10 +2622,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 3.9549924242424246,
-            "current_price": 3.8817,
+            "current_price": 3.873,
             "amount": 5.2,
-            "pnl_pct": -1.8531621904803965,
-            "% Gain/Perte": "-1.85%",
+            "pnl_pct": -2.073137327390202,
+            "% Gain/Perte": "-2.07%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2620,7 +2635,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 3.343,
+            "current_price": 3.341,
             "amount": 0.087214,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2646,7 +2661,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 1.217,
+            "current_price": 1.222,
             "amount": 0.35478462,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2659,7 +2674,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.7909,
+            "current_price": 0.7735,
             "amount": 2.85374308,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2672,7 +2687,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.2779,
+            "current_price": 0.2806,
             "amount": 0.05435377,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2698,7 +2713,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.01594,
+            "current_price": 0.01518,
             "amount": 4.05396039,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2711,10 +2726,10 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.01052,
-            "current_price": 0.002254,
+            "current_price": 0.002278,
             "amount": 1116.15,
-            "pnl_pct": -78.574144486692,
-            "% Gain/Perte": "-78.57%",
+            "pnl_pct": -78.34600760456273,
+            "% Gain/Perte": "-78.35%",
             "pause_blocage": "Oui",
             "note": "Trading suspendu (CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline)",
             "confidence": 0.5
@@ -2724,7 +2739,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.304,
+            "current_price": 0.3048,
             "amount": 39.51211224,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2737,7 +2752,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.634,
+            "current_price": 0.65,
             "amount": 0.43377579,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2763,7 +2778,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 26.61,
+            "current_price": 26.92,
             "amount": 0.01833206,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2776,7 +2791,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.0943,
+            "current_price": 0.0954,
             "amount": 0.07004223,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2802,7 +2817,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.0811,
+            "current_price": 0.0824,
             "amount": 3.76301349,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2828,7 +2843,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 4.536,
+            "current_price": 4.576,
             "amount": 5.47230677,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2841,7 +2856,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.115,
+            "current_price": 0.1133,
             "amount": 0.79286793,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2867,7 +2882,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.01812,
+            "current_price": 0.01832,
             "amount": 2.50258947,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2880,7 +2895,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.6368,
+            "current_price": 0.6436,
             "amount": 0.03474063,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2893,7 +2908,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.03142,
+            "current_price": 0.03175,
             "amount": 1.1566659,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2906,7 +2921,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.4456,
+            "current_price": 0.4515,
             "amount": 0.13870156,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2919,7 +2934,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.3305,
+            "current_price": 0.3319,
             "amount": 0.18545852,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2932,7 +2947,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.04196,
+            "current_price": 0.04172,
             "amount": 0.88600535,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2945,7 +2960,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.4231,
+            "current_price": 0.4202,
             "amount": 0.1179094,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2958,7 +2973,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.07226,
+            "current_price": 0.07213,
             "amount": 1.17754728,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2971,7 +2986,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.0952,
+            "current_price": 0.095,
             "amount": 0.08862893,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2984,7 +2999,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.09,
+            "current_price": 0.0894,
             "amount": 0.56851639,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -2997,7 +3012,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.9456,
+            "current_price": 0.9501,
             "amount": 0.17386141,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3010,7 +3025,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.1494,
+            "current_price": 0.1491,
             "amount": 0.17714676,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3023,7 +3038,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.0366,
+            "current_price": 0.03648,
             "amount": 2.49958419,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3036,7 +3051,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.1846,
+            "current_price": 0.1831,
             "amount": 0.11578375,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3049,7 +3064,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.03933,
+            "current_price": 0.03961,
             "amount": 1.16253643,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3062,7 +3077,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.113414,
+            "current_price": 0.11228,
             "amount": 1.36076364,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3075,7 +3090,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.3656,
+            "current_price": 0.3666,
             "amount": 0.10083373,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3088,7 +3103,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.09424,
+            "current_price": 0.096,
             "amount": 1.00786376,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3101,7 +3116,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.3639,
+            "current_price": 0.3622,
             "amount": 0.16214933,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3114,7 +3129,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 1.1002,
+            "current_price": 1.0866,
             "amount": 0.34099158,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3127,7 +3142,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.2693,
+            "current_price": 0.2672,
             "amount": 0.26255203,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3140,7 +3155,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.4272,
+            "current_price": 0.4288,
             "amount": 0.10868663,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3153,7 +3168,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 0.03389,
+            "current_price": 0.03368,
             "amount": 2.65771927,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3166,7 +3181,7 @@
             "reason": "Pause active",
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 0.0,
-            "current_price": 1.4336,
+            "current_price": 1.343,
             "amount": 0.12573876,
             "pnl_pct": 0.0,
             "% Gain/Perte": "0.00%",
@@ -3179,61 +3194,88 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 26.0,
+            "cycles_left": 29.0,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
+        },
+        {
+            "asset": "XRP",
+            "action": "BUY",
+            "cycles_left": 3.0,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 26.0,
+            "cycles_left": 29.0,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
+        },
+        {
+            "asset": "BNB",
+            "action": "BUY",
+            "cycles_left": 3.0,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
+        },
+        {
+            "asset": "LTC",
+            "action": "BUY",
+            "cycles_left": 3.0,
+            "type": "BUY",
+            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 29.0,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 29.0,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 11.0,
+            "cycles_left": 14.0,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 29.0,
+            "total_remaining": 29.0
         }
     ],
     "pause_status": {
-        "global_remaining": 11.0,
+        "global_remaining": 14.0,
         "pair_pauses": {
-            "BTC": 26.0,
-            "XRP": 1.0,
-            "ETH": 26.0,
-            "BNB": 1.0,
-            "LTC": 1.0,
-            "LINK": 26.0,
-            "SOL": 26.0
+            "BTC": 29.0,
+            "XRP": 3.0,
+            "ETH": 29.0,
+            "BNB": 3.0,
+            "LTC": 3.0,
+            "LINK": 29.0,
+            "SOL": 29.0
         },
-        "max_remaining": 26.0
+        "max_remaining": 29.0
     },
     "market_data": {
         "BTCUSDC": {
@@ -7174,9 +7216,9 @@
                 "tech": 0.6827,
                 "ai": 0.5338,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664643
         },
@@ -11118,9 +11160,9 @@
                 "tech": 0.5399,
                 "ai": 0.5259,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664673
         },
@@ -15062,9 +15104,9 @@
                 "tech": 0.6118,
                 "ai": 0.5141,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.66469
         },
@@ -19006,9 +19048,9 @@
                 "tech": 0.4139,
                 "ai": 0.5099,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664706
         },
@@ -22950,9 +22992,9 @@
                 "tech": 0.4492,
                 "ai": 0.5173,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664719
         },
@@ -26894,9 +26936,9 @@
                 "tech": 0.4871,
                 "ai": 0.5137,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664732
         },
@@ -30838,9 +30880,9 @@
                 "tech": 0.4994,
                 "ai": 0.517,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664744
         },
@@ -34782,9 +34824,9 @@
                 "tech": 0.5264,
                 "ai": 0.5289,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664757
         },
@@ -38726,9 +38768,9 @@
                 "tech": 0.5621,
                 "ai": 0.5161,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664769
         },
@@ -42670,9 +42712,9 @@
                 "tech": 0.498,
                 "ai": 0.5174,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 17:19:20"
+                "timestamp": "2025-08-10 18:05:16"
             },
-            "last_update": "2025-08-10 17:19:20",
+            "last_update": "2025-08-10 18:05:16",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.66478
         }
@@ -42684,7 +42726,7 @@
             "tech": 0.014209695305543175,
             "ai": 0.5338048458099365,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "ETH/USDC": {
             "action": "neutral",
@@ -42692,7 +42734,7 @@
             "tech": 0.029438730899941336,
             "ai": 0.5258861899375915,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "LTC/USDC": {
             "action": "neutral",
@@ -42700,7 +42742,7 @@
             "tech": 0.07878872699742068,
             "ai": 0.5140556454658508,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "XRP/USDC": {
             "action": "neutral",
@@ -42708,7 +42750,7 @@
             "tech": 0.005367735456935793,
             "ai": 0.5098920822143554,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "DOGE/USDC": {
             "action": "neutral",
@@ -42716,7 +42758,7 @@
             "tech": 0.01785448698394006,
             "ai": 0.5172793924808502,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "BNB/USDC": {
             "action": "neutral",
@@ -42724,7 +42766,7 @@
             "tech": 0.009533240263946802,
             "ai": 0.5137024164199829,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "ADA/USDC": {
             "action": "neutral",
@@ -42732,7 +42774,7 @@
             "tech": 0.01501420859495016,
             "ai": 0.5169826149940491,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "SOL/USDC": {
             "action": "neutral",
@@ -42740,7 +42782,7 @@
             "tech": 0.01902247782287393,
             "ai": 0.528859680891037,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "TRX/USDC": {
             "action": "neutral",
@@ -42748,7 +42790,7 @@
             "tech": 0.017135203770114397,
             "ai": 0.5160793483257293,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         },
         "SUI/USDC": {
             "action": "neutral",
@@ -42756,14 +42798,14 @@
             "tech": 0.02071133642314508,
             "ai": 0.5173646748065949,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 17:19:20"
+            "timestamp": "2025-08-10 18:05:16"
         }
     },
     "cycle_metrics": {
         "cycle": 10.0,
         "regime": "Range/Scalping",
         "balance": 60.85659068,
-        "timestamp": "2025-08-10 17:19:20"
+        "timestamp": "2025-08-10 18:05:16"
     },
     "positions_binance": {
         "BTC/USDC": {

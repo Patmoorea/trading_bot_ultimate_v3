@@ -146,9 +146,12 @@ class ExchangeConnector:
             pass
 
 
-def safe_float(val, default=0.0):
+def safe_float(value, default=0.0):
+    """Version améliorée avec gestion des None"""
+    if value is None:
+        return default
     try:
-        return float(val)
+        return float(value)
     except (TypeError, ValueError):
         return default
 
@@ -3128,26 +3131,39 @@ class TradingBotM4:
                 return data
 
             # 6. PATCH GLOBAL : Cast systématique des numériques
-            def deep_cast_dict(d):
-                for k, v in d.items():
-                    if isinstance(v, dict):
-                        deep_cast_dict(v)
-                    elif isinstance(v, list):
-                        for idx, item in enumerate(v):
-                            if isinstance(item, dict):
-                                deep_cast_dict(item)
-                            elif isinstance(item, str):
-                                try:
-                                    v[idx] = safe_float(item, item)
-                                except Exception:
-                                    pass
-                    elif isinstance(v, str):
-                        try:
-                            d[k] = safe_float(v, v)
-                        except Exception:
-                            pass
+            def deep_cast_dict(data):
+                """
+                Convertit récursivement toutes les valeurs numériques sous forme de strings en floats.
+                Gère les dictionnaires, listes et valeurs simples de manière sécurisée.
 
-            deep_cast_dict(new_fields)
+                Args:
+                    data: Structure de données à traiter (dict, list ou valeur simple)
+
+                Returns:
+                    Structure convertie avec les valeurs numériques castées
+                """
+                if isinstance(data, dict):
+                    return {k: deep_cast_dict(v) for k, v in data.items()}
+                elif isinstance(data, list):
+                    return [deep_cast_dict(item) for item in data]
+                elif isinstance(data, str):
+                    try:
+                        # Essaye de convertir en float si possible
+                        return float(data) if is_convertible_to_float(data) else data
+                    except (TypeError, ValueError):
+                        return data
+                return data
+
+            def is_convertible_to_float(value):
+                """Vérifie si une string peut être convertie en float"""
+                try:
+                    float(value)
+                    return True
+                except ValueError:
+                    return False
+
+            # Utilisation
+            new_fields = deep_cast_dict(new_fields)
 
             # 7. Fusion profonde
             def deep_update(d, u):
@@ -3241,31 +3257,46 @@ class TradingBotM4:
         entry_price,
         current_price,
         filled_tp_targets=None,
-        tp_levels=[(0.03, 0.3), (0.07, 0.3)],
+        tp_levels=[(0.03, 0.3), (0.07, 0.3)],  # Valeurs par défaut en float
     ):
         """
         Calcule la proportion à sortir selon les TP partiels atteints.
         Type-safe: conversion float systématique.
         """
+        # Validation des entrées
         if filled_tp_targets is None:
             filled_tp_targets = [False] * len(tp_levels)
+        elif len(filled_tp_targets) != len(tp_levels):
+            print("[WARNING] Mismatch entre tp_levels et filled_tp_targets")
+            filled_tp_targets = [False] * len(tp_levels)
+
         to_exit = 0.0
-        new_filled = filled_tp_targets[:]
-        entry_price = safe_float(entry_price, 0)
-        current_price = safe_float(current_price, 0)
+        new_filled = filled_tp_targets.copy()  # Meilleure pratique que [:]
+
+        # Conversion type-safe
+        try:
+            entry_price = float(entry_price)
+            current_price = float(current_price)
+        except (TypeError, ValueError):
+            print("[ERROR] Prix invalide dans check_tp_partial")
+            return 0.0, new_filled
+
         for i, (tp_pct, frac) in enumerate(tp_levels):
-            tp_pct = safe_float(tp_pct, 0)
-            frac = safe_float(frac, 0)
-            # Type-safe: tout float, jamais str
-            if (
-                not new_filled[i]
-                and entry_price > 0
-                and (current_price - entry_price) / entry_price > tp_pct
-            ):
-                to_exit += frac
-                new_filled[i] = True
-        to_exit = safe_float(to_exit, 0)
-        return to_exit, new_filled
+            try:
+                tp_pct = float(tp_pct)
+                frac = float(frac)
+                if (
+                    not new_filled[i]
+                    and entry_price > 0
+                    and (current_price - entry_price) / entry_price > tp_pct
+                ):
+                    to_exit += frac
+                    new_filled[i] = True
+            except (TypeError, ValueError) as e:
+                print(f"[ERROR] Valeur TP invalide à l'index {i}: {e}")
+                continue
+
+        return float(to_exit), new_filled
 
     def check_trailing(self, entry_price, price_history, max_price, trailing_pct=0.03):
         """
@@ -3285,25 +3316,36 @@ class TradingBotM4:
         Récupère la plus-value FIFO (en %) et en USD de la dernière vente spot pour une paire donnée.
         Retourne un tuple : (pnl_pct, pnl_usd)
         """
+        if not hasattr(self, "binance_client"):
+            print("[ERROR] Binance client non initialisé")
+            return None, None
+
         try:
-            # symbol format: "LTC/USDC" => "LTCUSDC"
-            symbol_key = symbol.replace("/", "")
+            symbol_key = symbol.replace("/", "").upper()
             buys, sells = self.fetch_trades_fifo(self.binance_client, symbol_key)
+
+            if not buys or not sells:
+                return None, None
+
             fifo_results = self.fifo_pnl(buys, sells)
-            last_result = fifo_results[-1] if fifo_results else None
-            pnl_pct = (
-                last_result["pnl_pct"]
-                if last_result and last_result["pnl_pct"] is not None
-                else None
+            if not fifo_results:
+                return None, None
+
+            last_result = fifo_results[-1]
+            return (
+                (
+                    float(last_result.get("pnl_pct", 0))
+                    if last_result.get("pnl_pct") is not None
+                    else None
+                ),
+                (
+                    float(last_result.get("pnl_usd", 0))
+                    if last_result.get("pnl_usd") is not None
+                    else None
+                ),
             )
-            pnl_usd = (
-                last_result["pnl_usd"]
-                if last_result and last_result["pnl_usd"] is not None
-                else None
-            )
-            return (pnl_pct, pnl_usd)
         except Exception as e:
-            print(f"[DEBUG FIFO] Erreur get_last_fifo_pnl pour {symbol}: {e}")
+            print(f"[ERROR] get_last_fifo_pnl pour {symbol}: {str(e)}")
             return None, None
 
     def log_closed_position(self, symbol, pos, exit_price, reason):
@@ -6981,14 +7023,14 @@ async def run_clean_bot():
 
                         # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
-                            amount_to_sell = float(amount) * float(to_exit)
-                            pos["amount"] = float(amount) - float(amount_to_sell)
+                            amount_to_sell = amount * to_exit
+                            pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            if float(pos["amount"]) <= 0:
+                            if safe_float(pos.get("amount"), 0) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
                                 )
@@ -6996,7 +7038,7 @@ async def run_clean_bot():
                                 continue
                         else:
                             print(
-                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={pos['amount']})"
+                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos.get('amount'), 0)})"
                             )
 
                         # Trailing stop
@@ -7005,16 +7047,16 @@ async def run_clean_bot():
                             pos["price_history"],
                             pos.get("max_price", entry_price),
                         )
-                        pos["max_price"] = float(new_max)
+                        pos["max_price"] = safe_float(new_max, 0)
                         print(
                             f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={pos['max_price']}"
                         )
-                        if should_exit and float(pos["amount"]) > 0:
+                        if should_exit and safe_float(pos.get("amount"), 0) > 0:
                             print(
-                                f"[DEBUG EXEC TRAILING] SELL {pos['amount']} for {symbol} (Trailing stop)"
+                                f"[DEBUG EXEC TRAILING] SELL {pos.get('amount')} for {symbol} (Trailing stop)"
                             )
                             await bot.execute_trade(
-                                symbol, "SELL", float(pos["amount"])
+                                symbol, "SELL", safe_float(pos.get("amount"), 0)
                             )
                             print(
                                 f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
@@ -7147,11 +7189,13 @@ async def run_clean_bot():
                                 {
                                     "confidence": safe_float(td.get("confidence", 0.5)),
                                     "action": str(td.get("action", "neutral")),
-                                    "tech": float(
+                                    "tech": safe_float(
                                         signals.get("technical", {}).get("score", 0.5)
                                     ),
-                                    "ai": float(signals.get("ai", 0.5)),
-                                    "sentiment": float(signals.get("sentiment", 0.5)),
+                                    "ai": safe_float(signals.get("ai", 0.5)),
+                                    "sentiment": safe_float(
+                                        signals.get("sentiment", 0.5)
+                                    ),
                                 }
                             )
 
