@@ -6981,8 +6981,8 @@ async def run_clean_bot():
 
                         # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
-                            amount_to_sell = safe_float(amount * to_exit, 0)
-                            pos["amount"] = amount - amount_to_sell
+                            amount_to_sell = float(amount) * float(to_exit)
+                            pos["amount"] = float(amount) - float(amount_to_sell)
                             pos["filled_tp_targets"] = new_filled
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
