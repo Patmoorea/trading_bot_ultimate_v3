@@ -4722,6 +4722,8 @@ class TradingBotM4:
             ]:
                 perf[key] = safe_float(perf.get(key), 0)
 
+            # -------- PATCH ABSOLU : protection anti-str ---------
+            # On vérifie que les champs sont bien en float juste avant toute addition
             perf["total_trades"] = safe_float(perf.get("total_trades"), 0) + 1
 
             # Calcul P&L
@@ -4747,6 +4749,7 @@ class TradingBotM4:
                             wins / total_trades if total_trades > 0 else 0
                         )
 
+                        # PATCH : addition type-safe
                         perf["total_profit"] = safe_float(
                             perf.get("total_profit"), 0
                         ) + max(0, pnl)
