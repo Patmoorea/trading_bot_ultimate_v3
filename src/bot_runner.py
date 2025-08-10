@@ -6958,21 +6958,15 @@ async def run_clean_bot():
                         pos["price_history"].append(last_price)
 
                         # --- PATCH TYPE SAFE ---
-                        entry_price = safe_float(pos.get("entry_price"), 0)
-                        amount = safe_float(pos.get("amount"), 0)
+                        entry_price = safe_float(pos.get("entry_price"), 0)amount = safe_float(pos.get("amount"), 0)
                         last_price = safe_float(last_price, 0)
-
-                        # Cast filled_tp_targets individuellement si besoin
-                        filled_tp_targets = [
-                            bool(x)
-                            for x in pos.get("filled_tp_targets", [False, False])
-                        ]
+                        filled_tp_targets = [bool(x) for x in pos.get("filled_tp_targets", [False, False])]
+                        pos["amount"] = amount
 
                         print(
                             f"[DEBUG TP] {symbol} entry={entry_price} last={last_price} amount={amount} filled_tp_targets={filled_tp_targets}"
                         )
 
-                        # Calcule le TP partiel (to_exit = proportion à vendre)
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
                             entry_price, last_price, filled_tp_targets
                         )
@@ -6982,20 +6976,15 @@ async def run_clean_bot():
                             f"[DEBUG TP] to_exit={to_exit}, new_filled={new_filled}, pnl={(last_price - entry_price) / entry_price:.2%}"
                         )
 
-                        # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
                             amount = safe_float(amount, 0)
                             amount_to_sell = safe_float(amount * to_exit, 0)
-                            # PATCH: toujours cast le résultat ET la valeur lue
-                            pos["amount"] = safe_float(amount, 0) - safe_float(
-                                amount_to_sell, 0
-                            )
+                            pos["amount"] = safe_float(amount, 0) - safe_float(amount_to_sell, 0)
                             pos["filled_tp_targets"] = [bool(x) for x in new_filled]
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            # Cast pour la comparaison ET le pop
                             if safe_float(pos["amount"], 0) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
@@ -7007,18 +6996,22 @@ async def run_clean_bot():
                                 f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos['amount'], 0)})"
                             )
 
-                        # Trailing stop
+                        # PATCH : Sécurise price_history et max_price
+                        pos["price_history"] = [safe_float(p, 0) for p in pos.get("price_history", [])]
+                        pos["max_price"] = safe_float(pos.get("max_price", entry_price), entry_price)
+
                         should_exit, new_max = bot.exit_manager.check_trailing(
                             entry_price,
                             pos["price_history"],
-                            pos.get("max_price", entry_price),
+                            pos["max_price"],
                         )
-                        pos["max_price"] = new_max
+                        pos["max_price"] = safe_float(new_max, entry_price)
+
                         print(
-                            f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={new_max}"
+                            f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={pos['max_price']}"
                         )
 
-                        if should_exit and pos["amount"] > 0:
+                        if should_exit and safe_float(pos["amount"], 0) > 0:
                             print(
                                 f"[DEBUG EXEC TRAILING] SELL {pos['amount']} for {symbol} (Trailing stop)"
                             )
