@@ -6981,16 +6981,21 @@ async def run_clean_bot():
                         )
 
                         if to_exit > 0 and amount > 0:
-                            amount = safe_float(amount, 0)
-                            amount_to_sell = safe_float(amount * to_exit, 0)
-                            pos["amount"] = safe_float(amount, 0) - safe_float(
-                                amount_to_sell, 0
+                            amount_val = safe_float(amount, 0)
+                            amount_to_sell_val = safe_float(amount_val * to_exit, 0)
+                            # PATCH: log le type avant et après
+                            print(
+                                f"[DEBUG PATCH] pos['amount'] avant update: {type(pos.get('amount'))} | {repr(pos.get('amount'))}"
+                            )
+                            pos["amount"] = amount_val - amount_to_sell_val
+                            print(
+                                f"[DEBUG PATCH] pos['amount'] après update: {type(pos.get('amount'))} | {repr(pos.get('amount'))}"
                             )
                             pos["filled_tp_targets"] = [bool(x) for x in new_filled]
                             print(
-                                f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
+                                f"[DEBUG EXEC TP] SELL {amount_to_sell_val} for {symbol} (TP partial)"
                             )
-                            await bot.execute_trade(symbol, "SELL", amount_to_sell)
+                            await bot.execute_trade(symbol, "SELL", amount_to_sell_val)
                             if safe_float(pos["amount"], 0) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
@@ -6999,7 +7004,7 @@ async def run_clean_bot():
                                 continue
                         else:
                             print(
-                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos['amount'], 0)})"
+                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos.get('amount'), 0)})"
                             )
 
                         # PATCH : Sécurise price_history et max_price

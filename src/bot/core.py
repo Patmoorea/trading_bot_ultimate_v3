@@ -1912,10 +1912,10 @@ class TradingBotM4:
                 {
                     "position_count": len(portfolio["positions"]),
                     "total_position_value": sum(
-                        pos["value"] for pos in portfolio["positions"]
+                        float(pos["value"]) for pos in portfolio["positions"]
                     ),
-                    "available_margin": portfolio["free"]
-                    - sum(pos.get("value", 0) for pos in portfolio["positions"]),
+                    "available_margin": float(portfolio["free"])
+                    - sum(float(pos.get("value", 0)) for pos in portfolio["positions"]),
                 }
             )
 
