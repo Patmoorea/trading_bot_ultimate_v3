@@ -2363,7 +2363,7 @@
             "decision": "Vente bloqu\u00e9e",
             "entry_price": 108157.62198198192,
             "current_price": 118551.99,
-            "amount": 9e-05,
+            "amount": 0.00009,
             "pnl_pct": 22.935844089167883,
             "% Gain/Perte": "22.94%",
             "pause_blocage": "Oui",
@@ -3194,88 +3194,88 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 29.0,
+            "cycles_left": 28,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "XRP",
             "action": "BUY",
-            "cycles_left": 3.0,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 29.0,
+            "cycles_left": 28,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "BNB",
             "action": "BUY",
-            "cycles_left": 3.0,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "LTC",
             "action": "BUY",
-            "cycles_left": 3.0,
+            "cycles_left": 2,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 29.0,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 29.0,
+            "cycles_left": 28,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 14.0,
+            "cycles_left": 13,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 29.0,
-            "total_remaining": 29.0
+            "max_cycles": 28,
+            "total_remaining": 28
         }
     ],
     "pause_status": {
-        "global_remaining": 14.0,
+        "global_remaining": 13,
         "pair_pauses": {
-            "BTC": 29.0,
-            "XRP": 3.0,
-            "ETH": 29.0,
-            "BNB": 3.0,
-            "LTC": 3.0,
-            "LINK": 29.0,
-            "SOL": 29.0
+            "BTC": 28,
+            "XRP": 2,
+            "ETH": 28,
+            "BNB": 2,
+            "LTC": 2,
+            "LINK": 28,
+            "SOL": 28
         },
-        "max_remaining": 29.0
+        "max_remaining": 28
     },
     "market_data": {
         "BTCUSDC": {
