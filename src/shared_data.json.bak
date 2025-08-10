@@ -861,60 +861,60 @@
         {
             "asset": "BTC",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 25.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 25.0,
+            "total_remaining": 25.0
         },
         {
             "asset": "ETH",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 25.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 25.0,
+            "total_remaining": 25.0
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 25.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 25.0,
+            "total_remaining": 25.0
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 26.0,
+            "cycles_left": 25.0,
             "type": "FULL",
             "reason": "",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 25.0,
+            "total_remaining": 25.0
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 11.0,
+            "cycles_left": 10.0,
             "type": "GLOBAL",
             "reason": "",
-            "max_cycles": 26.0,
-            "total_remaining": 26.0
+            "max_cycles": 25.0,
+            "total_remaining": 25.0
         }
     ],
     "pause_status": {
-        "global_remaining": 11.0,
+        "global_remaining": 10.0,
         "pair_pauses": {
-            "BTC": 26.0,
+            "BTC": 25.0,
             "XRP": 1.0,
-            "ETH": 26.0,
+            "ETH": 25.0,
             "BNB": 1.0,
             "LTC": 1.0,
-            "LINK": 26.0,
-            "SOL": 26.0
+            "LINK": 25.0,
+            "SOL": 25.0
         },
-        "max_remaining": 26.0
+        "max_remaining": 25.0
     }
 }

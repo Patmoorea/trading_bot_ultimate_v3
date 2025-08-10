@@ -6958,9 +6958,13 @@ async def run_clean_bot():
                         pos["price_history"].append(last_price)
 
                         # --- PATCH TYPE SAFE ---
-                        entry_price = safe_float(pos.get("entry_price"), 0)amount = safe_float(pos.get("amount"), 0)
+                        entry_price = safe_float(pos.get("entry_price"), 0)
+                        amount = safe_float(pos.get("amount"), 0)
                         last_price = safe_float(last_price, 0)
-                        filled_tp_targets = [bool(x) for x in pos.get("filled_tp_targets", [False, False])]
+                        filled_tp_targets = [
+                            bool(x)
+                            for x in pos.get("filled_tp_targets", [False, False])
+                        ]
                         pos["amount"] = amount
 
                         print(
@@ -6979,7 +6983,9 @@ async def run_clean_bot():
                         if to_exit > 0 and amount > 0:
                             amount = safe_float(amount, 0)
                             amount_to_sell = safe_float(amount * to_exit, 0)
-                            pos["amount"] = safe_float(amount, 0) - safe_float(amount_to_sell, 0)
+                            pos["amount"] = safe_float(amount, 0) - safe_float(
+                                amount_to_sell, 0
+                            )
                             pos["filled_tp_targets"] = [bool(x) for x in new_filled]
                             print(
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
@@ -6997,8 +7003,12 @@ async def run_clean_bot():
                             )
 
                         # PATCH : Sécurise price_history et max_price
-                        pos["price_history"] = [safe_float(p, 0) for p in pos.get("price_history", [])]
-                        pos["max_price"] = safe_float(pos.get("max_price", entry_price), entry_price)
+                        pos["price_history"] = [
+                            safe_float(p, 0) for p in pos.get("price_history", [])
+                        ]
+                        pos["max_price"] = safe_float(
+                            pos.get("max_price", entry_price), entry_price
+                        )
 
                         should_exit, new_max = bot.exit_manager.check_trailing(
                             entry_price,
