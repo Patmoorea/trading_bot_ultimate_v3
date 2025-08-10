@@ -3262,7 +3262,7 @@ class TradingBotM4:
                 and entry_price > 0
                 and (current_price - entry_price) / entry_price > tp_pct
             ):
-                to_exit += frac
+                to_exit += safe_float(frac, 0)
                 new_filled[i] = True
         to_exit = safe_float(to_exit, 0)
         return to_exit, new_filled
