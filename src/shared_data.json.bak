@@ -1,14 +1,14 @@
 {
-    "timestamp": "2025-08-10 16:37:19",
+    "timestamp": "2025-08-10 17:19:20",
     "user": "Patmoorea",
     "bot_status": {
         "regime": "Range/Scalping",
         "cycle": 0.0,
-        "last_update": "2025-08-10 16:37:19",
+        "last_update": "2025-08-10 17:19:20",
         "performance": {
             "balance": 60.85659068
         },
-        "timestamp": "2025-08-10 16:37:19"
+        "timestamp": "2025-08-10 17:19:20"
     },
     "filtering_params": {
         "min_volatility": 0.01,
@@ -16,7 +16,7 @@
         "top_n": 5.0
     },
     "sentiment": {
-        "timestamp": "2025-08-10 16:41:55",
+        "timestamp": "2025-08-10 17:19:20",
         "scores": [
             {
                 "title": "Actualit\u00e9s crypto de la semaine du 4 aout 2025 : Coin Hebdo #200",
@@ -3179,88 +3179,61 @@
         {
             "asset": "BTC",
             "action": "BUY",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "XRP",
-            "action": "BUY",
-            "cycles_left": 1.0,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "ETH",
             "action": "BUY",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "BUY",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "BNB",
-            "action": "BUY",
-            "cycles_left": 1.0,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
-        },
-        {
-            "asset": "LTC",
-            "action": "BUY",
-            "cycles_left": 1.0,
-            "type": "BUY",
-            "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "LINK",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "SOL",
             "action": "FULL",
-            "cycles_left": 27.0,
+            "cycles_left": 26.0,
             "type": "FULL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         },
         {
             "asset": "GLOBAL",
             "action": "ALL",
-            "cycles_left": 12.0,
+            "cycles_left": 11.0,
             "type": "GLOBAL",
             "reason": "CrediX team vanishes after $4.5 million exploit, deletes socials and takes website offline",
-            "max_cycles": 27.0,
-            "total_remaining": 27.0
+            "max_cycles": 26.0,
+            "total_remaining": 26.0
         }
     ],
     "pause_status": {
-        "global_remaining": 12.0,
+        "global_remaining": 11.0,
         "pair_pauses": {
-            "BTC": 27.0,
+            "BTC": 26.0,
             "XRP": 1.0,
-            "ETH": 27.0,
+            "ETH": 26.0,
             "BNB": 1.0,
             "LTC": 1.0,
-            "LINK": 27.0,
-            "SOL": 27.0
+            "LINK": 26.0,
+            "SOL": 26.0
         },
-        "max_remaining": 27.0
+        "max_remaining": 26.0
     },
     "market_data": {
         "BTCUSDC": {
@@ -7201,9 +7174,9 @@
                 "tech": 0.6827,
                 "ai": 0.5338,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664643
         },
@@ -11145,9 +11118,9 @@
                 "tech": 0.5399,
                 "ai": 0.5259,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664673
         },
@@ -15089,9 +15062,9 @@
                 "tech": 0.6118,
                 "ai": 0.5141,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.66469
         },
@@ -19033,9 +19006,9 @@
                 "tech": 0.4139,
                 "ai": 0.5099,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664706
         },
@@ -22977,9 +22950,9 @@
                 "tech": 0.4492,
                 "ai": 0.5173,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664719
         },
@@ -26921,9 +26894,9 @@
                 "tech": 0.4871,
                 "ai": 0.5137,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664732
         },
@@ -30865,9 +30838,9 @@
                 "tech": 0.4994,
                 "ai": 0.517,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664744
         },
@@ -34809,9 +34782,9 @@
                 "tech": 0.5264,
                 "ai": 0.5289,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664757
         },
@@ -38753,9 +38726,9 @@
                 "tech": 0.5621,
                 "ai": 0.5161,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.664769
         },
@@ -42697,9 +42670,9 @@
                 "tech": 0.498,
                 "ai": 0.5174,
                 "sentiment": 0.7706,
-                "timestamp": "2025-08-10 16:37:19"
+                "timestamp": "2025-08-10 17:19:20"
             },
-            "last_update": "2025-08-10 16:37:19",
+            "last_update": "2025-08-10 17:19:20",
             "sentiment": 0.7705849160750707,
             "sentiment_timestamp": 1754879297.66478
         }
@@ -42711,7 +42684,7 @@
             "tech": 0.014209695305543175,
             "ai": 0.5338048458099365,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "ETH/USDC": {
             "action": "neutral",
@@ -42719,7 +42692,7 @@
             "tech": 0.029438730899941336,
             "ai": 0.5258861899375915,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "LTC/USDC": {
             "action": "neutral",
@@ -42727,7 +42700,7 @@
             "tech": 0.07878872699742068,
             "ai": 0.5140556454658508,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "XRP/USDC": {
             "action": "neutral",
@@ -42735,7 +42708,7 @@
             "tech": 0.005367735456935793,
             "ai": 0.5098920822143554,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "DOGE/USDC": {
             "action": "neutral",
@@ -42743,7 +42716,7 @@
             "tech": 0.01785448698394006,
             "ai": 0.5172793924808502,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "BNB/USDC": {
             "action": "neutral",
@@ -42751,7 +42724,7 @@
             "tech": 0.009533240263946802,
             "ai": 0.5137024164199829,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "ADA/USDC": {
             "action": "neutral",
@@ -42759,7 +42732,7 @@
             "tech": 0.01501420859495016,
             "ai": 0.5169826149940491,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "SOL/USDC": {
             "action": "neutral",
@@ -42767,7 +42740,7 @@
             "tech": 0.01902247782287393,
             "ai": 0.528859680891037,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "TRX/USDC": {
             "action": "neutral",
@@ -42775,7 +42748,7 @@
             "tech": 0.017135203770114397,
             "ai": 0.5160793483257293,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         },
         "SUI/USDC": {
             "action": "neutral",
@@ -42783,14 +42756,14 @@
             "tech": 0.02071133642314508,
             "ai": 0.5173646748065949,
             "sentiment": 0.7705849160750707,
-            "timestamp": "2025-08-10 16:37:19"
+            "timestamp": "2025-08-10 17:19:20"
         }
     },
     "cycle_metrics": {
         "cycle": 10.0,
         "regime": "Range/Scalping",
         "balance": 60.85659068,
-        "timestamp": "2025-08-10 16:37:19"
+        "timestamp": "2025-08-10 17:19:20"
     },
     "positions_binance": {
         "BTC/USDC": {
