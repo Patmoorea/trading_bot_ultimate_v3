@@ -6988,7 +6988,7 @@ async def run_clean_bot():
                                 f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
                             )
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
-                            if pos["amount"] <= 0:
+                            if float(pos["amount"]) <= 0:
                                 print(
                                     f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
                                 )
