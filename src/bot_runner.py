@@ -3330,6 +3330,7 @@ class TradingBotM4:
         Affiche TOUTES les positions spot Binance avec leur état actuel.
         Seule la position concernée par une pause (asset ou globale) sera marquée pause_blocage = Oui et note = Trading suspendu.
         Les autres champs sont calculés intelligemment.
+        PATCH: Corrige l'affichage : pause_blocage = Oui uniquement si pauses != [] et is_paused(symbol) == True
         """
         try:
             pending = []
@@ -3342,7 +3343,7 @@ class TradingBotM4:
             print("[DEBUG PATCH] pauses:", pauses)
 
             def is_paused(symbol):
-                # Ne jamais retourner True si pauses est vide !
+                # Retourne True uniquement si une pause existe pour la paire ou globale
                 if not pauses:
                     return False, ""
                 for p in pauses:
@@ -3375,7 +3376,8 @@ class TradingBotM4:
                     confidence = td.get("confidence", 0.5)
 
                     pause_for_pos, pause_reason = is_paused(symbol)
-                    if pause_for_pos:
+                    # PATCH: pause_blocage = Oui UNIQUEMENT si une pause est active
+                    if pauses and pause_for_pos:
                         pause_blocage = "Oui"
                         note = f"Trading suspendu ({pause_reason})"
                         reason = "Pause active"
@@ -3822,6 +3824,7 @@ class TradingBotM4:
         """
         Boucle d’analyse des news avec pause automatique intelligente.
         Déclenche la pause selon sentiment, impact, classification, multi-source, volatilité, etc.
+        PATCH: Protection anti-index out of range sur news_data et toutes les listes utilisées.
         """
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
@@ -3834,12 +3837,20 @@ class TradingBotM4:
                 news_data = await self.news_analyzer.fetch_all_news()
                 news_data = self.enrich_news_symbols(news_data)
 
+                # PATCH: vérifie la liste avant tout accès indexé ou boucle
+                if not news_data or not isinstance(news_data, list):
+                    log_dashboard(
+                        "[NEWS] Aucun élément à analyser dans news_data, skip boucle"
+                    )
+                    await asyncio.sleep(self.news_update_interval)
+                    continue
+
                 sentiment_analysis = {}
                 try:
                     sentiment_analysis = await self.news_analyzer.update_analysis()
                 except Exception:
                     self.logger.error("Erreur update_analysis", exc_info=True)
-                    # sentiment_analysis reste {}
+                    sentiment_analysis = {}
 
                 sentiment_scores = (
                     sentiment_analysis.get("items", [])
@@ -3858,29 +3869,34 @@ class TradingBotM4:
                     self.logger.error(f"Erreur lors de la sauvegarde du sentiment: {e}")
 
                 try:
-                    await self.telegram.send_news_summary(news_data[:5])
+                    # PATCH: slicing [:5] est safe, mais vérification quand même
+                    await self.telegram.send_news_summary(
+                        news_data[:5] if news_data else []
+                    )
                 except Exception:
                     pass
 
-                for news in news_data:
-                    pause_decision = self.news_pause_manager.should_pause(
-                        news, self.market_data
-                    )
-                    if pause_decision:
-                        self.news_pause_manager.activate_pause(pause_decision)
-                        log_dashboard(
-                            f"🚨 Pause déclenchée automatique: {pause_decision}"
+                # PATCH: boucle protégée
+                if news_data:
+                    for news in news_data:
+                        pause_decision = self.news_pause_manager.should_pause(
+                            news, self.market_data
                         )
-                        try:
-                            await self.telegram.send_message(
-                                f"🚨 Pause automatique déclenchée\n"
-                                f"Type: {pause_decision.get('type')}\n"
-                                f"Paire: {pause_decision.get('pair', 'Toutes')}\n"
-                                f"Raison: {pause_decision.get('reason')}\n"
-                                f"Durée: {pause_decision.get('duration', 'N/A')} cycles"
+                        if pause_decision:
+                            self.news_pause_manager.activate_pause(pause_decision)
+                            log_dashboard(
+                                f"🚨 Pause déclenchée automatique: {pause_decision}"
                             )
-                        except Exception:
-                            pass
+                            try:
+                                await self.telegram.send_message(
+                                    f"🚨 Pause automatique déclenchée\n"
+                                    f"Type: {pause_decision.get('type')}\n"
+                                    f"Paire: {pause_decision.get('pair', 'Toutes')}\n"
+                                    f"Raison: {pause_decision.get('reason')}\n"
+                                    f"Durée: {pause_decision.get('duration', 'N/A')} cycles"
+                                )
+                            except Exception:
+                                pass
 
                 try:
                     with open(self.data_file, "r") as f:
@@ -4793,6 +4809,7 @@ class TradingBotM4:
         """
         Enregistre les données de sentiment du marché (scores, news, global) dans le fichier partagé.
         Correction : merge les news pour préserver le champ 'processed' à chaque sauvegarde.
+        PATCH: Toutes les listes indexées sont protégées.
         """
         headlines = []
         if news_data is None:
@@ -4822,7 +4839,7 @@ class TradingBotM4:
             )
 
         summary = get_sentiment_summary_from_batch(sentiment_scores)
-        sentiment_global = safe_float(summary["sentiment_global"], 0.0)
+        sentiment_global = safe_float(summary.get("sentiment_global", 0.0), 0.0)
         impact_score = float(
             np.mean(
                 [
@@ -4835,6 +4852,7 @@ class TradingBotM4:
             else 0.0
         )
         top_news = summary.get("top_news", [])
+        # PATCH: slicing est safe, mais accès direct doit être protégé
         major_events = "; ".join(top_news[:3]) if top_news else "Aucun"
 
         print(
@@ -4844,18 +4862,18 @@ class TradingBotM4:
         sentiment_data = {
             "timestamp": datetime.now().isoformat(),
             "scores": sentiment_scores,
-            "latest_news": summary["top_news"],
+            "latest_news": summary.get("top_news", []),
             "overall_sentiment": sentiment_global,
             "impact_score": impact_score,
             "major_events": major_events,
-            "top_symbols": summary["top_symbols"],
-            "n_news": summary["n_news"],
+            "top_symbols": summary.get("top_symbols", []),
+            "n_news": summary.get("n_news", 0),
         }
 
         try:
             with open(self.data_file, "r") as f:
                 shared_data_prev = json.load(f)
-            deep_cast_floats(data)
+            deep_cast_floats(shared_data_prev)
             old_scores = shared_data_prev.get("sentiment", {}).get("scores", [])
         except Exception:
             old_scores = []
