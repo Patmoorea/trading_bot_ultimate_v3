@@ -8,7 +8,7 @@ import asyncio
 from typing import List, Dict, Optional, Set, Any
 import numpy as np
 from bs4 import BeautifulSoup
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
 from datetime import datetime, timezone
 from deep_translator import GoogleTranslator
@@ -142,6 +142,24 @@ class NewsSentimentAnalyzer:
         )
         self._model = None
         self._tokenizer = None
+        # LLM classifier pipeline
+        self.llm_classifier = pipeline(
+            "zero-shot-classification", model="facebook/bart-large-mnli"
+        )
+        self.risk_labels = config.get("news", {}).get(
+            "risk_labels",
+            [
+                "Regulatory",
+                "Security",
+                "Hack",
+                "Scam",
+                "Bullish",
+                "Bearish",
+                "Neutral",
+                "Pump",
+                "Crash",
+            ],
+        )
         self.news_buffer = []
         self.sentiment_weight = config.get("news", {}).get("sentiment_weight", 0.15)
         self.update_interval = config.get("news", {}).get("update_interval", 300)
@@ -330,102 +348,47 @@ class NewsSentimentAnalyzer:
     def normalize_timestamp(self, timestamp: Any) -> int:
         """Normalise un timestamp en secondes depuis l'époque"""
         try:
-            # Si c'est déjà un int
             if isinstance(timestamp, int):
-                if timestamp > 9999999999:  # Si en millisecondes
+                if timestamp > 9999999999:
                     return int(timestamp / 1000)
                 return timestamp
-
-            # Si c'est une string
             if isinstance(timestamp, str):
                 try:
-                    # Essaye de parser comme int d'abord
                     ts = int(timestamp)
-                    if ts > 9999999999:  # Si en millisecondes
+                    if ts > 9999999999:
                         return int(ts / 1000)
                     return ts
                 except ValueError:
                     try:
-                        # Essaye format RFC 822 (format RSS)
                         dt = datetime.strptime(timestamp, "%a, %d %b %Y %H:%M:%S %z")
                         return int(dt.timestamp())
                     except ValueError:
                         try:
-                            # Essaye format RFC 822 sans timezone
                             dt = datetime.strptime(timestamp, "%a, %d %b %Y %H:%M:%S")
                             return int(dt.timestamp())
                         except ValueError:
-                            # Dernier essai : format ISO
                             dt = datetime.fromisoformat(
                                 timestamp.replace("Z", "+00:00")
                             )
                             return int(dt.timestamp())
-
-            # Si c'est un datetime
             if isinstance(timestamp, datetime):
                 return int(timestamp.timestamp())
-
-            # Si on ne peut pas convertir, retourne le timestamp actuel
             return int(datetime.now().timestamp())
-
         except Exception as e:
             self.logger.warning(f"Erreur normalisation timestamp {timestamp}: {str(e)}")
             return int(datetime.now().timestamp())
 
-    async def _save_state(self, data):
-        """
-        Sauvegarde sécurisée de l'état des news/sentiment dans le fichier partagé.
-        Fusionne avec l'existant si le fichier existe.
-        Ajoute le timestamp et patch les pauses.
-        """
-        path = self.config.get("news", {}).get(
-            "storage_path", "data/news_analysis.json"
-        )
+    def classify_risk_llm(self, title, text):
+        """Classifie le risque d'une news via LLM"""
         try:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            data["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-
-            # PATCH: fusion avec l'existant
-            if os.path.exists(path):
-                with open(path, "r") as f:
-                    file_data = json.load(f)
-                    if not isinstance(file_data, dict):
-                        file_data = {}
-            else:
-                file_data = {}
-
-            # PATCH: ajoute/merge les pauses si présentes
-            if "latest_pauses" in data:
-                pause_info = []
-                for pause in data["latest_pauses"]:
-                    pause_info.append(
-                        {
-                            "title": pause["title"],
-                            "original_title": pause.get(
-                                "original_title", pause["title"]
-                            ),
-                            "timestamp": datetime.fromtimestamp(
-                                pause["timestamp"], tz=timezone.utc
-                            ).strftime("%Y-%m-%d %H:%M:%S"),
-                            "symbols": pause["symbols"],
-                            "impact": pause["impact"],
-                            "source": pause["source"],
-                            "url": pause["url"],
-                        }
-                    )
-                data["pause_info"] = pause_info
-
-            # PATCH: fusion propre
-            file_data.update(data)
-            with open(path, "w") as f:
-                json.dump(file_data, f, indent=2)
-            self.logger.info(f"[NEWS] State saved to {path}")
-        except Exception as e:
-            self.logger.error(f"[NEWS] Failed to save state: {e}")
+            result = self.llm_classifier(f"{title}. {text}", self.risk_labels)
+            label = result["labels"][0] if result["labels"] else "Neutral"
+            score = result["scores"][0] if result["scores"] else 0.0
+            return label, score
+        except Exception:
+            return "Neutral", 0.0
 
     async def fetch_all_news(self) -> List[Dict]:
-        """Version optimisée de la récupération des news"""
-
         async def fetch_source(
             session: aiohttp.ClientSession, source: Dict
         ) -> List[Dict]:
@@ -443,10 +406,8 @@ class NewsSentimentAnalyzer:
                 self.logger.debug(f"[{source['name']}] Échec: {str(e)}")
             return []
 
-        # Utiliser le buffer existant si disponible
         if self.news_buffer:
             try:
-                # Tenter de mettre à jour avec les sources prioritaires
                 connector = aiohttp.TCPConnector(ssl=self.ssl_context)
                 async with aiohttp.ClientSession(connector=connector) as session:
                     primary_sources = [
@@ -456,7 +417,6 @@ class NewsSentimentAnalyzer:
                         fetch_source(session, source) for source in primary_sources
                     ]
                     results = await asyncio.gather(*tasks, return_exceptions=True)
-
                     valid_news = []
                     for source, result in zip(primary_sources, results):
                         if isinstance(result, list) and result:
@@ -464,25 +424,19 @@ class NewsSentimentAnalyzer:
                             self.logger.info(
                                 f"[{source['name']}] {len(result)} news récupérées"
                             )
-
                     if valid_news:
                         self.news_buffer = self.patch_news_list(valid_news)
                         return self.news_buffer
-
             except Exception as e:
                 self.logger.warning(f"Échec mise à jour rapide: {str(e)}")
-
-            # Si la mise à jour rapide échoue, retourner le buffer existant
             self.logger.info("Utilisation du buffer existant")
             return self.news_buffer
 
-        # Si pas de buffer, essayer toutes les sources
         try:
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
             async with aiohttp.ClientSession(connector=connector) as session:
                 tasks = [fetch_source(session, source) for source in self.sources]
                 results = await asyncio.gather(*tasks, return_exceptions=True)
-
                 valid_news = []
                 for source, result in zip(self.sources, results):
                     if isinstance(result, list) and result:
@@ -490,146 +444,12 @@ class NewsSentimentAnalyzer:
                         self.logger.info(
                             f"[{source['name']}] {len(result)} news récupérées"
                         )
-
                 if valid_news:
                     self.news_buffer = self.patch_news_list(valid_news)
                     return self.news_buffer
-
         except Exception as e:
             self.logger.error(f"Échec récupération news: {str(e)}")
-
         return []
-
-    async def _fetch_source_with_retry(
-        self, session: aiohttp.ClientSession, source: Dict, max_retries=None
-    ) -> List[Dict]:
-        max_retries = max_retries or self.max_retries
-        last_error = None
-
-        for attempt in range(max_retries):
-            try:
-                # Calcul du délai exponentiel
-                delay = self.retry_delay * (2**attempt) + (random.random() * 2)
-
-                if attempt > 0:
-                    self.logger.info(
-                        f"[{source['name']}] Tentative {attempt+1}/{max_retries} après {delay:.1f}s"
-                    )
-
-                # Configuration du timeout pour cette tentative
-                timeout = aiohttp.ClientTimeout(
-                    total=self.read_timeout * (attempt + 1), connect=self.conn_timeout
-                )
-
-                async with session.get(
-                    source["url"],
-                    timeout=timeout,
-                    ssl=self.ssl_context,
-                    headers=self.headers,
-                ) as response:
-                    if response.status == 429:  # Too Many Requests
-                        retry_after = int(response.headers.get("Retry-After", delay))
-                        self.logger.warning(
-                            f"[{source['name']}] Rate limit atteint, attente de {retry_after}s"
-                        )
-                        await asyncio.sleep(retry_after)
-                        continue
-
-                    if response.status != 200:
-                        raise aiohttp.ClientResponseError(
-                            request_info=response.request_info,
-                            history=response.history,
-                            status=response.status,
-                        )
-
-                    content = await response.text()
-
-                    # Parse le contenu selon le type
-                    if source["type"] == "rss":
-                        news = self._parse_rss(content, source)
-                    else:
-                        data = json.loads(content)
-                        news = self._parse_json(data, source)
-
-                    if news:  # Si on a des résultats valides
-                        return news
-
-                    # Si pas de news et ce n'est pas le dernier essai
-                    if attempt < max_retries - 1:
-                        await asyncio.sleep(delay)
-                        continue
-
-                    return []
-
-            except asyncio.TimeoutError as e:
-                last_error = f"Timeout après {self.read_timeout * (attempt + 1)}s"
-                self.logger.warning(f"[{source['name']}] {last_error}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(delay)
-                    continue
-
-            except aiohttp.ClientError as e:
-                last_error = f"Erreur réseau: {str(e)}"
-                self.logger.warning(f"[{source['name']}] {last_error}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(delay)
-                    continue
-
-            except Exception as e:
-                last_error = f"Erreur inattendue: {str(e)}"
-                self.logger.error(f"[{source['name']}] {last_error}")
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(delay)
-                    continue
-
-        self.logger.error(
-            f"[{source['name']}] Échec après {max_retries} tentatives: {last_error}"
-        )
-        return []
-
-    async def _fetch_source(
-        self, session: aiohttp.ClientSession, source: Dict
-    ) -> List[Dict]:
-        try:
-            async with session.get(source["url"], timeout=30) as response:
-                body = await response.text()
-                if response.status == 429:
-                    self.logger.error(
-                        f"[{source['name']}] HTTP 429 Too Many Requests ({source['url']}) | Body: {body}"
-                    )
-                    raise aiohttp.ClientResponseError(
-                        request_info=response.request_info,
-                        history=response.history,
-                        status=response.status,
-                        message="Too Many Requests",
-                        headers=response.headers,
-                    )
-                if response.status != 200:
-                    self.logger.error(
-                        f"[{source['name']}] HTTP status {response.status} ({source['url']}) | Body: {body}"
-                    )
-                    return []
-                if source["type"] == "rss":
-                    return self._parse_rss(body, source)
-                else:
-                    try:
-                        data = json.loads(body)
-                    except Exception as e:
-                        self.logger.error(
-                            f"[{source['name']}] Failed to parse JSON: {str(e)} | Body: {body}"
-                        )
-                        return []
-                    return self._parse_json(data, source)
-        except asyncio.TimeoutError:
-            self.logger.error(
-                f"[{source['name']}] Timeout when fetching ({source['url']})"
-            )
-            return []
-        except Exception as e:
-            self.logger.error(
-                f"[{source['name']}] Error fetching: {str(e)} ({source['url']})"
-            )
-            return []
 
     def _parse_rss(self, content: str, source: Dict) -> List[Dict]:
         try:
@@ -639,84 +459,6 @@ class NewsSentimentAnalyzer:
         except Exception as e:
             self.logger.error(f"Error parsing RSS {source['name']}: {str(e)}")
             return []
-
-    def _parse_json(self, data, source: Dict) -> List[Dict]:
-        news_list = []
-        if source["name"] == "CryptoCompare" and "Data" in data:
-            for n in data["Data"]:
-                title = n.get("title", "")
-                text = n.get("body", "")
-                url = n.get("url", "")
-                symbols = self.extract_symbols(f"{title} {text}")
-
-                # Utilise normalize_timestamp
-                timestamp = self.normalize_timestamp(n.get("published_on", None))
-
-                news_list.append(
-                    {
-                        "title": title,
-                        "text": text,
-                        "source": source["name"],
-                        "timestamp": timestamp,
-                        "url": url,
-                        "symbols": symbols,
-                        "source_weight": source["weight"],
-                    }
-                )
-
-        elif source["name"] == "NewsAPI" and "articles" in data:
-            for n in data["articles"]:
-                title = n.get("title", "")
-                text = n.get("description", "") or n.get("content", "")
-                url = n.get("url", "")
-                symbols = self.extract_symbols(f"{title} {text}")
-
-                # Utilise normalize_timestamp
-                timestamp = self.normalize_timestamp(n.get("publishedAt", None))
-
-                news_list.append(
-                    {
-                        "title": title,
-                        "text": text,
-                        "source": source["name"],
-                        "timestamp": timestamp,
-                        "url": url,
-                        "symbols": symbols,
-                        "source_weight": source["weight"],
-                    }
-                )
-        return news_list
-
-    def _parse_rss_item(self, item, source: Dict) -> Dict:
-        title = item.find("title").text if item.find("title") else ""
-        description = item.find("description").text if item.find("description") else ""
-        url = item.find("link").text if item.find("link") else ""
-        symbols = self.extract_symbols(f"{title} {description}")
-
-        # Extraction et normalisation du timestamp
-        pub_date = item.find("pubDate")
-        timestamp = self.normalize_timestamp(pub_date.text if pub_date else None)
-
-        return {
-            "title": title,
-            "text": description,
-            "source": source["name"],
-            "timestamp": timestamp,
-            "url": url,
-            "symbols": symbols,
-            "source_weight": source["weight"],
-        }
-
-    def _parse_timestamp(self, item):
-        pub_date = item.find("pubDate")
-        if pub_date and pub_date.text:
-            try:
-                # Convertir directement en timestamp
-                dt = datetime.strptime(pub_date.text[:25], "%a, %d %b %Y %H:%M:%S")
-                return int(dt.timestamp())
-            except Exception as e:
-                self.logger.warning(f"Erreur parsing date {pub_date.text}: {e}")
-        return int(datetime.now().timestamp())
 
     def analyze_sentiment_batch(
         self, news_items: List[Dict], low_watermark_ratio: float = None
@@ -752,7 +494,19 @@ class NewsSentimentAnalyzer:
             results = []
             for i, item in enumerate(news_items):
                 sentiment = float(scores[i][2] - scores[i][0])
-                results.append({**item, "sentiment": sentiment, "impact_score": 1.0})
+                # Ajout classification IA avancée
+                label, risk_score = self.classify_risk_llm(
+                    item.get("title", ""), item.get("text", "")
+                )
+                results.append(
+                    {
+                        **item,
+                        "sentiment": sentiment,
+                        "impact_score": 1.0,
+                        "risk_class": label,
+                        "risk_score": risk_score,
+                    }
+                )
             return results
         except Exception as e:
             print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
@@ -838,21 +592,8 @@ class NewsSentimentAnalyzer:
     async def get_symbol_sentiment(
         self, symbol: str, news_list: Optional[list] = None
     ) -> float:
-        """
-        Calcule le sentiment moyen pour un symbole donné avec decay temporel.
-
-        Args:
-            symbol (str): Le symbole de la crypto-monnaie (ex: "BTC", "ETH")
-            news_list (Optional[list]): Liste optionnelle de news, utilise news_buffer si None
-
-        Returns:
-            float: Score de sentiment entre -1 et 1
-        """
         try:
-            # Normalisation du symbole
             symbol_key = symbol.replace("/", "").upper()
-
-            # Mapping des symboles vers leurs variations
             coin_mapping = {
                 "BTC": ["BTC", "BITCOIN", "XBT"],
                 "ETH": ["ETH", "ETHEREUM", "ETHER"],
@@ -875,37 +616,22 @@ class NewsSentimentAnalyzer:
                 "XLM": ["XLM", "STELLAR"],
                 "HBAR": ["HBAR", "HEDERA"],
             }
-
-            # Identification du coin
             coin = None
             for cm in sorted(coin_mapping.keys(), key=len, reverse=True):
                 if symbol_key.startswith(cm):
                     coin = cm
                     break
-
-            # Fallback sur les 3 premiers caractères si non trouvé
             if coin is None:
                 coin = symbol_key[:3]
-
-            # Récupération des termes de recherche
             search_terms = coin_mapping.get(coin, [coin])
-
-            # Utilisation du buffer si pas de liste fournie
             if news_list is None:
                 news_list = self.news_buffer
-
-            # Variables d'accumulation
             total_sentiment = 0.0
             total_weight = 0.0
             matched_news = 0
-
-            # Timestamp actuel en UTC
             current_time = datetime.now(timezone.utc).timestamp()
-
-            # Parcours des news
             for news in news_list:
                 try:
-                    # Extraction des données de la news
                     news_symbols = news.get("symbols", [])
                     title = news.get("title", "").lower()
                     text = news.get("text", "").lower()
@@ -913,8 +639,6 @@ class NewsSentimentAnalyzer:
                     timestamp = self.normalize_timestamp(
                         news.get("timestamp", current_time)
                     )
-
-                    # Vérification des correspondances
                     match_extracted = any(
                         s.upper().strip() in [term.upper() for term in search_terms]
                         for s in news_symbols
@@ -922,48 +646,30 @@ class NewsSentimentAnalyzer:
                     match_content = any(
                         term.lower() in content for term in search_terms
                     )
-
-                    # Si correspondance trouvée
                     if match_extracted or match_content:
-                        # Calcul de l'âge de la news en heures
                         hours_old = (current_time - timestamp) / 3600
-
-                        # Facteur de decay exponentiel (diminue de moitié toutes les 24h)
                         decay = 0.5 ** (hours_old / 24)
-
-                        # Récupération du sentiment et de l'impact
                         sentiment = float(news.get("sentiment", 0))
                         impact = float(news.get("impact_score", 1) or 1)
-
-                        # Source weight pour pondération
                         source_weight = float(news.get("source_weight", 0.7))
-
-                        # Calcul du poids final
                         weight = decay * impact * source_weight
-
-                        # Accumulation
                         total_sentiment += sentiment * weight
                         total_weight += weight
                         matched_news += 1
-
                 except Exception as e:
                     self.logger.warning(
                         f"Erreur traitement news pour {symbol}: {str(e)}"
                     )
                     continue
-
-            # Calcul du score final
             if total_weight > 0:
                 final_score = total_sentiment / total_weight
-                # Log du résultat
                 self.logger.info(
                     f"Sentiment {symbol}: {final_score:.3f} (basé sur {matched_news} news)"
                 )
-                return float(max(min(final_score, 1.0), -1.0))  # Clamp entre -1 et 1
+                return float(max(min(final_score, 1.0), -1.0))
             else:
                 self.logger.info(f"Pas de sentiment calculable pour {symbol}")
                 return 0.0
-
         except Exception as e:
             self.logger.error(f"Erreur calcul sentiment pour {symbol}: {str(e)}")
             return 0.0

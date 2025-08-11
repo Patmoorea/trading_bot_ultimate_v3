@@ -732,7 +732,7 @@ class WarningFilter:
 
     def write(self, message):
         if any(
-            word in message()
+            word in message
             for word in [
                 "warning",
                 "scriptruncontext",
@@ -748,6 +748,9 @@ class WarningFilter:
 
     def flush(self):
         self.original_stderr.flush()
+
+
+sys.stderr = WarningFilter(sys.stderr)
 
 
 sys.stderr = WarningFilter(sys.stderr)
@@ -806,22 +809,6 @@ def merge_news_processed(old_scores, new_scores):
         if n.get("title") in old_map:
             n["processed"] = old_map[n.get("title")]
     return new_scores
-
-
-def deep_update(d, u):
-    for k, v in u.items():
-        if isinstance(v, dict) and k in d and isinstance(d[k], dict):
-            d[k] = deep_update(d[k], v)
-        elif isinstance(v, list) and k in d and isinstance(d[k], list):
-            d[k] = v
-        else:
-            if isinstance(d.get(k), (int, float)) and isinstance(v, str):
-                try:
-                    v = float(v)
-                except Exception:
-                    v = 0
-            d[k] = v
-    return d
 
 
 class APIRequestOptimizer:
