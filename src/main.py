@@ -837,71 +837,108 @@ with tab4:
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
 
-    # 3. Alertes de ventes
-    st.markdown("#### Alertes de ventes à venir")
-    pending_sales = shared_data.get("pending_sales", [])
-    if pending_sales:
-        try:
-            df_pending = pd.DataFrame(pending_sales)
+    # 3. Alertes de ventes à venir
+st.markdown("#### Alertes de ventes à venir")
+pending_sales = shared_data.get("pending_sales", [])
+active_pauses = shared_data.get("active_pauses", [])
 
-            # Colonnes requises
-            display_cols = [
-                "symbol",
-                "reason",
-                "decision",
-                "entry_price",
-                "current_price",
-                "amount",
-                "% Gain/Perte",
-                "pause_blocage",
-                "note",
-            ]
+if pending_sales:
+    try:
+        df_pending = pd.DataFrame(pending_sales)
+        display_cols = [
+            "symbol",
+            "reason",
+            "decision",
+            "entry_price",
+            "current_price",
+            "amount",
+            "% Gain/Perte",
+            "pause_blocage",
+            "note",
+        ]
+        for col in display_cols:
+            if col not in df_pending.columns:
+                df_pending[col] = "N/A"
 
-            # Ajout colonnes manquantes
-            for col in display_cols:
-                if col not in df_pending.columns:
-                    df_pending[col] = "N/A"
-
-            # Calcul du sizing
-            if "confidence" in df_pending.columns:
-                perf = shared_data.get("bot_status", {}).get("performance", {})
-                win_rate = perf.get("win_rate", 0.55)
-                profit_factor = perf.get("profit_factor", 1.7)
-
-                df_pending["Sizing (%)"] = df_pending.apply(
-                    lambda row: calc_sizing(
-                        float(row.get("confidence", 0.5)),
-                        float(row.get("tech", 0.5)),
-                        float(row.get("ai", 0.5)),
-                        float(row.get("sentiment", 0.0)),
-                        win_rate,
-                        profit_factor,
-                    ),
-                    axis=1,
-                )
-                display_cols.append("Sizing (%)")
-
-            # Tri par priorité
-            priority = {
-                "🔴 Signal SELL": 1,
-                "🔴 Perte latente": 2,
-                "🟢 Gain latent": 3,
-                "Position normale": 4,
-            }
-            df_pending["_priority"] = df_pending["reason"].map(
-                lambda x: next((p for k, p in priority.items() if k in x), 99)
+        # Calcul du sizing
+        if "confidence" in df_pending.columns:
+            perf = shared_data.get("bot_status", {}).get("performance", {})
+            win_rate = perf.get("win_rate", 0.55)
+            profit_factor = perf.get("profit_factor", 1.7)
+            df_pending["Sizing (%)"] = df_pending.apply(
+                lambda row: calc_sizing(
+                    float(row.get("confidence", 0.5)),
+                    float(row.get("tech", 0.5)),
+                    float(row.get("ai", 0.5)),
+                    float(row.get("sentiment", 0.0)),
+                    win_rate,
+                    profit_factor,
+                ),
+                axis=1,
             )
+            display_cols.append("Sizing (%)")
+
+        # Tri par priorité (ton mapping)
+        priority = {
+            "🔴 Signal SELL": 1,
+            "🔴 Perte latente": 2,
+            "🟢 Gain latent": 3,
+            "Position normale": 4,
+        }
+        df_pending["_priority"] = df_pending["reason"].map(
+            lambda x: next((p for k, p in priority.items() if k in x), 99)
+        )
+        # Tri par priorité puis par PnL
+        if "pnl_pct" in df_pending.columns:
             df_pending = df_pending.sort_values(
                 ["_priority", "pnl_pct"], ascending=[True, True]
             )
+        else:
+            df_pending = df_pending.sort_values(["_priority"], ascending=[True])
 
-            # Affichage
-            st.dataframe(df_pending[display_cols], use_container_width=True)
-
-        except Exception as e:
-            st.error(f"Erreur affichage alertes: {e}")
+        st.dataframe(df_pending[display_cols], use_container_width=True)
+    except Exception as e:
+        st.error(f"Erreur affichage alertes: {e}")
+else:
+    # PATCH: Si pending_sales est vide mais positions_binance non vide, affiche les positions comme alertes
+    positions_binance = shared_data.get("positions_binance", {})
+    if positions_binance:
+        st.info(
+            "🚫 Trading en pause ou aucune vente imminente, mais voici les positions ouvertes à surveiller."
+        )
+        df_pending = pd.DataFrame.from_dict(
+            positions_binance, orient="index"
+        ).reset_index()
+        df_pending.rename(columns={"index": "symbol"}, inplace=True)
+        # Ajoute colonnes d'alerte
+        df_pending["reason"] = "Position ouverte"
+        df_pending["decision"] = "Surveillance"
+        df_pending["pause_blocage"] = (
+            "Peut-être (pause active)" if active_pauses else "Non"
+        )
+        df_pending["note"] = ""
+        # Calcul du sizing
+        perf = shared_data.get("bot_status", {}).get("performance", {})
+        win_rate = perf.get("win_rate", 0.55)
+        profit_factor = perf.get("profit_factor", 1.7)
+        df_pending["Sizing (%)"] = df_pending.apply(
+            lambda row: calc_sizing(0.5, 0.5, 0.5, 0.0, win_rate, profit_factor),
+            axis=1,
+        )
+        display_cols = [
+            "symbol",
+            "reason",
+            "decision",
+            "entry_price",
+            "current_price",
+            "amount",
+            "pause_blocage",
+            "note",
+            "Sizing (%)",
+        ]
+        st.dataframe(df_pending[display_cols], use_container_width=True)
     else:
-        st.info("Aucune vente imminente détectée.")
+        st.info("Aucune vente imminente détectée et aucune position ouverte.")
 
     # 4. Plus-value réelle FIFO (spot)
     st.markdown("#### Plus-values réelles (FIFO) sur LTC/USDC")
