@@ -1057,20 +1057,14 @@ class TradingBotM4:
             "ws_status": True,
         }
 
-        self.news_pause_manager = NewsPauseManager(
-            default_pause_cycles=6
-        )  # 6 cycles = 3 minutes si cycle=30s
+        self.news_pause_manager = NewsPauseManager(default_pause_cycles=6)
         try:
             with open(self.data_file, "r") as f:
                 shared_data = json.load(f)
             deep_cast_floats(shared_data)
-            pause_status = shared_data.get("pause_status", {})
-            self.news_pause_manager.global_cycles_remaining = pause_status.get(
-                "global_remaining", 0
-            )
-            self.news_pause_manager.pair_pauses = pause_status.get(
-                "pair_pauses", {}
-            ).copy()
+            # PATCH: Restore ONLY from active_pauses, ignore pause_status
+            active_pauses = shared_data.get("active_pauses", [])
+            self.news_pause_manager.reset_pauses(active_pauses)
         except Exception as e:
             print(f"[INIT PAUSE] Impossible de restaurer l’état des pauses : {e}")
 
@@ -3871,14 +3865,19 @@ class TradingBotM4:
 
                 try:
                     # PATCH: slicing [:5] est safe, mais vérification quand même
-                    await self.telegram.send_news_summary(
-                        news_data[:5] if news_data else []
+                    safe_news = (
+                        news_data[:5]
+                        if news_data
+                        and isinstance(news_data, list)
+                        and len(news_data) > 0
+                        else []
                     )
+                    await self.telegram.send_news_summary(safe_news)
                 except Exception:
                     pass
 
                 # PATCH: boucle protégée
-                if news_data:
+                if news_data and isinstance(news_data, list):
                     for news in news_data:
                         pause_decision = self.news_pause_manager.should_pause(
                             news, self.market_data

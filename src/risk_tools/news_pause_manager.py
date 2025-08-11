@@ -47,6 +47,23 @@ class NewsPauseManager:
         self.volatility_thresholds = {"low": 0.02, "medium": 0.05, "high": 0.08}
         self.market_conditions = {}
 
+    def reset_pauses(self, active_pauses):
+        """
+        Recharge tous les compteurs de pause (globale et par paire) à partir d'une liste 'active_pauses'.
+        Si la liste est vide, toutes les pauses sont terminées.
+        """
+        self.global_cycles_remaining = 0
+        self.pair_pauses = {}
+        if not active_pauses:
+            return
+        for pause in active_pauses:
+            asset = pause.get("asset", "GLOBAL")
+            cycles_left = int(pause.get("cycles_left", 0))
+            if asset == "GLOBAL":
+                self.global_cycles_remaining = cycles_left
+            else:
+                self.pair_pauses[asset] = cycles_left
+
     def smart_pause_update(self, bot):
         regime = getattr(bot, "regime", None)
         sentiment = None
