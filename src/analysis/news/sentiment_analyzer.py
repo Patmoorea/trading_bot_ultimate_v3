@@ -132,9 +132,18 @@ class NewsSentimentAnalyzer:
             for name, ticker in self.SYMBOL_MAPPING.items()
         ]
         self.known_tickers = set(self.SYMBOL_MAPPING.values())
-        self.low_watermark_ratio = config.get("news", {}).get(
-            "low_watermark_ratio", 0.2
-        )
+
+        watermark = config.get("news", {}).get("low_watermark_ratio", 0.75)
+        try:
+            watermark = float(watermark)
+        except Exception:
+            watermark = 0.75
+        # PATCH: borne la valeur dans [0.05, 0.8]
+        if watermark > 0.8 or watermark < 0.05:
+            print(f"[PATCH] Watermark ratio {watermark} invalide, fallback à 0.75")
+            watermark = 0.75
+        self.low_watermark_ratio = watermark
+
         self.device = torch.device(
             "cuda"
             if torch.cuda.is_available()
@@ -471,12 +480,12 @@ class NewsSentimentAnalyzer:
         try:
             low_watermark_ratio = float(low_watermark_ratio)
         except Exception:
-            low_watermark_ratio = 0.2
-        if low_watermark_ratio > 0.5 or low_watermark_ratio < 0.05:
+            low_watermark_ratio = 0.75
+        if low_watermark_ratio > 0.8 or low_watermark_ratio < 0.05:
             print(
-                f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.2"
+                f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.75"
             )
-            low_watermark_ratio = 0.2
+            low_watermark_ratio = 0.75
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
             return []

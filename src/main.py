@@ -47,13 +47,41 @@ CURRENT_USER = "Patmoorea"  # UNIVERSAL PATCH: Safe JSON update
 
 def save_shared_data(update_dict, data_file):
     try:
+        # PATCH: restauration JSON minimal si fichier vide/corrompu
+        shared_data = {}
         if os.path.exists(data_file):
-            with open(data_file, "r") as f:
-                shared_data = json.load(f)
-                if not isinstance(shared_data, dict):
-                    shared_data = {}
-        else:
-            shared_data = {}
+            try:
+                with open(data_file, "r") as f:
+                    shared_data = json.load(f)
+                    if not isinstance(shared_data, dict):
+                        print(
+                            "[PATCH] Le fichier JSON n'est pas un dict, restauration minimal."
+                        )
+                        shared_data = {}
+            except Exception as e:
+                print(
+                    f"[PATCH] Erreur lecture JSON : {e} -- Fichier corrompu, restauration minimal."
+                )
+                shared_data = {
+                    "bot_status": {
+                        "regime": "Indéterminé",
+                        "cycle": 0,
+                        "last_update": "",
+                        "performance": {
+                            "balance": 10000,
+                            "total_trades": 0,
+                            "wins": 0,
+                            "losses": 0,
+                            "total_profit": 0,
+                            "total_loss": 0,
+                            "win_rate": 0,
+                            "profit_factor": 0,
+                        },
+                    },
+                    "positions_binance": {},
+                    "pending_sales": [],
+                    "active_pauses": [],
+                }
         shared_data.update(update_dict)
         with open(data_file, "w") as f:
             json.dump(shared_data, f, indent=2)
@@ -586,7 +614,7 @@ with tab1:
 
     st.divider()
 
-    # Section Arbitrage
+    # Section Arbitrage (une seule fois !)
     st.markdown("#### 💹 Opportunités d'arbitrage")
     arbitrage_ops = shared_data.get("arbitrage_opportunities", [])
     if arbitrage_ops:
@@ -600,6 +628,7 @@ with tab1:
         st.dataframe(df_arb, use_container_width=True)
     else:
         st.info("Aucune opportunité d'arbitrage détectée ce cycle.")
+
 
 with tab2:
     st.subheader("Analyse graphique avancée")
@@ -769,7 +798,7 @@ with tab3:
 with tab4:
     st.subheader("Portefeuille / Positions en temps réel")
 
-    # 1. Positions Binance Spot
+    # 1. Tableau des positions Binance Spot
     positions_binance = shared_data.get("positions_binance", {})
     spot_pairs = list(positions_binance.keys())
     fifo_pnl_map = {}
@@ -778,7 +807,6 @@ with tab4:
         symbol = pair.replace("/", "")
         fifo_key = f"fifo_pnl_{symbol}"
         fifo_pnl = shared_data.get(fifo_key, [])
-        # On prend la plus-value de la DERNIÈRE vente FIFO (si dispo)
         last_fifo = fifo_pnl[-1] if fifo_pnl else None
         fifo_pnl_map[pair] = (
             last_fifo["pnl_pct"]
@@ -788,7 +816,6 @@ with tab4:
 
     df_pos_binance = pd.DataFrame.from_dict(positions_binance, orient="index")
     df_pos_binance.index.name = "Paire"
-    # Colonne FIFO (plus-value sur la dernière vente spot)
     df_pos_binance["% Plus-Value"] = [
         (
             f"{fifo_pnl_map.get(pair, None):.2f}%"
@@ -803,7 +830,180 @@ with tab4:
     ]
     st.dataframe(df_pos_binance, use_container_width=True)
 
-    # 1bis. Positions BingX (Futures) - Shorts et Longs
+    # 2. Alertes de ventes à venir (tableau juste après portefeuille)
+    st.markdown("#### Alertes de ventes à venir")
+    pending_sales = shared_data.get("pending_sales", [])
+    trade_decisions = shared_data.get("trade_decisions", {})
+    if pending_sales:
+        try:
+            df_pending = pd.DataFrame(pending_sales)
+
+            # Colonnes à afficher
+            display_cols = [
+                "symbol",
+                "entry_price",
+                "current_price",
+                "amount",
+                "action",  # <-- action BUY/SELL/NEUTRAL
+                "% Gain/Perte latente",
+                "reason",
+                "decision",
+                "temps_en_position_h",
+                "pause_blocage",
+                "note",
+            ]
+            # Ajout colonnes manquantes
+            for col in display_cols:
+                if col not in df_pending.columns:
+                    df_pending[col] = "N/A"
+
+            # PATCH: Correction entry_price, current_price, amount
+            def safe_float(x):
+                try:
+                    return float(x)
+                except Exception:
+                    return 0
+
+            df_pending["entry_price"] = df_pending["entry_price"].apply(safe_float)
+            df_pending["current_price"] = df_pending["current_price"].apply(safe_float)
+            df_pending["amount"] = df_pending["amount"].apply(safe_float)
+
+            # Ajout colonne Action : utilise le champ "action" ou déduit via trade_decisions
+            def get_action(row):
+                action = row.get("action", "").upper()
+                if action in ["BUY", "SELL", "NEUTRAL"]:
+                    return action
+                # fallback: cherche dans trade_decisions
+                symbol = row.get("symbol", "")
+                td = trade_decisions.get(symbol.replace("/", "").upper(), {})
+                action_td = td.get("action", "NEUTRAL").upper()
+                if action_td in ["BUY", "SELL", "NEUTRAL"]:
+                    return action_td
+                return "NEUTRAL"
+
+            df_pending["action"] = df_pending.apply(get_action, axis=1)
+
+            # Calcul gain/perte latente
+            df_pending["% Gain/Perte latente"] = (
+                (df_pending["current_price"] - df_pending["entry_price"])
+                / df_pending["entry_price"]
+                * 100
+            ).map(
+                lambda x: (
+                    f"{x:.2f}%"
+                    if not pd.isnull(x) and df_pending["entry_price"].max() > 0
+                    else "N/A"
+                )
+            )
+
+            # Correction du temps en position
+            df_pending["temps_en_position_h"] = df_pending["temps_en_position_h"].apply(
+                lambda x: f"{x:.1f}h" if isinstance(x, (int, float)) else x
+            )
+
+            # Customisation ultra détaillée de la décision
+            def custom_decision(row):
+                entry = row["entry_price"]
+                current = row["current_price"]
+                pnl = ((current - entry) / entry * 100) if entry and current else 0
+                symbol = row["symbol"]
+                pause = row.get("pause_blocage", "Non")
+                reason = row.get("reason", "")
+                decision = row.get("decision", "")
+                action = row.get("action", "NEUTRAL")
+
+                # Prédiction et explication
+                if pause == "Oui":
+                    return f"🔒 Vente bloquée (pause news/reglementaire). Aucun mouvement possible."
+                if action == "SELL":
+                    return f"🟠 Vente prévue au prochain cycle (signal SELL détecté)."
+                if action == "BUY":
+                    return f"🟢 Achat possible au prochain cycle (signal BUY détecté)."
+                if "Take Profit" in reason:
+                    return "🟢 Vente partielle possible (TP proche)."
+                if pnl >= 8:
+                    return f"🟢 {symbol} en attente de vente au prochain cycle (plus-value {pnl:.2f}%)."
+                if pnl > 7:
+                    return f"🟢 Gain latent élevé, surveillance TP (plus-value {pnl:.2f}%)."
+                if pnl < -5:
+                    return f"🔴 Perte latente élevée, risque vente auto si perte aggrave ({pnl:.2f}%)."
+                if decision.lower() == "position maintenue":
+                    return f"🟡 Position maintenue, aucun signal critique."
+                return f"ℹ️ Surveillance normale."
+
+            df_pending["Décision détaillée"] = df_pending.apply(custom_decision, axis=1)
+
+            # Ajout colonne "Action probable prochain cycle"
+            def cycle_action(row):
+                if "Vente bloquée" in row["Décision détaillée"]:
+                    return "Aucune action avant fin de la pause."
+                if "Vente prévue" in row["Décision détaillée"]:
+                    return "Vente automatique au prochain tick."
+                if "Achat possible" in row["Décision détaillée"]:
+                    return "Achat automatique au prochain tick."
+                if "Vente partielle" in row["Décision détaillée"]:
+                    return "Prise de profit partielle si TP atteint."
+                if "Gain latent élevé" in row["Décision détaillée"]:
+                    return (
+                        "Bot surveille le TP, vente probable si le prix monte encore."
+                    )
+                if "Perte latente élevée" in row["Décision détaillée"]:
+                    return "Bot surveille le stop-loss, vente forcée si perte aggrave."
+                if "Position maintenue" in row["Décision détaillée"]:
+                    return "Aucune action prévue, surveillance normale."
+                return "Analyse continue, pas d'action critique."
+
+            df_pending["Action probable prochain cycle"] = df_pending.apply(
+                cycle_action, axis=1
+            )
+
+            # Tri par priorité
+            priority_map = {
+                "🔴": 1,
+                "🔒": 2,
+                "🟠": 3,
+                "🟢": 4,
+                "🟡": 5,
+                "ℹ️": 6,
+            }
+
+            def priority(row):
+                for k in priority_map:
+                    if k in row["Décision détaillée"]:
+                        return priority_map[k]
+                return 99
+
+            df_pending["priority"] = df_pending.apply(priority, axis=1)
+            df_pending = df_pending.sort_values(
+                ["priority", "symbol"], ascending=[True, True]
+            )
+
+            # Colonnes finales à afficher
+            ordered_cols = [
+                "symbol",
+                "action",
+                "entry_price",
+                "current_price",
+                "amount",
+                "% Gain/Perte latente",
+                "Décision détaillée",
+                "Action probable prochain cycle",
+                "temps_en_position_h",
+                "pause_blocage",
+                "note",
+            ]
+            st.dataframe(
+                df_pending[ordered_cols],
+                use_container_width=True,
+                height=500,
+            )
+
+        except Exception as e:
+            st.error(f"Erreur affichage alertes: {e}")
+    else:
+        st.info("Aucune vente imminente détectée.")
+
+    # 3. Positions BingX (Futures) - Shorts et Longs
     positions_bingx = shared_data.get("positions_bingx", {})
     st.markdown("#### Positions ouvertes BingX (Futures / Shorts/Longs)")
     if positions_bingx:
@@ -813,7 +1013,6 @@ with tab4:
             df_bingx["% Plus-Value"] = df_bingx["pnl_pct"].map(
                 lambda x: f"{x:.2f}%" if x is not None else "N/A"
             )
-        # Ajout indicateur "side" pour repérage short
         if "side" in df_bingx.columns:
             df_bingx["Type"] = df_bingx["side"].map(
                 lambda x: "SHORT" if x == "short" else "LONG"
@@ -822,7 +1021,7 @@ with tab4:
     else:
         st.info("Aucune position ouverte sur BingX futures.")
 
-    # 2. Positions fermées
+    # 4. Positions fermées
     st.markdown("#### Historique des positions fermées")
     closed = shared_data.get("closed_positions", [])
     if closed:
@@ -837,73 +1036,7 @@ with tab4:
     else:
         st.info("Aucune position fermée automatiquement ce cycle.")
 
-    # 3. Alertes de ventes
-    st.markdown("#### Alertes de ventes à venir")
-    pending_sales = shared_data.get("pending_sales", [])
-    if pending_sales:
-        try:
-            df_pending = pd.DataFrame(pending_sales)
-
-            # Colonnes requises
-            display_cols = [
-                "symbol",
-                "reason",
-                "decision",
-                "entry_price",
-                "current_price",
-                "amount",
-                "% Gain/Perte",
-                "pause_blocage",
-                "note",
-            ]
-
-            # Ajout colonnes manquantes
-            for col in display_cols:
-                if col not in df_pending.columns:
-                    df_pending[col] = "N/A"
-
-            # Calcul du sizing
-            if "confidence" in df_pending.columns:
-                perf = shared_data.get("bot_status", {}).get("performance", {})
-                win_rate = perf.get("win_rate", 0.55)
-                profit_factor = perf.get("profit_factor", 1.7)
-
-                df_pending["Sizing (%)"] = df_pending.apply(
-                    lambda row: calc_sizing(
-                        float(row.get("confidence", 0.5)),
-                        float(row.get("tech", 0.5)),
-                        float(row.get("ai", 0.5)),
-                        float(row.get("sentiment", 0.0)),
-                        win_rate,
-                        profit_factor,
-                    ),
-                    axis=1,
-                )
-                display_cols.append("Sizing (%)")
-
-            # Tri par priorité
-            priority = {
-                "🔴 Signal SELL": 1,
-                "🔴 Perte latente": 2,
-                "🟢 Gain latent": 3,
-                "Position normale": 4,
-            }
-            df_pending["_priority"] = df_pending["reason"].map(
-                lambda x: next((p for k, p in priority.items() if k in x), 99)
-            )
-            df_pending = df_pending.sort_values(
-                ["_priority", "pnl_pct"], ascending=[True, True]
-            )
-
-            # Affichage
-            st.dataframe(df_pending[display_cols], use_container_width=True)
-
-        except Exception as e:
-            st.error(f"Erreur affichage alertes: {e}")
-    else:
-        st.info("Aucune vente imminente détectée.")
-
-    # 4. Plus-value réelle FIFO (spot)
+    # 5. Plus-value réelle FIFO (spot) sur LTC/USDC
     st.markdown("#### Plus-values réelles (FIFO) sur LTC/USDC")
     fifo_pnl = shared_data.get("fifo_pnl_LTCUSDC", [])
     if fifo_pnl:
