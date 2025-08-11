@@ -3330,7 +3330,7 @@ class TradingBotM4:
             pending = []
             now = datetime.utcnow()
 
-            # Récupération des pauses actives
+            # Récupération des pauses actives RAM
             pauses = []
             if hasattr(self, "news_pause_manager") and self.news_pause_manager:
                 pauses = self.news_pause_manager.get_active_pauses()
@@ -3370,7 +3370,7 @@ class TradingBotM4:
                     confidence = td.get("confidence", 0.5)
 
                     pause_for_pos, pause_reason = is_paused(symbol)
-                    # PATCH: pause_blocage = Oui UNIQUEMENT si une pause est active
+                    # PATCH: pause_blocage = "Oui" UNIQUEMENT si une pause est active
                     if pauses and pause_for_pos:
                         pause_blocage = "Oui"
                         note = f"Trading suspendu ({pause_reason})"
@@ -3820,6 +3820,7 @@ class TradingBotM4:
         Boucle d’analyse des news avec pause automatique intelligente.
         Déclenche la pause selon sentiment, impact, classification, multi-source, volatilité, etc.
         PATCH: Protection anti-index out of range sur news_data et toutes les listes utilisées.
+        Synchronisation forcée des pauses et du tableau pending_sales à chaque boucle.
         """
         log_dashboard("[NEWS] Lancement boucle d'analyse des news…")
         while True:
@@ -3916,6 +3917,13 @@ class TradingBotM4:
                     print(
                         f"[NEWS] Impossible d'afficher le score sentiment global: {e}"
                     )
+
+                # PATCH NOUVEAU : Synchronisation des pauses et pending_sales à chaque boucle
+                active_pauses = self.news_pause_manager.get_active_pauses()
+                self.safe_update_shared_data(
+                    {"active_pauses": active_pauses}, self.data_file
+                )
+                self.get_pending_sales()  # met à jour le tableau dans le JSON partagé
 
             except Exception as e:
                 self.logger.error(f"News analysis error: {e}")
@@ -4853,7 +4861,9 @@ class TradingBotM4:
         )
         top_news = summary.get("top_news", [])
         # PATCH: slicing est safe, mais accès direct doit être protégé
-        major_events = "; ".join(top_news[:3]) if top_news else "Aucun"
+        major_events = (
+            "; ".join(top_news[:3]) if top_news and len(top_news) >= 1 else "Aucun"
+        )
 
         print(
             f"[DEBUG SENTIMENT GLOBAL] sentiment_global={sentiment_global} impact={impact_score} major_events={major_events}"
@@ -4974,10 +4984,12 @@ class TradingBotM4:
                 f"Événements majeurs: {major_events}\n"
             )
             major_news = news_sentiment.get("latest_news", [])
-            if major_news:
+            if major_news and len(major_news) > 0:
                 report += "Dernières news :\n"
                 for news in major_news[:3]:
                     report += f"- {news}\n"
+            else:
+                report += "Aucune news disponible.\n"
         else:
             report += "\n📰 Analyse des News: Aucune donnée disponible.\n"
 
