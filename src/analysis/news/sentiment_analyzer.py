@@ -481,11 +481,8 @@ class NewsSentimentAnalyzer:
             low_watermark_ratio = float(low_watermark_ratio)
         except Exception:
             low_watermark_ratio = 0.75
-        if low_watermark_ratio > 0.8 or low_watermark_ratio < 0.05:
-            print(
-                f"[DEBUG] Watermark ratio {low_watermark_ratio} is invalid, forcing to 0.75"
-            )
-            low_watermark_ratio = 0.75
+        # PATCH: borne stricte silencieuse
+        low_watermark_ratio = min(max(low_watermark_ratio, 0.05), 0.8)
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
             return []
@@ -505,7 +502,6 @@ class NewsSentimentAnalyzer:
             results = []
             for i, item in enumerate(news_items):
                 sentiment = float(scores[i][2] - scores[i][0])
-                # Ajout classification IA avancée
                 label, risk_score = self.classify_risk_llm(
                     item.get("title", ""), item.get("text", "")
                 )

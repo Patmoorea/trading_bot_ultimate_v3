@@ -986,7 +986,7 @@ class TradingBotM4:
                 "sentiment_weight": 0.15,
                 "update_interval": 300,
                 "storage_path": "data/news_analysis.json",
-                "low_watermark_ratio": 0.2,
+                "low_watermark_ratio": 0.75,
                 "symbol_mapping": {
                     "bitcoin": "BTC",
                     "ethereum": "ETH",
