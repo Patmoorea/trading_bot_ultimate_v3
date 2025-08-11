@@ -7213,6 +7213,8 @@ async def run_clean_bot():
                     logger.error(error_msg)
                     await bot.telegram.send_message(error_msg)
 
+                bot.get_pending_sales()
+                bot.save_shared_data()
                 # Attente avant le prochain cycle
                 await asyncio.sleep(30)
 
