@@ -3508,6 +3508,8 @@ class TradingBotM4:
 
                     fifo_pnl_pct = self.get_last_fifo_pnl(symbol)
 
+                    prev_pos = self.positions_binance.get(symbol, {})
+
                     positions[symbol] = {
                         "side": self.positions.get(symbol, {}).get("side", "long"),
                         "amount": free,
@@ -3522,6 +3524,12 @@ class TradingBotM4:
                         "value_usd": (
                             free * current_price if free and current_price else 0.0
                         ),
+                        # PATCH: Ajoute ou préserve les champs custom pour TP partiel/Trailing stop
+                        "filled_tp_targets": prev_pos.get(
+                            "filled_tp_targets", [False, False]
+                        ),
+                        "price_history": prev_pos.get("price_history", [entry_price]),
+                        "max_price": prev_pos.get("max_price", entry_price),
                     }
             self.positions_binance = positions
 
@@ -6989,6 +6997,9 @@ async def run_clean_bot():
                             await bot.execute_trade(symbol, "SELL", amount_to_sell)
                             pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
+                            print(
+                                f"[TP PARTIEL] {symbol}: Vente {amount_to_sell} à TP, nouveau amount={pos['amount']} | filled_tp_targets={pos['filled_tp_targets']}"
+                            )
                             if safe_float(pos.get("amount"), 0) <= 0:
                                 bot.positions.pop(symbol)
                                 continue
