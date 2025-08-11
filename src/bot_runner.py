@@ -3157,7 +3157,7 @@ class TradingBotM4:
                     ):
                         # CORRECTION : pending_sales doit être écrasé à chaque cycle
                         if key == "pending_sales":
-                            target[key] = value
+                            target[key] = value  # <--- PATCH ici : on écrase toujours
                         else:
                             target[key] = value
                     else:
