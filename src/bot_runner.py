@@ -3155,12 +3155,9 @@ class TradingBotM4:
                         and isinstance(target[key], list)
                         and isinstance(value, list)
                     ):
+                        # CORRECTION : pending_sales doit être écrasé à chaque cycle
                         if key == "pending_sales":
-                            target[key] = list(
-                                {
-                                    item["symbol"]: item for item in target[key] + value
-                                }.values()
-                            )
+                            target[key] = value
                         else:
                             target[key] = value
                     else:
