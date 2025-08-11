@@ -306,7 +306,7 @@ def _generate_analysis_report(
             if trade_decisions and timeframe in trade_decisions:
                 dec = trade_decisions[timeframe]
                 try:
-                    confidence = safe_float(dec.get("confidence", 0))
+                    confidence = float(dec.get("confidence", 0))
                     tech = float(dec.get("tech", 0))
                     ia = float(dec.get("ai", 0))
                     sentiment_trade = float(dec.get("sentiment", 0))
@@ -754,13 +754,6 @@ sys.stderr = WarningFilter(sys.stderr)
 
 
 def get_sentiment_summary_from_batch(sentiment_scores, top_n=5):
-    import numpy as np
-
-    def safe_float(val, default=0.0):
-        try:
-            return float(val)
-        except (TypeError, ValueError):
-            return default
 
     # Filtre les news avec score
     valid = [
@@ -907,7 +900,7 @@ class RiskManager:
             orderflow = signals.get("orderflow", {})
 
             # Validation technique
-            tech_score = safe_float(technical.get("score", 0))
+            tech_score = float(technical.get("score", 0))
             if abs(tech_score) < self.validation_thresholds["technical"]:
                 print(f"[RISK] Score technique insuffisant: {tech_score:.2f}")
                 return False
@@ -960,7 +953,7 @@ class RiskManager:
         """Vérifie les limites d'exposition"""
         try:
             total_exposure = sum(
-                safe_float(pos.get("size", 0)) for pos in current_positions.values()
+                float(pos.get("size", 0)) for pos in current_positions.values()
             )
             new_total = total_exposure + float(new_position_size)
             is_valid = new_total <= self.position_limits["max_total_exposure"]
@@ -1207,14 +1200,14 @@ class TradingBotM4:
 
     def validate_tp_levels(self, levels):
         """Valide et convertit les niveaux TP depuis la config"""
-        if levels is None:
-            return [(0.03, 0.3), (0.07, 0.3)]
+        if not levels:
+            return [(0.03, 0.3), (0.07, 0.3)]  # Valeurs par défaut
 
         validated = []
         for level in levels:
             try:
                 if isinstance(level, str):
-                    # Gère les strings "0.03:0.3" ou "0.03,0.3"
+                    # Gère les formats "0.03:0.3" ou "0.03,0.3"
                     parts = level.replace(":", ",").split(",")
                     pct = float(parts[0].strip())
                     frac = float(parts[1].strip()) if len(parts) > 1 else 0.3
@@ -1224,7 +1217,7 @@ class TradingBotM4:
                 validated.append((pct, frac))
             except Exception as e:
                 print(f"⚠️ Niveau TP ignoré: {level} - {str(e)}")
-        return validated or [(0.03, 0.3), (0.07, 0.3)]  # Valeur par défaut si vide
+        return validated or [(0.03, 0.3), (0.07, 0.3)]
 
     def safe_float_conversion(self, value, default=0.0):
         """Conversion robuste vers float"""
@@ -5830,27 +5823,6 @@ class TradingBotM4:
                 else:
                     print(f"  Pas de données live pour {pair_key} / {tf}, skip.")
 
-    def validate_tp_levels(self, levels):
-        """Valide et convertit les niveaux TP depuis la config"""
-        if not levels:
-            return [(0.03, 0.3), (0.07, 0.3)]  # Valeurs par défaut
-
-        validated = []
-        for level in levels:
-            try:
-                if isinstance(level, str):
-                    # Gère les formats "0.03:0.3" ou "0.03,0.3"
-                    parts = level.replace(":", ",").split(",")
-                    pct = float(parts[0].strip())
-                    frac = float(parts[1].strip()) if len(parts) > 1 else 0.3
-                else:
-                    pct = float(level[0])
-                    frac = float(level[1]) if len(level) > 1 else 0.3
-                validated.append((pct, frac))
-            except Exception as e:
-                print(f"⚠️ Niveau TP ignoré: {level} - {str(e)}")
-        return validated or [(0.03, 0.3), (0.07, 0.3)]
-
 
 def filter_pairs(
     bot,
@@ -6941,9 +6913,11 @@ async def run_clean_bot():
                         if "filled_tp_targets" not in pos:
                             pos["filled_tp_targets"] = [False, False]
                         if "price_history" not in pos:
-                            pos["price_history"] = [pos.get("entry_price", 0)]
+                            pos["price_history"] = [
+                                safe_float(pos.get("entry_price"), 0)
+                            ]
                         if "max_price" not in pos:
-                            pos["max_price"] = pos.get("entry_price", 0)
+                            pos["max_price"] = safe_float(pos.get("entry_price"), 0)
 
                         # Récupération du dernier prix
                         last_price = (
@@ -6959,79 +6933,40 @@ async def run_clean_bot():
                             closes = bot.market_data[symbol]["1h"].get("close", [])
                             if closes:
                                 last_price = closes[-1]
-                        # PATCH: Utilise le current_price du dashboard si last_price est toujours None
-                        if last_price is None and pos.get("current_price") is not None:
-                            last_price = pos["current_price"]
                         if last_price is None:
-                            print(f"[DEBUG SKIP] {symbol}: last_price is None")
                             continue
 
+                        last_price = safe_float(last_price, 0)
                         pos["price_history"].append(last_price)
 
-                        # --- PATCH TYPE SAFE ---
+                        # Take Profit partiel
                         entry_price = safe_float(pos.get("entry_price"), 0)
                         amount = safe_float(pos.get("amount"), 0)
-                        last_price = safe_float(last_price, 0)
-
-                        print(
-                            f"[DEBUG TP] {symbol} entry={entry_price} last={last_price} amount={amount} filled_tp_targets={pos['filled_tp_targets']}"
-                        )
-
-                        # Calcule le TP partiel (to_exit = proportion à vendre)
                         to_exit, new_filled = bot.exit_manager.check_tp_partial(
                             entry_price, last_price, pos["filled_tp_targets"]
                         )
                         to_exit = safe_float(to_exit, 0)
-
-                        print(
-                            f"[DEBUG TP] to_exit={to_exit}, new_filled={new_filled}, pnl={(last_price - entry_price) / entry_price:.2%}"
-                        )
-
-                        # Take Profit partiel (type safe !)
                         if to_exit > 0 and amount > 0:
                             amount_to_sell = amount * to_exit
+                            await bot.execute_trade(symbol, "SELL", amount_to_sell)
                             pos["amount"] = amount - amount_to_sell
                             pos["filled_tp_targets"] = new_filled
-                            print(
-                                f"[DEBUG EXEC TP] SELL {amount_to_sell} for {symbol} (TP partial)"
-                            )
-                            await bot.execute_trade(symbol, "SELL", amount_to_sell)
                             if safe_float(pos.get("amount"), 0) <= 0:
-                                print(
-                                    f"[DEBUG CLOSE TP] {symbol} position closed after TP partial"
-                                )
-                                getattr(bot, "positions_binance", {}).pop(symbol, None)
+                                bot.positions.pop(symbol)
                                 continue
-                        else:
-                            print(
-                                f"[DEBUG NO TP] {symbol}: No TP executed (to_exit={to_exit}, amount={safe_float(pos.get('amount'), 0)})"
-                            )
 
                         # Trailing stop
                         should_exit, new_max = bot.exit_manager.check_trailing(
                             entry_price,
                             pos["price_history"],
-                            pos.get("max_price", entry_price),
+                            safe_float(pos.get("max_price", entry_price), entry_price),
                         )
                         pos["max_price"] = safe_float(new_max, 0)
-                        print(
-                            f"[DEBUG TRAILING] {symbol} should_exit={should_exit} new_max={pos['max_price']}"
-                        )
                         if should_exit and safe_float(pos.get("amount"), 0) > 0:
-                            print(
-                                f"[DEBUG EXEC TRAILING] SELL {pos.get('amount')} for {symbol} (Trailing stop)"
-                            )
                             await bot.execute_trade(
                                 symbol, "SELL", safe_float(pos.get("amount"), 0)
                             )
-                            print(
-                                f"[DEBUG CLOSE TRAILING] {symbol} position closed after trailing stop"
-                            )
-                            getattr(bot, "positions_binance", {}).pop(symbol, None)
-                        else:
-                            print(
-                                f"[DEBUG NO TRAILING] {symbol}: No trailing stop executed"
-                            )
+                            bot.positions.pop(symbol)
 
                     # Gestion des shorts BingX
                     for symbol, pos in list(

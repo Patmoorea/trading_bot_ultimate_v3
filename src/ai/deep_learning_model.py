@@ -6,7 +6,6 @@ import os
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 
-
 def features_to_array(features: Dict[str, np.ndarray]) -> np.ndarray:
     """
     Transforme un dict de features (avec arrays ou scalaires) en un unique array 2D
@@ -30,7 +29,6 @@ def features_to_array(features: Dict[str, np.ndarray]) -> np.ndarray:
         volatility = np.full(N, volatility)
     arr = np.stack([close, high, low, volume, rsi, macd, volatility], axis=1)
     return arr
-
 
 class CNNLSTMModel(nn.Module):
     def __init__(self):
@@ -62,7 +60,6 @@ class CNNLSTMModel(nn.Module):
         x = x[:, -1, :]  # Prendre la dernière sortie (batch, 128)
         x = self.fc(x)  # (batch, 1)
         return x
-
 
 class DeepLearningModel:
     def __init__(self):
