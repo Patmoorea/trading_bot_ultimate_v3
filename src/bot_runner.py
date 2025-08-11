@@ -3338,7 +3338,7 @@ class TradingBotM4:
 
             # Récupération des pauses actives
             pauses = []
-            if hasattr(self, "news_pause_manager"):
+            if hasattr(self, "news_pause_manager") and self.news_pause_manager:
                 pauses = self.news_pause_manager.get_active_pauses()
             print("[DEBUG PATCH] pauses:", pauses)
 
@@ -3353,7 +3353,7 @@ class TradingBotM4:
                 return False, ""
 
             # Pour chaque position SPOT Binance
-            if hasattr(self, "positions_binance"):
+            if hasattr(self, "positions_binance") and self.positions_binance:
                 for symbol, pos in self.positions_binance.items():
                     entry_price = safe_float(pos.get("entry_price"), 0)
                     current_price = safe_float(pos.get("current_price"), 0)
@@ -3435,8 +3435,9 @@ class TradingBotM4:
         """
         pauses = []
         # Recupère les pauses du NewsPauseManager
-        for item in self.news_pause_manager.get_active_pauses():
-            pauses.append(item)
+        if hasattr(self, "news_pause_manager") and self.news_pause_manager:
+            for item in self.news_pause_manager.get_active_pauses():
+                pauses.append(item)
         return pauses
 
     def enrich_news_symbols(self, news_list):
@@ -6888,6 +6889,11 @@ async def run_clean_bot():
                     bot.news_pause_manager.on_cycle_end()
                     active_pauses = bot.get_active_pauses()
                     print("[DEBUG PATCH] Pauses RAM après tick:", active_pauses)
+
+                    # Synchronisation systématique avec le fichier partagé
+                    bot.safe_update_shared_data(
+                        {"active_pauses": active_pauses}, bot.data_file
+                    )
 
                     # Vérification pause globale
                     trading_paused = bot.news_pause_manager.global_cycles_remaining > 0
