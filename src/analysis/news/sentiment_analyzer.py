@@ -144,7 +144,9 @@ class NewsSentimentAnalyzer:
         self._tokenizer = None
         # LLM classifier pipeline
         self.llm_classifier = pipeline(
-            "zero-shot-classification", model="facebook/bart-large-mnli"
+            "zero-shot-classification",
+            model="facebook/bart-large-mnli",
+            device=-1,  # <-- AJOUTE CE PARAMÈTRE !
         )
         self.risk_labels = config.get("news", {}).get(
             "risk_labels",
