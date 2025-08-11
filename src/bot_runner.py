@@ -5660,33 +5660,52 @@ class TradingBotM4:
 
     def get_performance_metrics(self):
         try:
-            # ... (mode live trading, balance réelle)
-            # Sinon, tente de prendre la dernière valeur du fichier partagé
+            # Première priorité : solde réel Binance
+            if getattr(self, "is_live_trading", False) and hasattr(
+                self, "binance_client"
+            ):
+                try:
+                    # USDC est la devise principale dans ton dashboard
+                    balance_info = self.binance_client.get_asset_balance(asset="USDC")
+                    if balance_info:
+                        real_balance = float(balance_info.get("free", 0))
+                    else:
+                        real_balance = 0.0
+                except Exception as e:
+                    print(f"[BALANCE] Erreur récupération solde Binance : {e}")
+                    real_balance = 0.0
+            else:
+                real_balance = 0.0
+
+            # Récupère les autres métriques (trade_history, etc.)
             try:
                 with open(self.data_file, "r") as f:
                     data = json.load(f)
-                deep_cast_floats(data)
                 saved_perf = data.get("bot_status", {}).get("performance", {})
-                # PATCH ABSOLU : cast toutes les clés numériques
-                for k in [
-                    "balance",
-                    "total_trades",
-                    "wins",
-                    "losses",
-                    "total_profit",
-                    "total_loss",
-                    "win_rate",
-                    "profit_factor",
-                ]:
-                    if k in saved_perf:
-                        saved_perf[k] = safe_float(saved_perf[k], 0)
-                return saved_perf if saved_perf else {}
-            except Exception as e:
-                self.logger.error(f"Erreur lecture performance: {e}")
-                return {}
+            except Exception:
+                saved_perf = {}
+
+            # Mets à jour la balance avec la valeur réelle
+            saved_perf["balance"] = real_balance
+
+            # Cast des autres champs pour éviter les erreurs
+            for k in [
+                "total_trades",
+                "wins",
+                "losses",
+                "total_profit",
+                "total_loss",
+                "win_rate",
+                "profit_factor",
+            ]:
+                if k in saved_perf:
+                    saved_perf[k] = safe_float(saved_perf[k], 0)
+
+            return saved_perf
+
         except Exception as e:
-            self.logger.error(f"Erreur get_performance_metrics: {e}")
-            return {}
+            print(f"[BALANCE] Erreur get_performance_metrics: {e}")
+            return {"balance": 0.0}
 
     async def _setup_components(self):
         try:
@@ -7155,6 +7174,17 @@ async def run_clean_bot():
                     )
 
                     bot.save_shared_data()
+                    bot.safe_update_shared_data(
+                        {
+                            "bot_status": {
+                                "regime": bot.regime,
+                                "cycle": bot.current_cycle,
+                                "last_update": get_current_time(),
+                                "performance": bot.get_performance_metrics(),
+                            }
+                        },
+                        bot.data_file,
+                    )
 
                     # Exécution des trades si pas de pause
                     if not trading_paused:
@@ -7199,6 +7229,17 @@ async def run_clean_bot():
 
                 bot.get_pending_sales()
                 bot.save_shared_data()
+                bot.safe_update_shared_data(
+                    {
+                        "bot_status": {
+                            "regime": bot.regime,
+                            "cycle": bot.current_cycle,
+                            "last_update": get_current_time(),
+                            "performance": bot.get_performance_metrics(),
+                        }
+                    },
+                    bot.data_file,
+                )
                 # Attente avant le prochain cycle
                 await asyncio.sleep(30)
 
@@ -7965,6 +8006,17 @@ async def handle_shutdown(bot, message):
         await bot.telegram.send_message(message)
         await bot.ws_collector.stop()
         bot.save_shared_data()
+        bot.safe_update_shared_data(
+            {
+                "bot_status": {
+                    "regime": bot.regime,
+                    "cycle": bot.current_cycle,
+                    "last_update": get_current_time(),
+                    "performance": bot.get_performance_metrics(),
+                }
+            },
+            bot.data_file,
+        )
     except Exception as e:
         logging.error(f"Erreur arrêt bot: {e}")
 
