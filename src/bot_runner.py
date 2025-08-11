@@ -1177,6 +1177,7 @@ class TradingBotM4:
             with open("config/auto_strategy.json", "r") as f:
                 self.auto_strategy_config = json.load(f)
             log_dashboard("✅ Auto-stratégie chargée :", self.auto_strategy_config)
+        self.positions_binance = {}
         self.sync_positions_with_binance()
 
     def validate_tp_levels(self, levels):
