@@ -475,13 +475,22 @@ class NewsSentimentAnalyzer:
         self, news_items: List[Dict], low_watermark_ratio: float = None
     ) -> List[Dict]:
         news_items = self.patch_news_list(news_items)
+        # PATCH ABSOLU : bloque et log toute valeur hors borne
         if low_watermark_ratio is None:
-            low_watermark_ratio = self.low_watermark_ratio
+            low_watermark_ratio = getattr(self, "low_watermark_ratio", 0.75)
         try:
             low_watermark_ratio = float(low_watermark_ratio)
         except Exception:
+            print(
+                f"[DEBUG] Watermark ratio '{low_watermark_ratio}' non convertible, fallback à 0.75"
+            )
             low_watermark_ratio = 0.75
-        # PATCH: borne stricte silencieuse
+        if low_watermark_ratio > 0.8 or low_watermark_ratio < 0.05:
+            print(
+                f"[DEBUG] Watermark ratio {low_watermark_ratio} hors borne, fallback à 0.75"
+            )
+            low_watermark_ratio = 0.75
+        # Toujours borne stricte silencieuse
         low_watermark_ratio = min(max(low_watermark_ratio, 0.05), 0.8)
         if not news_items:
             print("[SENTIMENT] Aucun article à analyser.")
