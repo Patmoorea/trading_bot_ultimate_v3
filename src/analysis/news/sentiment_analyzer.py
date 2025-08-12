@@ -475,7 +475,7 @@ class NewsSentimentAnalyzer:
         self, news_items: List[Dict], low_watermark_ratio: float = None
     ) -> List[Dict]:
         news_items = self.patch_news_list(news_items)
-        # PATCH ABSOLU : bloque et log toute valeur hors borne
+        # PATCH ABSOLU : bloque et log toute valeur hors borne AVANT toute utilisation
         if low_watermark_ratio is None:
             low_watermark_ratio = getattr(self, "low_watermark_ratio", 0.75)
         try:
@@ -525,8 +525,12 @@ class NewsSentimentAnalyzer:
                 )
             return results
         except Exception as e:
-            print("[DEBUG] EXCEPTION analyze_sentiment_batch:", e)
-            self.logger.error(f"Error in sentiment analysis: {str(e)}")
+            print(
+                f"[DEBUG] EXCEPTION analyze_sentiment_batch: {e} | watermark={low_watermark_ratio}"
+            )
+            self.logger.error(
+                f"Error in sentiment analysis: {str(e)} | watermark={low_watermark_ratio}"
+            )
             return []
 
     async def update_analysis(self):
